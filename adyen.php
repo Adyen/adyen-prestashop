@@ -65,7 +65,7 @@ class Adyen extends PaymentModule
     {
 
         if (version_compare(_PS_VERSION_, '1.5', '<')) {
-            $this->_errors[] = $this->l('Sorry, this module is not compatible with you version.');
+            $this->_errors[] = $this->l('Sorry, this module is not compatible with your version.');
             return false;
         }
 
@@ -114,6 +114,8 @@ class Adyen extends PaymentModule
             $mode = (string)Tools::getValue('ADYEN_MODE');
             $notification_username = (string)Tools::getValue('ADYEN_NOTI_USERNAME');
             $notification_password = (string)Tools::getValue('ADYEN_NOTI_PASSWORD');
+            $api_key_test = (string)Tools::getValue('ADYEN_APIKEY_TEST');
+            $api_key_live = (string)Tools::getValue('ADYEN_APIKEY_LIVE');
 
 
             // validating the input
@@ -136,6 +138,8 @@ class Adyen extends PaymentModule
                 Configuration::updateValue('ADYEN_MODE', $mode);
                 Configuration::updateValue('ADYEN_NOTI_USERNAME', $notification_username);
                 Configuration::updateValue('ADYEN_NOTI_PASSWORD', $notification_password);
+                Configuration::updateValue('ADYEN_APIKEY_TEST', $api_key_test);
+                Configuration::updateValue('ADYEN_APIKEY_LIVE', $api_key_live);
 
                 $output .= $this->displayConfirmation($this->l('Settings updated'));
             }
@@ -209,6 +213,22 @@ class Adyen extends PaymentModule
                     'size' => 20,
                     'required' => true,
                     'hint' => $this->l('Must correspond to the notification password in the Adyen Backoffice under Settings => Notifications')
+                ),
+                array(
+                    'type' => 'text',
+                    'label' => $this->l('API key for Test'),
+                    'name' => 'ADYEN_APIKEY_TEST',
+                    'size' => 20,
+                    'required' => true,
+                    'hint' => $this->l('If you don\'t know your Api-Key, log in to your Test Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Checkout token is your API Key.')
+                ),
+                array(
+                    'type' => 'text',
+                    'label' => $this->l('API key for Live'),
+                    'name' => 'ADYEN_APIKEY_LIVE',
+                    'size' => 20,
+                    'required' => true,
+                    'hint' => $this->l('If you don\'t know your Api-Key, log in to your Live Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Checkout token is your API Key.')
                 )
             ),
             'submit' => array(
@@ -251,11 +271,15 @@ class Adyen extends PaymentModule
             $mode = (string)Tools::getValue('ADYEN_MODE');
             $notification_username = (string)Tools::getValue('ADYEN_NOTI_USERNAME');
             $notification_password = (string)Tools::getValue('ADYEN_NOTI_PASSWORD');
+            $api_key_test = (string)Tools::getValue('ADYEN_APIKEY_TEST');
+            $api_key_live = (string)Tools::getValue('ADYEN_APIKEY_LIVE');
         } else {
             $merchant_account = Configuration::get('ADYEN_MERCHANT_ACCOUNT');
             $mode = Configuration::get('ADYEN_MODE');
             $notification_username = Configuration::get('ADYEN_NOTI_USERNAME');
             $notification_password = Configuration::get('ADYEN_NOTI_PASSWORD');
+            $api_key_test = Configuration::get('ADYEN_APIKEY_TEST');
+            $api_key_live = Configuration::get('ADYEN_APIKEY_LIVE');
         }
 
         // Load current value
@@ -263,6 +287,8 @@ class Adyen extends PaymentModule
         $helper->fields_value['ADYEN_MODE'] = $mode;
         $helper->fields_value['ADYEN_NOTI_USERNAME'] = $notification_username;
         $helper->fields_value['ADYEN_NOTI_PASSWORD'] = $notification_password;
+        $helper->fields_value['ADYEN_APIKEY_TEST'] = $api_key_test;
+        $helper->fields_value['ADYEN_APIKEY_LIVE'] = $api_key_live;
 
         return $helper->generateForm($fields_form);
     }
