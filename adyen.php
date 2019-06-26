@@ -20,6 +20,8 @@
  * See the LICENSE file for more info.
  */
 require_once dirname(__FILE__) . '/libraries/adyen-php-api-library-2.0.0/init.php';
+require_once dirname(__FILE__) . '/helper/data.php';
+use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -27,6 +29,13 @@ if (!defined('_PS_VERSION_')) {
 
 class Adyen extends PaymentModule
 {
+    const TEST = 'test';
+    const LIVE = 'live';
+    const CHECKOUT_COMPONENT_JS_TEST = 'https://checkoutshopper-test.adyen.com/checkoutshopper/sdk/3.0.0/adyen.js';
+    const CHECKOUT_COMPONENT_JS_LIVE = 'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/3.0.0/adyen.js';
+    const CHECKOUT_COMPONENT_CSS_TEST = 'https://checkoutshopper-test.adyen.com/checkoutshopper/sdk/3.0.0/adyen.css';
+    const CHECKOUT_COMPONENT_CSS_LIVE = 'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/3.0.0/adyen.css';
+
 
     public function __construct()
     {
@@ -38,6 +47,7 @@ class Adyen extends PaymentModule
         $this->display = 'view';
         $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
         $this->currencies = true;
+        $this->helper_data = new Data();
 
 
         // start for 1.6
@@ -114,8 +124,8 @@ class Adyen extends PaymentModule
             $mode = (string)Tools::getValue('ADYEN_MODE');
             $notification_username = (string)Tools::getValue('ADYEN_NOTI_USERNAME');
             $notification_password = (string)Tools::getValue('ADYEN_NOTI_PASSWORD');
-            $api_key_test = (string)Tools::getValue('ADYEN_APIKEY_TEST');
-            $api_key_live = (string)Tools::getValue('ADYEN_APIKEY_LIVE');
+            $api_key_test = $this->helper_data->encrypt(Tools::getValue('ADYEN_APIKEY_TEST'));
+            $api_key_live = $this->helper_data->encrypt(Tools::getValue('ADYEN_APIKEY_LIVE'));
 
 
             // validating the input
@@ -138,13 +148,15 @@ class Adyen extends PaymentModule
                 Configuration::updateValue('ADYEN_MODE', $mode);
                 Configuration::updateValue('ADYEN_NOTI_USERNAME', $notification_username);
                 Configuration::updateValue('ADYEN_NOTI_PASSWORD', $notification_password);
-                Configuration::updateValue('ADYEN_APIKEY_TEST', $api_key_test);
-                Configuration::updateValue('ADYEN_APIKEY_LIVE', $api_key_live);
-
+                if (!empty($api_key_test)) {
+                    Configuration::updateValue('ADYEN_APIKEY_TEST', $api_key_test);
+                }
+                if (!empty($api_key_live)) {
+                    Configuration::updateValue('ADYEN_APIKEY_LIVE', $api_key_live);
+                }
                 $output .= $this->displayConfirmation($this->l('Settings updated'));
             }
         }
-
         return $output . $this->displayForm();
     }
 
@@ -177,6 +189,7 @@ class Adyen extends PaymentModule
                     'name' => 'ADYEN_MERCHANT_ACCOUNT',
                     'size' => 20,
                     'required' => true,
+                    'lang' => false,
                     'hint' => $this->l('In Adyen backoffice you have a company account with one or more merchantaccounts. Fill in the merchantaccount you want to use for this webshop.')
                 ),
                 array(
@@ -187,12 +200,12 @@ class Adyen extends PaymentModule
                     'values' => array(
                         array(
                             'id' => 'prod',
-                            'value' => 'live',
+                            'value' => '0',
                             'label' => $this->l('Production')
                         ),
                         array(
                             'id' => 'test',
-                            'value' => 'test',
+                            'value' => '1',
                             'label' => $this->l('Test')
                         )
                     ),
@@ -215,19 +228,19 @@ class Adyen extends PaymentModule
                     'hint' => $this->l('Must correspond to the notification password in the Adyen Backoffice under Settings => Notifications')
                 ),
                 array(
-                    'type' => 'text',
+                    'type' => 'password',
                     'label' => $this->l('API key for Test'),
                     'name' => 'ADYEN_APIKEY_TEST',
                     'size' => 20,
-                    'required' => true,
+                    'required' => false,
                     'hint' => $this->l('If you don\'t know your Api-Key, log in to your Test Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Checkout token is your API Key.')
                 ),
                 array(
-                    'type' => 'text',
+                    'type' => 'password',
                     'label' => $this->l('API key for Live'),
                     'name' => 'ADYEN_APIKEY_LIVE',
                     'size' => 20,
-                    'required' => true,
+                    'required' => false,
                     'hint' => $this->l('If you don\'t know your Api-Key, log in to your Live Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Checkout token is your API Key.')
                 )
             ),
@@ -271,15 +284,15 @@ class Adyen extends PaymentModule
             $mode = (string)Tools::getValue('ADYEN_MODE');
             $notification_username = (string)Tools::getValue('ADYEN_NOTI_USERNAME');
             $notification_password = (string)Tools::getValue('ADYEN_NOTI_PASSWORD');
-            $api_key_test = (string)Tools::getValue('ADYEN_APIKEY_TEST');
-            $api_key_live = (string)Tools::getValue('ADYEN_APIKEY_LIVE');
+            $api_key_test = $this->get('hashing')->hash($password = Tools::getValue('ADYEN_APIKEY_TEST'), _COOKIE_KEY_);
+            $api_key_live = $this->get('hashing')->hash($password = Tools::getValue('ADYEN_APIKEY_LIVE'), _COOKIE_KEY_);
         } else {
             $merchant_account = Configuration::get('ADYEN_MERCHANT_ACCOUNT');
             $mode = Configuration::get('ADYEN_MODE');
             $notification_username = Configuration::get('ADYEN_NOTI_USERNAME');
             $notification_password = Configuration::get('ADYEN_NOTI_PASSWORD');
-            $api_key_test = Configuration::get('ADYEN_APIKEY_TEST');
-            $api_key_live = Configuration::get('ADYEN_APIKEY_LIVE');
+            $api_key_test = $this->get('hashing')->hash($password = Configuration::get('ADYEN_APIKEY_TEST'), _COOKIE_KEY_);;
+            $api_key_live = $this->get('hashing')->hash($password = Configuration::get('ADYEN_APIKEY_LIVE'), _COOKIE_KEY_);
         }
 
         // Load current value
@@ -289,6 +302,11 @@ class Adyen extends PaymentModule
         $helper->fields_value['ADYEN_NOTI_PASSWORD'] = $notification_password;
         $helper->fields_value['ADYEN_APIKEY_TEST'] = $api_key_test;
         $helper->fields_value['ADYEN_APIKEY_LIVE'] = $api_key_live;
+
+        if (version_compare(_PS_VERSION_, '1.6', '<')) {
+        } else {
+        }
+//        return $this->renderGenericForm($fields_form, $fields_value, $this->getSectionShape(), $submit_action).$html;
 
         return $helper->generateForm($fields_form);
     }
@@ -311,6 +329,31 @@ class Adyen extends PaymentModule
      */
     public function hookHeader()
     {
+        if ($this->helper_data->isDemoMode()) {
+            $this->context->controller->registerJavascript(
+                'component', // Unique ID
+                self::CHECKOUT_COMPONENT_JS_TEST, // JS path
+                array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
+            );
+            $this->context->controller->registerStylesheet(
+                'stylecheckout', // Unique ID
+                self::CHECKOUT_COMPONENT_CSS_TEST, // JS path
+                array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
+            );
+        } else {
+            $this->context->controller->registerJavascript(
+                'component', // Unique ID
+                self::CHECKOUT_COMPONENT_JS_LIVE, // JS path
+                array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
+            );
+            $this->context->controller->registerStylesheet(
+                'stylecheckout', // Unique ID
+                self::CHECKOUT_COMPONENT_CSS_LIVE, // JS path
+                array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
+            );
+
+        }
+//        $this->context->controller->addJS($this->_path.'/views/js/cc.js');
 
     }
 
@@ -329,7 +372,101 @@ class Adyen extends PaymentModule
      */
     public function hookPaymentOptions($params)
     {
+        $payment_options = array();
+        $embeddedOption = new PaymentOption();
+        $default_country = new Country(Configuration::get('PS_COUNTRY_DEFAULT'));
 
+        $cc_img = 'cc_border.png';
+
+
+        $this->context->smarty->assign(
+            array(
+                'originKey' => $this->helper_data->getOriginKeyForOrigin()
+            )
+        );
+        $embeddedOption->setCallToActionText($this->l('Pay by card'))
+            ->setForm($this->context->smarty->fetch(_PS_MODULE_DIR_.$this->name.'/views/templates/front/payment.tpl'))
+            ->setAdditionalInformation($this->context->smarty->fetch(_PS_MODULE_DIR_.$this->name.'/views/templates/front/payment.tpl'))
+            ->setLogo(Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/views/img/'.$cc_img));
+        $payment_options[] = $embeddedOption;
+
+        return $payment_options;
     }
 
+    /*
+	 * display payment with adyen
+	 */
+    public function hookDisplayPayment($params)
+    {
+        if (!$this->active)
+            return;
+
+//        $this->context->controller->addJS($this->_path.'/views/js/cc.js');
+
+//        // HPP must be enabled to select
+//        if (Configuration::get('ADYEN_HPP_ENABLED') == true)
+//        {
+//            $cart = $this->context->cart;
+//            if (!$this->checkCurrency($cart))
+//                Tools::redirect('index.php?controller=order');
+//
+//            $hpp_options = $this->getHppOptions();
+//
+////            if (is_array($hpp_options) && count($hpp_options))
+////            {
+//            $this->context->smarty->assign(array (
+//                'hpp_options' => $hpp_options,
+//                'nbProducts' => $cart->nbProducts(),
+//                'cust_currency' => $cart->id_currency,
+//                'currencies' => $this->getCurrency((int)$cart->id_currency),
+//                'total' => $cart->getOrderTotal(true, Cart::BOTH),
+//                'this_path' => $this->getPathUri(),
+//                'this_path_ssl' => Tools::getShopDomainSsl(true, true).__PS_BASE_URI__.'modules/'.$this->name.'/'
+//            ));
+//        return $this->context->smarty->fetch('module:adyen/views/templates/front/payment.tpl');
+//            return $this->display(__FILE__, '/views/templates/front/payment.tpl');
+//            }
+//        }
+    }
+
+    /*
+     ** @Method: renderGenericForm
+     ** @description: render generic form for prestashop
+     **
+     ** @arg: $fields_form, $fields_value, $submit = false, array $tpls_vars = array()
+     ** @return: (none)
+     */
+    public function renderGenericForm($fields_form, $fields_value = array(), $fragment = false, $submit = false, array $tpl_vars = array())
+    {
+        $helper = new HelperForm();
+        $helper->module = $this;
+        $helper->name_controller = $this->name;
+        $helper->token = Tools::getAdminTokenLite('AdminModules');
+        $helper->currentIndex = AdminController::$currentIndex.'&configure='.$this->name;
+        $helper->title = $this->displayName;
+        $helper->show_toolbar = false;
+        $default_lang = (int)Configuration::get('PS_LANG_DEFAULT');
+        $helper->default_form_language = $default_lang;
+        $helper->allow_employee_form_lang = $default_lang;
+
+        if ($fragment !== false) {
+            $helper->token .= '#'.$fragment;
+        }
+
+        if ($submit) {
+            $helper->submit_action = $submit;
+        }
+
+//        $this->context->smarty->assign()
+        $helper->tpl_vars = array_merge(array(
+            'fields_value' => $fields_value,
+            'id_language' => $this->context->language->id,
+            'back_url' => $this->context->link->getAdminLink('AdminModules')
+                .'&configure='.$this->name
+                .'&tab_module='.$this->tab
+                .'&module_name='.$this->name.($fragment !== false ? '#'.$fragment : '')
+        ), $tpl_vars);
+
+        return $helper->generateForm($fields_form);
+    }
 }
