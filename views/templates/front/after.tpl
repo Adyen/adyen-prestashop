@@ -1,0 +1,1 @@
+<p><h2>{l s='Transaction in progress, please wait.'}</h2></p>

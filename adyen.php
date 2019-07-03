@@ -41,7 +41,7 @@ class Adyen extends PaymentModule
     {
         $this->name = 'adyen';
         $this->tab = 'payments_gateways';
-        $this->version = '3.0.0';
+        $this->version = '0.0.1';
         $this->author = 'Adyen';
         $this->bootstrap = true;
         $this->display = 'view';
@@ -381,13 +381,15 @@ class Adyen extends PaymentModule
 
         $this->context->smarty->assign(
             array(
-                'originKey' => $this->helper_data->getOriginKeyForOrigin()
+                'originKey' => $this->helper_data->getOriginKeyForOrigin(),
+                'action' => $this->context->link->getModuleLink($this->name, 'payment', array(), true)
             )
         );
+        $this->helper_data->adyenLogger()->logDebug($this->context->link->getModuleLink($this->name, 'payment', array(), true));
         $embeddedOption->setCallToActionText($this->l('Pay by card'))
             ->setForm($this->context->smarty->fetch(_PS_MODULE_DIR_.$this->name.'/views/templates/front/payment.tpl'))
-            ->setAdditionalInformation($this->context->smarty->fetch(_PS_MODULE_DIR_.$this->name.'/views/templates/front/payment.tpl'))
-            ->setLogo(Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/views/img/'.$cc_img));
+            ->setLogo(Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/views/img/'.$cc_img))
+            ->setAction($this->context->link->getModuleLink($this->name, 'payment', array(), true));
         $payment_options[] = $embeddedOption;
 
         return $payment_options;

@@ -2,6 +2,7 @@
 
 class Data
 {
+
     /**
      * Get origin key for a specific origin using the adyen api library client
      *
@@ -126,4 +127,25 @@ class Data
     {
         return new \Adyen\Service\CheckoutUtility($client);
     }
+
+    /**
+     * Get adyen magento module's name sent to Adyen
+     *
+     * @return string
+     */
+    public function getModuleName()
+    {
+        return "adyen-prestashop";
+    }
+
+    /**
+     * Get adyen magento module's version
+     *
+     * @return string
+     */
+    public function getModuleVersion()
+    {
+        return Module::getInstanceByName('adyen')->version;
+    }
+
 }
