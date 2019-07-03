@@ -7,7 +7,6 @@
 
         function renderSecureFields() {
             var locale = "en_US";
-            // var cardGroupTypes = alt_types.slice();
             var self = this;
             var cardNode = document.getElementById('cardContainer');
             // we can now rely on $ within the safety of our "bodyguard" function

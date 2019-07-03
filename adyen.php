@@ -337,7 +337,7 @@ class Adyen extends PaymentModule
             );
             $this->context->controller->registerStylesheet(
                 'stylecheckout', // Unique ID
-                self::CHECKOUT_COMPONENT_CSS_TEST, // JS path
+                self::CHECKOUT_COMPONENT_CSS_TEST, // CSS path
                 array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
             );
         } else {
@@ -348,7 +348,7 @@ class Adyen extends PaymentModule
             );
             $this->context->controller->registerStylesheet(
                 'stylecheckout', // Unique ID
-                self::CHECKOUT_COMPONENT_CSS_LIVE, // JS path
+                self::CHECKOUT_COMPONENT_CSS_LIVE, // CSS path
                 array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
             );
 

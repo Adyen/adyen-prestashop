@@ -15,15 +15,16 @@ class AdyenPaymentModuleFrontController extends ModuleFrontController
     }
 
     /**
-     * @param \Magento\Payment\Gateway\Http\TransferInterface $transferObject
      * @return mixed
-     * @throws ClientException
+     * @throws \Adyen\AdyenException
      */
     public function postProcess()
     {
         $this->helper_data->adyenLogger()->logDebug(json_encode($_REQUEST));
         $cart = $this->context->cart;
+        $customer = new Customer($cart->id_customer);
         $client = $this->helper_data->initializeAdyenClient();
+//        applicationInfo
 //        $client->setAdyenPaymentSource($this->helper_data->getModuleName(), $this->helper_data->getModuleVersion());
         $request = [];
         $request = $this->buildCCData($request, $_REQUEST);
@@ -46,6 +47,8 @@ class AdyenPaymentModuleFrontController extends ModuleFrontController
         }
         $this->helper_data->adyenLogger()->logDebug($response);
         $this->setTemplate('module:adyen/views/templates/front/after.tpl');
+        $this->module->validateOrder($cart->id, 1, $cart->getOrderTotal());
+        Tools::redirect('index.php?controller=order-confirmation&id_cart='.$cart->id.'&id_module='.$this->module->id.'&id_order='.$this->module->currentOrder.'&key='.$customer->secure_key);
         return $response;
     }
 
@@ -120,12 +123,9 @@ class AdyenPaymentModuleFrontController extends ModuleFrontController
 
     /**
      * @param $request
-     * @param $amount
-     * @param $currencyCode
-     * @param $reference
      * @return mixed
      */
-    public function buildPaymentData($request, $amount = null, $currencyCode = null, $reference = null)
+    public function buildPaymentData($request)
     {
         $cart = $this->context->cart;
         $request['amount'] = [
@@ -134,17 +134,15 @@ class AdyenPaymentModuleFrontController extends ModuleFrontController
         ];
 
 
-        $request["reference"] = "reference";
+        $request["reference"] = (int)$this->module->currentOrder;
         $request["fraudOffset"] = "0";
 
         return $request;
     }
 
     /**
-     * @param $request
-     * @param $paymentMethod
-     * @param $storeId
-     * @return mixed
+     * @param array $request
+     * @return array
      */
     public function buildMerchantAccountData($request = [])
     {
