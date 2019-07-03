@@ -20,11 +20,11 @@ class AdyenPaymentModuleFrontController extends ModuleFrontController
      */
     public function postProcess()
     {
-        $this->helper_data->adyenLogger()->logDebug(json_encode($_REQUEST));
+//        $this->helper_data->adyenLogger()->logDebug(json_encode($_REQUEST));
         $cart = $this->context->cart;
         $customer = new Customer($cart->id_customer);
         $client = $this->helper_data->initializeAdyenClient();
-//        applicationInfo
+//        todo: applicationInfo, uncomment before release
 //        $client->setAdyenPaymentSource($this->helper_data->getModuleName(), $this->helper_data->getModuleVersion());
         $request = [];
         $request = $this->buildCCData($request, $_REQUEST);
@@ -47,8 +47,9 @@ class AdyenPaymentModuleFrontController extends ModuleFrontController
         }
         $this->helper_data->adyenLogger()->logDebug($response);
         $this->setTemplate('module:adyen/views/templates/front/after.tpl');
+        //todo: check second argument(order status)
         $this->module->validateOrder($cart->id, 1, $cart->getOrderTotal());
-        Tools::redirect('index.php?controller=order-confirmation&id_cart='.$cart->id.'&id_module='.$this->module->id.'&id_order='.$this->module->currentOrder.'&key='.$customer->secure_key);
+        Tools::redirect('index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key);
         return $response;
     }
 
