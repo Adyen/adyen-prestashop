@@ -45,7 +45,15 @@ class Data
     public function adyenLogger()
     {
         $logger = new FileLogger(0); //0 == debug level, logDebug() won’t work without this.
-        $logger->setFilename(_PS_ROOT_DIR_ . '/var/logs/debug.log');
+
+        if (version_compare(_PS_VERSION_, '1.6', '>=') &&
+            version_compare(_PS_VERSION_, '1.7', '<')
+        ) {
+            $logger->setFilename(_PS_ROOT_DIR_ . '/log/debug.log');
+        } else {
+            $logger->setFilename(_PS_ROOT_DIR_ . '/var/logs/debug.log');
+        }
+
         return $logger;
     }
 

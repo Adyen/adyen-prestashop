@@ -21,6 +21,18 @@
  */
 require_once dirname(__FILE__) . '/libraries/adyen-php-api-library-2.0.0/init.php';
 require_once dirname(__FILE__) . '/helper/data.php';
+require_once dirname(__FILE__) . '/model/Hashing.php';
+
+// PSR/Log and MonoLog needed for prestashop 1.6
+require(dirname(__FILE__) . '/libraries/log-1.1.0/Psr/Log/LoggerInterface.php');
+require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/ResettableInterface.php');
+require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Handler/HandlerInterface.php');
+require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Handler/AbstractHandler.php');
+require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Handler/AbstractProcessingHandler.php');
+require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Handler/StreamHandler.php');
+
+require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Logger.php');
+
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 
 if (!defined('_PS_VERSION_')) {
@@ -48,6 +60,7 @@ class Adyen extends PaymentModule
         $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
         $this->currencies = true;
         $this->helper_data = new Data();
+        $this->hashing = new Hashing();
 
 
         // start for 1.6
@@ -284,15 +297,17 @@ class Adyen extends PaymentModule
             $mode = (string)Tools::getValue('ADYEN_MODE');
             $notification_username = (string)Tools::getValue('ADYEN_NOTI_USERNAME');
             $notification_password = (string)Tools::getValue('ADYEN_NOTI_PASSWORD');
-            $api_key_test = $this->get('hashing')->hash($password = Tools::getValue('ADYEN_APIKEY_TEST'), _COOKIE_KEY_);
-            $api_key_live = $this->get('hashing')->hash($password = Tools::getValue('ADYEN_APIKEY_LIVE'), _COOKIE_KEY_);
+            $api_key_test = $this->hashing->hash($password = Tools::getValue('ADYEN_APIKEY_TEST'), _COOKIE_KEY_);
+            $api_key_live = $this->hashing->hash($password = Tools::getValue('ADYEN_APIKEY_LIVE'), _COOKIE_KEY_);
         } else {
             $merchant_account = Configuration::get('ADYEN_MERCHANT_ACCOUNT');
             $mode = Configuration::get('ADYEN_MODE');
             $notification_username = Configuration::get('ADYEN_NOTI_USERNAME');
             $notification_password = Configuration::get('ADYEN_NOTI_PASSWORD');
-            $api_key_test = $this->get('hashing')->hash($password = Configuration::get('ADYEN_APIKEY_TEST'), _COOKIE_KEY_);;
-            $api_key_live = $this->get('hashing')->hash($password = Configuration::get('ADYEN_APIKEY_LIVE'), _COOKIE_KEY_);
+            $api_key_test = $this->hashing->hash($password = Configuration::get('ADYEN_APIKEY_TEST'),
+                _COOKIE_KEY_);;
+            $api_key_live = $this->hashing->hash($password = Configuration::get('ADYEN_APIKEY_LIVE'),
+                _COOKIE_KEY_);
         }
 
         // Load current value
@@ -330,27 +345,42 @@ class Adyen extends PaymentModule
     public function hookHeader()
     {
         if ($this->helper_data->isDemoMode()) {
-            $this->context->controller->registerJavascript(
-                'component', // Unique ID
-                self::CHECKOUT_COMPONENT_JS_TEST, // JS path
-                array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
-            );
-            $this->context->controller->registerStylesheet(
-                'stylecheckout', // Unique ID
-                self::CHECKOUT_COMPONENT_CSS_TEST, // CSS path
-                array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
-            );
+
+
+            if (version_compare(_PS_VERSION_, '1.7', '<')) {
+                $this->context->controller->addJS(self::CHECKOUT_COMPONENT_JS_TEST);
+                $this->context->controller->addCSS(self::CHECKOUT_COMPONENT_CSS_TEST);
+            } else {
+                $this->context->controller->registerJavascript(
+                    'component', // Unique ID
+                    self::CHECKOUT_COMPONENT_JS_TEST, // JS path
+                    array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
+                );
+                $this->context->controller->registerStylesheet(
+                    'stylecheckout', // Unique ID
+                    self::CHECKOUT_COMPONENT_CSS_TEST, // CSS path
+                    array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
+                );
+            }
         } else {
-            $this->context->controller->registerJavascript(
-                'component', // Unique ID
-                self::CHECKOUT_COMPONENT_JS_LIVE, // JS path
-                array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
-            );
-            $this->context->controller->registerStylesheet(
-                'stylecheckout', // Unique ID
-                self::CHECKOUT_COMPONENT_CSS_LIVE, // CSS path
-                array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
-            );
+
+            if (version_compare(_PS_VERSION_, '1.7', '<')) {
+                $this->context->controller->addJS(self::CHECKOUT_COMPONENT_JS_LIVE);
+                $this->context->controller->addCSS(self::CHECKOUT_COMPONENT_CSS_LIVE);
+            } else {
+                $this->context->controller->registerJavascript(
+                    'component', // Unique ID
+                    self::CHECKOUT_COMPONENT_JS_LIVE, // JS path
+                    array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
+                );
+
+                $this->context->controller->registerStylesheet(
+                    'stylecheckout', // Unique ID
+                    self::CHECKOUT_COMPONENT_CSS_LIVE, // CSS path
+                    array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
+                );
+            }
+
 
         }
 //        $this->context->controller->addJS($this->_path.'/views/js/cc.js');
@@ -365,6 +395,8 @@ class Adyen extends PaymentModule
     {
 
     }
+
+
 
     /**
      * Hook payment options Prestashop > 1.7
@@ -385,52 +417,57 @@ class Adyen extends PaymentModule
                 'action' => $this->context->link->getModuleLink($this->name, 'payment', array(), true)
             )
         );
-        $this->helper_data->adyenLogger()->logDebug($this->context->link->getModuleLink($this->name, 'payment', array(), true));
+        $this->helper_data->adyenLogger()->logDebug($this->context->link->getModuleLink($this->name, 'payment', array(),
+            true));
         $embeddedOption->setCallToActionText($this->l('Pay by card'))
-            ->setForm($this->context->smarty->fetch(_PS_MODULE_DIR_.$this->name.'/views/templates/front/payment.tpl'))
-            ->setLogo(Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/views/img/'.$cc_img))
+            ->setForm($this->context->smarty->fetch(_PS_MODULE_DIR_ . $this->name . '/views/templates/front/payment.tpl'))
+            ->setLogo(Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $cc_img))
             ->setAction($this->context->link->getModuleLink($this->name, 'payment', array(), true));
         $payment_options[] = $embeddedOption;
 
         return $payment_options;
     }
 
-    /*
-	 * display payment with adyen
-	 */
-    public function hookDisplayPayment($params)
+    /**
+     * Hook payment options Prestashop <= 1.6
+     * @param $params
+     */
+    public function hookPayment($params)
     {
-        if (!$this->active)
+        if (!$this->active) {
             return;
+        }
 
-//        $this->context->controller->addJS($this->_path.'/views/js/cc.js');
 
-//        // HPP must be enabled to select
-//        if (Configuration::get('ADYEN_HPP_ENABLED') == true)
-//        {
-//            $cart = $this->context->cart;
-//            if (!$this->checkCurrency($cart))
-//                Tools::redirect('index.php?controller=order');
-//
-//            $hpp_options = $this->getHppOptions();
-//
-////            if (is_array($hpp_options) && count($hpp_options))
-////            {
-//            $this->context->smarty->assign(array (
-//                'hpp_options' => $hpp_options,
-//                'nbProducts' => $cart->nbProducts(),
-//                'cust_currency' => $cart->id_currency,
-//                'currencies' => $this->getCurrency((int)$cart->id_currency),
-//                'total' => $cart->getOrderTotal(true, Cart::BOTH),
-//                'this_path' => $this->getPathUri(),
-//                'this_path_ssl' => Tools::getShopDomainSsl(true, true).__PS_BASE_URI__.'modules/'.$this->name.'/'
-//            ));
-//        return $this->context->smarty->fetch('module:adyen/views/templates/front/payment.tpl');
-//            return $this->display(__FILE__, '/views/templates/front/payment.tpl');
-//            }
-//        }
+        $this->helper_data->adyenLogger()->logDebug($this->context->link->getModuleLink($this->name, 'payment', array(),
+            true));
+
+        $this->context->smarty->assign(
+            array(
+                'originKey' => $this->helper_data->getOriginKeyForOrigin(),
+                'action' => $this->context->link->getModuleLink($this->name, 'payment', array(), true)
+            )
+        );
+
+
+
+        return $this->display(__FILE__, '/views/templates/front/payment.tpl');
     }
 
+    public function hookDisplayPaymentEU($params)
+    {
+        if (!$this->active) {
+            return;
+        }
+
+        $payment_options = array(
+            'cta_text' => $this->l('Pay by Adyen'),
+            'logo' => Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/logo.png'),
+            'form' => $this->hookPayment()
+        );
+
+        return $payment_options;
+    }
     /*
      ** @Method: renderGenericForm
      ** @description: render generic form for prestashop
@@ -438,13 +475,18 @@ class Adyen extends PaymentModule
      ** @arg: $fields_form, $fields_value, $submit = false, array $tpls_vars = array()
      ** @return: (none)
      */
-    public function renderGenericForm($fields_form, $fields_value = array(), $fragment = false, $submit = false, array $tpl_vars = array())
-    {
+    public function renderGenericForm(
+        $fields_form,
+        $fields_value = array(),
+        $fragment = false,
+        $submit = false,
+        array $tpl_vars = array()
+    ) {
         $helper = new HelperForm();
         $helper->module = $this;
         $helper->name_controller = $this->name;
         $helper->token = Tools::getAdminTokenLite('AdminModules');
-        $helper->currentIndex = AdminController::$currentIndex.'&configure='.$this->name;
+        $helper->currentIndex = AdminController::$currentIndex . '&configure=' . $this->name;
         $helper->title = $this->displayName;
         $helper->show_toolbar = false;
         $default_lang = (int)Configuration::get('PS_LANG_DEFAULT');
@@ -452,7 +494,7 @@ class Adyen extends PaymentModule
         $helper->allow_employee_form_lang = $default_lang;
 
         if ($fragment !== false) {
-            $helper->token .= '#'.$fragment;
+            $helper->token .= '#' . $fragment;
         }
 
         if ($submit) {
@@ -464,9 +506,9 @@ class Adyen extends PaymentModule
             'fields_value' => $fields_value,
             'id_language' => $this->context->language->id,
             'back_url' => $this->context->link->getAdminLink('AdminModules')
-                .'&configure='.$this->name
-                .'&tab_module='.$this->tab
-                .'&module_name='.$this->name.($fragment !== false ? '#'.$fragment : '')
+                . '&configure=' . $this->name
+                . '&tab_module=' . $this->tab
+                . '&module_name=' . $this->name . ($fragment !== false ? '#' . $fragment : '')
         ), $tpl_vars);
 
         return $helper->generateForm($fields_form);

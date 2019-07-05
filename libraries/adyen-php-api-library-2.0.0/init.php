@@ -1,7 +1,6 @@
 <?php
 
 // order does matter!
-
 // Adyen singleton
 require(dirname(__FILE__) . '/src/Adyen/AdyenException.php');
 require(dirname(__FILE__) . '/src/Adyen/Service.php');
