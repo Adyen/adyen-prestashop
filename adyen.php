@@ -23,15 +23,6 @@ require_once dirname(__FILE__) . '/libraries/adyen-php-api-library-2.0.0/init.ph
 require_once dirname(__FILE__) . '/helper/data.php';
 require_once dirname(__FILE__) . '/model/Hashing.php';
 
-// PSR/Log and MonoLog needed for prestashop 1.6
-require(dirname(__FILE__) . '/libraries/log-1.1.0/Psr/Log/LoggerInterface.php');
-require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/ResettableInterface.php');
-require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Handler/HandlerInterface.php');
-require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Handler/AbstractHandler.php');
-require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Handler/AbstractProcessingHandler.php');
-require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Handler/StreamHandler.php');
-
-require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Logger.php');
 
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 
@@ -78,6 +69,19 @@ class Adyen extends PaymentModule
         $this->displayName = $this->l('Adyen');
         $this->description = $this->l('Accept all payments offered by Adyen');
         $this->confirmUninstall = $this->l('Are you sure you want to uninstall?');
+
+
+        if ($this->isPrestashop16()) {
+            // PSR/Log and MonoLog needed for prestashop 1.6
+            require(dirname(__FILE__) . '/libraries/log-1.1.0/Psr/Log/LoggerInterface.php');
+            require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/ResettableInterface.php');
+            require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Handler/HandlerInterface.php');
+            require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Handler/AbstractHandler.php');
+            require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Handler/AbstractProcessingHandler.php');
+            require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Handler/StreamHandler.php');
+
+            require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Logger.php');
+        }
     }
 
 
@@ -92,9 +96,7 @@ class Adyen extends PaymentModule
             return false;
         }
 
-        if (version_compare(_PS_VERSION_, '1.6', '>=') &&
-            version_compare(_PS_VERSION_, '1.7', '<')
-        ) {
+        if ($this->isPrestashop16()) {
             // Version is 1.6
             if (parent::install() == false || !$this->registerHook('displayBackOfficeHeader') || !$this->registerHook('payment') || !$this->registerHook('displayPaymentEU') || !$this->registerHook('paymentReturn') || !$this->registerHook('displayHeader') || !$this->registerHook('displayAdminOrder')) {
                 Logger::addLog('Adyen module: installation failed!', 4);
@@ -397,7 +399,6 @@ class Adyen extends PaymentModule
     }
 
 
-
     /**
      * Hook payment options Prestashop > 1.7
      * @param $params
@@ -450,7 +451,6 @@ class Adyen extends PaymentModule
         );
 
 
-
         return $this->display(__FILE__, '/views/templates/front/payment.tpl');
     }
 
@@ -462,12 +462,13 @@ class Adyen extends PaymentModule
 
         $payment_options = array(
             'cta_text' => $this->l('Pay by Adyen'),
-            'logo' => Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/logo.png'),
+            'logo' => Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/logo.png'),
             'form' => $this->hookPayment()
         );
 
         return $payment_options;
     }
+
     /*
      ** @Method: renderGenericForm
      ** @description: render generic form for prestashop
@@ -512,5 +513,19 @@ class Adyen extends PaymentModule
         ), $tpl_vars);
 
         return $helper->generateForm($fields_form);
+    }
+
+    /**
+     * Determine if Prestashop is 1.6
+     * @return bool
+     */
+    public function isPrestashop16()
+    {
+        if (version_compare(_PS_VERSION_, '1.6', '>=') &&
+            version_compare(_PS_VERSION_, '1.7', '<')
+        ) {
+            return true;
+        }
+        return false;
     }
 }
