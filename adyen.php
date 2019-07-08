@@ -23,6 +23,19 @@ require_once dirname(__FILE__) . '/libraries/adyen-php-api-library-2.0.0/init.ph
 require_once dirname(__FILE__) . '/helper/data.php';
 require_once dirname(__FILE__) . '/model/Hashing.php';
 
+if (version_compare(_PS_VERSION_, '1.6', '>=') &&
+    version_compare(_PS_VERSION_, '1.7', '<')
+) {
+
+    require(dirname(__FILE__) . '/libraries/log-1.1.0/Psr/Log/LoggerInterface.php');
+    require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/ResettableInterface.php');
+    require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Handler/HandlerInterface.php');
+    require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Handler/AbstractHandler.php');
+    require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Handler/AbstractProcessingHandler.php');
+    require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Handler/StreamHandler.php');
+
+    require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Logger.php');
+}
 
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 
@@ -70,18 +83,6 @@ class Adyen extends PaymentModule
         $this->description = $this->l('Accept all payments offered by Adyen');
         $this->confirmUninstall = $this->l('Are you sure you want to uninstall?');
 
-
-        if ($this->isPrestashop16()) {
-            // PSR/Log and MonoLog needed for prestashop 1.6
-            require(dirname(__FILE__) . '/libraries/log-1.1.0/Psr/Log/LoggerInterface.php');
-            require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/ResettableInterface.php');
-            require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Handler/HandlerInterface.php');
-            require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Handler/AbstractHandler.php');
-            require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Handler/AbstractProcessingHandler.php');
-            require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Handler/StreamHandler.php');
-
-            require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Logger.php');
-        }
     }
 
 
