@@ -28,13 +28,10 @@ class AdyenPaymentModuleFrontController extends ModuleFrontController
         $request = $this->buildCCData($request, $_REQUEST);
         $request = $this->buildPaymentData($request);
         $request = $this->buildMerchantAccountData($request);
-        $this->helper_data->adyenLogger()->logDebug($request);
 
-        $this->helper_data->adyenLogger()->logDebug("req1?");
         $this->context->smarty->assign([
             'params' => $_REQUEST,
         ]);
-        $this->helper_data->adyenLogger()->logDebug($request);
         // call lib
         $service = new \Adyen\Service\Checkout($client);
 
@@ -43,7 +40,6 @@ class AdyenPaymentModuleFrontController extends ModuleFrontController
         } catch (\Adyen\AdyenException $e) {
             $response['error'] = $e->getMessage();
         }
-        $this->helper_data->adyenLogger()->logDebug($response);
 
         if ($this->helper_data->isPrestashop16()) {
             $this->setTemplate('payment_return.tpl');
