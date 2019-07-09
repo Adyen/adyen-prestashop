@@ -11,7 +11,6 @@ class AdyenPaymentModuleFrontController extends ModuleFrontController
         parent::__construct();
         $this->context = Context::getContext();
         $this->helper_data = new Data();
-//        $this->helper_data->adyenLogger()->logDebug(json_$this->context);
     }
 
     /**
@@ -20,7 +19,6 @@ class AdyenPaymentModuleFrontController extends ModuleFrontController
      */
     public function postProcess()
     {
-//        $this->helper_data->adyenLogger()->logDebug(json_encode($_REQUEST));
         $cart = $this->context->cart;
         $customer = new Customer($cart->id_customer);
         $client = $this->helper_data->initializeAdyenClient();
@@ -46,7 +44,12 @@ class AdyenPaymentModuleFrontController extends ModuleFrontController
             $response['error'] = $e->getMessage();
         }
         $this->helper_data->adyenLogger()->logDebug($response);
-        $this->setTemplate('module:adyen/views/templates/front/after.tpl');
+
+        if ($this->helper_data->isPrestashop16()) {
+            $this->setTemplate('after.tpl');
+        } else {
+            $this->setTemplate('module:adyen/views/templates/front/after.tpl');
+        }
         //todo: check second argument(order status)
         $this->module->validateOrder($cart->id, 1, $cart->getOrderTotal());
         Tools::redirect('index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key);
@@ -135,7 +138,7 @@ class AdyenPaymentModuleFrontController extends ModuleFrontController
         ];
 
 
-        $request["reference"] = (int)$this->module->currentOrder;
+        $request["reference"] = (int)$cart->id;
         $request["fraudOffset"] = "0";
 
         return $request;

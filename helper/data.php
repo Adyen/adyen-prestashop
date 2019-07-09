@@ -156,4 +156,18 @@ class Data
         return Module::getInstanceByName('adyen')->version;
     }
 
+    /**
+     * Determine if Prestashop is 1.6
+     * @return bool
+     */
+    public function isPrestashop16()
+    {
+        if (version_compare(_PS_VERSION_, '1.6', '>=') &&
+            version_compare(_PS_VERSION_, '1.7', '<')
+        ) {
+            return true;
+        }
+        return false;
+    }
+
 }

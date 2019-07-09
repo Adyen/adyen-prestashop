@@ -35,6 +35,9 @@ if (version_compare(_PS_VERSION_, '1.6', '>=') &&
     require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Handler/StreamHandler.php');
 
     require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Logger.php');
+    require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Formatter/FormatterInterface.php');
+    require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Formatter/NormalizerFormatter.php');
+    require(dirname(__FILE__) . '/libraries/monolog-1.24.0/src/Monolog/Formatter/LineFormatter.php');
 }
 
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
@@ -97,7 +100,7 @@ class Adyen extends PaymentModule
             return false;
         }
 
-        if ($this->isPrestashop16()) {
+        if ($this->helper_data->isPrestashop16()) {
             // Version is 1.6
             if (parent::install() == false || !$this->registerHook('displayBackOfficeHeader') || !$this->registerHook('payment') || !$this->registerHook('displayPaymentEU') || !$this->registerHook('paymentReturn') || !$this->registerHook('displayHeader') || !$this->registerHook('displayAdminOrder')) {
                 Logger::addLog('Adyen module: installation failed!', 4);
@@ -321,11 +324,6 @@ class Adyen extends PaymentModule
         $helper->fields_value['ADYEN_APIKEY_TEST'] = $api_key_test;
         $helper->fields_value['ADYEN_APIKEY_LIVE'] = $api_key_live;
 
-        if (version_compare(_PS_VERSION_, '1.6', '<')) {
-        } else {
-        }
-//        return $this->renderGenericForm($fields_form, $fields_value, $this->getSectionShape(), $submit_action).$html;
-
         return $helper->generateForm($fields_form);
     }
 
@@ -386,7 +384,6 @@ class Adyen extends PaymentModule
 
 
         }
-//        $this->context->controller->addJS($this->_path.'/views/js/cc.js');
 
     }
 
@@ -408,7 +405,6 @@ class Adyen extends PaymentModule
     {
         $payment_options = array();
         $embeddedOption = new PaymentOption();
-        $default_country = new Country(Configuration::get('PS_COUNTRY_DEFAULT'));
 
         $cc_img = 'cc_border.png';
 
@@ -416,11 +412,11 @@ class Adyen extends PaymentModule
         $this->context->smarty->assign(
             array(
                 'originKey' => $this->helper_data->getOriginKeyForOrigin(),
-                'action' => $this->context->link->getModuleLink($this->name, 'payment', array(), true)
+                'action' => $this->context->link->getModuleLink($this->name, 'payment', array(), true),
+                'prestashop16' => false
             )
         );
-        $this->helper_data->adyenLogger()->logDebug($this->context->link->getModuleLink($this->name, 'payment', array(),
-            true));
+
         $embeddedOption->setCallToActionText($this->l('Pay by card'))
             ->setForm($this->context->smarty->fetch(_PS_MODULE_DIR_ . $this->name . '/views/templates/front/payment.tpl'))
             ->setLogo(Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $cc_img))
@@ -440,14 +436,13 @@ class Adyen extends PaymentModule
             return;
         }
 
-
-        $this->helper_data->adyenLogger()->logDebug($this->context->link->getModuleLink($this->name, 'payment', array(),
-            true));
+        $this->context->controller->addCSS($this->_path.'css/adyen.css', 'all');
 
         $this->context->smarty->assign(
             array(
                 'originKey' => $this->helper_data->getOriginKeyForOrigin(),
-                'action' => $this->context->link->getModuleLink($this->name, 'payment', array(), true)
+                'action' => $this->context->link->getModuleLink($this->name, 'payment', array(), true),
+                'prestashop16' => true
             )
         );
 
@@ -468,65 +463,5 @@ class Adyen extends PaymentModule
         );
 
         return $payment_options;
-    }
-
-    /*
-     ** @Method: renderGenericForm
-     ** @description: render generic form for prestashop
-     **
-     ** @arg: $fields_form, $fields_value, $submit = false, array $tpls_vars = array()
-     ** @return: (none)
-     */
-    public function renderGenericForm(
-        $fields_form,
-        $fields_value = array(),
-        $fragment = false,
-        $submit = false,
-        array $tpl_vars = array()
-    ) {
-        $helper = new HelperForm();
-        $helper->module = $this;
-        $helper->name_controller = $this->name;
-        $helper->token = Tools::getAdminTokenLite('AdminModules');
-        $helper->currentIndex = AdminController::$currentIndex . '&configure=' . $this->name;
-        $helper->title = $this->displayName;
-        $helper->show_toolbar = false;
-        $default_lang = (int)Configuration::get('PS_LANG_DEFAULT');
-        $helper->default_form_language = $default_lang;
-        $helper->allow_employee_form_lang = $default_lang;
-
-        if ($fragment !== false) {
-            $helper->token .= '#' . $fragment;
-        }
-
-        if ($submit) {
-            $helper->submit_action = $submit;
-        }
-
-//        $this->context->smarty->assign()
-        $helper->tpl_vars = array_merge(array(
-            'fields_value' => $fields_value,
-            'id_language' => $this->context->language->id,
-            'back_url' => $this->context->link->getAdminLink('AdminModules')
-                . '&configure=' . $this->name
-                . '&tab_module=' . $this->tab
-                . '&module_name=' . $this->name . ($fragment !== false ? '#' . $fragment : '')
-        ), $tpl_vars);
-
-        return $helper->generateForm($fields_form);
-    }
-
-    /**
-     * Determine if Prestashop is 1.6
-     * @return bool
-     */
-    public function isPrestashop16()
-    {
-        if (version_compare(_PS_VERSION_, '1.6', '>=') &&
-            version_compare(_PS_VERSION_, '1.7', '<')
-        ) {
-            return true;
-        }
-        return false;
     }
 }
