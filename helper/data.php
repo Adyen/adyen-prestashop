@@ -1,4 +1,24 @@
 <?php
+/**
+ *                       ######
+ *                       ######
+ * ############    ####( ######  #####. ######  ############   ############
+ * #############  #####( ######  #####. ######  #############  #############
+ *        ######  #####( ######  #####. ######  #####  ######  #####  ######
+ * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
+ * ###### ######  #####( ######  #####. ######  #####          #####  ######
+ * #############  #############  #############  #############  #####  ######
+ *  ############   ############  #############   ############  #####  ######
+ *                                      ######
+ *                               #############
+ *                               ############
+ *
+ *  Adyen Prestashop Extension
+ *
+ *  Copyright (c) 2019 Adyen B.V.
+ *  This file is open source and available under the MIT license.
+ *  See the LICENSE file for more info.
+ */
 
 class Data
 {
@@ -13,7 +33,8 @@ class Data
      */
     public function getOriginKeyForOrigin()
     {
-        $origin = Tools::getShopDomainSSL(true, true);
+        $origin = Tools::getHttpHost(true, true);
+
         $params = [
             "originDomains" => [
                 $origin
@@ -25,6 +46,8 @@ class Data
             $service = $this->createAdyenCheckoutUtilityService($client);
             $response = $service->originKeys($params);
         } catch (\Exception $e) {
+            $message = $e->getMessage();
+            $this->adyenLogger()->logError("exception: " . $message);
         }
 
         $originKey = "";
@@ -39,7 +62,11 @@ class Data
 
     public function isDemoMode()
     {
-        return Configuration::get('ADYEN_MODE');
+        if (strpos(Configuration::get('ADYEN_MODE'), 'test') !== false) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public function adyenLogger()
@@ -49,10 +76,14 @@ class Data
         if (version_compare(_PS_VERSION_, '1.6', '>=') &&
             version_compare(_PS_VERSION_, '1.7', '<')
         ) {
-            $logger->setFilename(_PS_ROOT_DIR_ . '/log/debug.log');
+            $dirPath = _PS_ROOT_DIR_ . '/log/adyen';
         } else {
-            $logger->setFilename(_PS_ROOT_DIR_ . '/var/logs/debug.log');
+            $dirPath = _PS_ROOT_DIR_ . '/var/logs/adyen';
         }
+        if (!file_exists($dirPath)) {
+            mkdir($dirPath, 0777, true);
+        }
+        $logger->setFilename($dirPath . '/debug.log');
 
         return $logger;
     }
@@ -120,7 +151,6 @@ class Data
 
     public function decrypt($data)
     {
-
         // To decrypt, split the encrypted data from our IV - our unique separator used was "::"
         list($data, $iv) = explode('::', base64_decode($data), 2);
         return openssl_decrypt($data, 'aes-256-ctr', _COOKIE_KEY_, 0, $iv);

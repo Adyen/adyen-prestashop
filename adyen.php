@@ -13,11 +13,11 @@
  *                               #############
  *                               ############
  *
- * Adyen Prestashop Extension
+ *  Adyen Prestashop Extension
  *
- * Copyright (c) 2019 Adyen B.V.
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
+ *  Copyright (c) 2019 Adyen B.V.
+ *  This file is open source and available under the MIT license.
+ *  See the LICENSE file for more info.
  */
 require_once dirname(__FILE__) . '/libraries/adyen-php-api-library-2.0.0/init.php';
 require_once dirname(__FILE__) . '/helper/data.php';
@@ -219,12 +219,12 @@ class Adyen extends PaymentModule
                     'values' => array(
                         array(
                             'id' => 'prod',
-                            'value' => '0',
+                            'value' => 'live',
                             'label' => $this->l('Production')
                         ),
                         array(
                             'id' => 'test',
-                            'value' => '1',
+                            'value' => 'test',
                             'label' => $this->l('Test')
                         )
                     ),
@@ -303,16 +303,16 @@ class Adyen extends PaymentModule
             $mode = (string)Tools::getValue('ADYEN_MODE');
             $notification_username = (string)Tools::getValue('ADYEN_NOTI_USERNAME');
             $notification_password = (string)Tools::getValue('ADYEN_NOTI_PASSWORD');
-            $api_key_test = $this->hashing->hash($password = Tools::getValue('ADYEN_APIKEY_TEST'), _COOKIE_KEY_);
-            $api_key_live = $this->hashing->hash($password = Tools::getValue('ADYEN_APIKEY_LIVE'), _COOKIE_KEY_);
+            $api_key_test = $this->hashing->hash(Tools::getValue('ADYEN_APIKEY_TEST'), _COOKIE_KEY_);
+            $api_key_live = $this->hashing->hash(Tools::getValue('ADYEN_APIKEY_LIVE'), _COOKIE_KEY_);
         } else {
             $merchant_account = Configuration::get('ADYEN_MERCHANT_ACCOUNT');
             $mode = Configuration::get('ADYEN_MODE');
             $notification_username = Configuration::get('ADYEN_NOTI_USERNAME');
             $notification_password = Configuration::get('ADYEN_NOTI_PASSWORD');
-            $api_key_test = $this->hashing->hash($password = Configuration::get('ADYEN_APIKEY_TEST'),
+            $api_key_test = $this->hashing->hash(Configuration::get('ADYEN_APIKEY_TEST'),
                 _COOKIE_KEY_);;
-            $api_key_live = $this->hashing->hash($password = Configuration::get('ADYEN_APIKEY_LIVE'),
+            $api_key_live = $this->hashing->hash(Configuration::get('ADYEN_APIKEY_LIVE'),
                 _COOKIE_KEY_);
         }
 
@@ -346,7 +346,6 @@ class Adyen extends PaymentModule
     public function hookHeader()
     {
         if ($this->helper_data->isDemoMode()) {
-
 
             if (version_compare(_PS_VERSION_, '1.7', '<')) {
                 $this->context->controller->addJS(self::CHECKOUT_COMPONENT_JS_TEST);
@@ -393,7 +392,8 @@ class Adyen extends PaymentModule
      */
     public function hookOrderConfirmation($params)
     {
-
+        if (!$this->active)
+            return;
     }
 
 
@@ -412,6 +412,7 @@ class Adyen extends PaymentModule
         $this->context->smarty->assign(
             array(
                 'originKey' => $this->helper_data->getOriginKeyForOrigin(),
+                'environment' => Configuration::get('ADYEN_MODE'),
                 'action' => $this->context->link->getModuleLink($this->name, 'payment', array(), true),
                 'prestashop16' => false
             )
@@ -441,6 +442,7 @@ class Adyen extends PaymentModule
         $this->context->smarty->assign(
             array(
                 'originKey' => $this->helper_data->getOriginKeyForOrigin(),
+                'environment' => Configuration::get('ADYEN_MODE'),
                 'action' => $this->context->link->getModuleLink($this->name, 'payment', array(), true),
                 'prestashop16' => true
             )

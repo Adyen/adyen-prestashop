@@ -1,4 +1,25 @@
 <?php
+/**
+ *                       ######
+ *                       ######
+ * ############    ####( ######  #####. ######  ############   ############
+ * #############  #####( ######  #####. ######  #############  #############
+ *        ######  #####( ######  #####. ######  #####  ######  #####  ######
+ * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
+ * ###### ######  #####( ######  #####. ######  #####          #####  ######
+ * #############  #############  #############  #############  #####  ######
+ *  ############   ############  #############   ############  #####  ######
+ *                                      ######
+ *                               #############
+ *                               ############
+ *
+ *  Adyen Prestashop Extension
+ *
+ *  Copyright (c) 2019 Adyen B.V.
+ *  This file is open source and available under the MIT license.
+ *  See the LICENSE file for more info.
+ */
+
 require_once dirname(__FILE__) . '/../../helper/data.php';
 
 class AdyenPaymentModuleFrontController extends ModuleFrontController
@@ -20,7 +41,6 @@ class AdyenPaymentModuleFrontController extends ModuleFrontController
     public function postProcess()
     {
         $cart = $this->context->cart;
-        $customer = new Customer($cart->id_customer);
         $client = $this->helper_data->initializeAdyenClient();
 //        todo: applicationInfo, uncomment before release
 //        $client->setAdyenPaymentSource($this->helper_data->getModuleName(), $this->helper_data->getModuleVersion());
@@ -39,12 +59,7 @@ class AdyenPaymentModuleFrontController extends ModuleFrontController
             $response = $service->payments($request);
         } catch (\Adyen\AdyenException $e) {
             $response['error'] = $e->getMessage();
-        }
-
-        if ($this->helper_data->isPrestashop16()) {
-            $this->setTemplate('payment_return.tpl');
-        } else {
-            $this->setTemplate('module:adyen/views/templates/front/payment_return.tpl');
+            die('There was an error with the payment method.');
         }
 
         $customer = new Customer($cart->id_customer);
@@ -58,21 +73,40 @@ class AdyenPaymentModuleFrontController extends ModuleFrontController
             'transaction_id' => $response['pspReference']
         );
 
-        $this->module->validateOrder($cart->id, 2, $total, $this->module->displayName, null, $extra_vars,
-            (int)$currency->id, false, $customer->secure_key);
-        $new_order = new Order((int)$this->module->currentOrder);
-        if (Validate::isLoadedObject($new_order)) {
-            $payment = $new_order->getOrderPaymentCollection();
-            if (isset($payment[0])) {
-                //todo add !empty
-                $payment[0]->card_number = pSQL($response['additionalData']['cardBin'] . " *** " . $response['additionalData']['cardSummary']);
-                $payment[0]->card_brand = pSQL($response['additionalData']['paymentMethod']);
-                $payment[0]->card_expiration = pSQL($response['additionalData']['expiryDate']);
-                $payment[0]->card_holder = pSQL($response['additionalData']['cardHolderName']);
-                $payment[0]->save();
-            }
+        $resultCode = $response['resultCode'];
+        switch ($resultCode)
+        {
+            case 'Authorised':
+                $this->module->validateOrder($cart->id, 2, $total, $this->module->displayName, null, $extra_vars,
+                    (int)$currency->id, false, $customer->secure_key);
+                $new_order = new Order((int)$this->module->currentOrder);
+                if (Validate::isLoadedObject($new_order)) {
+                    $payment = $new_order->getOrderPaymentCollection();
+                    if (isset($payment[0])) {
+                        //todo add !empty
+                        $payment[0]->card_number = pSQL($response['additionalData']['cardBin'] . " *** " . $response['additionalData']['cardSummary']);
+                        $payment[0]->card_brand = pSQL($response['additionalData']['paymentMethod']);
+                        $payment[0]->card_expiration = pSQL($response['additionalData']['expiryDate']);
+                        $payment[0]->card_holder = pSQL($response['additionalData']['cardHolderName']);
+                        $payment[0]->save();
+                    }
+                }
+                Tools::redirect('index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key);
+                break;
+            case 'Refused':
+                //6_PS_OS_CANCELED_ : order canceled
+                $this->module->validateOrder($cart->id, 6, $total, $this->module->displayName, null, $extra_vars,
+                    (int)$currency->id, false, $customer->secure_key);
+                die('The payment was refused');
+                break;
+            default:
+                //8_PS_OS_ERROR_ : payment error
+                $this->module->validateOrder($cart->id, 8, $total, $this->module->displayName, null, $extra_vars,
+                    (int)$currency->id, false, $customer->secure_key);
+                die('There was an error with the payment method.');
+                break;
         }
-        Tools::redirect('index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key);
+
         return $response;
     }
 
@@ -158,7 +192,7 @@ class AdyenPaymentModuleFrontController extends ModuleFrontController
         ];
 
 
-        $request["reference"] = (int)$cart->id;
+        $request["reference"] = $cart->id;
         $request["fraudOffset"] = "0";
 
         return $request;

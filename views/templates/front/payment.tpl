@@ -14,7 +14,7 @@
                     var checkout = new AdyenCheckout({
                         locale: locale,
                         originKey: "{$originKey}",
-                        environment: "test",
+                        environment: "{$environment}",
                         risk: {
                             enabled: false
                         }
