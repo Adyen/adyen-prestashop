@@ -13,11 +13,11 @@
  *                               #############
  *                               ############
  *
- *  Adyen Prestashop Extension
+ * Adyen Prestashop Extension
  *
- *  Copyright (c) 2019 Adyen B.V.
- *  This file is open source and available under the MIT license.
- *  See the LICENSE file for more info.
+ * Copyright (c) 2019 Adyen B.V.
+ * This file is open source and available under the MIT license.
+ * See the LICENSE file for more info.
  */
 
 header("Cache-Control: no-store, no-cache, must-revalidate");

@@ -13,11 +13,11 @@
  *                               #############
  *                               ############
  *
- *  Adyen Prestashop Extension
+ * Adyen Prestashop Extension
  *
- *  Copyright (c) 2019 Adyen B.V.
- *  This file is open source and available under the MIT license.
- *  See the LICENSE file for more info.
+ * Copyright (c) 2019 Adyen B.V.
+ * This file is open source and available under the MIT license.
+ * See the LICENSE file for more info.
  */
 require_once dirname(__FILE__) . '/libraries/adyen-php-api-library-2.0.0/init.php';
 require_once dirname(__FILE__) . '/helper/data.php';
