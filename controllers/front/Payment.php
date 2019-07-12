@@ -26,7 +26,6 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
 
     public function __construct()
     {
-
         parent::__construct();
         $this->context = \Context::getContext();
         $this->helper_data = new \Adyen\PrestaShop\helper\Data();
@@ -159,6 +158,40 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
                     ]
                 );
                 break;
+            case 'RedirectShopper':
+                $paRequest = $response['redirect']['data']['PaReq'];
+                $md = $response['redirect']['data']['MD'];
+                $issuerUrl = $response['redirect']['url'];
+                $paymentData = $response['paymentData'];
+                $redirectMethod = $response['redirect']['method'];
+                $termUrl = $this->context->link->getModuleLink("adyen", 'validate3d', array('paymentData' => $paymentData),
+                    true);
+
+                if (!empty($paRequest) && !empty($md) && !empty($issuerUrl) && !empty($paymentData)) {
+//                    $payment->setAdditionalInformation('paRequest', $paRequest);
+//                    $payment->setAdditionalInformation('md', $md);
+//                    $payment->setAdditionalInformation('issuerUrl', $issuerUrl);
+//                    $payment->setAdditionalInformation('paymentData', $paymentData);
+
+                    $this->context->smarty->assign(array(
+                        'paRequest' => $paRequest,
+                        'md' => $md,
+                        'issuerUrl' => $issuerUrl,
+                        'paymentData' => $paymentData,
+                        'redirectMethod' => $redirectMethod,
+                        'termUrl' => $termUrl
+                    ));
+                    return $this->setTemplate('module:adyen/views/templates/front/redirect.tpl');
+                } else {
+                    // log exception
+                    die('3D secure is not valid');
+                    break;
+                }
+
+//                Mage::getSingleton('customer/session')->setRedirectUrl("adyen/process/validate3d");
+//                $this->_addStatusHistory($payment, $responseCode, $pspReference, $this->_getConfigData('order_status'));
+                break;
+//                Tools:
             default:
                 //8_PS_OS_ERROR_ : payment error
                 $this->module->validateOrder($cart->id, 8, $total, $this->module->displayName, null, $extra_vars,
