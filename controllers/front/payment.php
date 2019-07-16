@@ -42,8 +42,6 @@ class AdyenPaymentModuleFrontController extends ModuleFrontController
     {
         $cart = $this->context->cart;
         $client = $this->helper_data->initializeAdyenClient();
-//        todo: applicationInfo, uncomment before release
-//        $client->setAdyenPaymentSource($this->helper_data->getModuleName(), $this->helper_data->getModuleVersion());
         $request = [];
         $request = $this->buildCCData($request, $_REQUEST);
         $request = $this->buildPaymentData($request);
@@ -59,7 +57,7 @@ class AdyenPaymentModuleFrontController extends ModuleFrontController
             $response = $service->payments($request);
         } catch (\Adyen\AdyenException $e) {
             $response['error'] = $e->getMessage();
-            die('There was an error with the payment method.');
+//            die('There was an error with the payment method.');
         }
 
         $customer = new Customer($cart->id_customer);
@@ -97,13 +95,23 @@ class AdyenPaymentModuleFrontController extends ModuleFrontController
                 //6_PS_OS_CANCELED_ : order canceled
                 $this->module->validateOrder($cart->id, 6, $total, $this->module->displayName, null, $extra_vars,
                     (int)$currency->id, false, $customer->secure_key);
-                die('The payment was refused');
+                $this->helper_data->adyenLogger()->logError("The payment was refused, id:  " . $cart->id);
+                if ($this->helper_data->isPrestashop16()) {
+                    return $this->setTemplate('error.tpl');
+                } else {
+                    return $this->setTemplate('module:adyen/views/templates/front/error.tpl');
+                }
                 break;
             default:
                 //8_PS_OS_ERROR_ : payment error
                 $this->module->validateOrder($cart->id, 8, $total, $this->module->displayName, null, $extra_vars,
                     (int)$currency->id, false, $customer->secure_key);
-                die('There was an error with the payment method.');
+                $this->helper_data->adyenLogger()->logError("There was an error with the payment method. id:  " . $cart->id);
+                if ($this->helper_data->isPrestashop16()) {
+                    return $this->setTemplate('error.tpl');
+                } else {
+                    return $this->setTemplate('module:adyen/views/templates/front/error.tpl');
+                }
                 break;
         }
 
@@ -188,7 +196,7 @@ class AdyenPaymentModuleFrontController extends ModuleFrontController
         $cart = $this->context->cart;
         $request['amount'] = [
             'currency' => $this->context->currency->iso_code,
-            'value' => number_format($cart->getOrderTotal(true, 3), 2, '', '')
+            'value' => $this->helper_data->formatAmount($cart->getOrderTotal(true, 3), $this->context->currency->iso_code)
         ];
 
 

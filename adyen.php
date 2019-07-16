@@ -145,6 +145,7 @@ class Adyen extends PaymentModule
             $notification_password = (string)Tools::getValue('ADYEN_NOTI_PASSWORD');
             $api_key_test = $this->helper_data->encrypt(Tools::getValue('ADYEN_APIKEY_TEST'));
             $api_key_live = $this->helper_data->encrypt(Tools::getValue('ADYEN_APIKEY_LIVE'));
+            $live_endpoint_url_prefix = (string)Tools::getValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
 
 
             // validating the input
@@ -167,6 +168,7 @@ class Adyen extends PaymentModule
                 Configuration::updateValue('ADYEN_MODE', $mode);
                 Configuration::updateValue('ADYEN_NOTI_USERNAME', $notification_username);
                 Configuration::updateValue('ADYEN_NOTI_PASSWORD', $notification_password);
+                Configuration::updateValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX', $live_endpoint_url_prefix);
                 if (!empty($api_key_test)) {
                     Configuration::updateValue('ADYEN_APIKEY_TEST', $api_key_test);
                 }
@@ -303,6 +305,7 @@ class Adyen extends PaymentModule
             $mode = (string)Tools::getValue('ADYEN_MODE');
             $notification_username = (string)Tools::getValue('ADYEN_NOTI_USERNAME');
             $notification_password = (string)Tools::getValue('ADYEN_NOTI_PASSWORD');
+            $live_endpoint_url_prefix = (string)Tools::getValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
             $api_key_test = $this->hashing->hash(Tools::getValue('ADYEN_APIKEY_TEST'), _COOKIE_KEY_);
             $api_key_live = $this->hashing->hash(Tools::getValue('ADYEN_APIKEY_LIVE'), _COOKIE_KEY_);
         } else {
@@ -310,6 +313,7 @@ class Adyen extends PaymentModule
             $mode = Configuration::get('ADYEN_MODE');
             $notification_username = Configuration::get('ADYEN_NOTI_USERNAME');
             $notification_password = Configuration::get('ADYEN_NOTI_PASSWORD');
+            $live_endpoint_url_prefix = Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
             $api_key_test = $this->hashing->hash(Configuration::get('ADYEN_APIKEY_TEST'),
                 _COOKIE_KEY_);;
             $api_key_live = $this->hashing->hash(Configuration::get('ADYEN_APIKEY_LIVE'),
@@ -323,6 +327,7 @@ class Adyen extends PaymentModule
         $helper->fields_value['ADYEN_NOTI_PASSWORD'] = $notification_password;
         $helper->fields_value['ADYEN_APIKEY_TEST'] = $api_key_test;
         $helper->fields_value['ADYEN_APIKEY_LIVE'] = $api_key_live;
+        $helper->fields_value['ADYEN_LIVE_ENDPOINT_URL_PREFIX'] = $live_endpoint_url_prefix;
 
         return $helper->generateForm($fields_form);
     }

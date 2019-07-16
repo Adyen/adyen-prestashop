@@ -54,6 +54,8 @@ class Data
 
         if (!empty($response['originKeys'][$origin])) {
             $originKey = $response['originKeys'][$origin];
+        } else {
+            $this->adyenLogger()->logError("OriginKey is empty, please verify that your API key is correct");
         }
 
         return $originKey;
@@ -102,15 +104,14 @@ class Data
         $client = $this->createAdyenClient();
         $client->setApplicationName("Prestashop plugin");
         $client->setXApiKey($apiKey);
+        $client->setAdyenPaymentSource($this->getModuleName(), $this->getModuleVersion());
+        $client->setExternalPlatform("Prestashop" , _PS_VERSION_);
 
         if ($this->isDemoMode()) {
             $client->setEnvironment(\Adyen\Environment::TEST);
         } else {
-            //todo liveendpointprefix
-//            $client->setEnvironment(\Adyen\Environment::LIVE, $this->getLiveEndpointPrefix($storeId));
+            $client->setEnvironment(\Adyen\Environment::LIVE, Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX'));
         }
-
-
         return $client;
     }
 
@@ -198,6 +199,48 @@ class Data
             return true;
         }
         return false;
+    }
+
+    /**
+     * Return the formatted currency. Adyen accepts the currency in multiple formats.
+     * @param $amount
+     * @param $currency
+     * @return string
+     */
+    public function formatAmount($amount, $currency)
+    {
+        switch ($currency) {
+            case "CVE":
+            case "DJF":
+            case "GNF":
+            case "IDR":
+            case "JPY":
+            case "KMF":
+            case "KRW":
+            case "PYG":
+            case "RWF":
+            case "UGX":
+            case "VND":
+            case "VUV":
+            case "XAF":
+            case "XOF":
+            case "XPF":
+                $format = 0;
+                break;
+            case "BHD":
+            case "IQD":
+            case "JOD":
+            case "KWD":
+            case "LYD":
+            case "OMR":
+            case "TND":
+                $format = 3;
+                break;
+            default:
+                $format = 2;
+        }
+
+        return (int)number_format($amount, $format, '', '');
     }
 
 }
