@@ -36,3 +36,7 @@ upload/
 #development
 .idea/
 *.iml
+
+#composer
+vendor/
+composer.lock
