@@ -79,14 +79,21 @@ class AdyenPaymentModuleFrontController extends ModuleFrontController
                     (int)$currency->id, false, $customer->secure_key);
                 $new_order = new Order((int)$this->module->currentOrder);
                 if (Validate::isLoadedObject($new_order)) {
-                    $payment = $new_order->getOrderPaymentCollection();
-                    if (isset($payment[0])) {
-                        //todo add !empty
-                        $payment[0]->card_number = pSQL($response['additionalData']['cardBin'] . " *** " . $response['additionalData']['cardSummary']);
-                        $payment[0]->card_brand = pSQL($response['additionalData']['paymentMethod']);
-                        $payment[0]->card_expiration = pSQL($response['additionalData']['expiryDate']);
-                        $payment[0]->card_holder = pSQL($response['additionalData']['cardHolderName']);
-                        $payment[0]->save();
+                    $paymentCollection = $new_order->getOrderPaymentCollection();
+                    foreach($paymentCollection as $payment) {
+                        if (isset($payment)) {
+                            if(!empty($response['additionalData']['cardBin'])
+                            && !empty($response['additionalData']['cardSummary'])
+                            && !empty($response['additionalData']['paymentMethod'])
+                            && !empty($response['additionalData']['expiryDate'])
+                            && !empty($response['additionalData']['cardHolderName'])) {
+                                $payment->card_number = pSQL($response['additionalData']['cardBin'] . " *** " . $response['additionalData']['cardSummary']);
+                                $payment->card_brand = pSQL($response['additionalData']['paymentMethod']);
+                                $payment->card_expiration = pSQL($response['additionalData']['expiryDate']);
+                                $payment->card_holder = pSQL($response['additionalData']['cardHolderName']);
+                                $payment->save();
+                            }
+                        }
                     }
                 }
                 Tools::redirect('index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key);
