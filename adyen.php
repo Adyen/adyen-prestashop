@@ -128,6 +128,7 @@ class Adyen extends \PaymentModule
             $api_key_live = $this->helper_data->encrypt(\Tools::getValue('ADYEN_APIKEY_LIVE'));
             $live_endpoint_url_prefix = (string)\Tools::getValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
 
+
             // validating the input
             if (!$merchant_account || empty($merchant_account) || !\Validate::isGenericName($merchant_account)) {
                 $output .= $this->displayError($this->l('Invalid Configuration value for Merchant Account'));
