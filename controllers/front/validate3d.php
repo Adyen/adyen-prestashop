@@ -58,7 +58,8 @@ class AdyenValidate3dModuleFrontController extends ModuleFrontController
             $service = new \Adyen\Service\Checkout($client);
             $response = $service->paymentsDetails($request);
         } catch (\Adyen\AdyenException $e) {
-            throw new \Magento\Framework\Exception\LocalizedException(__('3D secure failed'));
+            $response['error'] = $e->getMessage();
+            $this->helper_data->adyenLogger()->logError("exception: " . $e->getMessage());
         }
         $this->helper_data->adyenLogger()->logDebug("result: " . json_encode($response));
         $currency = $this->context->currency;
@@ -87,7 +88,15 @@ class AdyenValidate3dModuleFrontController extends ModuleFrontController
                 Tools::redirect('index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key);
                 break;
                 return $result;
-
+            default:
+                //6_PS_OS_CANCELED_ : order canceled
+                $extra_vars = array(
+                    'transaction_id' => $response['pspReference']
+                );
+                $this->module->validateOrder($cart->id, 6, $total, $this->module->displayName, null, $extra_vars,
+                    (int)$currency->id, false, $customer->secure_key);
+                die('The payment was refused');
+                break;
         }
     }
 }
