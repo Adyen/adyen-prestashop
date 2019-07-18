@@ -57,7 +57,6 @@ class AdyenPaymentModuleFrontController extends ModuleFrontController
             $response = $service->payments($request);
         } catch (\Adyen\AdyenException $e) {
             $response['error'] = $e->getMessage();
-//            die('There was an error with the payment method.');
         }
 
         $customer = new Customer($cart->id_customer);
@@ -80,20 +79,22 @@ class AdyenPaymentModuleFrontController extends ModuleFrontController
                 $new_order = new Order((int)$this->module->currentOrder);
                 if (Validate::isLoadedObject($new_order)) {
                     $paymentCollection = $new_order->getOrderPaymentCollection();
-                    foreach($paymentCollection as $payment) {
-                        if (isset($payment)) {
-                            if(!empty($response['additionalData']['cardBin'])
-                            && !empty($response['additionalData']['cardSummary'])
-                            && !empty($response['additionalData']['paymentMethod'])
-                            && !empty($response['additionalData']['expiryDate'])
-                            && !empty($response['additionalData']['cardHolderName'])) {
-                                $payment->card_number = pSQL($response['additionalData']['cardBin'] . " *** " . $response['additionalData']['cardSummary']);
-                                $payment->card_brand = pSQL($response['additionalData']['paymentMethod']);
-                                $payment->card_expiration = pSQL($response['additionalData']['expiryDate']);
-                                $payment->card_holder = pSQL($response['additionalData']['cardHolderName']);
-                                $payment->save();
-                            }
+                    foreach ($paymentCollection as $payment) {
+                        if (!empty($response['additionalData']['cardBin'] &&
+                            !empty($response['additionalData']['cardSummary']))) {
+                            $payment->card_number = pSQL($response['additionalData']['cardBin'] . " *** " . $response['additionalData']['cardSummary']);
                         }
+                        if (!empty($response['additionalData']['paymentMethod'])) {
+                            $payment->card_brand = pSQL($response['additionalData']['paymentMethod']);
+                        }
+                        if (!empty($response['additionalData']['expiryDate'])) {
+                            $payment->card_expiration = pSQL($response['additionalData']['expiryDate']);
+
+                        }
+                        if (!empty($response['additionalData']['cardHolderName']) {
+                            $payment->card_holder = pSQL($response['additionalData']['cardHolderName']);
+                        }
+                        $payment->save();
                     }
                 }
                 Tools::redirect('index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key);
