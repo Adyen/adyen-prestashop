@@ -42,8 +42,6 @@ class AdyenPaymentModuleFrontController extends ModuleFrontController
     {
         $cart = $this->context->cart;
         $client = $this->helper_data->initializeAdyenClient();
-//        todo: applicationInfo, uncomment before release
-//        $client->setAdyenPaymentSource($this->helper_data->getModuleName(), $this->helper_data->getModuleVersion());
         $request = [];
         $request = $this->buildCCData($request, $_REQUEST);
         $request = $this->buildPaymentData($request);
@@ -59,7 +57,6 @@ class AdyenPaymentModuleFrontController extends ModuleFrontController
             $response = $service->payments($request);
         } catch (\Adyen\AdyenException $e) {
             $response['error'] = $e->getMessage();
-            die('There was an error with the payment method.');
         }
 
         $customer = new Customer($cart->id_customer);
@@ -81,14 +78,23 @@ class AdyenPaymentModuleFrontController extends ModuleFrontController
                     (int)$currency->id, false, $customer->secure_key);
                 $new_order = new Order((int)$this->module->currentOrder);
                 if (Validate::isLoadedObject($new_order)) {
-                    $payment = $new_order->getOrderPaymentCollection();
-                    if (isset($payment[0])) {
-                        //todo add !empty
-                        $payment[0]->card_number = pSQL($response['additionalData']['cardBin'] . " *** " . $response['additionalData']['cardSummary']);
-                        $payment[0]->card_brand = pSQL($response['additionalData']['paymentMethod']);
-                        $payment[0]->card_expiration = pSQL($response['additionalData']['expiryDate']);
-                        $payment[0]->card_holder = pSQL($response['additionalData']['cardHolderName']);
-                        $payment[0]->save();
+                    $paymentCollection = $new_order->getOrderPaymentCollection();
+                    foreach ($paymentCollection as $payment) {
+                        if (!empty($response['additionalData']['cardBin'] &&
+                            !empty($response['additionalData']['cardSummary']))) {
+                            $payment->card_number = pSQL($response['additionalData']['cardBin'] . " *** " . $response['additionalData']['cardSummary']);
+                        }
+                        if (!empty($response['additionalData']['paymentMethod'])) {
+                            $payment->card_brand = pSQL($response['additionalData']['paymentMethod']);
+                        }
+                        if (!empty($response['additionalData']['expiryDate'])) {
+                            $payment->card_expiration = pSQL($response['additionalData']['expiryDate']);
+
+                        }
+                        if (!empty($response['additionalData']['cardHolderName']) {
+                            $payment->card_holder = pSQL($response['additionalData']['cardHolderName']);
+                        }
+                        $payment->save();
                     }
                 }
                 Tools::redirect('index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key);
@@ -97,13 +103,23 @@ class AdyenPaymentModuleFrontController extends ModuleFrontController
                 //6_PS_OS_CANCELED_ : order canceled
                 $this->module->validateOrder($cart->id, 6, $total, $this->module->displayName, null, $extra_vars,
                     (int)$currency->id, false, $customer->secure_key);
-                die('The payment was refused');
+                $this->helper_data->adyenLogger()->logError("The payment was refused, id:  " . $cart->id);
+                if ($this->helper_data->isPrestashop16()) {
+                    return $this->setTemplate('error.tpl');
+                } else {
+                    return $this->setTemplate('module:adyen/views/templates/front/error.tpl');
+                }
                 break;
             default:
                 //8_PS_OS_ERROR_ : payment error
                 $this->module->validateOrder($cart->id, 8, $total, $this->module->displayName, null, $extra_vars,
                     (int)$currency->id, false, $customer->secure_key);
-                die('There was an error with the payment method.');
+                $this->helper_data->adyenLogger()->logError("There was an error with the payment method. id:  " . $cart->id);
+                if ($this->helper_data->isPrestashop16()) {
+                    return $this->setTemplate('error.tpl');
+                } else {
+                    return $this->setTemplate('module:adyen/views/templates/front/error.tpl');
+                }
                 break;
         }
 
@@ -188,7 +204,7 @@ class AdyenPaymentModuleFrontController extends ModuleFrontController
         $cart = $this->context->cart;
         $request['amount'] = [
             'currency' => $this->context->currency->iso_code,
-            'value' => number_format($cart->getOrderTotal(true, 3), 2, '', '')
+            'value' => $this->helper_data->formatAmount($cart->getOrderTotal(true, 3), $this->context->currency->iso_code)
         ];
 
 
