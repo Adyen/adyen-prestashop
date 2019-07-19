@@ -66,11 +66,12 @@ class AdyenValidate3dModuleFrontController extends ModuleFrontController
         $customer = new Customer($cart->id_customer);
         $total = (float)$cart->getOrderTotal(true, Cart::BOTH);
         $resultCode = $response['resultCode'];
+        $extra_vars = array();
+        if (!empty($response['pspReference'])) {
+            $extra_vars['transaction_id'] = $response['pspReference'];
+        }
         switch ($resultCode) {
             case 'Authorised':
-                $extra_vars = array(
-                    'transaction_id' => $response['pspReference']
-                );
                 $this->module->validateOrder($cart->id, 2, $total, $this->module->displayName, null, $extra_vars,
                     (int)$currency->id, false, $customer->secure_key);
                 $new_order = new Order((int)$this->module->currentOrder);
@@ -88,11 +89,19 @@ class AdyenValidate3dModuleFrontController extends ModuleFrontController
                 Tools::redirect('index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key);
                 break;
                 return $result;
+            case 'Refused':
+                //6_PS_OS_CANCELED_ : order canceled
+                $this->module->validateOrder($cart->id, 6, $total, $this->module->displayName, null, $extra_vars,
+                    (int)$currency->id, false, $customer->secure_key);
+                $this->helper_data->adyenLogger()->logError("The payment was refused, id:  " . $cart->id);
+                if ($this->helper_data->isPrestashop16()) {
+                    return $this->setTemplate('error.tpl');
+                } else {
+                    return $this->setTemplate('module:adyen/views/templates/front/error.tpl');
+                }
+                break;
             default:
                 //6_PS_OS_CANCELED_ : order canceled
-                $extra_vars = array(
-                    'transaction_id' => $response['pspReference']
-                );
                 $this->module->validateOrder($cart->id, 6, $total, $this->module->displayName, null, $extra_vars,
                     (int)$currency->id, false, $customer->secure_key);
                 die('The payment was refused');

@@ -358,7 +358,8 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
         $cart = $this->context->cart;
         $request['amount'] = [
             'currency' => $this->context->currency->iso_code,
-            'value' => $this->helper_data->formatAmount($cart->getOrderTotal(true, 3), $this->context->currency->iso_code)
+            'value' => $this->helper_data->formatAmount($cart->getOrderTotal(true, 3),
+                $this->context->currency->iso_code)
         ];
 
         $request["reference"] = $cart->id;
