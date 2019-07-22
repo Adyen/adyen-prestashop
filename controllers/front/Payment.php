@@ -89,7 +89,7 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
                             $payment->card_expiration = pSQL($response['additionalData']['expiryDate']);
 
                         }
-                        if (!empty($response['additionalData']['cardHolderName']) {
+                        if (!empty($response['additionalData']['cardHolderName'])) {
                             $payment->card_holder = pSQL($response['additionalData']['cardHolderName']);
                         }
                         $payment->save();
