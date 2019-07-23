@@ -95,6 +95,7 @@ class Adyen extends \PaymentModule
             && $this->registerHook('header')
             && $this->registerHook('orderConfirmation')
             && $this->registerHook('paymentOptions')
+            && $this->registerHook('paymentReturn')
             && $this->registerHook('adminOrder');
     }
 
@@ -336,11 +337,17 @@ class Adyen extends \PaymentModule
             if (version_compare(_PS_VERSION_, '1.7', '<')) {
                 $this->context->controller->addJS(self::CHECKOUT_COMPONENT_JS_TEST);
                 $this->context->controller->addCSS(self::CHECKOUT_COMPONENT_CSS_TEST);
+                $this->context->controller->addJS($this->_path . 'views/js/threeds2-js-utils.js');
             } else {
                 $this->context->controller->registerJavascript(
                     'component', // Unique ID
                     self::CHECKOUT_COMPONENT_JS_TEST, // JS path
                     array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
+                );
+                $this->context->controller->registerJavascript(
+                    'threeDS2Utils', // Unique ID
+                    $this->_path . 'views/js/threeds2-js-utils.js', // JS path
+                    array('position' => 'bottom', 'priority' => 160) // Arguments
                 );
                 $this->context->controller->registerStylesheet(
                     'stylecheckout', // Unique ID
@@ -353,13 +360,18 @@ class Adyen extends \PaymentModule
             if (version_compare(_PS_VERSION_, '1.7', '<')) {
                 $this->context->controller->addJS(self::CHECKOUT_COMPONENT_JS_LIVE);
                 $this->context->controller->addCSS(self::CHECKOUT_COMPONENT_CSS_LIVE);
+                $this->context->controller->addJS($this->_path . 'views/js/threeds2-js-utils.js');
             } else {
                 $this->context->controller->registerJavascript(
                     'component', // Unique ID
                     self::CHECKOUT_COMPONENT_JS_LIVE, // JS path
                     array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
                 );
-
+                $this->context->controller->registerJavascript(
+                    'threeDS2Utils', // Unique ID
+                    $this->_path . 'views/js/threeds2-js-utils.js', // JS path
+                    array('position' => 'bottom', 'priority' => 160) // Arguments
+                );
                 $this->context->controller->registerStylesheet(
                     'stylecheckout', // Unique ID
                     self::CHECKOUT_COMPONENT_CSS_LIVE, // CSS path
@@ -386,6 +398,8 @@ class Adyen extends \PaymentModule
     /**
      * Hook payment options Prestashop > 1.7
      * @param $params
+     * @return array
+     * @throws \Adyen\AdyenException
      */
     public function hookPaymentOptions($params)
     {
@@ -397,9 +411,11 @@ class Adyen extends \PaymentModule
 
         $this->context->smarty->assign(
             array(
+                'locale' => 'en_US', //TODO ADD LOCALE
                 'originKey' => $this->helper_data->getOriginKeyForOrigin(),
                 'environment' => \Configuration::get('ADYEN_MODE'),
-                'action' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
+                'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
+                'threeDSProcessUrl' => $this->context->link->getModuleLink($this->name, 'ThreeDSProcess', array(), true),
                 'prestashop16' => false
             )
         );
@@ -416,6 +432,7 @@ class Adyen extends \PaymentModule
     /**
      * Hook payment options Prestashop <= 1.6
      * @param $params
+     * @throws \Adyen\AdyenException
      */
     public function hookPayment($params)
     {
@@ -429,7 +446,8 @@ class Adyen extends \PaymentModule
             array(
                 'originKey' => $this->helper_data->getOriginKeyForOrigin(),
                 'environment' => \Configuration::get('ADYEN_MODE'),
-                'action' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
+                'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
+                'threeDSProcessUrl' => $this->context->link->getModuleLink($this->name, 'ThreeDSProcess', array(), true),
                 'prestashop16' => true
             )
         );
@@ -438,6 +456,10 @@ class Adyen extends \PaymentModule
         return $this->display(__FILE__, '/views/templates/front/payment.tpl');
     }
 
+    /**
+     * @param $params
+     * @return array|void
+     */
     public function hookDisplayPaymentEU($params)
     {
         if (!$this->active) {
@@ -451,5 +473,13 @@ class Adyen extends \PaymentModule
         );
 
         return $payment_options;
+    }
+
+    /**
+     *
+     */
+    public function hookPaymentReturn()
+    {
+        return;
     }
 }
