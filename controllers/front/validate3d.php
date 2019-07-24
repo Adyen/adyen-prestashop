@@ -20,13 +20,13 @@
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
-class AdyenValidate3dModuleFrontController extends ModuleFrontController
+class AdyenValidate3dModuleFrontController extends \ModuleFrontController
 {
     public function __construct()
     {
         parent::__construct();
-        $this->context = Context::getContext();
-        $this->helper_data = new Data();
+        $this->context = \Context::getContext();
+        $this->helper_data = new \Adyen\PrestaShop\helper\Data();
     }
 
     public function postProcess()
@@ -63,8 +63,8 @@ class AdyenValidate3dModuleFrontController extends ModuleFrontController
         }
         $this->helper_data->adyenLogger()->logDebug("result: " . json_encode($response));
         $currency = $this->context->currency;
-        $customer = new Customer($cart->id_customer);
-        $total = (float)$cart->getOrderTotal(true, Cart::BOTH);
+        $customer = new \Customer($cart->id_customer);
+        $total = (float)$cart->getOrderTotal(true, \Cart::BOTH);
         $resultCode = $response['resultCode'];
         $extra_vars = array();
         if (!empty($response['pspReference'])) {
@@ -74,8 +74,8 @@ class AdyenValidate3dModuleFrontController extends ModuleFrontController
             case 'Authorised':
                 $this->module->validateOrder($cart->id, 2, $total, $this->module->displayName, null, $extra_vars,
                     (int)$currency->id, false, $customer->secure_key);
-                $new_order = new Order((int)$this->module->currentOrder);
-                if (Validate::isLoadedObject($new_order)) {
+                $new_order = new \Order((int)$this->module->currentOrder);
+                if (\Validate::isLoadedObject($new_order)) {
                     $payment = $new_order->getOrderPaymentCollection();
                     if (isset($payment[0])) {
                         //todo add !empty
@@ -86,7 +86,7 @@ class AdyenValidate3dModuleFrontController extends ModuleFrontController
                         $payment[0]->save();
                     }
                 }
-                Tools::redirect('index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key);
+                \Tools::redirect('index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key);
                 break;
                 return $result;
             case 'Refused':

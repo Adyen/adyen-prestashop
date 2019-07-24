@@ -43,7 +43,30 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
     {
         $cart = $this->context->cart;
         $client = $this->helper_data->initializeAdyenClient();
+        if (!empty($_REQUEST['paRequest']) && !empty($_REQUEST['md']) && !empty($_REQUEST['issuerUrl']) && !empty($_REQUEST['paymentData'])) {
+            $paRequest = $_REQUEST['paRequest'];
+            $md = $_REQUEST['md'];
+            $issuerUrl = $_REQUEST['issuerUrl'];
+            $paymentData = $_REQUEST['paymentData'];
+            $redirectMethod = $_REQUEST['redirectMethod'];
+            $termUrl = $this->context->link->getModuleLink("adyen", 'Validate3d',
+                array('paymentData' => $paymentData),
+                true);
 
+            $this->context->smarty->assign(array(
+                'paRequest' => $paRequest,
+                'md' => $md,
+                'issuerUrl' => $issuerUrl,
+                'paymentData' => $paymentData,
+                'redirectMethod' => $redirectMethod,
+                'termUrl' => $termUrl
+            ));
+            if ($this->helper_data->isPrestashop16()) {
+                return $this->setTemplate('redirect.tpl');
+            } else {
+                return $this->setTemplate('module:adyen/views/templates/front/redirect.tpl');
+            }
+        }
         if (empty($_SESSION['paymentsResponse'])) {
 
             $request = [];
@@ -86,7 +109,6 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
         if (!empty($response['pspReference'])) {
             $extra_vars['transaction_id'] = $response['pspReference'];
         }
-
         $resultCode = $response['resultCode'];
         switch ($resultCode)
         {
@@ -159,30 +181,30 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
                 );
                 break;
             case 'RedirectShopper':
+                $this->ajax = true;
+
                 $paRequest = $response['redirect']['data']['PaReq'];
                 $md = $response['redirect']['data']['MD'];
                 $issuerUrl = $response['redirect']['url'];
                 $paymentData = $response['paymentData'];
                 $redirectMethod = $response['redirect']['method'];
-                $termUrl = $this->context->link->getModuleLink("adyen", 'validate3d',
+                $termUrl = $this->context->link->getModuleLink("adyen", 'Validate3d',
                     array('paymentData' => $paymentData),
                     true);
 
                 if (!empty($paRequest) && !empty($md) && !empty($issuerUrl) && !empty($paymentData)) {
-                    $this->context->smarty->assign(array(
-                        'paRequest' => $paRequest,
-                        'md' => $md,
-                        'issuerUrl' => $issuerUrl,
-                        'paymentData' => $paymentData,
-                        'redirectMethod' => $redirectMethod,
-                        'termUrl' => $termUrl
-                    ));
-                    if ($this->helper_data->isPrestashop16()) {
-                        return $this->setTemplate('redirect.tpl');
-                    } else {
-                        return $this->setTemplate('module:adyen/views/templates/front/redirect.tpl');
-                    }
 
+                    echo $this->helper_data->buildControllerResponseJson(
+                        'threeDS1',
+                        [
+                            'paRequest' => $paRequest,
+                            'md' => $md,
+                            'issuerUrl' => $issuerUrl,
+                            'paymentData' => $paymentData,
+                            'redirectMethod' => $redirectMethod,
+                            'termUrl' => $termUrl
+                        ]
+                    );
                 } else {
                     // log exception
                     die('3D secure is not valid');

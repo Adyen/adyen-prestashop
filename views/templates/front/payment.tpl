@@ -29,6 +29,8 @@
                     let placeOrderAllowed;
                     let popupModal;
 
+
+
                     /**
                      * Constructs the first request for the payment call
                      **/
@@ -95,13 +97,6 @@
                         });
 
 
-
-                        {if $prestashop16}
-                            popupModal = ""; // todo implement fancybox
-                        {else}
-                            popupModal = $('#threeDS2Modal').modal();
-                        {/if}
-
                         renderCardComponent();
                         fillBrowserInfo();
                     });
@@ -160,6 +155,11 @@
                             }).mount('#threeDS2Container');
                         } else if (type == "ChallengeShopper") {
 
+                            {if $prestashop16}
+                            popupModal = ""; // todo implement fancybox
+                            {else}
+                            popupModal = $('#threeDS2Modal').modal();
+                            {/if}
 
                             showPopup();
 
@@ -241,7 +241,30 @@
                                 } else {
                                     placeOrder();
                                 }
+                                break;
+                            case 'threeDS1':
+                                // console.log(response);
+                                //check if we have all the details
+                                if (!!response.paRequest &&
+                                    !!response.md &&
+                                    !!response.issuerUrl &&
+                                    !!response.paymentData &&
+                                    !!response.redirectMethod &&
+                                    !!response.termUrl
+                                ){
+                                    console.log(response);
+                                    //populate hidden form inputs
+                                    //todo remove termurl
+                                    // document.querySelector("input[name=paymentData]").value = response.paymentData;
 
+                                    $('input[name=paymentData]').attr('value',response.paymentData);
+                                    $('input[name=redirectMethod]').attr('value',response.redirectMethod);
+                                    $('input[name=issuerUrl]').attr('value',response.issuerUrl);
+                                    $('input[name=paRequest]').attr('value',response.paRequest);
+                                    $('input[name=md]').attr('value',response.md);
+                                    $('input[name=termUrl]').attr('value',response.termUrl);
+                                }
+                                 placeOrder();
                                 break;
                             default:
                                 // show error message
@@ -300,7 +323,12 @@
                 </script>
 
                 <div class="checkout-container" id="cardContainer"></div>
-
+                <input type="hidden" name="paymentData"/>
+                <input type="hidden" name="redirectMethod"/>
+                <input type="hidden" name="issuerUrl"/>
+                <input type="hidden" name="paRequest"/>
+                <input type="hidden" name="md"/>
+                <input type="hidden" name="termUrl"/>
                 {if $prestashop16}
                     // Todo implement fancybox
                     <div id="threeDS2Container"></div>

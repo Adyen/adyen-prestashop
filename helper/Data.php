@@ -257,6 +257,29 @@ class Data
                 ];
 
                 break;
+            case 'threeDS1':
+
+                if (!empty($details['paRequest']) &&
+                    !empty($details['md']) &&
+                    !empty($details['issuerUrl']) &&
+                    !empty($details['paymentData']) &&
+                    !empty($details['redirectMethod']) &&
+                    isset($details['termUrl'])){
+
+                    $response = [
+                        'action' => 'threeDS1',
+                        'paRequest' => $details['paRequest'],
+                        'md' => $details['md'],
+                        'issuerUrl' => $details['issuerUrl'],
+                        'paymentData' => $details['paymentData'],
+                        'redirectMethod' => $details['redirectMethod'],
+                        'termUrl' => $details['termUrl']
+                    ];
+                }
+                else {
+                    throw new AdyenException("3DS1 details missing");
+                }
+                break;
             default:
             case 'error':
 
