@@ -90,9 +90,7 @@ class AdyenValidate3dModuleFrontController extends \ModuleFrontController
                 break;
                 return $result;
             case 'Refused':
-                //6_PS_OS_CANCELED_ : order canceled
-                $this->module->validateOrder($cart->id, 6, $total, $this->module->displayName, null, $extra_vars,
-                    (int)$currency->id, false, $customer->secure_key);
+                $this->helper_data->cloneCurrentCart($this->context);
                 $this->helper_data->adyenLogger()->logError("The payment was refused, id:  " . $cart->id);
                 if ($this->helper_data->isPrestashop16()) {
                     return $this->setTemplate('error.tpl');

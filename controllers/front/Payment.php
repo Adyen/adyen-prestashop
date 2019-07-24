@@ -147,7 +147,7 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
 
                 break;
             case 'Refused':
-                $this->cloneCurrentCart();
+                $this->helper_data->cloneCurrentCart($this->context);
                 $this->helper_data->adyenLogger()->logError("The payment was refused, id:  " . $cart->id);
                 if ($this->helper_data->isPrestashop16()) {
                     return $this->setTemplate('error.tpl');
@@ -225,48 +225,6 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
         }
 
         return $response;
-    }
-
-    /**
-     * @return int
-     */
-    public function cloneCurrentCart()
-    {
-        // To save the secure key of current cart id and reassign the same to new cart
-        $old_cart_secure_key = $this->context->cart->secure_key;
-        // To save the customer id of current cart id and reassign the same to new cart
-        $old_cart_customer_id = (int)$this->context->cart->id_customer;
-
-        // To fetch the current cart products
-        $cart_products = $this->context->cart->getProducts();
-        // Creating new cart object
-        $this->context->cart = new Cart();
-        $this->context->cart->id_lang = $this->context->language->id;
-        $this->context->cart->id_currency = $this->context->currency->id;
-        $this->context->cart->secure_key = $old_cart_secure_key;
-        // to add new cart
-        $this->context->cart->add();
-        // to update the new cart
-        foreach ($cart_products as $product) {
-            $this->context->cart->updateQty((int) $product['quantity'], (int) $product['id_product'], (int) $product['id_product_attribute']);
-        }
-        if ($this->context->cookie->id_guest) {
-            $guest = new Guest($this->context->cookie->id_guest);
-            $this->context->cart->mobile_theme = $guest->mobile_theme;
-        }
-        // to map the new cart with the customer
-        $this->context->cart->id_customer = $old_cart_customer_id;
-        // to save the new cart
-        $this->context->cart->save();
-        if ($this->context->cart->id) {
-            $this->context->cookie->id_cart = (int) $this->context->cart->id;
-            $this->context->cookie->write();
-        }
-
-        // to update the $id_cart with that of new cart
-        $id_cart = (int) $this->context->cart->id;
-
-        return $id_cart;
     }
 
     /**
