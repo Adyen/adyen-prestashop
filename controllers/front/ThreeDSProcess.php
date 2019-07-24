@@ -35,6 +35,7 @@ class AdyenThreeDSProcessModuleFrontController extends \ModuleFrontController
         parent::__construct();
         $this->context = \Context::getContext();
         $this->helper_data = new \Adyen\PrestaShop\helper\Data();
+        $this->ajax = true;
 
         if (!isset($_SESSION)) {
             session_start();
@@ -60,7 +61,12 @@ class AdyenThreeDSProcessModuleFrontController extends \ModuleFrontController
                 "paymentData" => $_SESSION['paymentData']
             ];
         } else {
-            echo "3D secure 2.0 failed, payment data not found";
+            echo $this->helper_data->buildControllerResponseJson(
+                'error',
+                [
+                    'message' => "3D secure 2.0 failed, payment data not found"
+                ]
+            );
         }
 
         // Depends on the component's response we send a fingerprint or the challenge result
@@ -69,7 +75,12 @@ class AdyenThreeDSProcessModuleFrontController extends \ModuleFrontController
         } elseif (!empty($payload['details']['threeds2.challengeResult'])) {
             $request['details']['threeds2.challengeResult'] = $payload['details']['threeds2.challengeResult'];
         } else {
-            echo "3D secure 2.0 failed, payload details are not found";
+            echo $this->helper_data->buildControllerResponseJson(
+                'error',
+                [
+                    'message' => "3D secure 2.0 failed, payload details are not found"
+                ]
+            );
         }
 
         // Send the request
@@ -81,7 +92,12 @@ class AdyenThreeDSProcessModuleFrontController extends \ModuleFrontController
 
             $result = $service->paymentsDetails($request);
         } catch (\Adyen\AdyenException $e) {
-            echo '3D secure 2.0 failed';
+            echo $this->helper_data->buildControllerResponseJson(
+                'error',
+                [
+                    'message' => '3D secure 2.0 failed'
+                ]
+            );
         }
 
         // Check if result is challenge shopper, if yes return the token

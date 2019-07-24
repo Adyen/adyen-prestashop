@@ -44,8 +44,6 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
     {
         $cart = $this->context->cart;
         $client = $this->helper_data->initializeAdyenClient();
-//        todo: applicationInfo, uncomment before release
-//        $client->setAdyenPaymentSource($this->helper_data->getModuleName(), $this->helper_data->getModuleVersion());
 
         if (empty($_SESSION['paymentsResponse'])) {
 
@@ -62,14 +60,10 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
             // call lib
             $service = new \Adyen\Service\Checkout($client);
 
-        try {
-            $response = $service->payments($request);
-        } catch (\Adyen\AdyenException $e) {
-            $response['error'] = $e->getMessage();
             try {
                 $response = $service->payments($request);
             } catch (\Adyen\AdyenException $e) {
-                die('There was an error with the payment method.');
+                $this->helper_data->adyenLogger()->logError("There was an error with the payment method. id:  " . $cart->id . " Response: " . $e->getMessage());
             }
         } else {
             $response = $_SESSION['paymentsResponse'];
@@ -141,6 +135,7 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
                 }
                 break;
             case 'IdentifyShopper':
+                $this->ajax = true;
                 $_SESSION['paymentData'] = $response['paymentData'];
 
                 echo $this->helper_data->buildControllerResponseJson(
@@ -153,6 +148,7 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
 
                 break;
             case 'ChallengeShopper':
+                $this->ajax = true;
                 $_SESSION['paymentData'] = $response['paymentData'];
 
                 echo $this->helper_data->buildControllerResponseJson(
@@ -188,11 +184,6 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
         $old_cart_secure_key = $this->context->cart->secure_key;
         // To save the customer id of current cart id and reassign the same to new cart
         $old_cart_customer_id = (int)$this->context->cart->id_customer;
-
-        // To unmap the customer from old cart
-        //$this->context->cart->id_customer = 0;
-        // To update the cart
-        //$this->context->cart->save();
 
         // To fetch the current cart products
         $cart_products = $this->context->cart->getProducts();
@@ -273,12 +264,33 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
         $request['additionalData']['allow3DS2'] = true;
         $request['origin'] = $this->helper_data->getOrigin();
         $request['channel'] = 'web';
-        $request['browserInfo']['screenWidth'] = $payload['browserInfo']['screenWidth'];
-        $request['browserInfo']['screenHeight'] = $payload['browserInfo']['screenHeight'];
-        $request['browserInfo']['colorDepth'] = $payload['browserInfo']['colorDepth'];
-        $request['browserInfo']['timeZoneOffset'] = $payload['browserInfo']['timeZoneOffset'];
-        $request['browserInfo']['language'] = $payload['browserInfo']['language'];
-        $request['browserInfo']['javaEnabled'] = $payload['browserInfo']['javaEnabled'];
+
+        if (!empty($payload['browserInfo'])) {
+            if (!empty($payload['browserInfo']['screenWidth'])) {
+                $request['browserInfo']['screenWidth'] = $payload['browserInfo']['screenWidth'];
+            }
+
+            if (!empty($payload['browserInfo']['screenHeight'])) {
+                $request['browserInfo']['screenHeight'] = $payload['browserInfo']['screenHeight'];
+            }
+
+            if (!empty($payload['browserInfo']['colorDepth'])) {
+                $request['browserInfo']['colorDepth'] = $payload['browserInfo']['colorDepth'];
+            }
+
+            if (!empty($payload['browserInfo']['timeZoneOffset'])) {
+                $request['browserInfo']['timeZoneOffset'] = $payload['browserInfo']['timeZoneOffset'];
+            }
+
+            if (!empty($payload['browserInfo']['language'])) {
+                $request['browserInfo']['language'] = $payload['browserInfo']['language'];
+            }
+
+            if (!empty($payload['browserInfo']['javaEnabled'])) {
+                $request['browserInfo']['javaEnabled'] = $payload['browserInfo']['javaEnabled'];
+            }
+        }
+
 
 
 //        if (!empty($payload[PaymentInterface::KEY_ADDITIONAL_DATA][AdyenOneclickDataAssignObserver::RECURRING_DETAIL_REFERENCE]) &&

@@ -27,6 +27,7 @@
                     let adyenCheckout;
 
                     let placeOrderAllowed;
+                    let popupModal;
 
                     /**
                      * Constructs the first request for the payment call
@@ -93,6 +94,14 @@
                             }
                         });
 
+
+
+                        {if $prestashop16}
+                            popupModal = ""; // todo implement fancybox
+                        {else}
+                            popupModal = $('#threeDS2Modal').modal();
+                        {/if}
+
                         renderCardComponent();
                         fillBrowserInfo();
                     });
@@ -151,13 +160,13 @@
                             }).mount('#threeDS2Container');
                         } else if (type == "ChallengeShopper") {
 
-                            let popupModal = $('#threeDS2Modal').modal();
-                            popupModal.modal("show");
+
+                            showPopup();
 
                             adyenCheckout.create('threeDS2Challenge', {
                                 challengeToken: token,
                                 onComplete: function (result) {
-                                    popupModal.modal("hide");
+                                    hidePopup();
                                     processThreeDS2(result.data).done(function (responseJSON) {
                                         processControllerResponse(responseJSON);
                                     });
@@ -167,6 +176,22 @@
                                 }
                             }).mount('#threeDS2Container');
                         }
+                    }
+
+                    function showPopup() {
+                        {if $prestashop16}
+
+                        {else}
+                        popupModal.modal("show");
+                        {/if}
+                    }
+
+                    function hidePopup() {
+                        {if $prestashop16}
+
+                        {else}
+                        popupModal.modal("hide");
+                        {/if}
                     }
 
                     /**
@@ -276,18 +301,23 @@
 
                 <div class="checkout-container" id="cardContainer"></div>
 
-                <div id="threeDS2Modal" class="modal fade" tabindex="-1" role="dialog">
-                    <div class="modal-dialog" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h4 class="modal-title">Authentication</h4>
-                            </div>
-                            <div class="modal-body">
-                                <div id="threeDS2Container"></div>
+                {if $prestashop16}
+                    // Todo implement fancybox
+                    <div id="threeDS2Container"></div>
+                {else}
+                    <div id="threeDS2Modal" class="modal fade" tabindex="-1" role="dialog">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h4 class="modal-title">Authentication</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="threeDS2Container"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                {/if}
 
                 {if $prestashop16}
                     <button type="submit" class="button btn btn-default standard-checkout button-medium"><span>
