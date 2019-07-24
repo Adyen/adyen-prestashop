@@ -22,8 +22,17 @@
 
 namespace Adyen\PrestaShop\Helper;
 
+use Adyen\AdyenException;
+
 class Data
 {
+    /**
+     * @return mixed
+     */
+    public function getOrigin()
+    {
+        return \Tools::getHttpHost(true, true);
+    }
 
     /**
      * Get origin key for a specific origin using the adyen api library client
@@ -35,7 +44,8 @@ class Data
      */
     public function getOriginKeyForOrigin()
     {
-        $origin = \Tools::getHttpHost(true, true);
+
+        $origin = $this->getOrigin();
 
         $params = [
             "originDomains" => [
@@ -203,6 +213,63 @@ class Data
         return false;
     }
 
+    /**
+     * @param $action
+     * @param array $details
+     * @return false|string
+     * @throws AdyenException
+     */
+    public function buildControllerResponseJson($action, $details = []) {
+        switch ($action) {
+            case 'error':
+
+                if (empty($details['message'])) {
+                    throw new AdyenException('No message is included in the error response');
+                }
+
+                $response = [
+                    'action' => 'error',
+                    'message' => $details['message']
+                ];
+
+                break;
+            case 'threeDS2':
+
+                $response = [
+                    'action' => 'threeDS2'
+                ];
+
+                if (!empty($details['type']) && !empty($details['token'])) {
+                    $response['type'] = $details['type'];
+                    $response['token'] = $details['token'];
+                }
+
+                break;
+            case 'redirect':
+
+                if (empty($details['redirectUrl'])) {
+                    throw new AdyenException('No redirect url is included in the redirect response');
+                }
+
+                $response = [
+                    'action' => 'redirect',
+                    'redirectUrl' => $details['redirectUrl']
+                ];
+
+                break;
+            default:
+            case 'error':
+
+                $response = [
+                    'action' => 'error',
+                    'message' => 'Somethng went wrong'
+                ];
+
+                break;
+        }
+
+        return json_encode($response);
+    }
     /**
      * Return the formatted currency. Adyen accepts the currency in multiple formats.
      * @param $amount
