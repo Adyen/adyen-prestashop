@@ -30,9 +30,7 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
         $this->context = \Context::getContext();
         $this->helper_data = new \Adyen\PrestaShop\helper\Data();
 
-        if (!isset($_SESSION)) {
-            session_start();
-        }
+        $this->helper_data->startSession();
     }
 
     /**
@@ -43,12 +41,16 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
     {
         $cart = $this->context->cart;
         $client = $this->helper_data->initializeAdyenClient();
-        if (!empty($_REQUEST['paRequest']) && !empty($_REQUEST['md']) && !empty($_REQUEST['issuerUrl']) && !empty($_REQUEST['paymentData'])) {
+
+        // Handle 3DS1 flow, when the payments call is already done and the details are submitted from the frontend, by the place order button
+        if (!empty($_REQUEST['paRequest']) && !empty($_REQUEST['md']) && !empty($_REQUEST['issuerUrl']) && !empty($_REQUEST['paymentData']) && !empty($_REQUEST['redirectMethod'])) {
+
             $paRequest = $_REQUEST['paRequest'];
             $md = $_REQUEST['md'];
             $issuerUrl = $_REQUEST['issuerUrl'];
             $paymentData = $_REQUEST['paymentData'];
             $redirectMethod = $_REQUEST['redirectMethod'];
+
             $termUrl = $this->context->link->getModuleLink("adyen", 'Validate3d',
                 array('paymentData' => $paymentData),
                 true);
@@ -61,25 +63,24 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
                 'redirectMethod' => $redirectMethod,
                 'termUrl' => $termUrl
             ));
+
             if ($this->helper_data->isPrestashop16()) {
                 return $this->setTemplate('redirect.tpl');
             } else {
                 return $this->setTemplate('module:adyen/views/templates/front/redirect.tpl');
             }
         }
+
+        // Handle payments call in case there is no payments response saved into the session
         if (empty($_SESSION['paymentsResponse'])) {
 
             $request = [];
             $request = $this->buildBrowserData($request);
             $request = $this->buildCCData($request, $_REQUEST);
             $request = $this->buildPaymentData($request);
-
             $request = $this->buildMerchantAccountData($request);
 
-            $this->context->smarty->assign([
-                'params' => $_REQUEST,
-            ]);
-            // call lib
+            // call adyen library
             $service = new \Adyen\Service\Checkout($client);
 
             try {
@@ -88,11 +89,13 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
                 $this->helper_data->adyenLogger()->logError("There was an error with the payment method. id:  " . $cart->id . " Response: " . $e->getMessage());
             }
         } else {
+            // in case the payments response is already present use it from the session then unset it
             $response = $_SESSION['paymentsResponse'];
             unset($_SESSION['paymentsResponse']);
         }
 
         $customer = new \Customer($cart->id_customer);
+
         if (!\Validate::isLoadedObject($customer)) {
             if (empty($_REQUEST['isAjax'])) {
                 \Tools::redirect('index.php?controller=order&step=1');
@@ -109,7 +112,10 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
         if (!empty($response['pspReference'])) {
             $extra_vars['transaction_id'] = $response['pspReference'];
         }
+
+        // Based on the result code start different payment flows
         $resultCode = $response['resultCode'];
+
         switch ($resultCode)
         {
             case 'Authorised':
@@ -137,6 +143,7 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
                     }
                 }
 
+                // Since this controller handles ajax and non ajax form submissions as well, both server side and client side redirects needs to be handled based on the isAjax request parameter
                 if (empty($_REQUEST['isAjax'])) {
                     \Tools::redirect('index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key);
 
@@ -147,6 +154,7 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
 
                 break;
             case 'Refused':
+                // In case of refused payment there is no order created and the cart needs to be cloned and reinitiated
                 $this->helper_data->cloneCurrentCart($this->context);
                 $this->helper_data->adyenLogger()->logError("The payment was refused, id:  " . $cart->id);
                 if ($this->helper_data->isPrestashop16()) {
@@ -183,16 +191,13 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
             case 'RedirectShopper':
                 $this->ajax = true;
 
+                if (!empty($response['redirect']['data']['PaReq']) && !empty($response['redirect']['data']['MD']) && !empty($response['redirect']['url']) && !empty($response['paymentData']) && !empty($response['redirect']['method'])) {
+
                 $paRequest = $response['redirect']['data']['PaReq'];
                 $md = $response['redirect']['data']['MD'];
                 $issuerUrl = $response['redirect']['url'];
                 $paymentData = $response['paymentData'];
                 $redirectMethod = $response['redirect']['method'];
-                $termUrl = $this->context->link->getModuleLink("adyen", 'Validate3d',
-                    array('paymentData' => $paymentData),
-                    true);
-
-                if (!empty($paRequest) && !empty($md) && !empty($issuerUrl) && !empty($paymentData)) {
 
                     echo $this->helper_data->buildControllerResponseJson(
                         'threeDS1',
@@ -201,14 +206,11 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
                             'md' => $md,
                             'issuerUrl' => $issuerUrl,
                             'paymentData' => $paymentData,
-                            'redirectMethod' => $redirectMethod,
-                            'termUrl' => $termUrl
+                            'redirectMethod' => $redirectMethod
                         ]
                     );
                 } else {
-                    // log exception
-                    die('3D secure is not valid');
-                    break;
+                    $this->helper_data->adyenLogger()->logError("3DS secure is not valid. ID:  " . $cart->id);
                 }
                 break;
             default:
@@ -338,7 +340,7 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
         $cart = $this->context->cart;
         $request['amount'] = [
             'currency' => $this->context->currency->iso_code,
-            'value' => $this->helper_data->formatAmount($cart->getOrderTotal(true, 3),
+            'value' => $this->helper_data->formatAmount($cart->getOrderTotal(true, \Cart::BOTH),
                 $this->context->currency->iso_code)
         ];
 

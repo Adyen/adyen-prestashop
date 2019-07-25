@@ -263,8 +263,7 @@ class Data
                     !empty($details['md']) &&
                     !empty($details['issuerUrl']) &&
                     !empty($details['paymentData']) &&
-                    !empty($details['redirectMethod']) &&
-                    isset($details['termUrl'])){
+                    !empty($details['redirectMethod'])){
 
                     $response = [
                         'action' => 'threeDS1',
@@ -272,8 +271,7 @@ class Data
                         'md' => $details['md'],
                         'issuerUrl' => $details['issuerUrl'],
                         'paymentData' => $details['paymentData'],
-                        'redirectMethod' => $details['redirectMethod'],
-                        'termUrl' => $details['termUrl']
+                        'redirectMethod' => $details['redirectMethod']
                     ];
                 }
                 else {
@@ -351,6 +349,7 @@ class Data
         // Creating new cart object
         $context->cart = new \Cart();
         $context->cart->id_lang = $context->language->id;
+
         $context->cart->id_currency = $context->currency->id;
         $context->cart->secure_key = $old_cart_secure_key;
         // to add new cart
@@ -378,5 +377,13 @@ class Data
         return $id_cart;
     }
 
+    /**
+     * Start the session if does not exists yet
+     */
+    public function startSession() {
+        if (!isset($_SESSION)) {
+            session_start();
+        }
+    }
 
 }

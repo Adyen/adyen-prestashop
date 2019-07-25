@@ -8,6 +8,11 @@
         <div class="col-xs-12 col-md-6">
             <form id="payment-form" action="{$paymentProcessUrl}" class="adyen-payment-form" method="post">
                 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+                {if $prestashop16}
+                    <link rel="stylesheet" href="/js/jquery/plugins/fancybox/jquery.fancybox.css" type="text/css" media="all" />
+                    <script type="text/javascript" src="/js/jquery/plugins/fancybox/jquery.fancybox.js"></script>
+                {/if}
+
                 <script>
 
                     let holderName;
@@ -154,13 +159,6 @@
                                 }
                             }).mount('#threeDS2Container');
                         } else if (type == "ChallengeShopper") {
-
-                            {if $prestashop16}
-                            popupModal = ""; // todo implement fancybox
-                            {else}
-                            popupModal = $('#threeDS2Modal').modal();
-                            {/if}
-
                             showPopup();
 
                             adyenCheckout.create('threeDS2Challenge', {
@@ -180,17 +178,28 @@
 
                     function showPopup() {
                         {if $prestashop16}
-
+                            $.fancybox({
+                                'autoScale': true,
+                                'transitionIn': 'elastic',
+                                'transitionOut': 'elastic',
+                                'speedIn': 500,
+                                'speedOut': 300,
+                                'autoDimensions': true,
+                                'centerOnScroll': true,
+                                'hideOnContentClick': false,
+                                'showCloseButton': false,
+                                'href' : '#threeDS2Modal'
+                            });
                         {else}
-                        popupModal.modal("show");
+                            popupModal = $('#threeDS2Modal').modal();
                         {/if}
                     }
 
                     function hidePopup() {
                         {if $prestashop16}
-
+                            $.fancybox.close();
                         {else}
-                        popupModal.modal("hide");
+                            popupModal.modal("hide");
                         {/if}
                     }
 
@@ -243,28 +252,25 @@
                                 }
                                 break;
                             case 'threeDS1':
-                                // console.log(response);
                                 //check if we have all the details
                                 if (!!response.paRequest &&
                                     !!response.md &&
                                     !!response.issuerUrl &&
                                     !!response.paymentData &&
-                                    !!response.redirectMethod &&
-                                    !!response.termUrl
+                                    !!response.redirectMethod
                                 ){
-                                    console.log(response);
                                     //populate hidden form inputs
-                                    //todo remove termurl
-                                    // document.querySelector("input[name=paymentData]").value = response.paymentData;
-
                                     $('input[name=paymentData]').attr('value',response.paymentData);
                                     $('input[name=redirectMethod]').attr('value',response.redirectMethod);
                                     $('input[name=issuerUrl]').attr('value',response.issuerUrl);
                                     $('input[name=paRequest]').attr('value',response.paRequest);
                                     $('input[name=md]').attr('value',response.md);
-                                    $('input[name=termUrl]').attr('value',response.termUrl);
+
+                                    placeOrder();
+                                } else {
+                                    console.log("Something went wrong on the frontend");
                                 }
-                                 placeOrder();
+
                                 break;
                             default:
                                 // show error message
@@ -279,7 +285,7 @@
                      * @param response
                      */
                     function processThreeDS2(data) {
-                        let threeDSProcessUrl = $("<div>").html("{$threeDSProcessUrl}").text();
+                        let threeDSProcessUrl = "{$threeDSProcessUrl nofilter}";
 
                         data['isAjax'] = true;
 
@@ -328,10 +334,14 @@
                 <input type="hidden" name="issuerUrl"/>
                 <input type="hidden" name="paRequest"/>
                 <input type="hidden" name="md"/>
-                <input type="hidden" name="termUrl"/>
+
                 {if $prestashop16}
-                    // Todo implement fancybox
-                    <div id="threeDS2Container"></div>
+                    <div style="display:none">
+                        <div id="threeDS2Modal">
+                            <div id="threeDS2Container"></div>
+                        </div>
+                    </div>
+
                 {else}
                     <div id="threeDS2Modal" class="modal fade" tabindex="-1" role="dialog">
                         <div class="modal-dialog" role="document">

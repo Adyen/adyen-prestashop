@@ -33,9 +33,6 @@ class AdyenValidate3dModuleFrontController extends \ModuleFrontController
     {
         $cart = $this->context->cart;
         $client = $this->helper_data->initializeAdyenClient();
-        $this->context->smarty->assign([
-            'params' => $_REQUEST,
-        ]);
         $requestMD = $_REQUEST['MD'];
         $requestPaRes = $_REQUEST['PaRes'];
         $paymentData = $_REQUEST['paymentData'];
@@ -49,8 +46,8 @@ class AdyenValidate3dModuleFrontController extends \ModuleFrontController
                 "PaRes" => $requestPaRes
             ]
         ];
-//        todo: applicationInfo, uncomment before release
-//        $client->setAdyenPaymentSource($this->helper_data->getModuleName(), $this->helper_data->getModuleVersion());
+
+        $client->setAdyenPaymentSource($this->helper_data->getModuleName(), $this->helper_data->getModuleVersion());
 
         try {
             $client = $this->helper_data->initializeAdyenClient();
@@ -88,7 +85,6 @@ class AdyenValidate3dModuleFrontController extends \ModuleFrontController
                 }
                 \Tools::redirect('index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key);
                 break;
-                return $result;
             case 'Refused':
                 $this->helper_data->cloneCurrentCart($this->context);
                 $this->helper_data->adyenLogger()->logError("The payment was refused, id:  " . $cart->id);
@@ -102,7 +98,12 @@ class AdyenValidate3dModuleFrontController extends \ModuleFrontController
                 //6_PS_OS_CANCELED_ : order canceled
                 $this->module->validateOrder($cart->id, 6, $total, $this->module->displayName, null, $extra_vars,
                     (int)$currency->id, false, $customer->secure_key);
-                die('The payment was refused');
+                $this->helper_data->adyenLogger()->logError("The payment was cancelled, id:  " . $cart->id);
+                if ($this->helper_data->isPrestashop16()) {
+                    return $this->setTemplate('error.tpl');
+                } else {
+                    return $this->setTemplate('module:adyen/views/templates/front/error.tpl');
+                }
                 break;
         }
     }

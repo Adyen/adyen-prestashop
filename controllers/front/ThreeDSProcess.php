@@ -35,11 +35,8 @@ class AdyenThreeDSProcessModuleFrontController extends \ModuleFrontController
         parent::__construct();
         $this->context = \Context::getContext();
         $this->helper_data = new \Adyen\PrestaShop\helper\Data();
-        $this->ajax = true;
 
-        if (!isset($_SESSION)) {
-            session_start();
-        }
+        $this->helper_data->startSession();
     }
 
     /**
@@ -48,12 +45,10 @@ class AdyenThreeDSProcessModuleFrontController extends \ModuleFrontController
      */
     public function postProcess()
     {
+        // Currently this controller only handles ajax requests
+        $this->ajax = true;
+
         $payload = $_REQUEST;
-
-        // Init payments/details request
-        $result = [];
-
-        $request = [];
 
         if (!empty($_SESSION['paymentData'])) {
             // Add payment data into the request object
@@ -67,6 +62,7 @@ class AdyenThreeDSProcessModuleFrontController extends \ModuleFrontController
                     'message' => "3D secure 2.0 failed, payment data not found"
                 ]
             );
+            return;
         }
 
         // Depends on the component's response we send a fingerprint or the challenge result
@@ -83,7 +79,7 @@ class AdyenThreeDSProcessModuleFrontController extends \ModuleFrontController
             );
         }
 
-        // Send the request
+        // Send the payments details request
         try {
             $client = $this->helper_data->initializeAdyenClient();
 
@@ -98,6 +94,7 @@ class AdyenThreeDSProcessModuleFrontController extends \ModuleFrontController
                     'message' => '3D secure 2.0 failed'
                 ]
             );
+            return;
         }
 
         // Check if result is challenge shopper, if yes return the token
@@ -112,7 +109,6 @@ class AdyenThreeDSProcessModuleFrontController extends \ModuleFrontController
                     'token' => $result['authentication']['threeds2.challengeToken']
                 ]
             );
-
             return;
         }
 
