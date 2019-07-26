@@ -411,7 +411,7 @@ class Adyen extends \PaymentModule
 
         $this->context->smarty->assign(
             array(
-                'locale' => 'en_US', //TODO ADD LOCALE
+                'locale' => $this->context->language->locale,
                 'originKey' => $this->helper_data->getOriginKeyForOrigin(),
                 'environment' => \Configuration::get('ADYEN_MODE'),
                 'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
@@ -444,7 +444,7 @@ class Adyen extends \PaymentModule
 
         $this->context->smarty->assign(
             array(
-                'locale' => 'en_US', //TODO ADD LOCALE
+                'locale' => $this->context->language->locale,
                 'originKey' => $this->helper_data->getOriginKeyForOrigin(),
                 'environment' => \Configuration::get('ADYEN_MODE'),
                 'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
