@@ -245,6 +245,14 @@ class Adyen extends \PaymentModule
                     'size' => 20,
                     'required' => false,
                     'hint' => $this->l('If you don\'t know your Api-Key, log in to your Live Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Checkout token is your API Key.')
+                ),
+                array(
+                    'type' => 'text',
+                    'label' => $this->l('Live endpoint prefix'),
+                    'name' => 'ADYEN_LIVE_ENDPOINT_URL_PREFIX',
+                    'size' => 20,
+                    'required' => false,
+                    'hint' => $this->l('The URL prefix [random]-[company name] from your Adyen live > Account > API URLs.')
                 )
             ),
             'submit' => array(
