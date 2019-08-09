@@ -43,56 +43,15 @@ Configure the Adyen plugin in your Prestashop admin panel: 
 4.  Click on **Install** / **Enable Module**
 5.  Click on **Configure** and enter the following values:
 
-<table>
-   <colgroup>
-      <col style="width: 21%" />
-      <col style="width: 78%" />
-   </colgroup>
-   <thead>
-      <tr class="header">
-         <th>Field</th>
-         <th>Description</th>
-      </tr>
-   </thead>
-   <tbody>
-      <tr>
-         <td><strong>Merchant Account</strong></td>
-         <td>
-            <p>Name of your Adyen merchant account for which the payments will be processed.</p>
-         </td>
-      </tr>
-      <tr>
-         <td><strong>Test/Production Mode</strong></td>
-         <td>
-            <p>Select whether you want to use test or production mode.</p>
-         </td>
-      </tr>
-      <tr>
-         <td><strong>Notification User Name(not used at the moment)</strong></td>
-         <td>This can be any username, as long as it matches the username for basic authentication that you <a href="https://ca-test.adyen.com">entered in your Adyen Customer Area</a>.</td>
-      </tr>
-      <tr>
-         <td><strong>Notification Password(not used at the moment)</strong></td>
-         <td>
-            <p>This can be any password, as long as it matches the password for basic authentication that you <a href="https://ca-test.adyen.com">entered in your Adyen Customer Area</a>.<br/></p>
-         </td>
-      </tr>
-      <tr>
-         <td><strong>API key for Test</strong></td>
-         <td>Your API key from Adyen test Customer Area (*) .</td>
-      </tr>
-      <tr>
-         <td><strong>API key for Live</strong></td>
-         <td>Your API key from Adyen live Customer Area (*) .</td>
-      </tr>
-      <tr>
-         <td><strong>Live endpoint prefix</strong></td>
-         <td>
-            <p>The URL prefix <strong>[random]-[company name]</strong> from your Adyen live > <strong>Account</strong> > <strong>API URLs</strong>. For more information, refer to <a href="https://docs.adyen.com/development-resources/live-endpoints#description">Checkout endpoints</a>.</p>
-         </td>
-      </tr>
-   </tbody>
-</table>
+|Field|Description|
+|--- |--- |
+|**Merchant Account**|Name of your Adyen merchant account for which the payments will be processed.|
+|**Test/Production Mode**|Select whether you want to use test or production mode.|
+|**Notification User Name**(not used at the moment)|This can be any username, as long as it matches the username for basic authentication that you entered in your Adyen Customer Area.|
+|**Notification Password**(not used at the moment)|This can be any password, as long as it matches the password for basic authentication that you entered in your Adyen Customer Area.|
+|**API key for Test**|Your API key from Adyen test Customer Area (*) .|
+|**API key for Live**|Your API key from Adyen live Customer Area (*) .|
+|**Live endpoint prefix**|The URL prefix [random]-[company name] from your Adyen live > Account > API URLs. For more information, refer to Checkout endpoints.|
 
 (\*) You noted this down when you Set up Adyen Customer Area.
 
