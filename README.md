@@ -55,9 +55,6 @@ Configure the Adyen plugin in your Prestashop admin panel: 
 
 (\*) You noted this down when you Set up Adyen Customer Area.
 
-## Documentation(will be there....)
-[Prestashop documentation](https://docs.adyen.com/developers/plugins/prestashop)
-
 ## Support
 You can create issues on our Prestashop Repository. In case of specific problems with your account, please contact  <a href="mailto:support@adyen.com">support@adyen.com</a>.
 
