@@ -289,7 +289,7 @@ class Data
                 break;
         }
 
-        return json_encode($response);
+        return \Tools::jsonEncode($response);
     }
     /**
      * Return the formatted currency. Adyen accepts the currency in multiple formats.

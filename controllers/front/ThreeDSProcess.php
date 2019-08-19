@@ -56,12 +56,12 @@ class AdyenThreeDSProcessModuleFrontController extends \ModuleFrontController
                 "paymentData" => $_SESSION['paymentData']
             ];
         } else {
-            echo $this->helper_data->buildControllerResponseJson(
+            $this->ajaxDie($this->helper_data->buildControllerResponseJson(
                 'error',
                 [
                     'message' => "3D secure 2.0 failed, payment data not found"
                 ]
-            );
+            ));
             return;
         }
 
@@ -71,12 +71,12 @@ class AdyenThreeDSProcessModuleFrontController extends \ModuleFrontController
         } elseif (!empty($payload['details']['threeds2.challengeResult'])) {
             $request['details']['threeds2.challengeResult'] = $payload['details']['threeds2.challengeResult'];
         } else {
-            echo $this->helper_data->buildControllerResponseJson(
+            $this->ajaxDie($this->helper_data->buildControllerResponseJson(
                 'error',
                 [
                     'message' => "3D secure 2.0 failed, payload details are not found"
                 ]
-            );
+            ));
         }
 
         // Send the payments details request
@@ -88,13 +88,12 @@ class AdyenThreeDSProcessModuleFrontController extends \ModuleFrontController
 
             $result = $service->paymentsDetails($request);
         } catch (\Adyen\AdyenException $e) {
-            echo $this->helper_data->buildControllerResponseJson(
+            $this->ajaxDie($this->helper_data->buildControllerResponseJson(
                 'error',
                 [
                     'message' => '3D secure 2.0 failed'
                 ]
-            );
-            return;
+            ));
         }
 
         // Check if result is challenge shopper, if yes return the token
@@ -102,14 +101,13 @@ class AdyenThreeDSProcessModuleFrontController extends \ModuleFrontController
             $result['resultCode'] === 'ChallengeShopper' &&
             !empty($result['authentication']['threeds2.challengeToken'])
         ) {
-            echo $this->helper_data->buildControllerResponseJson(
+            $this->ajaxDie($this->helper_data->buildControllerResponseJson(
                 'threeDS2',
                 [
                     'type' => $result['resultCode'],
                     'token' => $result['authentication']['threeds2.challengeToken']
                 ]
-            );
-            return;
+            ));
         }
 
         // Payment can get back to the original flow
@@ -120,7 +118,6 @@ class AdyenThreeDSProcessModuleFrontController extends \ModuleFrontController
         }
 
         // 3DS2 flow is done, original place order flow can continue from frontend
-        echo $this->helper_data->buildControllerResponseJson('threeDS2');
-        return;
+        $this->ajaxDie($this->helper_data->buildControllerResponseJson('threeDS2'));
     }
 }

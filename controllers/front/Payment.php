@@ -100,8 +100,7 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
             if (empty($_REQUEST['isAjax'])) {
                 \Tools::redirect('index.php?controller=order&step=1');
             } else {
-                echo $this->helper_data->buildControllerResponseJson('redirect', ['redirectUrl' => 'index.php?controller=order&step=1']);
-                exit;
+                $this->ajaxDie($this->helper_data->buildControllerResponseJson('redirect', ['redirectUrl' => 'index.php?controller=order&step=1']));
             }
         }
 
@@ -148,8 +147,7 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
                     \Tools::redirect('index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key);
 
                 } else {
-                    echo $this->helper_data->buildControllerResponseJson('redirect', ['redirectUrl' => 'index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key]);
-                    exit;
+                    $this->ajaxDie($this->helper_data->buildControllerResponseJson('redirect', ['redirectUrl' => 'index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key]));
                 }
 
                 break;
@@ -167,26 +165,26 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
                 $this->ajax = true;
                 $_SESSION['paymentData'] = $response['paymentData'];
 
-                echo $this->helper_data->buildControllerResponseJson(
+                $this->ajaxDie($this->helper_data->buildControllerResponseJson(
                     'threeDS2',
                     [
                         'type' => 'IdentifyShopper',
                         'token' => $response['authentication']['threeds2.fingerprintToken']
                     ]
-                );
+                ));
 
                 break;
             case 'ChallengeShopper':
                 $this->ajax = true;
                 $_SESSION['paymentData'] = $response['paymentData'];
 
-                echo $this->helper_data->buildControllerResponseJson(
+                $this->ajaxDie($this->helper_data->buildControllerResponseJson(
                     'threeDS2',
                     [
                         'type' => 'ChallengeShopper',
                         'token' => $response['authentication']['threeds2.challengeToken']
                     ]
-                );
+                ));
                 break;
             case 'RedirectShopper':
                 $this->ajax = true;
@@ -199,7 +197,7 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
                 $paymentData = $response['paymentData'];
                 $redirectMethod = $response['redirect']['method'];
 
-                    echo $this->helper_data->buildControllerResponseJson(
+                    $this->ajaxDie($this->helper_data->buildControllerResponseJson(
                         'threeDS1',
                         [
                             'paRequest' => $paRequest,
@@ -208,7 +206,7 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
                             'paymentData' => $paymentData,
                             'redirectMethod' => $redirectMethod
                         ]
-                    );
+                    ));
                 } else {
                     $this->helper_data->adyenLogger()->logError("3DS secure is not valid. ID:  " . $cart->id);
                 }
