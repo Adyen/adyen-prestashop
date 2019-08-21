@@ -13,7 +13,7 @@
  *                               #############
  *                               ############
  *
- * Adyen Prestashop Extension
+ * Adyen PrestaShop plugin
  *
  * Copyright (c) 2019 Adyen B.V.
  * This file is open source and available under the MIT license.
@@ -35,21 +35,28 @@ class Adyen extends \PaymentModule
     const CHECKOUT_COMPONENT_JS_LIVE = 'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/3.0.0/adyen.js';
     const CHECKOUT_COMPONENT_CSS_TEST = 'https://checkoutshopper-test.adyen.com/checkoutshopper/sdk/3.0.0/adyen.css';
     const CHECKOUT_COMPONENT_CSS_LIVE = 'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/3.0.0/adyen.css';
+    const VERSION = '0.0.1';
+    const MODULE_NAME = 'adyen-prestashop';
 
 
     public function __construct()
     {
         $this->name = 'adyen';
         $this->tab = 'payments_gateways';
-        $this->version = '0.0.1';
+        $this->version = self::VERSION;
         $this->author = 'Adyen';
         $this->bootstrap = true;
         $this->display = 'view';
         $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
         $this->currencies = true;
-        $this->helper_data = new \Adyen\PrestaShop\helper\Data();
-        $this->hashing = new \Adyen\PrestaShop\model\Hashing();
 
+        $adyenHelperFactory = new \Adyen\PrestaShop\service\Adyen\Helper\DataFactory();
+        $this->helper_data = $adyenHelperFactory->createAdyenHelperData(
+            \Configuration::get('ADYEN_MODE'),
+            _COOKIE_KEY_
+        );
+
+        $this->hashing = new \Adyen\PrestaShop\model\Hashing();
 
         // start for 1.6
         $this->is_eu_compatible = 1;
@@ -68,7 +75,6 @@ class Adyen extends \PaymentModule
         $this->confirmUninstall = $this->l('Are you sure you want to uninstall?');
 
     }
-
 
     /*
 	 * for installing the plugin

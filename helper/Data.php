@@ -13,25 +13,58 @@
  *                               #############
  *                               ############
  *
- * Adyen Prestashop Extension
+ * Adyen PrestaShop plugin
  *
  * Copyright (c) 2019 Adyen B.V.
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\Helper;
+namespace Adyen\PrestaShop\helper;
 
+use Adyen;
 use Adyen\AdyenException;
+use Adyen\Service\CheckoutUtility;
 
 class Data
 {
+    /**
+     * @var array
+     */
+    private $getHttpHost;
+
+    /**
+     * @var array
+     */
+    private $getConfigurationKey;
+
+    /**
+     * @var string
+     */
+    private $sslEncryptionKey;
+
+    /**
+     * @var CheckoutUtility
+     */
+    private $adyenCheckoutUtilityService;
+
+    public function __construct(
+        $getHttpHost, $getConfigurationKey, $sslEncryptionKey, CheckoutUtility $adyenCheckoutUtilityService
+    )
+    {
+        $this->getHttpHost = $getHttpHost;
+        $this->getConfigurationKey = $getConfigurationKey;
+        $this->sslEncryptionKey = $sslEncryptionKey;
+        $this->adyenCheckoutUtilityService = $adyenCheckoutUtilityService;
+    }
+
     /**
      * @return mixed
      */
     public function getOrigin()
     {
-        return \Tools::getHttpHost(true, true);
+        // TODO: remove call_user_func
+        return call_user_func($this->getHttpHost, true, true);
     }
 
     /**
@@ -40,7 +73,6 @@ class Data
      * @param $origin
      * @param int|null $storeId
      * @return string
-     * @throws \Adyen\AdyenException
      */
     public function getOriginKeyForOrigin()
     {
@@ -53,17 +85,15 @@ class Data
             ]
         ];
 
-        $client = $this->initializeAdyenClient();
         try {
-            $service = $this->createAdyenCheckoutUtilityService($client);
-            $response = $service->originKeys($params);
-        } catch (\Exception $e) {
-            $message = $e->getMessage();
-            $this->adyenLogger()->logError("exception: " . $message);
+            $response = $this->adyenCheckoutUtilityService->originKeys($params);
+        } catch (AdyenException $e) {
+            $this->adyenLogger()->logError("exception: " . $e->getMessage());
         }
 
         $originKey = "";
 
+        // TODO: improve error treatment
         if (!empty($response['originKeys'][$origin])) {
             $originKey = $response['originKeys'][$origin];
         } else {
@@ -76,7 +106,9 @@ class Data
 
     public function isDemoMode()
     {
-        if (strpos(\Configuration::get('ADYEN_MODE'), 'test') !== false) {
+        // TODO: remove call_user_func
+        $adyenMode = call_user_func($this->getConfigurationKey, 'ADYEN_MODE');
+        if (strpos($adyenMode, 'test') !== false) {
             return true;
         } else {
             return false;
@@ -116,13 +148,13 @@ class Data
         $client = $this->createAdyenClient();
         $client->setApplicationName("Prestashop plugin");
         $client->setXApiKey($apiKey);
-        $client->setAdyenPaymentSource($this->getModuleName(), $this->getModuleVersion());
+        $client->setAdyenPaymentSource(\Adyen::MODULE_NAME, \Adyen::VERSION);
         $client->setExternalPlatform("Prestashop" , _PS_VERSION_);
 
         if ($this->isDemoMode()) {
             $client->setEnvironment(\Adyen\Environment::TEST);
         } else {
-            $client->setEnvironment(\Adyen\Environment::LIVE, Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX'));
+            $client->setEnvironment(\Adyen\Environment::LIVE, \Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX'));
         }
         return $client;
     }
@@ -144,10 +176,11 @@ class Data
      */
     public function getAPIKey()
     {
+        // TODO: remove call_user_func
         if ($this->isDemoMode()) {
-            $apiKey = $this->decrypt(\Configuration::get('ADYEN_APIKEY_TEST'));
+            $apiKey = $this->decrypt(call_user_func($this->getConfigurationKey, 'ADYEN_APIKEY_TEST'));
         } else {
-            $apiKey = $this->decrypt(\Configuration::get('ADYEN_APIKEY_LIVE'));
+            $apiKey = $this->decrypt(call_user_func($this->getConfigurationKey, 'ADYEN_APIKEY_LIVE'));
         }
         return $apiKey;
     }
@@ -157,7 +190,7 @@ class Data
         // Generate an initialization vector
         $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-ctr'));
         // Encrypt the data using AES 256 encryption in CBC mode using our encryption key and initialization vector.
-        $encrypted = openssl_encrypt($data, 'aes-256-ctr', _COOKIE_KEY_, 0, $iv);
+        $encrypted = openssl_encrypt($data, 'aes-256-ctr', $this->sslEncryptionKey, 0, $iv);
         // The $iv is just as important as the key for decrypting, so save it with our encrypted data using a unique separator (::)
         return base64_encode($encrypted . '::' . $iv);
     }
@@ -166,41 +199,11 @@ class Data
     {
         // To decrypt, split the encrypted data from our IV - our unique separator used was "::"
         list($data, $iv) = explode('::', base64_decode($data), 2);
-        return openssl_decrypt($data, 'aes-256-ctr', _COOKIE_KEY_, 0, $iv);
+        return openssl_decrypt($data, 'aes-256-ctr', $this->sslEncryptionKey, 0, $iv);
     }
 
     /**
-     * @param \Adyen\Client $client
-     * @return \Adyen\Service\CheckoutUtility
-     * @throws \Adyen\AdyenException
-     */
-    private function createAdyenCheckoutUtilityService($client)
-    {
-        return new \Adyen\Service\CheckoutUtility($client);
-    }
-
-    /**
-     * Get adyen magento module's name sent to Adyen
-     *
-     * @return string
-     */
-    public function getModuleName()
-    {
-        return "adyen-prestashop";
-    }
-
-    /**
-     * Get adyen magento module's version
-     *
-     * @return string
-     */
-    public function getModuleVersion()
-    {
-        return \Module::getInstanceByName('adyen')->version;
-    }
-
-    /**
-     * Determine if Prestashop is 1.6
+     * Determine if PrestaShop is 1.6
      * @return bool
      */
     public function isPrestashop16()
@@ -273,13 +276,12 @@ class Data
                         'paymentData' => $details['paymentData'],
                         'redirectMethod' => $details['redirectMethod']
                     ];
-                }
-                else {
+                } else {
                     throw new AdyenException("3DS1 details missing");
                 }
                 break;
             default:
-            case 'error':
+            case 'error': // this case is never executed
 
                 $response = [
                     'action' => 'error',
@@ -291,6 +293,7 @@ class Data
 
         return json_encode($response);
     }
+
     /**
      * Return the formatted currency. Adyen accepts the currency in multiple formats.
      * @param $amount

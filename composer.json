@@ -6,6 +6,7 @@
   },
   "require": {
     "monolog/monolog": "1.24.*",
-    "adyen/php-api-library": "2.*"
+    "adyen/php-api-library": "2.*",
+    "ext-openssl": "*"
   }
 }
