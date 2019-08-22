@@ -122,7 +122,7 @@ class Data
         if ($this->isDemoMode()) {
             $client->setEnvironment(\Adyen\Environment::TEST);
         } else {
-            $client->setEnvironment(\Adyen\Environment::LIVE, Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX'));
+            $client->setEnvironment(\Adyen\Environment::LIVE, \Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX'));
         }
         return $client;
     }
