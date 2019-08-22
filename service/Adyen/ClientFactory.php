@@ -39,7 +39,6 @@ class ClientFactory
         $client->setXApiKey($encryptedApiKey);
         $client->setAdyenPaymentSource(\Adyen::MODULE_NAME, \Adyen::VERSION);
         $client->setExternalPlatform("PrestaShop", _PS_VERSION_);
-
         $client->setEnvironment($environment, $liveEndpointUrlPrefix);
         return $client;
     }
