@@ -29,14 +29,14 @@ use Adyen\Service\CheckoutUtility;
 class Data
 {
     /**
-     * @var array
+     * @var string
      */
-    private $getHttpHost;
+    private $httpHost;
 
     /**
      * @var array
      */
-    private $getConfigurationKey;
+    private $configuration;
 
     /**
      * @var string
@@ -49,11 +49,13 @@ class Data
     private $adyenCheckoutUtilityService;
 
     public function __construct(
-        $getHttpHost, $getConfigurationKey, $sslEncryptionKey, CheckoutUtility $adyenCheckoutUtilityService
-    )
-    {
-        $this->getHttpHost = $getHttpHost;
-        $this->getConfigurationKey = $getConfigurationKey;
+        $httpHost,
+        $configuration,
+        $sslEncryptionKey,
+        CheckoutUtility $adyenCheckoutUtilityService
+    ) {
+        $this->httpHost = $httpHost;
+        $this->configuration = $configuration;
         $this->sslEncryptionKey = $sslEncryptionKey;
         $this->adyenCheckoutUtilityService = $adyenCheckoutUtilityService;
     }
@@ -63,8 +65,7 @@ class Data
      */
     public function getOrigin()
     {
-        // TODO: remove call_user_func
-        return call_user_func($this->getHttpHost, true, true);
+        return $this->httpHost;
     }
 
     /**
@@ -79,11 +80,7 @@ class Data
 
         $origin = $this->getOrigin();
 
-        $params = [
-            "originDomains" => [
-                $origin
-            ]
-        ];
+        $params = array("originDomains" => array($origin));
 
         try {
             $response = $this->adyenCheckoutUtilityService->originKeys($params);
@@ -106,9 +103,7 @@ class Data
 
     public function isDemoMode()
     {
-        // TODO: remove call_user_func
-        $adyenMode = call_user_func($this->getConfigurationKey, 'ADYEN_MODE');
-        if (strpos($adyenMode, 'test') !== false) {
+        if (strpos($this->configuration['mode'], \Adyen\Environment::TEST) !== false) {
             return true;
         } else {
             return false;
@@ -117,6 +112,7 @@ class Data
 
     public function adyenLogger()
     {
+        // TODO: debug level should be in configuration
         $logger = new \FileLogger(0); //0 == debug level, logDebug() won’t work without this.
 
         if (version_compare(_PS_VERSION_, '1.6', '>=') &&
@@ -137,10 +133,8 @@ class Data
     /**
      * Initializes and returns Adyen Client and sets the required parameters of it
      *
-     * @param int|null $storeId
-     * @param string|null $apiKey
      * @return \Adyen\Client
-     * @throws \Adyen\AdyenException
+     * @throws AdyenException
      */
     public function initializeAdyenClient()
     {
@@ -148,8 +142,8 @@ class Data
         $client = $this->createAdyenClient();
         $client->setApplicationName("Prestashop plugin");
         $client->setXApiKey($apiKey);
-        $client->setAdyenPaymentSource(\Adyen::MODULE_NAME, \Adyen::VERSION);
-        $client->setExternalPlatform("Prestashop" , _PS_VERSION_);
+        $client->setAdyenPaymentSource(Adyen::MODULE_NAME, Adyen::VERSION);
+        $client->setExternalPlatform("Prestashop", _PS_VERSION_);
 
         if ($this->isDemoMode()) {
             $client->setEnvironment(\Adyen\Environment::TEST);
@@ -176,13 +170,7 @@ class Data
      */
     public function getAPIKey()
     {
-        // TODO: remove call_user_func
-        if ($this->isDemoMode()) {
-            $apiKey = $this->decrypt(call_user_func($this->getConfigurationKey, 'ADYEN_APIKEY_TEST'));
-        } else {
-            $apiKey = $this->decrypt(call_user_func($this->getConfigurationKey, 'ADYEN_APIKEY_LIVE'));
-        }
-        return $apiKey;
+        return $this->configuration['apiKey'];
     }
 
     public function encrypt($data)
@@ -222,7 +210,8 @@ class Data
      * @return false|string
      * @throws AdyenException
      */
-    public function buildControllerResponseJson($action, $details = []) {
+    public function buildControllerResponseJson($action, $details = array())
+    {
         switch ($action) {
             case 'error':
 
@@ -230,17 +219,17 @@ class Data
                     throw new AdyenException('No message is included in the error response');
                 }
 
-                $response = [
+                $response = array(
                     'action' => 'error',
                     'message' => $details['message']
-                ];
+                );
 
                 break;
             case 'threeDS2':
 
-                $response = [
+                $response = array(
                     'action' => 'threeDS2'
-                ];
+                );
 
                 if (!empty($details['type']) && !empty($details['token'])) {
                     $response['type'] = $details['type'];
@@ -254,10 +243,10 @@ class Data
                     throw new AdyenException('No redirect url is included in the redirect response');
                 }
 
-                $response = [
+                $response = array(
                     'action' => 'redirect',
                     'redirectUrl' => $details['redirectUrl']
-                ];
+                );
 
                 break;
             case 'threeDS1':
@@ -266,16 +255,16 @@ class Data
                     !empty($details['md']) &&
                     !empty($details['issuerUrl']) &&
                     !empty($details['paymentData']) &&
-                    !empty($details['redirectMethod'])){
+                    !empty($details['redirectMethod'])) {
 
-                    $response = [
+                    $response = array(
                         'action' => 'threeDS1',
                         'paRequest' => $details['paRequest'],
                         'md' => $details['md'],
                         'issuerUrl' => $details['issuerUrl'],
                         'paymentData' => $details['paymentData'],
                         'redirectMethod' => $details['redirectMethod']
-                    ];
+                    );
                 } else {
                     throw new AdyenException("3DS1 details missing");
                 }
@@ -283,10 +272,10 @@ class Data
             default:
             case 'error': // this case is never executed
 
-                $response = [
+                $response = array(
                     'action' => 'error',
                     'message' => 'Somethng went wrong'
-                ];
+                );
 
                 break;
         }
@@ -359,7 +348,8 @@ class Data
         $context->cart->add();
         // to update the new cart
         foreach ($cart_products as $product) {
-            $context->cart->updateQty((int) $product['quantity'], (int) $product['id_product'], (int) $product['id_product_attribute']);
+            $context->cart->updateQty((int)$product['quantity'], (int)$product['id_product'],
+                (int)$product['id_product_attribute']);
         }
         if ($context->cookie->id_guest) {
             $guest = new \Guest($context->cookie->id_guest);
@@ -370,12 +360,12 @@ class Data
         // to save the new cart
         $context->cart->save();
         if ($context->cart->id) {
-            $context->cookie->id_cart = (int) $context->cart->id;
+            $context->cookie->id_cart = (int)$context->cart->id;
             $context->cookie->write();
         }
 
         // to update the $id_cart with that of new cart
-        $id_cart = (int) $context->cart->id;
+        $id_cart = (int)$context->cart->id;
 
         return $id_cart;
     }
@@ -383,7 +373,8 @@ class Data
     /**
      * Start the session if does not exists yet
      */
-    public function startSession() {
+    public function startSession()
+    {
         if (!isset($_SESSION)) {
             session_start();
         }

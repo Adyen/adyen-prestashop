@@ -38,13 +38,12 @@ class DataFactory
     public function createAdyenHelperData($adyenRunningMode, $sslEncryptionKey)
     {
         $checkoutUtilityFactory = new CheckoutUtilityFactory();
+        $apiKey = $this->getAPIKey($adyenRunningMode, $sslEncryptionKey);
         return new \Adyen\PrestaShop\helper\Data(
-            ['Tools', 'getHttpHost'],
-            ['Configuration', 'get'],
+            \Tools::getHttpHost(true, true),
+            array('mode' => $adyenRunningMode, 'apiKey' => $apiKey),
             $sslEncryptionKey,
-            $checkoutUtilityFactory->createDefaultCheckoutUtility(
-                $this->getAPIKey($adyenRunningMode, $sslEncryptionKey), \Adyen\Environment::TEST
-            )
+            $checkoutUtilityFactory->createDefaultCheckoutUtility($apiKey, \Adyen\Environment::TEST)
         );
     }
 
@@ -89,6 +88,9 @@ class DataFactory
      */
     private function decrypt($data, $password)
     {
+        if (!$data) {
+            return '';
+        }
         // To decrypt, split the encrypted data from our IV - our unique separator used was "::"
         list($data, $iv) = explode('::', base64_decode($data), 2);
         return openssl_decrypt($data, 'aes-256-ctr', $password, 0, $iv);
