@@ -35,8 +35,10 @@ class AdyenValidate3dModuleFrontController extends \ModuleFrontController
 
     public function postProcess()
     {
-        $cart = $this->context->cart;
+        // retrieve cart from temp value and restore the cart to approve payment
+        $cart = new Cart((int)$this->context->cookie->__get("id_cart_temp"));
         $client = $this->helper_data->initializeAdyenClient();
+
         $requestMD = $_REQUEST['MD'];
         $requestPaRes = $_REQUEST['PaRes'];
         $paymentData = $_REQUEST['paymentData'];
