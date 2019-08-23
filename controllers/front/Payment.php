@@ -157,11 +157,15 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
                 // In case of refused payment there is no order created and the cart needs to be cloned and reinitiated
                 $this->helper_data->cloneCurrentCart($this->context);
                 $this->helper_data->adyenLogger()->logError("The payment was refused, id:  " . $cart->id);
-                if ($this->helper_data->isPrestashop16()) {
-                    return $this->setTemplate('error.tpl');
-                } else {
-                    return $this->setTemplate('module:adyen/views/templates/front/error.tpl');
-                }
+
+                $this->ajax = true;
+                echo $this->helper_data->buildControllerResponseJson(
+                    'error',
+                    [
+                        'message' => "The payment was refused"
+                    ]
+                );
+                return;
                 break;
             case 'IdentifyShopper':
                 $this->ajax = true;
