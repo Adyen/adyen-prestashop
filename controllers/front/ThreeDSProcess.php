@@ -13,7 +13,7 @@
  *                               #############
  *                               ############
  *
- * Adyen Prestashop Extension
+ * Adyen PrestaShop plugin
  *
  * Copyright (c) 2019 Adyen B.V.
  * This file is open source and available under the MIT license.
@@ -34,7 +34,11 @@ class AdyenThreeDSProcessModuleFrontController extends \ModuleFrontController
     {
         parent::__construct();
         $this->context = \Context::getContext();
-        $this->helper_data = new \Adyen\PrestaShop\helper\Data();
+        $adyenHelperFactory = new \Adyen\PrestaShop\service\Adyen\Helper\DataFactory();
+        $this->helper_data = $adyenHelperFactory->createAdyenHelperData(
+            \Configuration::get('ADYEN_MODE'),
+            _COOKIE_KEY_
+        );
 
         $this->helper_data->startSession();
     }
