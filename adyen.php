@@ -452,7 +452,7 @@ class Adyen extends \PaymentModule
 
         $this->context->smarty->assign(
             array(
-                'locale' => $this->context->language->locale,
+                'locale' => $this->context->language->iso_code, // no locale in Prestashop1.6 only languageCode that is en-en but we need en_EN
                 'originKey' => $this->helper_data->getOriginKeyForOrigin(),
                 'environment' => \Configuration::get('ADYEN_MODE'),
                 'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),

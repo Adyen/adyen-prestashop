@@ -190,6 +190,11 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
                 break;
             case 'RedirectShopper':
                 $this->ajax = true;
+                
+                // store cart in tempory value and remove the cart from session
+                $cartId = $this->context->cart->id;
+                $this->context->cookie->__set("id_cart", "");
+                $this->context->cookie->__set("id_cart_temp", $cartId);
 
                 if (!empty($response['redirect']['data']['PaReq']) && !empty($response['redirect']['data']['MD']) && !empty($response['redirect']['url']) && !empty($response['paymentData']) && !empty($response['redirect']['method'])) {
 
