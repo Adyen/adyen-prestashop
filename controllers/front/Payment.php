@@ -13,14 +13,14 @@
  *                               #############
  *                               ############
  *
- * Adyen Prestashop Extension
+ * Adyen PrestaShop plugin
  *
  * Copyright (c) 2019 Adyen B.V.
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
 
-class AdyenPaymentModuleFrontController extends \ModuleFrontController
+class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\FrontController
 {
     public $ssl = true;
 
@@ -31,6 +31,21 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
         $this->helper_data = new \Adyen\PrestaShop\helper\Data();
 
         $this->helper_data->startSession();
+    }
+
+    /**
+     * @param null $value
+     * @param null $controller
+     * @param null $method
+     * @throws PrestaShopException
+     */
+    protected function ajaxRender($value = null, $controller = null, $method = null)
+    {
+        if ($this->helper_data->isPrestashop16()) {
+            parent::ajaxDie($value, $controller, $method);
+        } else {
+            $this->ajaxRender($value, $controller, $method);
+        }
     }
 
     /**
@@ -100,7 +115,8 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
             if (empty($_REQUEST['isAjax'])) {
                 \Tools::redirect('index.php?controller=order&step=1');
             } else {
-                $this->ajaxDie($this->helper_data->buildControllerResponseJson('redirect', ['redirectUrl' => 'index.php?controller=order&step=1']));
+                $this->ajaxRender($this->helper_data->buildControllerResponseJson('redirect',
+                    ['redirectUrl' => 'index.php?controller=order&step=1']));
             }
         }
 
@@ -147,7 +163,8 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
                     \Tools::redirect('index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key);
 
                 } else {
-                    $this->ajaxDie($this->helper_data->buildControllerResponseJson('redirect', ['redirectUrl' => 'index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key]));
+                    $this->ajaxRender($this->helper_data->buildControllerResponseJson('redirect',
+                        ['redirectUrl' => 'index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key]));
                 }
 
                 break;
@@ -165,7 +182,7 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
                 $this->ajax = true;
                 $_SESSION['paymentData'] = $response['paymentData'];
 
-                $this->ajaxDie($this->helper_data->buildControllerResponseJson(
+                $this->ajaxRender($this->helper_data->buildControllerResponseJson(
                     'threeDS2',
                     [
                         'type' => 'IdentifyShopper',
@@ -178,7 +195,7 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
                 $this->ajax = true;
                 $_SESSION['paymentData'] = $response['paymentData'];
 
-                $this->ajaxDie($this->helper_data->buildControllerResponseJson(
+                $this->ajaxRender($this->helper_data->buildControllerResponseJson(
                     'threeDS2',
                     [
                         'type' => 'ChallengeShopper',
@@ -197,7 +214,7 @@ class AdyenPaymentModuleFrontController extends \ModuleFrontController
                 $paymentData = $response['paymentData'];
                 $redirectMethod = $response['redirect']['method'];
 
-                    $this->ajaxDie($this->helper_data->buildControllerResponseJson(
+                    $this->ajaxRender($this->helper_data->buildControllerResponseJson(
                         'threeDS1',
                         [
                             'paRequest' => $paRequest,

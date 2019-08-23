@@ -13,14 +13,14 @@
  *                               #############
  *                               ############
  *
- * Adyen Prestashop Extension
+ * Adyen PrestaShop plugin
  *
  * Copyright (c) 2019 Adyen B.V.
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
 
-class AdyenThreeDSProcessModuleFrontController extends \ModuleFrontController
+class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\controllers\FrontController
 {
     /**
      * @var bool
@@ -56,7 +56,7 @@ class AdyenThreeDSProcessModuleFrontController extends \ModuleFrontController
                 "paymentData" => $_SESSION['paymentData']
             ];
         } else {
-            $this->ajaxDie($this->helper_data->buildControllerResponseJson(
+            $this->ajaxRender($this->helper_data->buildControllerResponseJson(
                 'error',
                 [
                     'message' => "3D secure 2.0 failed, payment data not found"
@@ -71,7 +71,7 @@ class AdyenThreeDSProcessModuleFrontController extends \ModuleFrontController
         } elseif (!empty($payload['details']['threeds2.challengeResult'])) {
             $request['details']['threeds2.challengeResult'] = $payload['details']['threeds2.challengeResult'];
         } else {
-            $this->ajaxDie($this->helper_data->buildControllerResponseJson(
+            $this->ajaxRender($this->helper_data->buildControllerResponseJson(
                 'error',
                 [
                     'message' => "3D secure 2.0 failed, payload details are not found"
@@ -88,7 +88,7 @@ class AdyenThreeDSProcessModuleFrontController extends \ModuleFrontController
 
             $result = $service->paymentsDetails($request);
         } catch (\Adyen\AdyenException $e) {
-            $this->ajaxDie($this->helper_data->buildControllerResponseJson(
+            $this->ajaxRender($this->helper_data->buildControllerResponseJson(
                 'error',
                 [
                     'message' => '3D secure 2.0 failed'
@@ -101,7 +101,7 @@ class AdyenThreeDSProcessModuleFrontController extends \ModuleFrontController
             $result['resultCode'] === 'ChallengeShopper' &&
             !empty($result['authentication']['threeds2.challengeToken'])
         ) {
-            $this->ajaxDie($this->helper_data->buildControllerResponseJson(
+            $this->ajaxRender($this->helper_data->buildControllerResponseJson(
                 'threeDS2',
                 [
                     'type' => $result['resultCode'],
@@ -118,6 +118,6 @@ class AdyenThreeDSProcessModuleFrontController extends \ModuleFrontController
         }
 
         // 3DS2 flow is done, original place order flow can continue from frontend
-        $this->ajaxDie($this->helper_data->buildControllerResponseJson('threeDS2'));
+        $this->ajaxRender($this->helper_data->buildControllerResponseJson('threeDS2'));
     }
 }
