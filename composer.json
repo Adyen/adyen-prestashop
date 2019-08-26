@@ -5,7 +5,10 @@
     }
   },
   "require": {
+    "adyen/php-api-library": "2.*",
+    "ext-json": "*",
+    "ext-openssl": "*",
     "monolog/monolog": "1.24.*",
-    "adyen/php-api-library": "2.*"
+    "php": "5.2.*"
   }
 }

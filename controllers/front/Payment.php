@@ -28,7 +28,11 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
     {
         parent::__construct();
         $this->context = \Context::getContext();
-        $this->helper_data = new \Adyen\PrestaShop\helper\Data();
+        $adyenHelperFactory = new \Adyen\PrestaShop\service\Adyen\Helper\DataFactory();
+        $this->helper_data = $adyenHelperFactory->createAdyenHelperData(
+            \Configuration::get('ADYEN_MODE'),
+            _COOKIE_KEY_
+        );
 
         $this->helper_data->startSession();
     }
@@ -172,11 +176,15 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                 // In case of refused payment there is no order created and the cart needs to be cloned and reinitiated
                 $this->helper_data->cloneCurrentCart($this->context);
                 $this->helper_data->adyenLogger()->logError("The payment was refused, id:  " . $cart->id);
-                if ($this->helper_data->isPrestashop16()) {
-                    return $this->setTemplate('error.tpl');
-                } else {
-                    return $this->setTemplate('module:adyen/views/templates/front/error.tpl');
-                }
+
+                $this->ajax = true;
+                echo $this->helper_data->buildControllerResponseJson(
+                    'error',
+                    [
+                        'message' => "The payment was refused"
+                    ]
+                );
+                return;
                 break;
             case 'IdentifyShopper':
                 $this->ajax = true;
@@ -205,6 +213,11 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                 break;
             case 'RedirectShopper':
                 $this->ajax = true;
+                
+                // store cart in tempory value and remove the cart from session
+                $cartId = $this->context->cart->id;
+                $this->context->cookie->__set("id_cart", "");
+                $this->context->cookie->__set("id_cart_temp", $cartId);
 
                 if (!empty($response['redirect']['data']['PaReq']) && !empty($response['redirect']['data']['MD']) && !empty($response['redirect']['url']) && !empty($response['paymentData']) && !empty($response['redirect']['method'])) {
 

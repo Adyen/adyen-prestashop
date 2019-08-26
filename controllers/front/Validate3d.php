@@ -26,13 +26,19 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
     {
         parent::__construct();
         $this->context = \Context::getContext();
-        $this->helper_data = new \Adyen\PrestaShop\helper\Data();
+        $adyenHelperFactory = new \Adyen\PrestaShop\service\Adyen\Helper\DataFactory();
+        $this->helper_data = $adyenHelperFactory->createAdyenHelperData(
+            \Configuration::get('ADYEN_MODE'),
+            _COOKIE_KEY_
+        );
     }
 
     public function postProcess()
     {
-        $cart = $this->context->cart;
+        // retrieve cart from temp value and restore the cart to approve payment
+        $cart = new Cart((int)$this->context->cookie->__get("id_cart_temp"));
         $client = $this->helper_data->initializeAdyenClient();
+
         $requestMD = $_REQUEST['MD'];
         $requestPaRes = $_REQUEST['PaRes'];
         $paymentData = $_REQUEST['paymentData'];
@@ -47,7 +53,7 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
             ]
         ];
 
-        $client->setAdyenPaymentSource($this->helper_data->getModuleName(), $this->helper_data->getModuleVersion());
+        $client->setAdyenPaymentSource(\Adyen::MODULE_NAME, \Adyen::VERSION);
 
         try {
             $client = $this->helper_data->initializeAdyenClient();
