@@ -280,7 +280,7 @@ class Data
                 break;
         }
 
-        return json_encode($response);
+        return \Tools::jsonEncode($response);
     }
 
     /**
