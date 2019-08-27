@@ -369,7 +369,7 @@ class Adyen extends \PaymentModule
                     array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
                 );
 
-                $this->context->controller->registerStylesheet($this->name.'-adyencss', 'modules/'.$this->name.'/css/adyen.css');
+                $this->context->controller->registerStylesheet($this->name.'-adyencss',$this->_path .'/css/adyen.css');
 
             }
         } else {
