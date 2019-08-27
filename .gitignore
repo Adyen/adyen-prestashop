@@ -32,3 +32,11 @@ admin-dev/import/
 download/
 /img/*
 upload/
+
+#development
+.idea/
+*.iml
+
+#composer
+vendor/
+composer.lock

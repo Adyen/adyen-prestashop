@@ -1,0 +1,14 @@
+{
+  "autoload": {
+    "psr-4": {
+      "Adyen\\PrestaShop\\": ""
+    }
+  },
+  "require": {
+    "adyen/php-api-library": "2.*",
+    "ext-json": "*",
+    "ext-openssl": "*",
+    "monolog/monolog": "1.24.*",
+    "php": "5.2.*"
+  }
+}
