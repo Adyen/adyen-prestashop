@@ -329,15 +329,15 @@ class Data
      * @param $context
      * @return int
      */
-    public function cloneCurrentCart($context)
+    public function cloneCurrentCart($context, $cart)
     {
         // To save the secure key of current cart id and reassign the same to new cart
-        $old_cart_secure_key = $context->cart->secure_key;
+        $old_cart_secure_key = $cart->secure_key;
         // To save the customer id of current cart id and reassign the same to new cart
-        $old_cart_customer_id = (int)$context->cart->id_customer;
+        $old_cart_customer_id = (int)$cart->id_customer;
 
         // To fetch the current cart products
-        $cart_products = $context->cart->getProducts();
+        $cart_products = $cart->getProducts();
         // Creating new cart object
         $context->cart = new \Cart();
         $context->cart->id_lang = $context->language->id;
@@ -363,11 +363,6 @@ class Data
             $context->cookie->id_cart = (int)$context->cart->id;
             $context->cookie->write();
         }
-
-        // to update the $id_cart with that of new cart
-        $id_cart = (int)$context->cart->id;
-
-        return $id_cart;
     }
 
     /**

@@ -38,21 +38,6 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
     }
 
     /**
-     * @param null $value
-     * @param null $controller
-     * @param null $method
-     * @throws PrestaShopException
-     */
-    protected function ajaxRender($value = null, $controller = null, $method = null)
-    {
-        if ($this->helper_data->isPrestashop16()) {
-            parent::ajaxDie($value, $controller, $method);
-        } else {
-            $this->ajaxRender($value, $controller, $method);
-        }
-    }
-
-    /**
      * @return mixed
      * @throws \Adyen\AdyenException
      */
@@ -141,6 +126,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                 $this->module->validateOrder($cart->id, 2, $total, $this->module->displayName, null, $extra_vars,
                     (int)$currency->id, false, $customer->secure_key);
                 $new_order = new \Order((int)$this->module->currentOrder);
+
                 if (\Validate::isLoadedObject($new_order)) {
                     $paymentCollection = $new_order->getOrderPaymentCollection();
                     foreach ($paymentCollection as $payment) {
@@ -174,7 +160,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                 break;
             case 'Refused':
                 // In case of refused payment there is no order created and the cart needs to be cloned and reinitiated
-                $this->helper_data->cloneCurrentCart($this->context);
+                $this->helper_data->cloneCurrentCart($this->context, $cart);
                 $this->helper_data->adyenLogger()->logError("The payment was refused, id:  " . $cart->id);
 
                 $this->ajax = true;

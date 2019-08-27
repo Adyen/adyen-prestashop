@@ -92,7 +92,9 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
                 \Tools::redirect('index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key);
                 break;
             case 'Refused':
-                $this->helper_data->cloneCurrentCart($this->context);
+                // create new cart from the current cart
+                $this->helper_data->cloneCurrentCart($this->context, $cart);
+
                 $this->helper_data->adyenLogger()->logError("The payment was refused, id:  " . $cart->id);
                 if ($this->helper_data->isPrestashop16()) {
                     return $this->setTemplate('error.tpl');
@@ -101,6 +103,8 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
                 }
                 break;
             default:
+                // create new cart from the current cart
+                $this->helper_data->cloneCurrentCart($this->context, $cart);
                 //6_PS_OS_CANCELED_ : order canceled
                 $this->module->validateOrder($cart->id, 6, $total, $this->module->displayName, null, $extra_vars,
                     (int)$currency->id, false, $customer->secure_key);
