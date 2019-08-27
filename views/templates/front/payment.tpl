@@ -4,9 +4,13 @@
         please check your API key in the Adyen Module configuration</h5>
 </form>
 {else}
-    <div class="row">
+    <div class="row adyen-payment">
         <div class="col-xs-12 col-md-6">
             <form id="payment-form" action="{$paymentProcessUrl}" class="adyen-payment-form" method="post">
+
+                <!-- Display payment errors -->
+                <div id="errors" role="alert"></div>
+
                 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
                 {if $prestashop16}
                     <link rel="stylesheet" href="/js/jquery/plugins/fancybox/jquery.fancybox.css" type="text/css" media="all" />
@@ -226,8 +230,7 @@
                                 processControllerResponse(response);
                             },
                             error: function(response) {
-                                // todo show error
-                                console.log(response);
+                                $('#payment-form.adyen-payment-form').find('#errors').text(response.message).fadeIn(1000);
                             }
                         });
                     }
@@ -239,7 +242,7 @@
                         switch(response.action) {
                             case 'error':
                                 // show error message
-                                console.log(response.message);
+                                $('#payment-form.adyen-payment-form').find('#errors').text(response.message).fadeIn(1000);
                                 break;
                             case 'redirect':
                                 window.location.replace(response.redirectUrl);

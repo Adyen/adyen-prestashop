@@ -12,3 +12,14 @@ ul.adyen-hpp-options { list-style-type:none; margin-left:10px;}
 		ul.adyen-hpp-options li span,ul.adyen-hpp-options li ul li label { float:left; display:block; margin:12px 0 0 0;}
 			ul.adyen-hpp-options li ul.payment_form_ideal { margin-left:35px;}
 				ul.adyen-hpp-options li ul.payment_form_ideal input { margin-top:25px;}
+
+div.adyen-payment #errors {
+	margin: 0 0 10px 0;
+	padding: 10px;
+	border: 1px solid #900;
+	color: #900;
+	font-size: 13px;
+	background: #FCC;
+	width: 210px;
+	display: none;
+}

@@ -35,7 +35,7 @@ class Adyen extends \PaymentModule
     const CHECKOUT_COMPONENT_JS_LIVE = 'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/3.0.0/adyen.js';
     const CHECKOUT_COMPONENT_CSS_TEST = 'https://checkoutshopper-test.adyen.com/checkoutshopper/sdk/3.0.0/adyen.css';
     const CHECKOUT_COMPONENT_CSS_LIVE = 'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/3.0.0/adyen.css';
-    const VERSION = '0.0.1';
+    const VERSION = '1.0.0';
     const MODULE_NAME = 'adyen-prestashop';
 
 
@@ -368,6 +368,9 @@ class Adyen extends \PaymentModule
                     self::CHECKOUT_COMPONENT_CSS_TEST, // CSS path
                     array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
                 );
+
+                $this->context->controller->registerStylesheet($this->name.'-adyencss', 'modules/'.$this->name.'/css/adyen.css');
+
             }
         } else {
 
@@ -421,7 +424,6 @@ class Adyen extends \PaymentModule
         $embeddedOption = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
 
         $cc_img = 'cc_border.png';
-
 
         $this->context->smarty->assign(
             array(

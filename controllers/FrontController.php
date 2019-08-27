@@ -43,7 +43,7 @@ abstract class FrontController extends \ModuleFrontController
         if ($this->helper_data->isPrestashop16()) {
             parent::ajaxDie($value, $controller, $method);
         } else {
-            $this->ajaxRender($value, $controller, $method);
+            parent::ajaxRender($value, $controller, $method);
         }
     }
 }
