@@ -93,6 +93,7 @@ class Adyen extends \PaymentModule
                 \Logger::addLog('Adyen module: installation failed!', 4);
                 return false;
             }
+            $this->createAdyenNotificationTable();
             return true;
         }
 
@@ -102,7 +103,40 @@ class Adyen extends \PaymentModule
             && $this->registerHook('orderConfirmation')
             && $this->registerHook('paymentOptions')
             && $this->registerHook('paymentReturn')
-            && $this->registerHook('adminOrder');
+            && $this->registerHook('adminOrder')
+            && $this->createAdyenNotificationTable();
+    }
+
+    protected function createAdyenNotificationTable()
+    {
+        $db = Db::getInstance();
+        $query = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'adyen_notification` (
+            `entity_id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT \'Adyen Notification Entity ID\',
+            `pspreference` varchar(255) DEFAULT NULL COMMENT \'Pspreference\',
+            `original_reference` varchar(255) DEFAULT NULL COMMENT \'Original Reference\',
+            `merchant_reference` varchar(255) DEFAULT NULL COMMENT \'Merchant Reference\',
+            `event_code` varchar(255) DEFAULT NULL COMMENT \'Event Code\',
+            `success` varchar(255) DEFAULT NULL COMMENT \'Success\',
+            `payment_method` varchar(255) DEFAULT NULL COMMENT \'Payment Method\',
+            `amount_value` varchar(255) DEFAULT NULL COMMENT \'Amount value\',
+            `amount_currency` varchar(255) DEFAULT NULL COMMENT \'Amount currency\',
+            `reason` varchar(255) DEFAULT NULL COMMENT \'reason\',
+            `live` varchar(255) DEFAULT NULL COMMENT \'Send from Live platform of adyen?\',
+            `additional_data` text COMMENT \'AdditionalData\',
+            `done` tinyint(1) NOT NULL DEFAULT \'0\' COMMENT \'done\',
+            `processing` tinyint(1) DEFAULT \'0\' COMMENT \'Adyen Notification Cron Processing\',
+            `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT \'Created At\',
+            `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT \'Updated At\',
+            PRIMARY KEY (`entity_id`),
+            KEY `ADYEN_NOTIFICATION_PSPREFERENCE` (`pspreference`),
+            KEY `ADYEN_NOTIFICATION_EVENT_CODE` (`event_code`),
+            KEY `ADYEN_NOTIFICATION_PSPREFERENCE_EVENT_CODE` (`pspreference`,`event_code`),
+            KEY `ADYEN_NOTIFICATION_MERCHANT_REFERENCE_EVENT_CODE` (`merchant_reference`,`event_code`)
+            ) ENGINE=' . _MYSQL_ENGINE_ . ' AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT=\'Adyen Notifications\'';
+
+        $db->execute($query);
+
+        return true;
     }
 
     /**
@@ -113,6 +147,11 @@ class Adyen extends \PaymentModule
     public function uninstall()
     {
         // TODO: delete adyen configurations (api-key)
+        $db = Db::getInstance();
+        /** @noinspection SqlWithoutWhere SqlResolve */
+        $db->execute('DELETE FROM `' . _DB_PREFIX_ . 'adyen_notification`');
+        $db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'adyen_notification`');
+
         return parent::uninstall();
     }
 
