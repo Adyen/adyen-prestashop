@@ -149,7 +149,7 @@ class Adyen extends \PaymentModule
         // TODO: delete adyen configurations (api-key)
         $db = Db::getInstance();
         /** @noinspection SqlWithoutWhere SqlResolve */
-//        $db->execute('DELETE FROM `' . _DB_PREFIX_ . 'adyen_notification`');
+        $db->execute('DELETE FROM `' . _DB_PREFIX_ . 'adyen_notification`');
         $db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'adyen_notification`');
 
         return parent::uninstall();
