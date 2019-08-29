@@ -89,7 +89,16 @@ class Adyen extends \PaymentModule
 
         if ($this->helper_data->isPrestashop16()) {
             // Version is 1.6
-            if (parent::install() == false || !$this->registerHook('displayBackOfficeHeader') || !$this->registerHook('payment') || !$this->registerHook('displayPaymentEU') || !$this->registerHook('paymentReturn') || !$this->registerHook('displayHeader') || !$this->registerHook('displayAdminOrder')) {
+            if (
+                parent::install() == false
+                || !$this->registerHook('displayBackOfficeHeader')
+                || !$this->registerHook('payment')
+                || !$this->registerHook('displayPaymentEU')
+                || !$this->registerHook('paymentReturn')
+                || !$this->registerHook('displayHeader')
+                || !$this->registerHook('displayAdminOrder')
+                || !$this->registerHook('moduleRoutes')
+            ) {
                 \Logger::addLog('Adyen module: installation failed!', 4);
                 return false;
             }
@@ -104,6 +113,7 @@ class Adyen extends \PaymentModule
             && $this->registerHook('paymentOptions')
             && $this->registerHook('paymentReturn')
             && $this->registerHook('adminOrder')
+            && $this->registerHook('moduleRoutes')
             && $this->createAdyenNotificationTable();
     }
 
@@ -537,5 +547,23 @@ class Adyen extends \PaymentModule
     public function hookPaymentReturn()
     {
         return;
+    }
+
+
+    public function hookModuleRoutes()
+    {
+//        var_dump($this->);
+        return array(
+            'module-adyen-Notifications' => array(
+                'rule' => 'adyen/notifications',
+                'controller' => 'Notifications',
+                'keywords' => array(),
+                'params' => array(
+                    'fc' => 'module',
+                    'module' => 'adyen',
+                    'controller' => 'Notifications'
+                )
+            )
+        );
     }
 }
