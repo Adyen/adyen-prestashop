@@ -81,8 +81,10 @@ class AdyenNotificationsModuleFrontController extends FrontController
                     $this->return401();
                     return;
                 }
-                throw new \Magento\Framework\Exception\LocalizedException(
-                    __('Mismatch between Live/Test modes of Magento store and the Adyen platform')
+                $this->ajaxDie(json_encode([
+                        'success' => false,
+                        'message' => 'Mismatch between Live/Test modes of Prestashop store and the Adyen platform'
+                    ])
                 );
             }
         } catch (Exception $e) {
@@ -118,7 +120,7 @@ class AdyenNotificationsModuleFrontController extends FrontController
             if ($this->isTestNotification($response['pspReference'])) {
                 $this->ajaxDie(json_encode([
                     'success' => false,
-                    'message' => 'merchantAccountCode is empty in magento settings'
+                    'message' => 'merchantAccountCode is empty in Prestashop settings'
                 ]));
             }
             return false;
@@ -176,7 +178,6 @@ class AdyenNotificationsModuleFrontController extends FrontController
      * @param $response
      * @param $notificationMode
      * @return bool
-     * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function processNotification($response, $notificationMode)
     {
