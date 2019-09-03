@@ -66,15 +66,15 @@ class AdyenNotificationsModuleFrontController extends FrontController
                 $cronCheckTest = $notificationItems['notificationItems'][0]['NotificationRequestItem']['pspReference'];
 
                 // Run the query for checking unprocessed notifications, do this only for test notifications coming from the Adyen Customer Area
-//                if ($this->isTestNotification($cronCheckTest)) {
-//                    $unprocessedNotifications = $this->_adyenHelper->getUnprocessedNotifications();
-//                    if ($unprocessedNotifications > 0) {
-//                        $acceptedMessage .= "\nYou have " . $unprocessedNotifications . " unprocessed notifications.";
-//                    }
-//                }
+                if ($this->isTestNotification($cronCheckTest)) {
+                    $unprocessedNotifications = $this->getUnprocessedNotifications();
+                    if ($unprocessedNotifications > 0) {
+                        $acceptedMessage .= "\nYou have " . $unprocessedNotifications . " unprocessed notifications.";
+                    }
+                }
 
                 $this->helper_data->adyenLogger()->logDebug("The result is accepted");
-                $this->returnAccepted();
+                $this->returnAccepted($acceptedMessage);
                 return;
             } else {
                 if ($notificationMode == "") {
@@ -190,7 +190,7 @@ class AdyenNotificationsModuleFrontController extends FrontController
             );
 
             // check if notification already exists
-            if ($this->isTestNotification($response['pspReference']) && !$this->isDuplicate($response)) {
+            if (!$this->isTestNotification($response['pspReference']) && !$this->isDuplicate($response)) {
                 try {
                     $this->insertNotification($response);
                     return true;
@@ -229,10 +229,13 @@ class AdyenNotificationsModuleFrontController extends FrontController
         exit($message);
     }
 
-    private function returnAccepted()
+    private function returnAccepted($acceptedMessage)
     {
+        if(empty($acceptedMessage)){
+            $acceptedMessage = "[accepted]";
+        }
         header("", true, 200);
-        exit("[accepted]");
+        exit($acceptedMessage);
     }
 
     private function insertNotification($notification)
@@ -312,5 +315,14 @@ class AdyenNotificationsModuleFrontController extends FrontController
         $query = Db::getInstance()->getValue($sql);
 
         return $query;
+    }
+
+    protected function getUnprocessedNotifications()
+    {
+        $sql = 'SELECT COUNT(*) FROM ' . _DB_PREFIX_ . 'adyen_notification '
+            . 'WHERE `done` = "' . (int)0 . '"'
+            . ' AND `processing` = "' . (int)0 . '"';
+
+        return Db::getInstance()->getValue($sql);
     }
 }
