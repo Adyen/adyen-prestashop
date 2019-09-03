@@ -35,7 +35,7 @@ class Adyen extends \PaymentModule
     const CHECKOUT_COMPONENT_JS_LIVE = 'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/3.0.0/adyen.js';
     const CHECKOUT_COMPONENT_CSS_TEST = 'https://checkoutshopper-test.adyen.com/checkoutshopper/sdk/3.0.0/adyen.css';
     const CHECKOUT_COMPONENT_CSS_LIVE = 'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/3.0.0/adyen.css';
-    const VERSION = '1.0.0';
+    const VERSION = '1.0.1';
     const MODULE_NAME = 'adyen-prestashop';
 
 
@@ -64,7 +64,6 @@ class Adyen extends \PaymentModule
         $this->need_instance = 1;
         // end for 1.6
 
-
         parent::__construct();
 
         $this->dependencies = array();
@@ -88,25 +87,27 @@ class Adyen extends \PaymentModule
         }
 
         if ($this->helper_data->isPrestashop16()) {
-            // Version is 1.6
+            // Version 1.6 requires a different set of hooks
             if (
-                parent::install() == false
-                || !$this->registerHook('displayBackOfficeHeader')
-                || !$this->registerHook('payment')
-                || !$this->registerHook('displayPaymentEU')
-                || !$this->registerHook('paymentReturn')
-                || !$this->registerHook('displayHeader')
-                || !$this->registerHook('displayAdminOrder')
-                || !$this->registerHook('moduleRoutes')
+                parent::install()
+                && $this->registerHook('displayBackOfficeHeader')
+                && $this->registerHook('payment')
+                && $this->registerHook('displayPaymentEU')
+                && $this->registerHook('paymentReturn')
+                && $this->registerHook('displayHeader')
+                && $this->registerHook('displayAdminOrder')
+                && $this->registerHook('moduleRoutes')
+                // the table for notifications from Adyen needs to be both in install and upgrade
+                && $this->createAdyenNotificationTable()
             ) {
+                return true;
+            } else {
                 \Logger::addLog('Adyen module: installation failed!', 4);
                 return false;
             }
-            $this->createAdyenNotificationTable();
-            return true;
         }
 
-        // version is 1.7 or higher
+        // install hooks for version 1.7 or higher
         return parent::install()
             && $this->registerHook('header')
             && $this->registerHook('orderConfirmation')
@@ -114,10 +115,11 @@ class Adyen extends \PaymentModule
             && $this->registerHook('paymentReturn')
             && $this->registerHook('adminOrder')
             && $this->registerHook('moduleRoutes')
+            // the table for notifications from Adyen needs to be both in install and upgrade
             && $this->createAdyenNotificationTable();
     }
 
-    protected function createAdyenNotificationTable()
+    public function createAdyenNotificationTable()
     {
         $db = Db::getInstance();
         $query = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'adyen_notification` (
