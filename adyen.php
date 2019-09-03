@@ -551,21 +551,4 @@ class Adyen extends \PaymentModule
         return;
     }
 
-
-    public function hookModuleRoutes()
-    {
-//        var_dump($this->);
-        return array(
-            'module-adyen-Notifications' => array(
-                'rule' => 'adyen/notifications',
-                'controller' => 'Notifications',
-                'keywords' => array(),
-                'params' => array(
-                    'fc' => 'module',
-                    'module' => 'adyen',
-                    'controller' => 'Notifications'
-                )
-            )
-        );
-    }
 }
