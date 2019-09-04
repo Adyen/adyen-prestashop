@@ -137,6 +137,17 @@ class AdyenNotificationsModuleFrontController extends FrontController
             return false;
         }
 
+        // validate hmac
+
+        if (!$this->verifyHmac($response)) {
+            $this->ajaxDie(json_encode([
+                    'success' => false,
+                    'message' => 'HMAC key validation failed'
+                ])
+            );
+            return false;
+        }
+
         $usernameCmp = strcmp($_SERVER['PHP_AUTH_USER'], $username);
         $passwordCmp = strcmp($_SERVER['PHP_AUTH_PW'], $password);
         if ($usernameCmp === 0 && $passwordCmp === 0) {
@@ -276,8 +287,8 @@ class AdyenNotificationsModuleFrontController extends FrontController
 
         // do this to set both fields in the correct timezone
         $date = new \DateTime();
-        $data['created_at'] = $date;
-        $data['updated_at'] = $date;
+        $data['created_at'] = $date->format('Y-m-d H:i:s');
+        $data['updated_at'] = $date->format('Y-m-d H:i:s');
 
         Db::getInstance()->insert(
             _DB_PREFIX_ . 'adyen_notification',
@@ -325,4 +336,14 @@ class AdyenNotificationsModuleFrontController extends FrontController
 
         return Db::getInstance()->getValue($sql);
     }
+
+    private function verifyHmac($notification)
+    {
+        $hmac = \Configuration::get('ADYEN_NOTI_HMAC');
+        $util = new \Adyen\Util\Util();
+        $valid = $util->isValidNotificationHMAC($notification, $hmac);
+        return $valid;
+    }
+
+
 }

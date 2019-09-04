@@ -182,6 +182,7 @@ class Adyen extends \PaymentModule
             $mode = (string)\Tools::getValue('ADYEN_MODE');
             $notification_username = (string)\Tools::getValue('ADYEN_NOTI_USERNAME');
             $notification_password = (string)\Tools::getValue('ADYEN_NOTI_PASSWORD');
+            $notification_hmac = (string)\Tools::getValue('ADYEN_NOTI_HMAC');
             $api_key_test = $this->helper_data->encrypt(\Tools::getValue('ADYEN_APIKEY_TEST'));
             $api_key_live = $this->helper_data->encrypt(\Tools::getValue('ADYEN_APIKEY_LIVE'));
             $live_endpoint_url_prefix = (string)\Tools::getValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
@@ -200,6 +201,10 @@ class Adyen extends \PaymentModule
                 $output .= $this->displayError($this->l('Invalid Configuration value for Notification Password'));
             }
 
+            if (!$notification_hmac || empty($notification_hmac) || !\Validate::isGenericName($notification_hmac)) {
+                $output .= $this->displayError($this->l('Invalid Configuration value for Notification HMAC Key'));
+            }
+
 
             if ($output == null) {
 
@@ -207,6 +212,7 @@ class Adyen extends \PaymentModule
                 \Configuration::updateValue('ADYEN_MODE', $mode);
                 \Configuration::updateValue('ADYEN_NOTI_USERNAME', $notification_username);
                 \Configuration::updateValue('ADYEN_NOTI_PASSWORD', $notification_password);
+                \Configuration::updateValue('ADYEN_NOTI_HMAC', $notification_hmac);
                 \Configuration::updateValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX', $live_endpoint_url_prefix);
                 if (!empty($api_key_test)) {
                     \Configuration::updateValue('ADYEN_APIKEY_TEST', $api_key_test);
@@ -288,6 +294,14 @@ class Adyen extends \PaymentModule
                     'hint' => $this->l('Must correspond to the notification password in the Adyen Backoffice under Settings => Notifications')
                 ),
                 array(
+                    'type' => 'text',
+                    'label' => $this->l('HMAC key for notifications'),
+                    'name' => 'ADYEN_NOTI_HMAC',
+                    'size' => 20,
+                    'required' => true,
+                    'hint' => $this->l('Must correspond to the notification HMAC Key in the Adyen Backoffice under Settings => Notifications => Additional Settings => HMAC Key (HEX Encoded)')
+                ),
+                array(
                     'type' => 'password',
                     'label' => $this->l('API key for Test'),
                     'name' => 'ADYEN_APIKEY_TEST',
@@ -352,6 +366,7 @@ class Adyen extends \PaymentModule
             $mode = (string)\Tools::getValue('ADYEN_MODE');
             $notification_username = (string)\Tools::getValue('ADYEN_NOTI_USERNAME');
             $notification_password = (string)\Tools::getValue('ADYEN_NOTI_PASSWORD');
+            $notification_HMAC = (string)\Tools::getValue('ADYEN_NOTI_HMAC');
             $live_endpoint_url_prefix = (string)\Tools::getValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
             $api_key_test = $this->hashing->hash(\Tools::getValue('ADYEN_APIKEY_TEST'), _COOKIE_KEY_);
             $api_key_live = $this->hashing->hash(\Tools::getValue('ADYEN_APIKEY_LIVE'), _COOKIE_KEY_);
@@ -360,6 +375,7 @@ class Adyen extends \PaymentModule
             $mode = \Configuration::get('ADYEN_MODE');
             $notification_username = \Configuration::get('ADYEN_NOTI_USERNAME');
             $notification_password = \Configuration::get('ADYEN_NOTI_PASSWORD');
+            $notification_HMAC = \Configuration::get('ADYEN_NOTI_HMAC');
             $live_endpoint_url_prefix = \Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
             $api_key_test = $this->hashing->hash(\Configuration::get('ADYEN_APIKEY_TEST'),
                 _COOKIE_KEY_);;
@@ -372,6 +388,7 @@ class Adyen extends \PaymentModule
         $helper->fields_value['ADYEN_MODE'] = $mode;
         $helper->fields_value['ADYEN_NOTI_USERNAME'] = $notification_username;
         $helper->fields_value['ADYEN_NOTI_PASSWORD'] = $notification_password;
+        $helper->fields_value['ADYEN_NOTI_HMAC'] = $notification_HMAC;
         $helper->fields_value['ADYEN_APIKEY_TEST'] = $api_key_test;
         $helper->fields_value['ADYEN_APIKEY_LIVE'] = $api_key_live;
         $helper->fields_value['ADYEN_LIVE_ENDPOINT_URL_PREFIX'] = $live_endpoint_url_prefix;
