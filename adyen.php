@@ -183,8 +183,8 @@ class Adyen extends \PaymentModule
             $notification_username = (string)\Tools::getValue('ADYEN_NOTI_USERNAME');
             $notification_password = (string)\Tools::getValue('ADYEN_NOTI_PASSWORD');
             $notification_hmac = (string)\Tools::getValue('ADYEN_NOTI_HMAC');
-            $api_key_test = $this->helper_data->encrypt(\Tools::getValue('ADYEN_APIKEY_TEST'));
-            $api_key_live = $this->helper_data->encrypt(\Tools::getValue('ADYEN_APIKEY_LIVE'));
+            $api_key_test = \Tools::getValue('ADYEN_APIKEY_TEST');
+            $api_key_live = \Tools::getValue('ADYEN_APIKEY_LIVE');
             $live_endpoint_url_prefix = (string)\Tools::getValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
 
 
@@ -215,10 +215,10 @@ class Adyen extends \PaymentModule
                 \Configuration::updateValue('ADYEN_NOTI_HMAC', $notification_hmac);
                 \Configuration::updateValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX', $live_endpoint_url_prefix);
                 if (!empty($api_key_test)) {
-                    \Configuration::updateValue('ADYEN_APIKEY_TEST', $api_key_test);
+                    \Configuration::updateValue('ADYEN_APIKEY_TEST', $this->helper_data->encrypt($api_key_test));
                 }
                 if (!empty($api_key_live)) {
-                    \Configuration::updateValue('ADYEN_APIKEY_LIVE', $api_key_live);
+                    \Configuration::updateValue('ADYEN_APIKEY_LIVE', $this->helper_data->encrypt($api_key_live));
                 }
                 $output .= $this->displayConfirmation($this->l('Settings updated'));
             }
