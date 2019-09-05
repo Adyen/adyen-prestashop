@@ -52,8 +52,7 @@ class AdyenNotificationsModuleFrontController extends FrontController
 
                 foreach ($notificationItems['notificationItems'] as $notificationItem) {
                     $status = $this->processNotification(
-                        $notificationItem['NotificationRequestItem'],
-                        $notificationMode
+                        $notificationItem['NotificationRequestItem']
                     );
 
                     if ($status != true) {
@@ -81,24 +80,17 @@ class AdyenNotificationsModuleFrontController extends FrontController
                     $this->return401();
                     return;
                 }
+                $message = 'Mismatch between Live/Test modes of Prestashop store and the Adyen platform';
+                $this->helper_data->adyenLogger()->logError($message);
                 $this->ajaxDie(json_encode([
                         'success' => false,
-                        'message' => 'Mismatch between Live/Test modes of Prestashop store and the Adyen platform'
+                        'message' => $message
                     ])
                 );
             }
         } catch (Exception $e) {
             $this->helper_data->adyenLogger()->logError("exception: " . $e->getMessage());
         }
-    }
-
-    public function initContent()
-    {
-        parent::initContent();
-        $this->ajaxDie(json_encode([
-            'success' => true,
-            'operation' => 'post'
-        ]));
     }
 
     /**
@@ -129,9 +121,11 @@ class AdyenNotificationsModuleFrontController extends FrontController
         // validate username and password
         if ((!isset($_SERVER['PHP_AUTH_USER']) && !isset($_SERVER['PHP_AUTH_PW']))) {
             if ($this->isTestNotification($response['pspReference'])) {
+                $message = 'Authentication failed: PHP_AUTH_USER and PHP_AUTH_PW are empty.';
+                $this->helper_data->adyenLogger()->logError($message);
                 $this->ajaxDie(json_encode([
                     'success' => false,
-                    'message' => 'Authentication failed: PHP_AUTH_USER and PHP_AUTH_PW are empty.'
+                    'message' => $message
                 ]));
             }
             return false;
@@ -140,9 +134,11 @@ class AdyenNotificationsModuleFrontController extends FrontController
         // validate hmac
 
         if (!$this->verifyHmac($response)) {
+            $message = "HMAC key validation failed";
+            $this->helper_data->adyenLogger()->logError($message);
             $this->ajaxDie(json_encode([
                     'success' => false,
-                    'message' => 'HMAC key validation failed'
+                    'message' => $message
                 ])
             );
             return false;
@@ -157,9 +153,11 @@ class AdyenNotificationsModuleFrontController extends FrontController
         // If notification is test check if fields are correct if not return error
         if ($this->isTestNotification($response['pspReference'])) {
             if ($usernameCmp != 0 || $passwordCmp != 0) {
+                $message = 'username (PHP_AUTH_USER) and\or password (PHP_AUTH_PW) are not the same as Prestashop settings';
+                $this->helper_data->adyenLogger()->logError($message);
                 $this->ajaxDie(json_encode([
                         'success' => false,
-                        'message' => 'username (PHP_AUTH_USER) and\or password (PHP_AUTH_PW) are not the same as Prestashop settings'
+                        'message' => $message
                     ])
                 );
             }
@@ -190,7 +188,7 @@ class AdyenNotificationsModuleFrontController extends FrontController
      * @param $notificationMode
      * @return bool
      */
-    protected function processNotification($response, $notificationMode)
+    protected function processNotification($response)
     {
         // validate the notification
         if ($this->authorised($response)) {
@@ -210,6 +208,7 @@ class AdyenNotificationsModuleFrontController extends FrontController
                 }
             } else {
                 // duplicated so do nothing but return accepted to Adyen
+                $this->helper_data->adyenLogger()->logDebug("Notification is a TEST notification from Adyen Customer Area");
                 return true;
             }
         }
@@ -312,7 +311,6 @@ class AdyenNotificationsModuleFrontController extends FrontController
         $eventCode = trim($response['eventCode']);
         $success = trim($response['success']);
 
-
         $sql = 'SELECT * FROM ' . _DB_PREFIX_ . 'adyen_notification '
             . 'WHERE `pspreference` = "' . pSQL($pspReference) . '"'
             . ' AND `event_code` = "' . pSQL($eventCode) . '"'
@@ -341,7 +339,17 @@ class AdyenNotificationsModuleFrontController extends FrontController
     {
         $hmac = \Configuration::get('ADYEN_NOTI_HMAC');
         $util = new \Adyen\Util\Util();
-        $valid = $util->isValidNotificationHMAC($notification, $hmac);
+        try {
+            $valid = $util->isValidNotificationHMAC($notification, $hmac);
+        } catch (\Adyen\AdyenException $e){
+            $this->helper_data->adyenLogger()->logError($e->getMessage());
+            $this->ajaxDie(json_encode([
+                    'success' => false,
+                    'message' => $e->getMessage()
+                ])
+            );
+            return false;
+        }
         return $valid;
     }
 
