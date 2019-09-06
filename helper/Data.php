@@ -274,7 +274,7 @@ class Data
 
                 $response = array(
                     'action' => 'error',
-                    'message' => 'Somethng went wrong'
+                    'message' => 'Something went wrong'
                 );
 
                 break;
