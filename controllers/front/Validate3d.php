@@ -27,7 +27,7 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
         parent::__construct();
         $this->context = \Context::getContext();
         $adyenHelperFactory = new \Adyen\PrestaShop\service\Adyen\Helper\DataFactory();
-        $this->helper_data = $adyenHelperFactory->createAdyenHelperData(
+        $this->helperData = $adyenHelperFactory->createAdyenHelperData(
             \Configuration::get('ADYEN_MODE'),
             _COOKIE_KEY_
         );
@@ -37,14 +37,14 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
     {
         // retrieve cart from temp value and restore the cart to approve payment
         $cart = new Cart((int)$this->context->cookie->__get("id_cart_temp"));
-        $client = $this->helper_data->initializeAdyenClient();
+        $client = $this->helperData->initializeAdyenClient();
 
         $requestMD = $_REQUEST['MD'];
         $requestPaRes = $_REQUEST['PaRes'];
         $paymentData = $_REQUEST['paymentData'];
-        $this->helper_data->adyenLogger()->logDebug("md: " . $requestMD);
-        $this->helper_data->adyenLogger()->logDebug("PaRes: " . $requestPaRes);
-        $this->helper_data->adyenLogger()->logDebug("request" . json_encode($_REQUEST));
+        $this->helperData->adyenLogger()->logDebug("md: " . $requestMD);
+        $this->helperData->adyenLogger()->logDebug("PaRes: " . $requestPaRes);
+        $this->helperData->adyenLogger()->logDebug("request" . json_encode($_REQUEST));
         $request = [
             "paymentData" => $paymentData,
             "details" => [
@@ -56,15 +56,15 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
         $client->setAdyenPaymentSource(\Adyen::MODULE_NAME, \Adyen::VERSION);
 
         try {
-            $client = $this->helper_data->initializeAdyenClient();
+            $client = $this->helperData->initializeAdyenClient();
             // call lib
             $service = new \Adyen\Service\Checkout($client);
             $response = $service->paymentsDetails($request);
         } catch (\Adyen\AdyenException $e) {
             $response['error'] = $e->getMessage();
-            $this->helper_data->adyenLogger()->logError("exception: " . $e->getMessage());
+            $this->helperData->adyenLogger()->logError("exception: " . $e->getMessage());
         }
-        $this->helper_data->adyenLogger()->logDebug("result: " . json_encode($response));
+        $this->helperData->adyenLogger()->logDebug("result: " . json_encode($response));
         $currency = $this->context->currency;
         $customer = new \Customer($cart->id_customer);
         $total = (float)$cart->getOrderTotal(true, \Cart::BOTH);
@@ -93,10 +93,10 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
                 break;
             case 'Refused':
                 // create new cart from the current cart
-                $this->helper_data->cloneCurrentCart($this->context, $cart);
+                $this->helperData->cloneCurrentCart($this->context, $cart);
 
-                $this->helper_data->adyenLogger()->logError("The payment was refused, id:  " . $cart->id);
-                if ($this->helper_data->isPrestashop16()) {
+                $this->helperData->adyenLogger()->logError("The payment was refused, id:  " . $cart->id);
+                if ($this->helperData->isPrestashop16()) {
                     return $this->setTemplate('error.tpl');
                 } else {
                     return $this->setTemplate('module:adyen/views/templates/front/error.tpl');
@@ -104,12 +104,12 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
                 break;
             default:
                 // create new cart from the current cart
-                $this->helper_data->cloneCurrentCart($this->context, $cart);
+                $this->helperData->cloneCurrentCart($this->context, $cart);
                 //6_PS_OS_CANCELED_ : order canceled
                 $this->module->validateOrder($cart->id, 6, $total, $this->module->displayName, null, $extra_vars,
                     (int)$currency->id, false, $customer->secure_key);
-                $this->helper_data->adyenLogger()->logError("The payment was cancelled, id:  " . $cart->id);
-                if ($this->helper_data->isPrestashop16()) {
+                $this->helperData->adyenLogger()->logError("The payment was cancelled, id:  " . $cart->id);
+                if ($this->helperData->isPrestashop16()) {
                     return $this->setTemplate('error.tpl');
                 } else {
                     return $this->setTemplate('module:adyen/views/templates/front/error.tpl');

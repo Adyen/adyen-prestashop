@@ -20,30 +20,25 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\controllers;
+namespace Adyen\PrestaShop\tests\controllers\front;
 
+use AdyenNotificationsModuleFrontController;
+use org\bovigo\vfs\vfsStream;
+use org\bovigo\vfs\vfsStreamException;
+use org\bovigo\vfs\vfsStreamWrapper;
 
-use PrestaShopException;
+require_once __DIR__ . '/../../../controllers/front/Notifications.php';
 
-abstract class FrontController extends \ModuleFrontController
+class AdyenNotificationsModuleFrontControllerTest extends \PHPUnit_Framework_TestCase
 {
-    /**
-     * @var \Adyen\PrestaShop\helper\Data
-     */
-    protected $helperData;
-
-    /**
-     * @param null $value
-     * @param null $controller
-     * @param null $method
-     * @throws PrestaShopException
-     */
-    protected function ajaxRender($value = null, $controller = null, $method = null)
+    public function testExceptionLogsError()
     {
-        if ($this->helperData->isPrestashop16()) {
-            parent::ajaxDie($value, $controller, $method);
-        } else {
-            parent::ajaxRender($value, $controller, $method);
+        try {
+            vfsStreamWrapper::register();
+        } catch (vfsStreamException $e) {
+            $this->fail($e->getMessage());
         }
+        $virtualDirectory = vfsStream::setup();
+        $controller = new AdyenNotificationsModuleFrontController($virtualDirectory);
     }
 }

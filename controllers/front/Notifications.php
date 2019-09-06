@@ -24,73 +24,21 @@ use Adyen\PrestaShop\controllers\FrontController;
 
 class AdyenNotificationsModuleFrontController extends FrontController
 {
+
     public function __construct()
     {
         parent::__construct();
-        $this->context = \Context::getContext();
         $adyenHelperFactory = new \Adyen\PrestaShop\service\Adyen\Helper\DataFactory();
-        $this->helper_data = $adyenHelperFactory->createAdyenHelperData(
+        $this->helperData = $adyenHelperFactory->createAdyenHelperData(
             \Configuration::get('ADYEN_MODE'),
             _COOKIE_KEY_
         );
-        $this->helper_data->startSession();
-    }
-
-    public function init()
-    {
-        parent::init();
+        $this->helperData->startSession();
     }
 
     public function postProcess()
     {
-        try {
-            $notificationItems = json_decode(file_get_contents('php://input'), true);
-
-            $notificationMode = isset($notificationItems['live']) ? $notificationItems['live'] : "";
-
-            if ($notificationMode !== "" && $this->validateNotificationMode($notificationMode)) {
-
-                foreach ($notificationItems['notificationItems'] as $notificationItem) {
-                    $status = $this->processNotification(
-                        $notificationItem['NotificationRequestItem']
-                    );
-
-                    if ($status != true) {
-                        $this->return401();
-                        return;
-                    }
-
-                    $acceptedMessage = "[accepted]";
-                }
-                $cronCheckTest = $notificationItems['notificationItems'][0]['NotificationRequestItem']['pspReference'];
-
-                // Run the query for checking unprocessed notifications, do this only for test notifications coming from the Adyen Customer Area
-                if ($this->isTestNotification($cronCheckTest)) {
-                    $unprocessedNotifications = $this->getUnprocessedNotifications();
-                    if ($unprocessedNotifications > 0) {
-                        $acceptedMessage .= "\nYou have " . $unprocessedNotifications . " unprocessed notifications.";
-                    }
-                }
-
-                $this->helper_data->adyenLogger()->logDebug("The result is accepted");
-                $this->returnAccepted($acceptedMessage);
-                return;
-            } else {
-                if ($notificationMode == "") {
-                    $this->return401();
-                    return;
-                }
-                $message = 'Mismatch between Live/Test modes of Prestashop store and the Adyen platform';
-                $this->helper_data->adyenLogger()->logError($message);
-                $this->ajaxDie(json_encode([
-                        'success' => false,
-                        'message' => $message
-                    ])
-                );
-            }
-        } catch (Exception $e) {
-            $this->helper_data->adyenLogger()->logError("exception: " . $e->getMessage());
-        }
+        $this->doPostProcess();
     }
 
     /**
@@ -122,7 +70,7 @@ class AdyenNotificationsModuleFrontController extends FrontController
         if ((!isset($_SERVER['PHP_AUTH_USER']) && !isset($_SERVER['PHP_AUTH_PW']))) {
             if ($this->isTestNotification($response['pspReference'])) {
                 $message = 'Authentication failed: PHP_AUTH_USER and PHP_AUTH_PW are empty.';
-                $this->helper_data->adyenLogger()->logError($message);
+                $this->helperData->adyenLogger()->logError($message);
                 $this->ajaxDie(json_encode([
                     'success' => false,
                     'message' => $message
@@ -135,7 +83,7 @@ class AdyenNotificationsModuleFrontController extends FrontController
 
         if (!$this->verifyHmac($response)) {
             $message = "HMAC key validation failed";
-            $this->helper_data->adyenLogger()->logError($message);
+            $this->helperData->adyenLogger()->logError($message);
             $this->ajaxDie(json_encode([
                     'success' => false,
                     'message' => $message
@@ -154,7 +102,7 @@ class AdyenNotificationsModuleFrontController extends FrontController
         if ($this->isTestNotification($response['pspReference'])) {
             if ($usernameCmp != 0 || $passwordCmp != 0) {
                 $message = 'username (PHP_AUTH_USER) and\or password (PHP_AUTH_PW) are not the same as Prestashop settings';
-                $this->helper_data->adyenLogger()->logError($message);
+                $this->helperData->adyenLogger()->logError($message);
                 $this->ajaxDie(json_encode([
                         'success' => false,
                         'message' => $message
@@ -172,7 +120,7 @@ class AdyenNotificationsModuleFrontController extends FrontController
      */
     protected function validateNotificationMode($notificationMode)
     {
-        $mode = $this->helper_data->isDemoMode();
+        $mode = $this->helperData->isDemoMode();
 
         // Notification mode can be a string or a boolean
         if (($mode == '1' && ($notificationMode == "false" || $notificationMode == false)) || ($mode == '0' && ($notificationMode == 'true' || $notificationMode == true))) {
@@ -194,7 +142,7 @@ class AdyenNotificationsModuleFrontController extends FrontController
         if ($this->authorised($response)) {
 
             // log the notification
-            $this->helper_data->adyenLogger()->logDebug(
+            $this->helperData->adyenLogger()->logDebug(
                 "The content of the notification item is: " . print_r($response, 1)
             );
 
@@ -204,11 +152,11 @@ class AdyenNotificationsModuleFrontController extends FrontController
                     $this->insertNotification($response);
                     return true;
                 } catch (Exception $e) {
-                    $this->helper_data->adyenLogger()->logError("exception: " . $e->getMessage());
+                    $this->helperData->adyenLogger()->logError("exception: " . $e->getMessage());
                 }
             } else {
                 // duplicated so do nothing but return accepted to Adyen
-                $this->helper_data->adyenLogger()->logDebug("Notification is a TEST notification from Adyen Customer Area");
+                $this->helperData->adyenLogger()->logDebug("Notification is a TEST notification from Adyen Customer Area");
                 return true;
             }
         }
@@ -342,7 +290,7 @@ class AdyenNotificationsModuleFrontController extends FrontController
         try {
             $valid = $util->isValidNotificationHMAC($notification, $hmac);
         } catch (\Adyen\AdyenException $e){
-            $this->helper_data->adyenLogger()->logError($e->getMessage());
+            $this->helperData->adyenLogger()->logError($e->getMessage());
             $this->ajaxDie(json_encode([
                     'success' => false,
                     'message' => $e->getMessage()
@@ -351,6 +299,58 @@ class AdyenNotificationsModuleFrontController extends FrontController
             return false;
         }
         return $valid;
+    }
+
+    protected function doPostProcess()
+    {
+        try {
+            $notificationItems = json_decode(file_get_contents('php://input'), true);
+
+            $notificationMode = isset($notificationItems['live']) ? $notificationItems['live'] : "";
+
+            if ($notificationMode !== "" && $this->validateNotificationMode($notificationMode)) {
+
+                foreach ($notificationItems['notificationItems'] as $notificationItem) {
+                    $status = $this->processNotification(
+                        $notificationItem['NotificationRequestItem']
+                    );
+
+                    if ($status != true) {
+                        $this->return401();
+                        return;
+                    }
+
+                    $acceptedMessage = "[accepted]";
+                }
+                $cronCheckTest = $notificationItems['notificationItems'][0]['NotificationRequestItem']['pspReference'];
+
+                // Run the query for checking unprocessed notifications, do this only for test notifications coming from the Adyen Customer Area
+                if ($this->isTestNotification($cronCheckTest)) {
+                    $unprocessedNotifications = $this->getUnprocessedNotifications();
+                    if ($unprocessedNotifications > 0) {
+                        $acceptedMessage .= "\nYou have " . $unprocessedNotifications . " unprocessed notifications.";
+                    }
+                }
+
+                $this->helperData->adyenLogger()->logDebug("The result is accepted");
+                $this->returnAccepted($acceptedMessage);
+                return;
+            } else {
+                if ($notificationMode == "") {
+                    $this->return401();
+                    return;
+                }
+                $message = 'Mismatch between Live/Test modes of Prestashop store and the Adyen platform';
+                $this->helperData->adyenLogger()->logError($message);
+                $this->ajaxDie(json_encode([
+                        'success' => false,
+                        'message' => $message
+                    ])
+                );
+            }
+        } catch (Exception $e) {
+            $this->helperData->adyenLogger()->logError("exception: " . $e->getMessage());
+        }
     }
 
 
