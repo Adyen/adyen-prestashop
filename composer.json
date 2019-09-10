@@ -9,6 +9,6 @@
     "ext-json": "*",
     "ext-openssl": "*",
     "monolog/monolog": "1.24.*",
-    "php": "5.2.*"
+    "php": ">=5.2"
   }
 }
