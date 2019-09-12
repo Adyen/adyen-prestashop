@@ -20,25 +20,9 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\tests\controllers\front;
+namespace Adyen\PrestaShop\service\Adyen\Service\Notification;
 
-use AdyenNotificationsModuleFrontController;
-use org\bovigo\vfs\vfsStream;
-use org\bovigo\vfs\vfsStreamException;
-use org\bovigo\vfs\vfsStreamWrapper;
-
-require_once __DIR__ . '/../../../controllers/front/Notifications.php';
-
-class AdyenNotificationsModuleFrontControllerTest extends \PHPUnit_Framework_TestCase
+class AuthorizationException extends \Exception
 {
-    public function testExceptionLogsError()
-    {
-        try {
-            vfsStreamWrapper::register();
-        } catch (vfsStreamException $e) {
-            $this->fail($e->getMessage());
-        }
-        $virtualDirectory = vfsStream::setup();
-        $controller = new AdyenNotificationsModuleFrontController($virtualDirectory);
-    }
+
 }

@@ -5,7 +5,7 @@
     }
   },
   "require": {
-    "adyen/php-api-library": "~3.1.0",
+    "adyen/php-api-library": "dev-util-refactor",
     "ext-json": "*",
     "ext-openssl": "*",
     "monolog/monolog": "1.24.*",
@@ -13,6 +13,6 @@
   },
   "require-dev": {
     "phpunit/phpunit": "~4",
-    "mikey179/vfsstream": "~1"
+    "mockery/mockery": "dev-master"
   }
 }
