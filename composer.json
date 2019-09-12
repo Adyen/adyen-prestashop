@@ -5,7 +5,7 @@
     }
   },
   "require": {
-    "adyen/php-api-library": "dev-util-refactor",
+    "adyen/php-api-library": "dev-develop",
     "ext-json": "*",
     "ext-openssl": "*",
     "monolog/monolog": "1.24.*",
