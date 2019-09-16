@@ -38,7 +38,6 @@ class AdyenNotificationsModuleFrontController extends FrontController
             Configuration::get('ADYEN_MODE'),
             _COOKIE_KEY_
         );
-        $this->helperData->startSession();
     }
 
 
