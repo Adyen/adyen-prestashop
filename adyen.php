@@ -201,7 +201,7 @@ class Adyen extends \PaymentModule
                 $output .= $this->displayError($this->l('Invalid Configuration value for Notification Password'));
             }
 
-            if (!$notification_hmac || empty($notification_hmac) || !\Validate::isGenericName($notification_hmac)) {
+            if (empty($notification_hmac) || !\Validate::isGenericName($notification_hmac)) {
                 $output .= $this->displayError($this->l('Invalid Configuration value for Notification HMAC Key'));
             }
 
