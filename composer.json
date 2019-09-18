@@ -5,7 +5,7 @@
     }
   },
   "require": {
-    "adyen/php-api-library": "dev-develop",
+    "adyen/php-api-library": "~4",
     "ext-json": "*",
     "ext-openssl": "*",
     "monolog/monolog": "1.24.*",
