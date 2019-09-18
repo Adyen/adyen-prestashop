@@ -356,7 +356,7 @@ class NotificationProcessor
             . ' AND `success` = "' . pSQL($success) . '"';
 
         $originalReference = null;
-        if (isset($response['originalReference'])) {
+        if (!empty($response['originalReference'])) {
             $originalReference = trim($response['originalReference']);
             $sql .= ' AND `original_reference` = "' . pSQL($originalReference) . '"';
         }
