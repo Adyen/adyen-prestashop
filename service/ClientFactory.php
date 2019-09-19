@@ -20,27 +20,41 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\service\Adyen\Service;
+namespace Adyen\PrestaShop\service;
 
-class CheckoutUtilityFactory
+class ClientFactory
 {
-
     /**
-     * Creates a Checkout Utility Service with as little arguments as possible.
+     * Initializes and returns Adyen Client and sets the required parameters of it.
      *
-     * @param string $apiKey
+     * @param string $encryptedApiKey
+     * @param string $liveEndpointUrlPrefix
      * @param string $environment
-     * @return \Adyen\Service\CheckoutUtility
+     * @return \Adyen\Client
      * @throws \Adyen\AdyenException
      */
-    public function createDefaultCheckoutUtility($apiKey, $environment)
+    public function createDefaultClient($encryptedApiKey, $liveEndpointUrlPrefix, $environment)
     {
-        $clientFactory = new \Adyen\PrestaShop\service\Adyen\ClientFactory();
-        $adyenCheckoutUtilityService = new \Adyen\Service\CheckoutUtility(
-            $clientFactory->createDefaultClient(
-                $apiKey, \Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX'), $environment
-            )
-        );
-        return $adyenCheckoutUtilityService;
+        $client = new \Adyen\Client();
+        $client->setXApiKey($encryptedApiKey);
+        $client->setAdyenPaymentSource(\Adyen::MODULE_NAME, \Adyen::VERSION);
+        $client->setExternalPlatform("PrestaShop", _PS_VERSION_);
+        $client->setEnvironment($environment, $liveEndpointUrlPrefix);
+        return $client;
+    }
+
+    /**
+     * Determines if PrestaShop is running in demo mode
+     *
+     * @param string $mode
+     * @return bool
+     */
+    public function isDemoMode($mode)
+    {
+        if (strpos($mode, 'test') !== false) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

@@ -20,9 +20,9 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\service\Adyen\Service\Notification;
+namespace Adyen\PrestaShop\service\notification;
 
-class MerchantAccountCodeException extends \Exception
+class AuthorizationException extends \Exception
 {
 
 }

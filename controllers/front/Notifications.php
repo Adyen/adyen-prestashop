@@ -21,7 +21,7 @@
  */
 
 use Adyen\PrestaShop\controllers\FrontController;
-use Adyen\PrestaShop\service\Adyen\Service\NotificationProcessor;
+use Adyen\PrestaShop\service\NotificationProcessor;
 
 class AdyenNotificationsModuleFrontController extends FrontController
 {
@@ -33,7 +33,7 @@ class AdyenNotificationsModuleFrontController extends FrontController
     public function __construct()
     {
         parent::__construct();
-        $adyenHelperFactory = new \Adyen\PrestaShop\service\Adyen\Helper\DataFactory();
+        $adyenHelperFactory = new \Adyen\PrestaShop\service\helper\DataFactory();
         $this->helperData = $adyenHelperFactory->createAdyenHelperData(
             Configuration::get('ADYEN_MODE'),
             _COOKIE_KEY_
@@ -56,29 +56,29 @@ class AdyenNotificationsModuleFrontController extends FrontController
             Db::getInstance()
         );
         try {
-            $this->ajaxRender($notificationProcessor->doPostProcess(
+            die($notificationProcessor->doPostProcess(
                 json_decode(file_get_contents('php://input'), true))
             );
-        } catch (\Adyen\PrestaShop\service\Adyen\Service\Notification\AuthenticationException $e) {
+        } catch (\Adyen\PrestaShop\service\notification\AuthenticationException $e) {
             $this->helperData->adyenLogger()->logError($e->getMessage());
-            $this->ajaxRender(json_encode(['success' => false, 'message' => $e->getMessage()]));
-        } catch (\Adyen\PrestaShop\service\Adyen\Service\Notification\HMACKeyValidationException $e) {
+            die(json_encode(['success' => false, 'message' => $e->getMessage()]));
+        } catch (\Adyen\PrestaShop\service\notification\HMACKeyValidationException $e) {
             $this->helperData->adyenLogger()->logError($e->getMessage());
-            $this->ajaxRender(json_encode(['success' => false, 'message' => $e->getMessage()]));
-        } catch (\Adyen\PrestaShop\service\Adyen\Service\Notification\MerchantAccountCodeException $e) {
+            die(json_encode(['success' => false, 'message' => $e->getMessage()]));
+        } catch (\Adyen\PrestaShop\service\notification\MerchantAccountCodeException $e) {
             $this->helperData->adyenLogger()->logError($e->getMessage());
-            $this->ajaxRender(json_encode(['success' => false, 'message' => $e->getMessage()]));
+            die(json_encode(['success' => false, 'message' => $e->getMessage()]));
         } catch (\Adyen\AdyenException $e) {
             $this->helperData->adyenLogger()->logError($e->getMessage());
-            $this->ajaxRender(json_encode(['success' => false, 'message' => $e->getMessage()]));
+            die(json_encode(['success' => false, 'message' => $e->getMessage()]));
         } catch (PrestaShopDatabaseException $e) {
             $this->helperData->adyenLogger()->logError($e->getMessage());
-            $this->ajaxRender(json_encode(['success' => false, 'message' => "Database error \n{$e->getMessage()}"]));
-        } catch (\Adyen\PrestaShop\service\Adyen\Service\Notification\AuthorizationException $e) {
+            die(json_encode(['success' => false, 'message' => "Database error \n{$e->getMessage()}"]));
+        } catch (\Adyen\PrestaShop\service\Adyen\notification\AuthorizationException $e) {
             header('HTTP/1.1 401 Unauthorized', true, 401);
             header('Status: 401 Unauthorized');
             $this->helperData->adyenLogger()->logError($e->getMessage());
-            $this->ajaxRender(json_encode(['success' => false, 'message' => $e->getMessage()]));
+            die(json_encode(['success' => false, 'message' => $e->getMessage()]));
         }
     }
 

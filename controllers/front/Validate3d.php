@@ -26,7 +26,7 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
     {
         parent::__construct();
         $this->context = \Context::getContext();
-        $adyenHelperFactory = new \Adyen\PrestaShop\service\Adyen\Helper\DataFactory();
+        $adyenHelperFactory = new \Adyen\PrestaShop\service\helper\DataFactory();
         $this->helperData = $adyenHelperFactory->createAdyenHelperData(
             \Configuration::get('ADYEN_MODE'),
             _COOKIE_KEY_

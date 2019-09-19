@@ -21,13 +21,13 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\service\Adyen\Service;
+namespace Adyen\PrestaShop\service;
 
 use Adyen\PrestaShop\helper\Data as AdyenHelper;
-use Adyen\PrestaShop\service\Adyen\Service\Notification\AuthenticationException;
-use Adyen\PrestaShop\service\Adyen\Service\Notification\AuthorizationException;
-use Adyen\PrestaShop\service\Adyen\Service\Notification\HMACKeyValidationException;
-use Adyen\PrestaShop\service\Adyen\Service\Notification\MerchantAccountCodeException;
+use Adyen\PrestaShop\service\notification\AuthenticationException;
+use Adyen\PrestaShop\service\notification\AuthorizationException;
+use Adyen\PrestaShop\service\notification\HMACKeyValidationException;
+use Adyen\PrestaShop\service\notification\MerchantAccountCodeException;
 use Adyen\Util\HmacSignature;
 use Db;
 
@@ -181,6 +181,7 @@ class NotificationProcessor
         }
 
         // validate hmac
+
 
         if (!$this->verifyHmac($response)) {
             $message = 'HMAC key validation failed';
