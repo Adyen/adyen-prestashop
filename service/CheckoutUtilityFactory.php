@@ -20,41 +20,27 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\service\Adyen;
+namespace Adyen\PrestaShop\service;
 
-class ClientFactory
+class CheckoutUtilityFactory
 {
+
     /**
-     * Initializes and returns Adyen Client and sets the required parameters of it.
+     * Creates a Checkout Utility Service with as little arguments as possible.
      *
-     * @param string $encryptedApiKey
-     * @param string $liveEndpointUrlPrefix
+     * @param string $apiKey
      * @param string $environment
-     * @return \Adyen\Client
+     * @return \Adyen\Service\CheckoutUtility
      * @throws \Adyen\AdyenException
      */
-    public function createDefaultClient($encryptedApiKey, $liveEndpointUrlPrefix, $environment)
+    public function createDefaultCheckoutUtility($apiKey, $environment)
     {
-        $client = new \Adyen\Client();
-        $client->setXApiKey($encryptedApiKey);
-        $client->setAdyenPaymentSource(\Adyen::MODULE_NAME, \Adyen::VERSION);
-        $client->setExternalPlatform("PrestaShop", _PS_VERSION_);
-        $client->setEnvironment($environment, $liveEndpointUrlPrefix);
-        return $client;
-    }
-
-    /**
-     * Determines if PrestaShop is running in demo mode
-     *
-     * @param string $mode
-     * @return bool
-     */
-    public function isDemoMode($mode)
-    {
-        if (strpos($mode, 'test') !== false) {
-            return true;
-        } else {
-            return false;
-        }
+        $clientFactory = new \Adyen\PrestaShop\service\ClientFactory();
+        $adyenCheckoutUtilityService = new \Adyen\Service\CheckoutUtility(
+            $clientFactory->createDefaultClient(
+                $apiKey, \Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX'), $environment
+            )
+        );
+        return $adyenCheckoutUtilityService;
     }
 }

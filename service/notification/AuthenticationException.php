@@ -20,30 +20,9 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\controllers;
+namespace Adyen\PrestaShop\service\notification;
 
-
-use PrestaShopException;
-
-abstract class FrontController extends \ModuleFrontController
+class AuthenticationException extends \Exception
 {
-    /**
-     * @var \Adyen\PrestaShop\helper\Data
-     */
-    protected $helperData;
 
-    /**
-     * @param null $value
-     * @param null $controller
-     * @param null $method
-     * @throws PrestaShopException
-     */
-    protected function ajaxRender($value = null, $controller = null, $method = null)
-    {
-        if ($this->helperData->isPrestashop16()) {
-            parent::ajaxDie($value, $controller, $method);
-        } else {
-            parent::ajaxRender($value, $controller, $method);
-        }
-    }
 }

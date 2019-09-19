@@ -20,15 +20,14 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\service\Adyen\Helper;
+namespace Adyen\PrestaShop\service\helper;
 
-
-use Adyen\PrestaShop\service\Adyen\Service\CheckoutUtilityFactory;
+use Adyen\PrestaShop\service\CheckoutUtilityFactory;
 
 class DataFactory
 {
     /**
-     * Creates an Adyen Helper object with as little arguments as possible.
+     * Creates an Adyen helper object with as little arguments as possible.
      *
      * @param $adyenRunningMode
      * @param $sslEncryptionKey

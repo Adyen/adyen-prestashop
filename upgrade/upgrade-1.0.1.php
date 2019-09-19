@@ -20,30 +20,20 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\controllers;
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
 
-
-use PrestaShopException;
-
-abstract class FrontController extends \ModuleFrontController
+/**
+ * This function is automatically called on version upgrades.
+ *
+ * Version 1.0.1 introduces a database table for notifications from Adyen.
+ *
+ * @param Adyen $module
+ * @return bool
+ */
+function upgrade_module_1_0_1($module)
 {
-    /**
-     * @var \Adyen\PrestaShop\helper\Data
-     */
-    protected $helperData;
-
-    /**
-     * @param null $value
-     * @param null $controller
-     * @param null $method
-     * @throws PrestaShopException
-     */
-    protected function ajaxRender($value = null, $controller = null, $method = null)
-    {
-        if ($this->helperData->isPrestashop16()) {
-            parent::ajaxDie($value, $controller, $method);
-        } else {
-            parent::ajaxRender($value, $controller, $method);
-        }
-    }
+    $module->createAdyenNotificationTable();
+    return true;
 }

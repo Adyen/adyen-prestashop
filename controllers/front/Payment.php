@@ -28,13 +28,13 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
     {
         parent::__construct();
         $this->context = \Context::getContext();
-        $adyenHelperFactory = new \Adyen\PrestaShop\service\Adyen\Helper\DataFactory();
-        $this->helper_data = $adyenHelperFactory->createAdyenHelperData(
+        $adyenHelperFactory = new \Adyen\PrestaShop\service\helper\DataFactory();
+        $this->helperData = $adyenHelperFactory->createAdyenHelperData(
             \Configuration::get('ADYEN_MODE'),
             _COOKIE_KEY_
         );
 
-        $this->helper_data->startSession();
+        $this->helperData->startSession();
     }
 
     /**
@@ -44,7 +44,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
     public function postProcess()
     {
         $cart = $this->context->cart;
-        $client = $this->helper_data->initializeAdyenClient();
+        $client = $this->helperData->initializeAdyenClient();
 
         // Handle 3DS1 flow, when the payments call is already done and the details are submitted from the frontend, by the place order button
         if (!empty($_REQUEST['paRequest']) && !empty($_REQUEST['md']) && !empty($_REQUEST['issuerUrl']) && !empty($_REQUEST['paymentData']) && !empty($_REQUEST['redirectMethod'])) {
@@ -68,7 +68,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                 'termUrl' => $termUrl
             ));
 
-            if ($this->helper_data->isPrestashop16()) {
+            if ($this->helperData->isPrestashop16()) {
                 return $this->setTemplate('redirect.tpl');
             } else {
                 return $this->setTemplate('module:adyen/views/templates/front/redirect.tpl');
@@ -90,7 +90,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
             try {
                 $response = $service->payments($request);
             } catch (\Adyen\AdyenException $e) {
-                $this->helper_data->adyenLogger()->logError("There was an error with the payment method. id:  " . $cart->id . " Response: " . $e->getMessage());
+                $this->helperData->adyenLogger()->logError("There was an error with the payment method. id:  " . $cart->id . " Response: " . $e->getMessage());
             }
         } else {
             // in case the payments response is already present use it from the session then unset it
@@ -104,7 +104,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
             if (empty($_REQUEST['isAjax'])) {
                 \Tools::redirect('index.php?controller=order&step=1');
             } else {
-                $this->ajaxRender($this->helper_data->buildControllerResponseJson('redirect',
+                $this->ajaxRender($this->helperData->buildControllerResponseJson('redirect',
                     ['redirectUrl' => 'index.php?controller=order&step=1']));
             }
         }
@@ -153,18 +153,18 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                     \Tools::redirect('index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key);
 
                 } else {
-                    $this->ajaxRender($this->helper_data->buildControllerResponseJson('redirect',
+                    $this->ajaxRender($this->helperData->buildControllerResponseJson('redirect',
                         ['redirectUrl' => 'index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key]));
                 }
 
                 break;
             case 'Refused':
                 // In case of refused payment there is no order created and the cart needs to be cloned and reinitiated
-                $this->helper_data->cloneCurrentCart($this->context, $cart);
-                $this->helper_data->adyenLogger()->logError("The payment was refused, id:  " . $cart->id);
+                $this->helperData->cloneCurrentCart($this->context, $cart);
+                $this->helperData->adyenLogger()->logError("The payment was refused, id:  " . $cart->id);
 
                 $this->ajax = true;
-                echo $this->helper_data->buildControllerResponseJson(
+                echo $this->helperData->buildControllerResponseJson(
                     'error',
                     [
                         'message' => "The payment was refused"
@@ -176,7 +176,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                 $this->ajax = true;
                 $_SESSION['paymentData'] = $response['paymentData'];
 
-                $this->ajaxRender($this->helper_data->buildControllerResponseJson(
+                $this->ajaxRender($this->helperData->buildControllerResponseJson(
                     'threeDS2',
                     [
                         'type' => 'IdentifyShopper',
@@ -189,7 +189,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                 $this->ajax = true;
                 $_SESSION['paymentData'] = $response['paymentData'];
 
-                $this->ajaxRender($this->helper_data->buildControllerResponseJson(
+                $this->ajaxRender($this->helperData->buildControllerResponseJson(
                     'threeDS2',
                     [
                         'type' => 'ChallengeShopper',
@@ -213,7 +213,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                 $paymentData = $response['paymentData'];
                 $redirectMethod = $response['redirect']['method'];
 
-                    $this->ajaxRender($this->helper_data->buildControllerResponseJson(
+                    $this->ajaxRender($this->helperData->buildControllerResponseJson(
                         'threeDS1',
                         [
                             'paRequest' => $paRequest,
@@ -224,15 +224,15 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                         ]
                     ));
                 } else {
-                    $this->helper_data->adyenLogger()->logError("3DS secure is not valid. ID:  " . $cart->id);
+                    $this->helperData->adyenLogger()->logError("3DS secure is not valid. ID:  " . $cart->id);
                 }
                 break;
             default:
                 //8_PS_OS_ERROR_ : payment error
                 $this->module->validateOrder($cart->id, 8, $total, $this->module->displayName, null, $extra_vars,
                     (int)$currency->id, false, $customer->secure_key);
-                $this->helper_data->adyenLogger()->logError("There was an error with the payment method. id:  " . $cart->id);
-                if ($this->helper_data->isPrestashop16()) {
+                $this->helperData->adyenLogger()->logError("There was an error with the payment method. id:  " . $cart->id);
+                if ($this->helperData->isPrestashop16()) {
                     return $this->setTemplate('error.tpl');
                 } else {
                     return $this->setTemplate('module:adyen/views/templates/front/error.tpl');
@@ -288,7 +288,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
 
         // 3DS2 request data
         $request['additionalData']['allow3DS2'] = true;
-        $request['origin'] = $this->helper_data->getOrigin();
+        $request['origin'] = $this->helperData->getOrigin();
         $request['channel'] = 'web';
 
         if (!empty($payload['browserInfo'])) {
@@ -354,7 +354,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
         $cart = $this->context->cart;
         $request['amount'] = [
             'currency' => $this->context->currency->iso_code,
-            'value' => $this->helper_data->formatAmount($cart->getOrderTotal(true, \Cart::BOTH),
+            'value' => $this->helperData->formatAmount($cart->getOrderTotal(true, \Cart::BOTH),
                 $this->context->currency->iso_code)
         ];
 

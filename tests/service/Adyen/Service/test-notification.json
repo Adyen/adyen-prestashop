@@ -1,0 +1,52 @@
+{
+  "live": "false",
+  "notificationItems": [
+    {
+      "NotificationRequestItem": {
+        "additionalData": {
+          "fraudCheck-25-CVCAuthResultCheck": "0",
+          "fraudOffset": "0",
+          "fraudResultType": "GREEN",
+          "authCode": "46847",
+          "cardHolderName": "asdasd",
+          "cardSummary": "1111",
+          "fraudManualReview": "false",
+          "fraudCheck-3-PaymentDetailUsage": "0",
+          "totalFraudScore": "1",
+          "hmacSignature": "WPaWqCGeF92S4PVqhsoZl8JT4gNzs4OlPfXE9v13Yfw=",
+          "fraudCheck-27-PmOwnerRefCheck": "0",
+          "fraudCheck-11-HolderNameIsOneWord": "1",
+          "expiryDate": "10\/2020",
+          "fraudCheck-15-IssuingCountryReferral": "0",
+          "cardBin": "411111",
+          "fraudCheck-1-PaymentDetailRefCheck": "0",
+          "aliasType": "Default",
+          "alias": "H167852639363479",
+          "fraudCheck-4-HolderNameUsage": "0",
+          "merchantReference": "27",
+          "fraudCheck-2-CardChunkUsage": "0",
+          "fraudCheck-13-IssuerRefCheck": "0",
+          "fraudCheck-10-HolderNameContainsNumber": "0",
+          "fraudCheck-82-CustomFieldCheck": "0"
+        },
+        "amount": {
+          "currency": "EUR",
+          "value": 1651
+        },
+        "eventCode": "AUTHORISATION",
+        "eventDate": "2019-09-05T14:58:38+02:00",
+        "merchantAccountCode": "Merchant",
+        "merchantReference": "27",
+        "operations": [
+          "CANCEL",
+          "CAPTURE",
+          "REFUND"
+        ],
+        "paymentMethod": "visa",
+        "pspReference": "test_853567688318875C",
+        "reason": "46847:1111:10\/2020",
+        "success": "true"
+      }
+    }
+  ]
+}

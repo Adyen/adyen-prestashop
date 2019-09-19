@@ -35,7 +35,7 @@ class Adyen extends \PaymentModule
     const CHECKOUT_COMPONENT_JS_LIVE = 'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/3.0.0/adyen.js';
     const CHECKOUT_COMPONENT_CSS_TEST = 'https://checkoutshopper-test.adyen.com/checkoutshopper/sdk/3.0.0/adyen.css';
     const CHECKOUT_COMPONENT_CSS_LIVE = 'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/3.0.0/adyen.css';
-    const VERSION = '1.0.0';
+    const VERSION = '1.0.1';
     const MODULE_NAME = 'adyen-prestashop';
 
 
@@ -50,7 +50,7 @@ class Adyen extends \PaymentModule
         $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
         $this->currencies = true;
 
-        $adyenHelperFactory = new \Adyen\PrestaShop\service\Adyen\Helper\DataFactory();
+        $adyenHelperFactory = new \Adyen\PrestaShop\service\helper\DataFactory();
         $this->helper_data = $adyenHelperFactory->createAdyenHelperData(
             \Configuration::get('ADYEN_MODE'),
             _COOKIE_KEY_
@@ -63,7 +63,6 @@ class Adyen extends \PaymentModule
         // The need_instance flag indicates whether to load the module's class when displaying the "Modules" page in the back-office
         $this->need_instance = 1;
         // end for 1.6
-
 
         parent::__construct();
 
@@ -88,21 +87,68 @@ class Adyen extends \PaymentModule
         }
 
         if ($this->helper_data->isPrestashop16()) {
-            // Version is 1.6
-            if (parent::install() == false || !$this->registerHook('displayBackOfficeHeader') || !$this->registerHook('payment') || !$this->registerHook('displayPaymentEU') || !$this->registerHook('paymentReturn') || !$this->registerHook('displayHeader') || !$this->registerHook('displayAdminOrder')) {
+            // Version 1.6 requires a different set of hooks
+            if (
+                parent::install()
+                && $this->registerHook('displayBackOfficeHeader')
+                && $this->registerHook('payment')
+                && $this->registerHook('displayPaymentEU')
+                && $this->registerHook('paymentReturn')
+                && $this->registerHook('displayHeader')
+                && $this->registerHook('displayAdminOrder')
+                && $this->registerHook('moduleRoutes')
+                // the table for notifications from Adyen needs to be both in install and upgrade
+                && $this->createAdyenNotificationTable()
+            ) {
+                return true;
+            } else {
                 \Logger::addLog('Adyen module: installation failed!', 4);
                 return false;
             }
-            return true;
         }
 
-        // version is 1.7 or higher
+        // install hooks for version 1.7 or higher
         return parent::install()
             && $this->registerHook('header')
             && $this->registerHook('orderConfirmation')
             && $this->registerHook('paymentOptions')
             && $this->registerHook('paymentReturn')
-            && $this->registerHook('adminOrder');
+            && $this->registerHook('adminOrder')
+            && $this->registerHook('moduleRoutes')
+            // the table for notifications from Adyen needs to be both in install and upgrade
+            && $this->createAdyenNotificationTable();
+    }
+
+    public function createAdyenNotificationTable()
+    {
+        $db = Db::getInstance();
+        $query = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'adyen_notification` (
+            `entity_id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT \'Adyen Notification Entity ID\',
+            `pspreference` varchar(255) DEFAULT NULL COMMENT \'Pspreference\',
+            `original_reference` varchar(255) DEFAULT NULL COMMENT \'Original Reference\',
+            `merchant_reference` varchar(255) DEFAULT NULL COMMENT \'Merchant Reference\',
+            `event_code` varchar(255) DEFAULT NULL COMMENT \'Event Code\',
+            `success` varchar(255) DEFAULT NULL COMMENT \'Success\',
+            `payment_method` varchar(255) DEFAULT NULL COMMENT \'Payment Method\',
+            `amount_value` varchar(255) DEFAULT NULL COMMENT \'Amount value\',
+            `amount_currency` varchar(255) DEFAULT NULL COMMENT \'Amount currency\',
+            `reason` varchar(255) DEFAULT NULL COMMENT \'reason\',
+            `live` varchar(255) DEFAULT NULL COMMENT \'Send from Live platform of adyen?\',
+            `additional_data` text COMMENT \'AdditionalData\',
+            `done` tinyint(1) NOT NULL DEFAULT \'0\' COMMENT \'done\',
+            `processing` tinyint(1) DEFAULT \'0\' COMMENT \'Adyen Notification Cron Processing\',
+            `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT \'Created At\',
+            `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT \'Updated At\',
+            PRIMARY KEY (`entity_id`),
+            KEY `ADYEN_NOTIFICATION_PSPREFERENCE` (`pspreference`),
+            KEY `ADYEN_NOTIFICATION_EVENT_CODE` (`event_code`),
+            KEY `ADYEN_NOTIFICATION_PSPREFERENCE_EVENT_CODE` (`pspreference`,`event_code`),
+            KEY `ADYEN_NOTIFICATION_MERCHANT_REFERENCE_EVENT_CODE` (`merchant_reference`,`event_code`)
+            ) ENGINE=' . _MYSQL_ENGINE_ . ' AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT=\'Adyen Notifications\'';
+
+        $db->execute($query);
+
+        return true;
     }
 
     /**
@@ -113,6 +159,11 @@ class Adyen extends \PaymentModule
     public function uninstall()
     {
         // TODO: delete adyen configurations (api-key)
+        $db = Db::getInstance();
+        /** @noinspection SqlWithoutWhere SqlResolve */
+        $db->execute('DELETE FROM `' . _DB_PREFIX_ . 'adyen_notification`');
+        $db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'adyen_notification`');
+
         return parent::uninstall();
     }
 
@@ -131,8 +182,9 @@ class Adyen extends \PaymentModule
             $mode = (string)\Tools::getValue('ADYEN_MODE');
             $notification_username = (string)\Tools::getValue('ADYEN_NOTI_USERNAME');
             $notification_password = (string)\Tools::getValue('ADYEN_NOTI_PASSWORD');
-            $api_key_test = $this->helper_data->encrypt(\Tools::getValue('ADYEN_APIKEY_TEST'));
-            $api_key_live = $this->helper_data->encrypt(\Tools::getValue('ADYEN_APIKEY_LIVE'));
+            $notification_hmac = (string)\Tools::getValue('ADYEN_NOTI_HMAC');
+            $api_key_test = \Tools::getValue('ADYEN_APIKEY_TEST');
+            $api_key_live = \Tools::getValue('ADYEN_APIKEY_LIVE');
             $live_endpoint_url_prefix = (string)\Tools::getValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
 
 
@@ -149,6 +201,10 @@ class Adyen extends \PaymentModule
                 $output .= $this->displayError($this->l('Invalid Configuration value for Notification Password'));
             }
 
+            if (empty($notification_hmac) || !\Validate::isGenericName($notification_hmac)) {
+                $output .= $this->displayError($this->l('Invalid Configuration value for Notification HMAC Key'));
+            }
+
 
             if ($output == null) {
 
@@ -156,12 +212,13 @@ class Adyen extends \PaymentModule
                 \Configuration::updateValue('ADYEN_MODE', $mode);
                 \Configuration::updateValue('ADYEN_NOTI_USERNAME', $notification_username);
                 \Configuration::updateValue('ADYEN_NOTI_PASSWORD', $notification_password);
+                \Configuration::updateValue('ADYEN_NOTI_HMAC', $notification_hmac);
                 \Configuration::updateValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX', $live_endpoint_url_prefix);
                 if (!empty($api_key_test)) {
-                    \Configuration::updateValue('ADYEN_APIKEY_TEST', $api_key_test);
+                    \Configuration::updateValue('ADYEN_APIKEY_TEST', $this->helper_data->encrypt($api_key_test));
                 }
                 if (!empty($api_key_live)) {
-                    \Configuration::updateValue('ADYEN_APIKEY_LIVE', $api_key_live);
+                    \Configuration::updateValue('ADYEN_APIKEY_LIVE', $this->helper_data->encrypt($api_key_live));
                 }
                 $output .= $this->displayConfirmation($this->l('Settings updated'));
             }
@@ -237,6 +294,14 @@ class Adyen extends \PaymentModule
                     'hint' => $this->l('Must correspond to the notification password in the Adyen Backoffice under Settings => Notifications')
                 ),
                 array(
+                    'type' => 'text',
+                    'label' => $this->l('HMAC key for notifications'),
+                    'name' => 'ADYEN_NOTI_HMAC',
+                    'size' => 20,
+                    'required' => true,
+                    'hint' => $this->l('Must correspond to the notification HMAC Key in the Adyen Backoffice under Settings => Notifications => Additional Settings => HMAC Key (HEX Encoded)')
+                ),
+                array(
                     'type' => 'password',
                     'label' => $this->l('API key for Test'),
                     'name' => 'ADYEN_APIKEY_TEST',
@@ -301,6 +366,7 @@ class Adyen extends \PaymentModule
             $mode = (string)\Tools::getValue('ADYEN_MODE');
             $notification_username = (string)\Tools::getValue('ADYEN_NOTI_USERNAME');
             $notification_password = (string)\Tools::getValue('ADYEN_NOTI_PASSWORD');
+            $notification_HMAC = (string)\Tools::getValue('ADYEN_NOTI_HMAC');
             $live_endpoint_url_prefix = (string)\Tools::getValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
             $api_key_test = $this->hashing->hash(\Tools::getValue('ADYEN_APIKEY_TEST'), _COOKIE_KEY_);
             $api_key_live = $this->hashing->hash(\Tools::getValue('ADYEN_APIKEY_LIVE'), _COOKIE_KEY_);
@@ -309,6 +375,7 @@ class Adyen extends \PaymentModule
             $mode = \Configuration::get('ADYEN_MODE');
             $notification_username = \Configuration::get('ADYEN_NOTI_USERNAME');
             $notification_password = \Configuration::get('ADYEN_NOTI_PASSWORD');
+            $notification_HMAC = \Configuration::get('ADYEN_NOTI_HMAC');
             $live_endpoint_url_prefix = \Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
             $api_key_test = $this->hashing->hash(\Configuration::get('ADYEN_APIKEY_TEST'),
                 _COOKIE_KEY_);;
@@ -321,6 +388,7 @@ class Adyen extends \PaymentModule
         $helper->fields_value['ADYEN_MODE'] = $mode;
         $helper->fields_value['ADYEN_NOTI_USERNAME'] = $notification_username;
         $helper->fields_value['ADYEN_NOTI_PASSWORD'] = $notification_password;
+        $helper->fields_value['ADYEN_NOTI_HMAC'] = $notification_HMAC;
         $helper->fields_value['ADYEN_APIKEY_TEST'] = $api_key_test;
         $helper->fields_value['ADYEN_APIKEY_LIVE'] = $api_key_live;
         $helper->fields_value['ADYEN_LIVE_ENDPOINT_URL_PREFIX'] = $live_endpoint_url_prefix;
@@ -499,4 +567,5 @@ class Adyen extends \PaymentModule
     {
         return;
     }
+
 }
