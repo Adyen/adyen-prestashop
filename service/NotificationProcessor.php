@@ -108,9 +108,7 @@ class NotificationProcessor
      */
     public function doPostProcess($notificationItems)
     {
-        $notificationMode = isset($notificationItems['live']) ? $notificationItems['live'] : '';
-
-        if ($notificationMode !== '' && $this->validateNotificationMode($notificationMode)) {
+        if (!empty($notificationItems['live']) && $this->validateNotificationMode($notificationItems['live'])) {
 
             $acceptedMessage = '[accepted]';
 
@@ -133,9 +131,6 @@ class NotificationProcessor
             $this->helperData->adyenLogger()->logDebug('The result is accepted');
             return $this->returnAccepted($acceptedMessage);
         } else {
-            if ($notificationMode == '') {
-                throw new AuthorizationException();
-            }
             $message = 'Mismatch between Live/Test modes of PrestaShop store and the Adyen platform';
             $this->helperData->adyenLogger()->logError($message);
             return json_encode(

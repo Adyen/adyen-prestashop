@@ -74,7 +74,7 @@ class AdyenNotificationsModuleFrontController extends FrontController
         } catch (PrestaShopDatabaseException $e) {
             $this->helperData->adyenLogger()->logError($e->getMessage());
             die(json_encode(['success' => false, 'message' => "Database error \n{$e->getMessage()}"]));
-        } catch (\Adyen\PrestaShop\service\Adyen\notification\AuthorizationException $e) {
+        } catch (\Adyen\PrestaShop\service\notification\AuthorizationException $e) {
             header('HTTP/1.1 401 Unauthorized', true, 401);
             header('Status: 401 Unauthorized');
             $this->helperData->adyenLogger()->logError($e->getMessage());
