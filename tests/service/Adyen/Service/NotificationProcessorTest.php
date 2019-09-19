@@ -23,10 +23,10 @@
 namespace Adyen\PrestaShop\service\Adyen\Service;
 
 use Adyen\PrestaShop\helper\Data as AdyenHelper;
-use Adyen\PrestaShop\service\Adyen\Service\Notification\AuthenticationException;
-use Adyen\PrestaShop\service\Adyen\Service\Notification\AuthorizationException;
-use Adyen\PrestaShop\service\Adyen\Service\Notification\HMACKeyValidationException;
-use Adyen\PrestaShop\service\Adyen\Service\Notification\MerchantAccountCodeException;
+use Adyen\PrestaShop\service\notification\AuthenticationException;
+use Adyen\PrestaShop\service\notification\AuthorizationException;
+use Adyen\PrestaShop\service\notification\HMACKeyValidationException;
+use Adyen\PrestaShop\service\notification\MerchantAccountCodeException;
 use Adyen\Util\HmacSignature;
 use Db;
 use Mockery as m;
