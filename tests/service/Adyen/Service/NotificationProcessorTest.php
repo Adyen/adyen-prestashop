@@ -20,7 +20,7 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\service\Adyen\Service;
+namespace Adyen\PrestaShop\service;
 
 use Adyen\PrestaShop\helper\Data as AdyenHelper;
 use Adyen\PrestaShop\service\notification\AuthenticationException;
