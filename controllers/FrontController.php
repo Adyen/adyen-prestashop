@@ -45,5 +45,6 @@ abstract class FrontController extends \ModuleFrontController
         } else {
             parent::ajaxRender($value, $controller, $method);
         }
+        exit;
     }
 }
