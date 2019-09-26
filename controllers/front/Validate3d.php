@@ -53,7 +53,7 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
             ]
         ];
 
-        $client->setAdyenPaymentSource(\Adyen::MODULE_NAME, \Adyen::VERSION);
+        $client->setAdyenPaymentSource(\Adyen\PrestaShop\helper\Configuration::MODULE_NAME, \Adyen\PrestaShop\helper\Configuration::VERSION);
 
         try {
             $client = $this->helperData->initializeAdyenClient();
@@ -61,8 +61,10 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
             $service = new \Adyen\Service\Checkout($client);
             $response = $service->paymentsDetails($request);
         } catch (\Adyen\AdyenException $e) {
-            $response['error'] = $e->getMessage();
-            $this->helperData->adyenLogger()->logError("exception: " . $e->getMessage());
+            $this->helperData->adyenLogger()->logError("Error during validate3d paymentsDetails call: exception: " . $e->getMessage());
+            $this->ajaxRender(
+                $this->helperData->buildControllerResponseJson('error', ['message' => "Something went wrong. Please choose another payment method."])
+            );
         }
         $this->helperData->adyenLogger()->logDebug("result: " . json_encode($response));
         $currency = $this->context->currency;
@@ -89,7 +91,7 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
                         $payment[0]->save();
                     }
                 }
-                \Tools::redirect('index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key);
+                \Tools::redirect($this->context->link->getPageLink('order-confirmation', $this->ssl) . '?id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key);
                 break;
             case 'Refused':
                 // create new cart from the current cart

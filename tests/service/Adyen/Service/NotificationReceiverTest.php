@@ -34,10 +34,10 @@ use Mockery as m;
 function pSQL($string)
 {
     /** @noinspection PhpUndefinedMethodInspection */
-    return NotificationProcessorTest::$functions->pSQL($string);
+    return NotificationReceiverTest::$functions->pSQL($string);
 }
 
-class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
+class NotificationReceiverTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var m\MockInterface
@@ -97,7 +97,7 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
         $_SERVER['PHP_AUTH_USER'] = 'username';
         $_SERVER['PHP_AUTH_PW'] = 'password';
 
-        $notificationProcessor = new NotificationProcessor(
+        $notificationReceiver = new NotificationReceiver(
             $this->adyenHelper,
             $this->hmacSignature,
             'hmac',
@@ -110,7 +110,7 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
         $this->setExpectedException(HMACKeyValidationException::class);
 
         /** @noinspection PhpUnhandledExceptionInspection */
-        $notificationProcessor->doPostProcess(
+        $notificationReceiver->doPostProcess(
             json_decode(file_get_contents(__DIR__ . '/regular-notification.json'), true)
         );
     }
@@ -119,7 +119,7 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
     {
         $this->adyenHelper->method('isDemoMode')->willReturn(true);
 
-        $notificationProcessor = new NotificationProcessor(
+        $notificationReceiver = new NotificationReceiver(
             $this->adyenHelper,
             $this->hmacSignature,
             'hmac',
@@ -132,7 +132,7 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
         $this->setExpectedException(AuthenticationException::class);
 
         /** @noinspection PhpUnhandledExceptionInspection */
-        $notificationProcessor->doPostProcess(
+        $notificationReceiver->doPostProcess(
             json_decode(file_get_contents(__DIR__ . '/test-notification.json'), true)
         );
     }
@@ -141,7 +141,7 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
     {
         $this->adyenHelper->method('isDemoMode')->willReturn(true);
 
-        $notificationProcessor = new NotificationProcessor(
+        $notificationReceiver = new NotificationReceiver(
             $this->adyenHelper,
             $this->hmacSignature,
             'hmac',
@@ -157,7 +157,7 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
         $this->setExpectedException(MerchantAccountCodeException::class);
 
         /** @noinspection PhpUnhandledExceptionInspection */
-        $notificationProcessor->doPostProcess(
+        $notificationReceiver->doPostProcess(
             json_decode(file_get_contents(__DIR__ . '/invalid-merchant-test-notification.json'), true)
         );
     }
@@ -166,7 +166,7 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
     {
         $this->adyenHelper->method('isDemoMode')->willReturn(true);
 
-        $notificationProcessor = new NotificationProcessor(
+        $notificationReceiver = new NotificationReceiver(
             $this->adyenHelper,
             $this->hmacSignature,
             'hmac',
@@ -182,7 +182,7 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
         $this->setExpectedException(AuthorizationException::class);
 
         /** @noinspection PhpUnhandledExceptionInspection */
-        $notificationProcessor->doPostProcess(
+        $notificationReceiver->doPostProcess(
             json_decode(file_get_contents(__DIR__ . '/invalid-merchant-notification.json'), true)
         );
     }
@@ -229,7 +229,7 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
         $_SERVER['PHP_AUTH_USER'] = 'username';
         $_SERVER['PHP_AUTH_PW'] = 'password';
 
-        $notificationProcessor = new NotificationProcessor(
+        $notificationReceiver = new NotificationReceiver(
             $this->adyenHelper,
             $this->hmacSignature,
             'hmac',
@@ -240,6 +240,6 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
         );
 
         /** @noinspection PhpUnhandledExceptionInspection */
-        $this->assertEquals('[accepted]', $notificationProcessor->doPostProcess($notificationItems));
+        $this->assertEquals('[accepted]', $notificationReceiver->doPostProcess($notificationItems));
     }
 }

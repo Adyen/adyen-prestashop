@@ -13,29 +13,21 @@
  *                               #############
  *                               ############
  *
- * Adyen PrestaShop plugin
+ * Adyen PrestaShop module
  *
  * Copyright (c) 2019 Adyen B.V.
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
 
-if (!defined('_PS_VERSION_')) {
-    exit;
-}
+namespace Adyen\PrestaShop\helper;
 
-/**
- * This function is automatically called on version upgrades.
- *
- * Version 1.0.1 introduces a database table for notifications from Adyen.
- *
- * @param Adyen $module
- * @return bool
- */
-function upgrade_module_1_0_1($module)
+class Configuration
 {
-    $module->createAdyenNotificationTable();
-    $module->updateCronJobToken();
-    $module->installTab();
-    return true;
+    const CHECKOUT_COMPONENT_JS_TEST = 'https://checkoutshopper-test.adyen.com/checkoutshopper/sdk/3.0.0/adyen.js';
+    const CHECKOUT_COMPONENT_JS_LIVE = 'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/3.0.0/adyen.js';
+    const CHECKOUT_COMPONENT_CSS_TEST = 'https://checkoutshopper-test.adyen.com/checkoutshopper/sdk/3.0.0/adyen.css';
+    const CHECKOUT_COMPONENT_CSS_LIVE = 'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/3.0.0/adyen.css';
+    const VERSION = '1.0.1';
+    const MODULE_NAME = 'adyen-prestashop';
 }

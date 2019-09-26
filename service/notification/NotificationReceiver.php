@@ -21,17 +21,13 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\service;
+namespace Adyen\PrestaShop\service\notification;
 
 use Adyen\PrestaShop\helper\Data as AdyenHelper;
-use Adyen\PrestaShop\service\notification\AuthenticationException;
-use Adyen\PrestaShop\service\notification\AuthorizationException;
-use Adyen\PrestaShop\service\notification\HMACKeyValidationException;
-use Adyen\PrestaShop\service\notification\MerchantAccountCodeException;
 use Adyen\Util\HmacSignature;
 use Db;
 
-class NotificationProcessor
+class NotificationReceiver
 {
     /**
      * @var AdyenHelper
@@ -69,7 +65,7 @@ class NotificationProcessor
     private $dbInstance;
 
     /**
-     * NotificationProcessor constructor.
+     * NotificationReceiver constructor.
      * @param AdyenHelper $helperData
      * @param HmacSignature $hmacSignature
      * @param $notificationHMAC

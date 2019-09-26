@@ -91,6 +91,15 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                 $response = $service->payments($request);
             } catch (\Adyen\AdyenException $e) {
                 $this->helperData->adyenLogger()->logError("There was an error with the payment method. id:  " . $cart->id . " Response: " . $e->getMessage());
+
+                $this->ajaxRender(
+                    $this->helperData->buildControllerResponseJson(
+                        'error',
+                        [
+                            'message' => "There was an error with the payment method, please choose another one."
+                        ]
+                    )
+                );
             }
         } else {
             // in case the payments response is already present use it from the session then unset it
@@ -102,10 +111,10 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
 
         if (!\Validate::isLoadedObject($customer)) {
             if (empty($_REQUEST['isAjax'])) {
-                \Tools::redirect('index.php?controller=order&step=1');
+                \Tools::redirect($this->context->link->getPageLink('order', $this->ssl) . '?step=1');
             } else {
                 $this->ajaxRender($this->helperData->buildControllerResponseJson('redirect',
-                    ['redirectUrl' => 'index.php?controller=order&step=1']));
+                    ['redirectUrl' => $this->context->link->getPageLink('order', $this->ssl) . '?step=1']));
             }
         }
 
@@ -150,11 +159,10 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
 
                 // Since this controller handles ajax and non ajax form submissions as well, both server side and client side redirects needs to be handled based on the isAjax request parameter
                 if (empty($_REQUEST['isAjax'])) {
-                    \Tools::redirect('index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key);
-
+                    \Tools::redirect($this->context->link->getPageLink('order-confirmation', $this->ssl) . '?id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key);
                 } else {
                     $this->ajaxRender($this->helperData->buildControllerResponseJson('redirect',
-                        ['redirectUrl' => 'index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key]));
+                        ['redirectUrl' => $this->context->link->getPageLink('order-confirmation', $this->ssl) . '?id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key]));
                 }
 
                 break;
@@ -163,17 +171,18 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                 $this->helperData->cloneCurrentCart($this->context, $cart);
                 $this->helperData->adyenLogger()->logError("The payment was refused, id:  " . $cart->id);
 
-                $this->ajax = true;
-                echo $this->helperData->buildControllerResponseJson(
-                    'error',
-                    [
-                        'message' => "The payment was refused"
-                    ]
+                $this->ajaxRender(
+                    $this->helperData->buildControllerResponseJson(
+                        'error',
+                        [
+                            'message' => "The payment was refused"
+                        ]
+                    )
                 );
-                return;
+
                 break;
             case 'IdentifyShopper':
-                $this->ajax = true;
+
                 $_SESSION['paymentData'] = $response['paymentData'];
 
                 $this->ajaxRender($this->helperData->buildControllerResponseJson(
@@ -186,7 +195,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
 
                 break;
             case 'ChallengeShopper':
-                $this->ajax = true;
+
                 $_SESSION['paymentData'] = $response['paymentData'];
 
                 $this->ajaxRender($this->helperData->buildControllerResponseJson(
@@ -198,8 +207,6 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                 ));
                 break;
             case 'RedirectShopper':
-                $this->ajax = true;
-                
                 // store cart in tempory value and remove the cart from session
                 $cartId = $this->context->cart->id;
                 $this->context->cookie->__set("id_cart", "");
