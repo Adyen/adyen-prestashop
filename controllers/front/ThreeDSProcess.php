@@ -66,7 +66,6 @@ class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\control
                     'message' => "3D secure 2.0 failed, payment data not found"
                 ]
             ));
-            return;
         }
 
         // Depends on the component's response we send a fingerprint or the challenge result
@@ -81,7 +80,6 @@ class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\control
                     'message' => "3D secure 2.0 failed, payload details are not found"
                 ]
             ));
-            return;
         }
 
         // Send the payments details request
@@ -99,7 +97,6 @@ class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\control
                     'message' => '3D secure 2.0 failed'
                 ]
             ));
-            return;
         }
 
         // Check if result is challenge shopper, if yes return the token
@@ -114,7 +111,6 @@ class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\control
                     'token' => $result['authentication']['threeds2.challengeToken']
                 ]
             ));
-            return;
         }
 
         // Payment can get back to the original flow
