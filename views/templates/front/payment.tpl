@@ -227,7 +227,7 @@
                             type: "POST",
                             url: paymentProcessUrl,
                             data: data,
-                            dataType: "text json",
+                            dataType: "json",
                             success: function(response) {
                                 processControllerResponse(response);
                             },
@@ -298,7 +298,7 @@
                             type: "POST",
                             url: threeDSProcessUrl,
                             data: data,
-                            dataType: "text json"
+                            dataType: "json"
                         });
                     }
 
