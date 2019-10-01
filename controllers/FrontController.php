@@ -39,9 +39,8 @@ abstract class FrontController extends \ModuleFrontController
      */
     protected function ajaxRender($value = null, $controller = null, $method = null)
     {
-        $this->ajax = true;
-
         if ($this->helperData->isPrestashop16()) {
+            $this->ajax = true;
             parent::ajaxDie($value, $controller, $method);
         } else {
             parent::ajaxRender($value, $controller, $method);

@@ -111,10 +111,10 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
 
         if (!\Validate::isLoadedObject($customer)) {
             if (empty($_REQUEST['isAjax'])) {
-                \Tools::redirect($this->context->link->getPageLink('order', $this->ssl) . '?step=1');
+                \Tools::redirect($this->context->link->getPageLink('order', $this->ssl, null, 'step=1'));
             } else {
                 $this->ajaxRender($this->helperData->buildControllerResponseJson('redirect',
-                    ['redirectUrl' => $this->context->link->getPageLink('order', $this->ssl) . '?step=1']));
+                    ['redirectUrl' => $this->context->link->getPageLink('order', $this->ssl, null, 'step=1')]));
             }
         }
 
@@ -159,10 +159,10 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
 
                 // Since this controller handles ajax and non ajax form submissions as well, both server side and client side redirects needs to be handled based on the isAjax request parameter
                 if (empty($_REQUEST['isAjax'])) {
-                    \Tools::redirect($this->context->link->getPageLink('order-confirmation', $this->ssl) . '?id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key);
+                    \Tools::redirect($this->context->link->getPageLink('order-confirmation', $this->ssl, null, 'id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key));
                 } else {
                     $this->ajaxRender($this->helperData->buildControllerResponseJson('redirect',
-                        ['redirectUrl' => $this->context->link->getPageLink('order-confirmation', $this->ssl) . '?id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key]));
+                        ['redirectUrl' => $this->context->link->getPageLink('order-confirmation', $this->ssl, null, 'id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key)]));
                 }
 
                 break;

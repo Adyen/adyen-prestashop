@@ -53,7 +53,7 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
             ]
         ];
 
-        $client->setAdyenPaymentSource(\Adyen\PrestaShop\helper\Configuration::MODULE_NAME, \Adyen\PrestaShop\helper\Configuration::VERSION);
+        $client->setAdyenPaymentSource(\Adyen\PrestaShop\service\Configuration::MODULE_NAME, \Adyen\PrestaShop\service\Configuration::VERSION);
 
         try {
             $client = $this->helperData->initializeAdyenClient();
@@ -91,7 +91,7 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
                         $payment[0]->save();
                     }
                 }
-                \Tools::redirect($this->context->link->getPageLink('order-confirmation', $this->ssl) . '?id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key);
+                \Tools::redirect($this->context->link->getPageLink('order-confirmation', $this->ssl, null, 'id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key));
                 break;
             case 'Refused':
                 // create new cart from the current cart

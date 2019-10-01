@@ -21,7 +21,7 @@
  */
 
 use Adyen\PrestaShop\controllers\FrontController;
-use Adyen\PrestaShop\service\NotificationReceiver;
+use Adyen\PrestaShop\service\notification\NotificationReceiver;
 
 class AdyenNotificationsModuleFrontController extends FrontController
 {
@@ -80,7 +80,4 @@ class AdyenNotificationsModuleFrontController extends FrontController
             die(json_encode(['success' => false, 'message' => $e->getMessage()]));
         }
     }
-
-
-
 }

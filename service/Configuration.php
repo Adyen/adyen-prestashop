@@ -20,7 +20,7 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\helper;
+namespace Adyen\PrestaShop\service;
 
 class Configuration
 {

@@ -142,7 +142,7 @@ class Data
         $client = $this->createAdyenClient();
         $client->setApplicationName("Prestashop plugin");
         $client->setXApiKey($apiKey);
-        $client->setAdyenPaymentSource(\Adyen\PrestaShop\helper\Configuration::MODULE_NAME, \Adyen\PrestaShop\helper\Configuration::VERSION);
+        $client->setAdyenPaymentSource(\Adyen\PrestaShop\service\Configuration::MODULE_NAME, \Adyen\PrestaShop\service\Configuration::VERSION);
         $client->setExternalPlatform("Prestashop", _PS_VERSION_);
 
         if ($this->isDemoMode()) {

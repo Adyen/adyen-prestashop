@@ -237,6 +237,12 @@ class NotificationReceiver
                 'The content of the notification item is: ' . print_r($response, 1)
             );
 
+            // skip report notifications
+            if ($this->isReportNotification($response['eventCode'])) {
+                $this->helperData->adyenLogger()->logDebug('Notification is a REPORT notification from Adyen Customer Area');
+                return true;
+            }
+
             // check if notification already exists
             if (!$this->isTestNotification($response['pspReference']) && !$this->isDuplicate($response)) {
                 $this->insertNotification($response);
@@ -262,9 +268,24 @@ class NotificationReceiver
             || strpos(strtolower($pspReference), 'testnotification_') !== false
         ) {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
+    }
+
+    /**
+     * Check if notification is a report notification
+     *
+     * @param $eventCode
+     * @return bool
+     */
+    protected function isReportNotification($eventCode)
+    {
+        if (strpos($eventCode, 'REPORT_') !== false) {
+            return true;
+        }
+
+        return false;
     }
 
     private function returnAccepted($acceptedMessage)

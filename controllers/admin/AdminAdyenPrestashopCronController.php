@@ -34,17 +34,18 @@ class AdminAdyenPrestashopCronController extends \ModuleAdminController
      */
     public function __construct()
     {
-        if (\Tools::encrypt(\Tools::getValue('token')) != \Configuration::get('ADYEN_CRONJOB_TOKEN')) {
-            die('Invalid token');
-        }
-
-        $this->context = \Context::getContext();
 
         $adyenHelperFactory = new \Adyen\PrestaShop\service\helper\DataFactory();
         $this->helperData = $adyenHelperFactory->createAdyenHelperData(
             \Configuration::get('ADYEN_MODE'),
             _COOKIE_KEY_
         );
+
+        if (\Tools::getValue('token') != $this->helperData->decrypt(\Configuration::get('ADYEN_CRONJOB_TOKEN'))) {
+            die('Invalid token');
+        }
+
+        $this->context = \Context::getContext();
 
         parent::__construct();
         $this->postProcess();
