@@ -25,6 +25,7 @@ namespace Adyen\PrestaShop\helper;
 use Adyen;
 use Adyen\AdyenException;
 use Adyen\Service\CheckoutUtility;
+use Adyen\Service\Checkout;
 
 class Data
 {
@@ -48,16 +49,23 @@ class Data
      */
     private $adyenCheckoutUtilityService;
 
+    /**
+     * @var Checkout
+     */
+    private $adyenCheckoutService;
+
     public function __construct(
         $httpHost,
         $configuration,
         $sslEncryptionKey,
-        CheckoutUtility $adyenCheckoutUtilityService
+        CheckoutUtility $adyenCheckoutUtilityService,
+        Checkout $adyenCheckoutService
     ) {
         $this->httpHost = $httpHost;
         $this->configuration = $configuration;
         $this->sslEncryptionKey = $sslEncryptionKey;
         $this->adyenCheckoutUtilityService = $adyenCheckoutUtilityService;
+        $this->adyenCheckoutService = $adyenCheckoutService;
     }
 
     /**
@@ -98,6 +106,135 @@ class Data
         }
 
         return $originKey;
+    }
+
+    /**
+     * @param $store
+     * @param $country
+     * @return array
+     */
+    public function fetchPaymentMethods($countryCode, $amount, $currency, $shopperReference, $shopperLocale)
+    {
+        $merchantAccount = \Configuration::get('ADYEN_MERCHANT_ACCOUNT');
+
+        if (!$merchantAccount) {
+            return [];
+        }
+
+        $adyFields = [
+            "channel" => "Web",
+            "merchantAccount" => $merchantAccount,
+            "countryCode" => $countryCode,
+            "amount" => [
+                "currency" => $currency,
+                "value" => $this->formatAmount(
+                    $amount,
+                    $currency
+                ),
+            ],
+            "shopperReference" => $shopperReference,
+            "shopperLocale" => $shopperLocale
+        ];
+
+
+//        $billingAddress = $this->getQuote()->getBillingAddress();
+//
+//        if (!empty($billingAddress)) {
+//            if ($customerTelephone = trim($billingAddress->getTelephone())) {
+//                $adyFields['telephoneNumber'] = $customerTelephone;
+//            }
+//        }
+
+        try {
+            $responseData = $this->getPaymentMethodsResponse($adyFields);
+        }
+        catch (\Adyen\AdyenException $e) {
+            $this->helperData->adyenLogger()->logError("There was an error retrieving the payment methods. message: ". $e->getMessage());
+        }
+
+        return $responseData;
+//        $oneClickPaymentMethods = $responseData['oneClickPaymentMethods'];
+
+//
+//        $paymentMethods = [];
+//        if (isset($responseData['paymentMethods'])) {
+//            foreach ($responseData['paymentMethods'] as $paymentMethod) {
+//
+//                if ($paymentMethod['type'] == "scheme") {
+//                    continue;
+//                }
+//
+//                $paymentMethodCode = $paymentMethod['type'];
+//                $paymentMethod = $this->fieldMapPaymentMethod($paymentMethod);
+//
+//                // check if payment method is an openinvoice method
+//                $paymentMethod['isPaymentMethodOpenInvoiceMethod'] =
+//                    $this->adyenHelper->isPaymentMethodOpenInvoiceMethod($paymentMethodCode);
+//
+//                // add icon location in result
+//                if ($this->adyenHelper->showLogos()) {
+//                    // Fix for MAGETWO-70402 https://github.com/magento/magento2/pull/7686
+//                    // Explicitly setting theme
+//                    $themeCode = "Magento/blank";
+//
+//                    $themeId = $this->design->getConfigurationDesignTheme(\Magento\Framework\App\Area::AREA_FRONTEND);
+//                    if (!empty($themeId)) {
+//                        $theme = $this->themeProvider->getThemeById($themeId);
+//                        if ($theme && !empty($theme->getCode())) {
+//                            $themeCode = $theme->getCode();
+//                        }
+//                    }
+//
+//                    $params = [];
+//                    $params = array_merge([
+//                        'area' => \Magento\Framework\App\Area::AREA_FRONTEND,
+//                        '_secure' => $this->request->isSecure(),
+//                        'theme' => $themeCode
+//                    ], $params);
+//
+//                    $asset = $this->assetRepo->createAsset('Adyen_Payment::images/logos/' .
+//                        $paymentMethodCode . '.png', $params);
+//
+//                    $placeholder = $this->assetSource->findSource($asset);
+//
+//                    $icon = null;
+//                    if ($placeholder) {
+//                        list($width, $height) = getimagesize($asset->getSourceFile());
+//                        $icon = [
+//                            'url' => $asset->getUrl(),
+//                            'width' => $width,
+//                            'height' => $height
+//                        ];
+//                    }
+//                    $paymentMethod['icon'] = $icon;
+//                }
+//                $paymentMethods[$paymentMethodCode] = $paymentMethod;
+//            }
+//        }
+
+//        return $paymentMethods;
+//        $this->adyenLogger()->logDebug("oneclickpayments: " . print_r($oneClickPaymentMethods,true));
+//
+//        return $oneClickPaymentMethods;
+    }
+
+
+
+    /**
+     * @param $requestParams
+     * @param $store
+     * @return array
+     * @throws \Adyen\AdyenException
+     */
+    protected function getPaymentMethodsResponse($params)
+    {
+        try {
+            $response = $this->adyenCheckoutService->paymentMethods($params);
+        } catch (AdyenException $e) {
+            $this->adyenLogger()->logError("exception: " . $e->getMessage());
+        }
+
+        return $response;
     }
 
 
@@ -291,6 +428,8 @@ class Data
      */
     public function formatAmount($amount, $currency)
     {
+        $this->adyenLogger()->logDebug("start3");
+
         switch ($currency) {
             case "CVE":
             case "DJF":
@@ -321,6 +460,7 @@ class Data
             default:
                 $format = 2;
         }
+        $this->adyenLogger()->logDebug("start4");
 
         return (int)number_format($amount, $format, '', '');
     }

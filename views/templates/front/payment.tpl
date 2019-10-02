@@ -17,8 +17,11 @@
                     <script type="text/javascript" src="/js/jquery/plugins/fancybox/jquery.fancybox.js"></script>
                 {/if}
 
+
                 <script>
 
+                    $(document).ready(function () {
+                    // window.onload = function(){
                     let holderName;
                     let encryptedCardNumber;
                     let encryptedExpiryMonth;
@@ -33,12 +36,12 @@
                     let language;
                     let javaEnabled;
 
-                    let adyenCheckout;
+                    // let adyenCheckout;
 
                     let placeOrderAllowed;
                     let popupModal;
 
-
+                    let storeCc;
 
                     /**
                      * Constructs the first request for the payment call
@@ -52,6 +55,7 @@
                             'encryptedExpiryMonth': encryptedExpiryMonth,
                             'encryptedExpiryYear': encryptedExpiryYear,
                             'encryptedSecurityCode': encryptedSecurityCode,
+                            'storeCc': storeCc,
                             'browserInfo': {
                                 'screenWidth': screenWidth,
                                 'screenHeight': screenHeight,
@@ -73,7 +77,6 @@
                     }
 
                     /* Create adyen checkout with default settings */
-                    $(document).ready(function () {
 
                         placeOrderAllowed = false;
 
@@ -96,32 +99,25 @@
                             }
                         });
 
-                        adyenCheckout = new AdyenCheckout({
-                            locale: "{$locale}",
-                            originKey: "{$originKey}",
-                            environment: "{$environment}",
-                            risk: {
-                                enabled: false
-                            }
-                        });
-
-
                         renderCardComponent();
                         fillBrowserInfo();
-                    });
+
 
                     /**
                      * Renders checkout card component
                      */
                     function renderCardComponent() {
+                        console.log("card!");
                         // we can now rely on $ within the safety of our "bodyguard" function
-                        let card = adyenCheckout.create('card', {
+                        let card = window.adyenCheckout.create('card', {
                             type: 'card',
                             hasHolderName: true,
                             holderNameRequired: true,
+                            enableStoreDetails: true,
 
                             onChange: function (state, component) {
                                 if (state.isValid && !component.state.errors.encryptedSecurityCode) {
+                                    storeCc = !!state.data.storePaymentMethod;
                                     holderName = state.data.paymentMethod.holderName;
                                     encryptedCardNumber = state.data.paymentMethod.encryptedCardNumber;
                                     encryptedExpiryMonth = state.data.paymentMethod.encryptedExpiryMonth;
@@ -138,6 +134,7 @@
                         }).mount("#cardContainer");
                     }
 
+
                     /**
                      * Rendering the 3DS2.0 components
                      * To do the device fingerprint at the response of IdentifyShopper render the threeDS2DeviceFingerprint
@@ -151,7 +148,7 @@
                      */
                     function renderThreeDS2Component(type, token) {
                         if (type == "IdentifyShopper") {
-                            adyenCheckout.create('threeDS2DeviceFingerprint', {
+                            window.adyenCheckout.create('threeDS2DeviceFingerprint', {
                                 fingerprintToken: token,
                                 onComplete: function (result) {
                                     processThreeDS2(result.data).done(function (responseJSON) {
@@ -165,7 +162,7 @@
                         } else if (type == "ChallengeShopper") {
                             showPopup();
 
-                            adyenCheckout.create('threeDS2Challenge', {
+                            window.adyenCheckout.create('threeDS2Challenge', {
                                 challengeToken: token,
                                 onComplete: function (result) {
                                     hidePopup();
@@ -327,8 +324,9 @@
                         timeZoneOffset = browserInfo.timeZoneOffset;
                         language = browserInfo.language;
                     }
-
+                    });
                 </script>
+
 
                 <div class="checkout-container" id="cardContainer"></div>
                 <input type="hidden" name="paymentData"/>

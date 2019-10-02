@@ -50,7 +50,7 @@ class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\control
     public function postProcess()
     {
         $payload = $_REQUEST;
-
+        $this->helperData->adyenLogger()->logDebug($payload);
         if (!empty($_SESSION['paymentData'])) {
             // Add payment data into the request object
             $request = [

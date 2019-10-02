@@ -79,6 +79,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
             $request = $this->buildCCData($request, $_REQUEST);
             $request = $this->buildPaymentData($request);
             $request = $this->buildMerchantAccountData($request);
+            $request = $this->buildRecurringData($request, $_REQUEST);
 
             // call adyen library
             $service = new \Adyen\Service\Checkout($client);
@@ -286,6 +287,17 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
             $request['paymentMethod']['holderName'] = $holderName;
         }
 
+        $shopperReference = $this->context->cart->id_customer;
+        if(!empty($shopperReference)) {
+            $request['shopperReference'] = $shopperReference;
+        }
+
+        //Oneclick data
+        if(!empty($payload['recurringDetailReference']) &&
+        $recurringDetailReference = $payload['recurringDetailReference']) {
+            $request['paymentMethod']['recurringDetailReference'] = $recurringDetailReference;
+        }
+
         // 3DS2 request data
         $request['additionalData']['allow3DS2'] = true;
         $request['origin'] = $this->helperData->getOrigin();
@@ -316,14 +328,6 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                 $request['browserInfo']['javaEnabled'] = $payload['browserInfo']['javaEnabled'];
             }
         }
-
-
-
-//        if (!empty($payload[PaymentInterface::KEY_ADDITIONAL_DATA][AdyenOneclickDataAssignObserver::RECURRING_DETAIL_REFERENCE]) &&
-//            $recurringDetailReference = $payload[PaymentInterface::KEY_ADDITIONAL_DATA][AdyenOneclickDataAssignObserver::RECURRING_DETAIL_REFERENCE]
-//        ) {
-//            $request['paymentMethod']['recurringDetailReference'] = $recurringDetailReference;
-//        }
 
         /**
          * if MOTO for backend is enabled use MOTO as shopper interaction type
@@ -389,6 +393,40 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
             'userAgent' => $_SERVER['HTTP_USER_AGENT'],
             'acceptHeader' => $_SERVER['HTTP_ACCEPT']
         ];
+
+        return $request;
+    }
+
+    /**
+     * @param $request
+     * @param $areaCode
+     * @param $storeId
+     * @param $payment
+     */
+    public function buildRecurringData($request = [], $payload)
+    {
+//        if ($areaCode !== \Magento\Backend\App\Area\FrontNameResolver::AREA_CODE) {
+//            $storeId = null;
+//        }
+//        $enableOneclick = $this->adyenHelper->getAdyenAbstractConfigData('enable_oneclick');
+//        $enableRecurring = $this->adyenHelper->getAdyenAbstractConfigData('enable_recurring');
+
+//        if ($enableOneclick) {
+//            $request['enableOneClick'] = true;
+//        } else {
+//            $request['enableOneClick'] = false;
+//        }
+//
+//        if ($enableRecurring) {
+//            $request['enableRecurring'] = true;
+//        } else {
+//            $request['enableOneClick'] = true;
+//        }
+
+
+            $request['paymentMethod']['storeDetails'] = true;
+            $request['enableOneClick'] = true;
+            $request['enableRecurring'] = false;
 
         return $request;
     }
