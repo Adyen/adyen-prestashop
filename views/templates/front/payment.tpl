@@ -183,19 +183,21 @@
                     function showPopup() {
                         {if $prestashop16}
                             $.fancybox({
+                                'autoDimensions': true,
                                 'autoScale': true,
-                                'transitionIn': 'elastic',
-                                'transitionOut': 'elastic',
+                                'centerOnScroll': true,
+                                'href': '#threeDS2Modal',
+                                'modal': true,
                                 'speedIn': 500,
                                 'speedOut': 300,
-                                'autoDimensions': true,
-                                'centerOnScroll': true,
-                                'hideOnContentClick': false,
-                                'showCloseButton': false,
-                                'href' : '#threeDS2Modal'
+                                'transitionIn': 'elastic',
+                                'transitionOut': 'elastic'
                             });
                         {else}
-                            popupModal = $('#threeDS2Modal').modal();
+                        popupModal = $('#threeDS2Modal').modal({
+                            'keyboard': false,
+                            'backdrop': 'static'
+                        });
                         {/if}
                     }
 
@@ -296,10 +298,7 @@
                             type: "POST",
                             url: threeDSProcessUrl,
                             data: data,
-                            dataType: "json",
-                            done: function(response) {
-                                return response;
-                            }
+                            dataType: "json"
                         });
                     }
 
