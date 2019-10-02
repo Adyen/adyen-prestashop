@@ -21,17 +21,13 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\service;
+namespace Adyen\PrestaShop\service\notification;
 
 use Adyen\PrestaShop\helper\Data as AdyenHelper;
-use Adyen\PrestaShop\service\notification\AuthenticationException;
-use Adyen\PrestaShop\service\notification\AuthorizationException;
-use Adyen\PrestaShop\service\notification\HMACKeyValidationException;
-use Adyen\PrestaShop\service\notification\MerchantAccountCodeException;
 use Adyen\Util\HmacSignature;
 use Db;
 
-class NotificationProcessor
+class NotificationReceiver
 {
     /**
      * @var AdyenHelper
@@ -69,7 +65,7 @@ class NotificationProcessor
     private $dbInstance;
 
     /**
-     * NotificationProcessor constructor.
+     * NotificationReceiver constructor.
      * @param AdyenHelper $helperData
      * @param HmacSignature $hmacSignature
      * @param $notificationHMAC
@@ -241,6 +237,12 @@ class NotificationProcessor
                 'The content of the notification item is: ' . print_r($response, 1)
             );
 
+            // skip report notifications
+            if ($this->isReportNotification($response['eventCode'])) {
+                $this->helperData->adyenLogger()->logDebug('Notification is a REPORT notification from Adyen Customer Area');
+                return true;
+            }
+
             // check if notification already exists
             if (!$this->isTestNotification($response['pspReference']) && !$this->isDuplicate($response)) {
                 $this->insertNotification($response);
@@ -266,9 +268,24 @@ class NotificationProcessor
             || strpos(strtolower($pspReference), 'testnotification_') !== false
         ) {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
+    }
+
+    /**
+     * Check if notification is a report notification
+     *
+     * @param $eventCode
+     * @return bool
+     */
+    protected function isReportNotification($eventCode)
+    {
+        if (strpos($eventCode, 'REPORT_') !== false) {
+            return true;
+        }
+
+        return false;
     }
 
     private function returnAccepted($acceptedMessage)

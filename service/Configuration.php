@@ -13,38 +13,21 @@
  *                               #############
  *                               ############
  *
- * Adyen PrestaShop plugin
+ * Adyen PrestaShop module
  *
  * Copyright (c) 2019 Adyen B.V.
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\controllers;
+namespace Adyen\PrestaShop\service;
 
-use PrestaShopException;
-
-abstract class FrontController extends \ModuleFrontController
+class Configuration
 {
-    /**
-     * @var \Adyen\PrestaShop\helper\Data
-     */
-    protected $helperData;
-
-    /**
-     * @param null $value
-     * @param null $controller
-     * @param null $method
-     * @throws PrestaShopException
-     */
-    protected function ajaxRender($value = null, $controller = null, $method = null)
-    {
-        if ($this->helperData->isPrestashop16()) {
-            $this->ajax = true;
-            parent::ajaxDie($value, $controller, $method);
-        } else {
-            parent::ajaxRender($value, $controller, $method);
-            exit;
-        }
-    }
+    const CHECKOUT_COMPONENT_JS_TEST = 'https://checkoutshopper-test.adyen.com/checkoutshopper/sdk/3.0.0/adyen.js';
+    const CHECKOUT_COMPONENT_JS_LIVE = 'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/3.0.0/adyen.js';
+    const CHECKOUT_COMPONENT_CSS_TEST = 'https://checkoutshopper-test.adyen.com/checkoutshopper/sdk/3.0.0/adyen.css';
+    const CHECKOUT_COMPONENT_CSS_LIVE = 'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/3.0.0/adyen.css';
+    const VERSION = '1.0.1';
+    const MODULE_NAME = 'adyen-prestashop';
 }

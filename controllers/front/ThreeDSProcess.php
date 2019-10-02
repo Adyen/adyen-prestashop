@@ -49,9 +49,6 @@ class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\control
      */
     public function postProcess()
     {
-        // Currently this controller only handles ajax requests
-        $this->ajax = true;
-
         $payload = $_REQUEST;
 
         if (!empty($_SESSION['paymentData'])) {
@@ -66,7 +63,6 @@ class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\control
                     'message' => "3D secure 2.0 failed, payment data not found"
                 ]
             ));
-            return;
         }
 
         // Depends on the component's response we send a fingerprint or the challenge result

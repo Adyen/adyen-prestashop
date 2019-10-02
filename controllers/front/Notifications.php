@@ -21,7 +21,7 @@
  */
 
 use Adyen\PrestaShop\controllers\FrontController;
-use Adyen\PrestaShop\service\NotificationProcessor;
+use Adyen\PrestaShop\service\notification\NotificationReceiver;
 
 class AdyenNotificationsModuleFrontController extends FrontController
 {
@@ -40,13 +40,12 @@ class AdyenNotificationsModuleFrontController extends FrontController
         );
     }
 
-
     /**
      * @throws PrestaShopException
      */
     public function postProcess()
     {
-        $notificationProcessor = new NotificationProcessor(
+        $notificationReceiver = new NotificationReceiver(
             $this->helperData,
             new \Adyen\Util\HmacSignature(),
             Configuration::get('ADYEN_NOTI_HMAC'),
@@ -56,7 +55,7 @@ class AdyenNotificationsModuleFrontController extends FrontController
             Db::getInstance()
         );
         try {
-            die($notificationProcessor->doPostProcess(
+            die($notificationReceiver->doPostProcess(
                 json_decode(file_get_contents('php://input'), true))
             );
         } catch (\Adyen\PrestaShop\service\notification\AuthenticationException $e) {
@@ -81,7 +80,4 @@ class AdyenNotificationsModuleFrontController extends FrontController
             die(json_encode(['success' => false, 'message' => $e->getMessage()]));
         }
     }
-
-
-
 }

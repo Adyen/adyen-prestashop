@@ -29,21 +29,16 @@ if (!defined('_PS_VERSION_')) {
 
 class Adyen extends \PaymentModule
 {
-    const TEST = 'test';
-    const LIVE = 'live';
-    const CHECKOUT_COMPONENT_JS_TEST = 'https://checkoutshopper-test.adyen.com/checkoutshopper/sdk/3.0.0/adyen.js';
-    const CHECKOUT_COMPONENT_JS_LIVE = 'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/3.0.0/adyen.js';
-    const CHECKOUT_COMPONENT_CSS_TEST = 'https://checkoutshopper-test.adyen.com/checkoutshopper/sdk/3.0.0/adyen.css';
-    const CHECKOUT_COMPONENT_CSS_LIVE = 'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/3.0.0/adyen.css';
-    const VERSION = '1.0.1';
-    const MODULE_NAME = 'adyen-prestashop';
-
-
+    /**
+     * Adyen constructor.
+     *
+     * @throws \Adyen\AdyenException
+     */
     public function __construct()
     {
         $this->name = 'adyen';
         $this->tab = 'payments_gateways';
-        $this->version = self::VERSION;
+        $this->version = \Adyen\PrestaShop\service\Configuration::VERSION;
         $this->author = 'Adyen';
         $this->bootstrap = true;
         $this->display = 'view';
@@ -80,11 +75,12 @@ class Adyen extends \PaymentModule
 	 */
     public function install()
     {
-
         if (version_compare(_PS_VERSION_, '1.5', '<')) {
             $this->_errors[] = $this->l('Sorry, this module is not compatible with your version.');
             return false;
         }
+
+        $this->updateCronJobToken();
 
         if ($this->helper_data->isPrestashop16()) {
             // Version 1.6 requires a different set of hooks
@@ -99,6 +95,7 @@ class Adyen extends \PaymentModule
                 && $this->registerHook('moduleRoutes')
                 // the table for notifications from Adyen needs to be both in install and upgrade
                 && $this->createAdyenNotificationTable()
+                && $this->installTab()
             ) {
                 return true;
             } else {
@@ -109,6 +106,7 @@ class Adyen extends \PaymentModule
 
         // install hooks for version 1.7 or higher
         return parent::install()
+            && $this->installTab()
             && $this->registerHook('header')
             && $this->registerHook('orderConfirmation')
             && $this->registerHook('paymentOptions')
@@ -119,6 +117,22 @@ class Adyen extends \PaymentModule
             && $this->createAdyenNotificationTable();
     }
 
+    /**
+     * @param string $token
+     * @return bool
+     */
+    public function updateCronJobToken($token = '')
+    {
+        if (empty($token)) {
+            $token = $this->helper_data->encrypt(\Tools::getShopDomainSsl().time());
+        }
+
+        return \Configuration::updateValue('ADYEN_CRONJOB_TOKEN', $this->helper_data->encrypt($token));
+    }
+
+    /**
+     * @return bool
+     */
     public function createAdyenNotificationTable()
     {
         $db = Db::getInstance();
@@ -146,9 +160,7 @@ class Adyen extends \PaymentModule
             KEY `ADYEN_NOTIFICATION_MERCHANT_REFERENCE_EVENT_CODE` (`merchant_reference`,`event_code`)
             ) ENGINE=' . _MYSQL_ENGINE_ . ' AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT=\'Adyen Notifications\'';
 
-        $db->execute($query);
-
-        return true;
+        return $db->execute($query);
     }
 
     /**
@@ -161,10 +173,45 @@ class Adyen extends \PaymentModule
         // TODO: delete adyen configurations (api-key)
         $db = Db::getInstance();
         /** @noinspection SqlWithoutWhere SqlResolve */
-        $db->execute('DELETE FROM `' . _DB_PREFIX_ . 'adyen_notification`');
         $db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'adyen_notification`');
 
-        return parent::uninstall();
+        return parent::uninstall() && $this->uninstallTab();
+    }
+
+    /**
+     * @return mixed
+     */
+    public function installTab()
+    {
+        $tab = new Tab();
+        // invisible tab
+        $tab->id_parent = -1;
+        $tab->active = 1;
+
+        $tab->name = array();
+        foreach (\Language::getLanguages(true) as $lang) {
+            $tab->name[$lang['id_lang']] = 'Adyen Prestashop Cron';
+        }
+
+        $tab->class_name = 'AdminAdyenPrestashopCron';
+        $tab->module = $this->name;
+
+        return $tab->add();
+    }
+
+    /**
+     * @return bool
+     */
+    public function uninstallTab()
+    {
+        $id_tab = (int)\Tab::getIdFromClassName('AdminAdyenPrestashopCron');
+
+        if ($id_tab) {
+            $tab = new \Tab($id_tab);
+            return $tab->delete();
+        }
+
+        return false;
     }
 
 
@@ -183,10 +230,10 @@ class Adyen extends \PaymentModule
             $notification_username = (string)\Tools::getValue('ADYEN_NOTI_USERNAME');
             $notification_password = (string)\Tools::getValue('ADYEN_NOTI_PASSWORD');
             $notification_hmac = (string)\Tools::getValue('ADYEN_NOTI_HMAC');
+            $cron_job_token = \Tools::getValue('ADYEN_CRONJOB_TOKEN');
             $api_key_test = \Tools::getValue('ADYEN_APIKEY_TEST');
             $api_key_live = \Tools::getValue('ADYEN_APIKEY_LIVE');
             $live_endpoint_url_prefix = (string)\Tools::getValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
-
 
             // validating the input
             if (!$merchant_account || empty($merchant_account) || !\Validate::isGenericName($merchant_account)) {
@@ -201,19 +248,20 @@ class Adyen extends \PaymentModule
                 $output .= $this->displayError($this->l('Invalid Configuration value for Notification Password'));
             }
 
-            if (empty($notification_hmac) || !\Validate::isGenericName($notification_hmac)) {
-                $output .= $this->displayError($this->l('Invalid Configuration value for Notification HMAC Key'));
-            }
-
-
             if ($output == null) {
 
                 \Configuration::updateValue('ADYEN_MERCHANT_ACCOUNT', $merchant_account);
                 \Configuration::updateValue('ADYEN_MODE', $mode);
                 \Configuration::updateValue('ADYEN_NOTI_USERNAME', $notification_username);
                 \Configuration::updateValue('ADYEN_NOTI_PASSWORD', $notification_password);
-                \Configuration::updateValue('ADYEN_NOTI_HMAC', $notification_hmac);
                 \Configuration::updateValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX', $live_endpoint_url_prefix);
+
+                if (!empty($notification_hmac)) {
+                    \Configuration::updateValue('ADYEN_NOTI_HMAC', $notification_hmac);
+                }
+                if (!empty($cron_job_token)) {
+                    \Configuration::updateValue('ADYEN_CRONJOB_TOKEN', $this->helper_data->encrypt($cron_job_token));
+                }
                 if (!empty($api_key_test)) {
                     \Configuration::updateValue('ADYEN_APIKEY_TEST', $this->helper_data->encrypt($api_key_test));
                 }
@@ -294,12 +342,20 @@ class Adyen extends \PaymentModule
                     'hint' => $this->l('Must correspond to the notification password in the Adyen Backoffice under Settings => Notifications')
                 ),
                 array(
-                    'type' => 'text',
+                    'type' => 'password',
                     'label' => $this->l('HMAC key for notifications'),
                     'name' => 'ADYEN_NOTI_HMAC',
                     'size' => 20,
-                    'required' => true,
+                    'required' => false,
                     'hint' => $this->l('Must correspond to the notification HMAC Key in the Adyen Backoffice under Settings => Notifications => Additional Settings => HMAC Key (HEX Encoded)')
+                ),
+                array(
+                    'type' => 'text',
+                    'desc' => $this->l('Your adyen cron job processor\'s url includes this secure token . Your URL looks like: ' . _PS_BASE_URL_ . '/' . basename(_PS_ADMIN_DIR_) . '/index.php?fc=module&controller=AdminAdyenPrestashopCron&token=' . $this->helper_data->decrypt(\Configuration::get('ADYEN_CRONJOB_TOKEN'))),
+                    'label' => $this->l('Secure token for cron job'),
+                    'name' => 'ADYEN_CRONJOB_TOKEN',
+                    'size' => 20,
+                    'required' => false
                 ),
                 array(
                     'type' => 'password',
@@ -366,7 +422,8 @@ class Adyen extends \PaymentModule
             $mode = (string)\Tools::getValue('ADYEN_MODE');
             $notification_username = (string)\Tools::getValue('ADYEN_NOTI_USERNAME');
             $notification_password = (string)\Tools::getValue('ADYEN_NOTI_PASSWORD');
-            $notification_HMAC = (string)\Tools::getValue('ADYEN_NOTI_HMAC');
+            $notification_HMAC = $this->hashing->hash(\Tools::getValue('ADYEN_NOTI_HMAC', _COOKIE_KEY_));
+            $cron_job_token = \Tools::getValue('ADYEN_CRONJOB_TOKEN');
             $live_endpoint_url_prefix = (string)\Tools::getValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
             $api_key_test = $this->hashing->hash(\Tools::getValue('ADYEN_APIKEY_TEST'), _COOKIE_KEY_);
             $api_key_live = $this->hashing->hash(\Tools::getValue('ADYEN_APIKEY_LIVE'), _COOKIE_KEY_);
@@ -375,7 +432,8 @@ class Adyen extends \PaymentModule
             $mode = \Configuration::get('ADYEN_MODE');
             $notification_username = \Configuration::get('ADYEN_NOTI_USERNAME');
             $notification_password = \Configuration::get('ADYEN_NOTI_PASSWORD');
-            $notification_HMAC = \Configuration::get('ADYEN_NOTI_HMAC');
+            $notification_HMAC = $this->hashing->hash(\Configuration::get('ADYEN_NOTI_HMAC'), _COOKIE_KEY_);
+            $cron_job_token = $this->helper_data->decrypt(\Configuration::get('ADYEN_CRONJOB_TOKEN'));
             $live_endpoint_url_prefix = \Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
             $api_key_test = $this->hashing->hash(\Configuration::get('ADYEN_APIKEY_TEST'),
                 _COOKIE_KEY_);;
@@ -389,6 +447,7 @@ class Adyen extends \PaymentModule
         $helper->fields_value['ADYEN_NOTI_USERNAME'] = $notification_username;
         $helper->fields_value['ADYEN_NOTI_PASSWORD'] = $notification_password;
         $helper->fields_value['ADYEN_NOTI_HMAC'] = $notification_HMAC;
+        $helper->fields_value['ADYEN_CRONJOB_TOKEN'] = $cron_job_token;
         $helper->fields_value['ADYEN_APIKEY_TEST'] = $api_key_test;
         $helper->fields_value['ADYEN_APIKEY_LIVE'] = $api_key_live;
         $helper->fields_value['ADYEN_LIVE_ENDPOINT_URL_PREFIX'] = $live_endpoint_url_prefix;
@@ -417,13 +476,13 @@ class Adyen extends \PaymentModule
         if ($this->helper_data->isDemoMode()) {
 
             if (version_compare(_PS_VERSION_, '1.7', '<')) {
-                $this->context->controller->addJS(self::CHECKOUT_COMPONENT_JS_TEST);
-                $this->context->controller->addCSS(self::CHECKOUT_COMPONENT_CSS_TEST);
+                $this->context->controller->addJS(\Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_JS_TEST);
+                $this->context->controller->addCSS(\Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_CSS_TEST);
                 $this->context->controller->addJS($this->_path . 'views/js/threeds2-js-utils.js');
             } else {
                 $this->context->controller->registerJavascript(
                     'component', // Unique ID
-                    self::CHECKOUT_COMPONENT_JS_TEST, // JS path
+                    \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_JS_TEST, // JS path
                     array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
                 );
                 $this->context->controller->registerJavascript(
@@ -433,7 +492,7 @@ class Adyen extends \PaymentModule
                 );
                 $this->context->controller->registerStylesheet(
                     'stylecheckout', // Unique ID
-                    self::CHECKOUT_COMPONENT_CSS_TEST, // CSS path
+                    \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_CSS_TEST, // CSS path
                     array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
                 );
 
@@ -443,13 +502,13 @@ class Adyen extends \PaymentModule
         } else {
 
             if (version_compare(_PS_VERSION_, '1.7', '<')) {
-                $this->context->controller->addJS(self::CHECKOUT_COMPONENT_JS_LIVE);
-                $this->context->controller->addCSS(self::CHECKOUT_COMPONENT_CSS_LIVE);
+                $this->context->controller->addJS(\Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_JS_LIVE);
+                $this->context->controller->addCSS(\Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_CSS_LIVE);
                 $this->context->controller->addJS($this->_path . 'views/js/threeds2-js-utils.js');
             } else {
                 $this->context->controller->registerJavascript(
                     'component', // Unique ID
-                    self::CHECKOUT_COMPONENT_JS_LIVE, // JS path
+                    \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_JS_LIVE, // JS path
                     array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
                 );
                 $this->context->controller->registerJavascript(
@@ -459,7 +518,7 @@ class Adyen extends \PaymentModule
                 );
                 $this->context->controller->registerStylesheet(
                     'stylecheckout', // Unique ID
-                    self::CHECKOUT_COMPONENT_CSS_LIVE, // CSS path
+                    \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_CSS_LIVE, // CSS path
                     array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
                 );
             }
@@ -567,5 +626,4 @@ class Adyen extends \PaymentModule
     {
         return;
     }
-
 }
