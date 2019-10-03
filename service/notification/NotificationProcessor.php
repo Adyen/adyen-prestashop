@@ -24,6 +24,8 @@
 namespace Adyen\PrestaShop\service\notification;
 
 use Adyen\PrestaShop\helper\Data as AdyenHelper;
+use Adyen\PrestaShop\service\adapter\classes\CustomerThreadAdapter;
+use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
 use Db;
 
 class NotificationProcessor
@@ -50,7 +52,8 @@ class NotificationProcessor
     ) {
         $this->helperData = $helperData;
         $this->dbInstance = $dbInstance;
-
+        $this->orderAdapter = new OrderAdapter();
+        $this->customerThreadAdapter = new CustomerThreadAdapter();
         $this->context = \Context::getContext();
     }
 
@@ -165,14 +168,7 @@ class NotificationProcessor
             $success
         );
 
-        if ($this->helperData->isPrestashop16()) {
-            $orderId = \Order::getOrderByCartId($notification['merchant_reference']);
-            if ($orderId) {
-                $order = new \Order($orderId);
-            }
-        } else {
-            $order = \Order::getByCartId($notification['merchant_reference']);
-        }
+        $order = $this->orderAdapter->getOrderByCartId($notification['merchant_reference']);
 
         if (empty($order)) {
             $this->helperData->adyenLogger()->logError('Order with id: "' . $notification['merchant_reference'] . '" cannot be found while notification with id: "' . $notification['entity_id'] . '" was processed.');
@@ -187,7 +183,7 @@ class NotificationProcessor
         }
 
         // Find customer thread by order id and customer email
-        $customerThread = new \CustomerThread(\CustomerThread::getIdCustomerThreadByEmailAndIdOrder($customer->email, $order->id));
+        $customerThread = $this->customerThreadAdapter->getCustomerThreadByEmailAndOrderId($customer->email, $order->id);
 
         if (empty($customerThread->id)) {
             $customerThread = new \CustomerThread();

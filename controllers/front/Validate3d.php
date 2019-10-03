@@ -98,11 +98,7 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
                 $this->helperData->cloneCurrentCart($this->context, $cart);
 
                 $this->helperData->adyenLogger()->logError("The payment was refused, id:  " . $cart->id);
-                if ($this->helperData->isPrestashop16()) {
-                    return $this->setTemplate('error.tpl');
-                } else {
-                    return $this->setTemplate('module:adyen/views/templates/front/error.tpl');
-                }
+                return $this->setTemplate($this->helperData->getTemplateFromModulePath('views/templates/front/error.tpl'));
                 break;
             default:
                 // create new cart from the current cart
@@ -111,11 +107,7 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
                 $this->module->validateOrder($cart->id, 6, $total, $this->module->displayName, null, $extra_vars,
                     (int)$currency->id, false, $customer->secure_key);
                 $this->helperData->adyenLogger()->logError("The payment was cancelled, id:  " . $cart->id);
-                if ($this->helperData->isPrestashop16()) {
-                    return $this->setTemplate('error.tpl');
-                } else {
-                    return $this->setTemplate('module:adyen/views/templates/front/error.tpl');
-                }
+                return $this->setTemplate($this->helperData->getTemplateFromModulePath('views/templates/front/error.tpl'));
                 break;
         }
     }
