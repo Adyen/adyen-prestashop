@@ -7,7 +7,7 @@
 {if $prestashop16}
 <p></p>
     <div class="adyen-payment-method-label">
-        Pay with saved {$type}
+        Pay with saved {$name} ending: {$number}
     </div>
 
 {/if}

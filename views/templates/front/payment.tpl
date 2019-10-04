@@ -6,7 +6,7 @@
 {else}
     {if $prestashop16}
         <p></p>
-        <div class="paymentmethod">
+        <div class="adyen-payment-method-label">
             Pay with Credit Card
         </div>
 

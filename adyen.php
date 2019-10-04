@@ -694,7 +694,8 @@ class Adyen extends PaymentModule
                             'prestashop16' => true,
                             'oneClickPaymentMethod' => json_encode($storedCard),
                             'recurringDetailReference' => $storedCard['recurringDetailReference'],
-                            'type' => $storedCard['type']
+                            'name' => $storedCard['name'],
+                            'number' => $storedCard['storedDetails']['card']['number']
                         )
                     );
                 }

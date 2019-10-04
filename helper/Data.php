@@ -137,33 +137,11 @@ class Data
         ];
 
         try {
-            $responseData = $this->getPaymentMethodsResponse($adyFields);
+            $responseData = $this->adyenCheckoutService->paymentMethods($adyFields);
+        } catch (\Adyen\AdyenException $e) {
+            $this->helperData->adyenLogger()->logError("There was an error retrieving the payment methods. message: " . $e->getMessage());
         }
-        catch (\Adyen\AdyenException $e) {
-            $this->helperData->adyenLogger()->logError("There was an error retrieving the payment methods. message: ". $e->getMessage());
-        }
-
         return $responseData;
-
-    }
-
-
-
-    /**
-     * @param $requestParams
-     * @param $store
-     * @return array
-     * @throws \Adyen\AdyenException
-     */
-    protected function getPaymentMethodsResponse($params)
-    {
-        try {
-            $response = $this->adyenCheckoutService->paymentMethods($params);
-        } catch (AdyenException $e) {
-            $this->adyenLogger()->logError("exception: " . $e->getMessage());
-        }
-
-        return $response;
     }
 
 
