@@ -357,8 +357,6 @@ class Data
      */
     public function formatAmount($amount, $currency)
     {
-        $this->adyenLogger()->logDebug("start3");
-
         switch ($currency) {
             case "CVE":
             case "DJF":
@@ -389,7 +387,6 @@ class Data
             default:
                 $format = 2;
         }
-        $this->adyenLogger()->logDebug("start4");
 
         return (int)number_format($amount, $format, '', '');
     }
