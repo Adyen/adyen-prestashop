@@ -43,8 +43,6 @@
                     let language;
                     let javaEnabled;
 
-                    // let adyenCheckout;
-
                     let placeOrderAllowed;
                     let popupModal;
 
