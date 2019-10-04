@@ -576,8 +576,8 @@ class Adyen extends PaymentModule
         $isoAddress = Country::getIsoById($address->id_country);
         $shopperReference = $this->context->cart->id_customer;
         $shopperLocale = $this->context->language->iso_code;
-        //retrieve
 
+        //retrieve payment methods
         $paymentMethods = $this->helper_data->fetchPaymentMethods($isoAddress, $amount, $currency, $shopperReference, $shopperLocale);
         if(!empty($paymentMethods) && isset($paymentMethods['oneClickPaymentMethods'])){
             $oneClickPaymentMethods = $paymentMethods['oneClickPaymentMethods'];
@@ -663,7 +663,7 @@ class Adyen extends PaymentModule
         if(!empty($paymentMethods) && isset($paymentMethods['oneClickPaymentMethods'])){
             $oneClickPaymentMethods = $paymentMethods['oneClickPaymentMethods'];
         }
-$payments = "";
+        $payments = "";
         if(isset($oneClickPaymentMethods)) {
             foreach ($oneClickPaymentMethods as $storedCard) {
                 if (isset($storedCard["storedDetails"]["card"]["expiryMonth"])) {
