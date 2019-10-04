@@ -136,15 +136,6 @@ class Data
             "shopperLocale" => $shopperLocale
         ];
 
-
-//        $billingAddress = $this->getQuote()->getBillingAddress();
-//
-//        if (!empty($billingAddress)) {
-//            if ($customerTelephone = trim($billingAddress->getTelephone())) {
-//                $adyFields['telephoneNumber'] = $customerTelephone;
-//            }
-//        }
-
         try {
             $responseData = $this->getPaymentMethodsResponse($adyFields);
         }
@@ -153,69 +144,7 @@ class Data
         }
 
         return $responseData;
-//        $oneClickPaymentMethods = $responseData['oneClickPaymentMethods'];
 
-//
-//        $paymentMethods = [];
-//        if (isset($responseData['paymentMethods'])) {
-//            foreach ($responseData['paymentMethods'] as $paymentMethod) {
-//
-//                if ($paymentMethod['type'] == "scheme") {
-//                    continue;
-//                }
-//
-//                $paymentMethodCode = $paymentMethod['type'];
-//                $paymentMethod = $this->fieldMapPaymentMethod($paymentMethod);
-//
-//                // check if payment method is an openinvoice method
-//                $paymentMethod['isPaymentMethodOpenInvoiceMethod'] =
-//                    $this->adyenHelper->isPaymentMethodOpenInvoiceMethod($paymentMethodCode);
-//
-//                // add icon location in result
-//                if ($this->adyenHelper->showLogos()) {
-//                    // Fix for MAGETWO-70402 https://github.com/magento/magento2/pull/7686
-//                    // Explicitly setting theme
-//                    $themeCode = "Magento/blank";
-//
-//                    $themeId = $this->design->getConfigurationDesignTheme(\Magento\Framework\App\Area::AREA_FRONTEND);
-//                    if (!empty($themeId)) {
-//                        $theme = $this->themeProvider->getThemeById($themeId);
-//                        if ($theme && !empty($theme->getCode())) {
-//                            $themeCode = $theme->getCode();
-//                        }
-//                    }
-//
-//                    $params = [];
-//                    $params = array_merge([
-//                        'area' => \Magento\Framework\App\Area::AREA_FRONTEND,
-//                        '_secure' => $this->request->isSecure(),
-//                        'theme' => $themeCode
-//                    ], $params);
-//
-//                    $asset = $this->assetRepo->createAsset('Adyen_Payment::images/logos/' .
-//                        $paymentMethodCode . '.png', $params);
-//
-//                    $placeholder = $this->assetSource->findSource($asset);
-//
-//                    $icon = null;
-//                    if ($placeholder) {
-//                        list($width, $height) = getimagesize($asset->getSourceFile());
-//                        $icon = [
-//                            'url' => $asset->getUrl(),
-//                            'width' => $width,
-//                            'height' => $height
-//                        ];
-//                    }
-//                    $paymentMethod['icon'] = $icon;
-//                }
-//                $paymentMethods[$paymentMethodCode] = $paymentMethod;
-//            }
-//        }
-
-//        return $paymentMethods;
-//        $this->adyenLogger()->logDebug("oneclickpayments: " . print_r($oneClickPaymentMethods,true));
-//
-//        return $oneClickPaymentMethods;
     }
 
 
@@ -512,6 +441,20 @@ class Data
     {
         if (!isset($_SESSION)) {
             session_start();
+        }
+    }
+
+    /**
+     * Get locale for 1.6/1.7
+     * @return mixed
+     */
+    public function getLocale($context)
+    {
+        // no locale in Prestashop1.6 only languageCode that is en-en but we need en_EN
+        if ($this->isPrestashop16()) {
+            return $context->language->iso_code;
+        } else {
+            return $context->language->locale;
         }
     }
 

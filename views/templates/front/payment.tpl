@@ -4,6 +4,13 @@
         please check your API key in the Adyen Module configuration</h5>
 </form>
 {else}
+    {if $prestashop16}
+        <p></p>
+        <div class="paymentmethod">
+            Pay with Credit Card
+        </div>
+
+    {/if}
     <div class="row adyen-payment">
         <div class="col-xs-12 col-md-6">
             <form id="payment-form" action="{$paymentProcessUrl}" class="adyen-payment-form" method="post">

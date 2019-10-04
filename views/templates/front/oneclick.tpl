@@ -4,7 +4,13 @@
         please check your API key in the Adyen Module configuration</h5>
 </form>
 {else}
+{if $prestashop16}
+<p></p>
+    <div class="adyen-payment-method-label">
+        Pay with saved {$type}
+    </div>
 
+{/if}
 <div class="row adyen-payment">
     <div class="col-xs-12 col-md-6">
         <form id="payment-form" action="{$paymentProcessUrl}" class="adyen-payment-form-{$recurringDetailReference}" method="post">
@@ -40,7 +46,6 @@
                      * Constructs the first request for the payment call
                      **/
                     function getPaymentData() {
-                        debugger;
                         let data = {
                             'isAjax': true,
                             'encryptedSecurityCode': encryptedSecurityCode,
@@ -57,11 +62,21 @@
 
                         return data;
                     }
-                    var oneClickPaymentMethod = "{$oneClickPaymentMethod}".replace(/&quot;/g, '"');
-                    if (!!oneClickPaymentMethod) {
-                        var itemArray = JSON.parse(oneClickPaymentMethod);
-                        renderOneClickComponent();
-                    }
+
+                    {if $prestashop16}
+                        var itemArray = {$oneClickPaymentMethod};
+                        if (!!itemArray) {
+                            renderOneClickComponent();
+                            fillBrowserInfo();
+                        }
+                    {else}
+                        var oneClickPaymentMethod = "{$oneClickPaymentMethod}".replace(/&quot;/g, '"');
+                        if (!!oneClickPaymentMethod) {
+                            var itemArray = JSON.parse(oneClickPaymentMethod);
+                            renderOneClickComponent();
+                            fillBrowserInfo();
+                        }
+                    {/if}
 
                     /* Create adyen checkout with default settings */
 
@@ -178,7 +193,6 @@
                         });
                     }
                     function renderThreeDS2Component(type, token) {
-                        debugger;
                         if (type == "IdentifyShopper") {
                             adyenCheckout.create('threeDS2DeviceFingerprint', {
                                 fingerprintToken: token,
@@ -281,16 +295,30 @@
                                 console.log("Something went wrong on the frontend");
                         }
                     }
+
+                    /**
+                     *  Using the threeds2-js-utils.js to fill browserinfo
+                     */
+                    function fillBrowserInfo() {
+                        let browserInfo = ThreedDS2Utils.getBrowserInfo();
+
+                        javaEnabled = browserInfo.javaEnabled;
+                        colorDepth = browserInfo.colorDepth;
+                        screenWidth = browserInfo.screenWidth;
+                        screenHeight = browserInfo.screenHeight;
+                        timeZoneOffset = browserInfo.timeZoneOffset;
+                        language = browserInfo.language;
+                    }
                 });
 
 
             </script>
     <div class="checkout-container" id="cardContainer-recurringDetailReference"></div>
-    {*<input type="hidden" name="paymentData"/>*}
-    {*<input type="hidden" name="redirectMethod"/>*}
-    {*<input type="hidden" name="issuerUrl"/>*}
-    {*<input type="hidden" name="paRequest"/>*}
-    {*<input type="hidden" name="md"/>*}
+    <input type="hidden" name="paymentData"/>
+    <input type="hidden" name="redirectMethod"/>
+    <input type="hidden" name="issuerUrl"/>
+    <input type="hidden" name="paRequest"/>
+    <input type="hidden" name="md"/>
 
     {if $prestashop16}
         <div style="display:none">
@@ -318,4 +346,10 @@
         document.getElementById("threeDS2Modal-recurringDetailReference").setAttribute("id", "threeDS2Modal-".concat("{$recurringDetailReference}"));
         document.getElementById("threeDS2Container-recurringDetailReference").setAttribute("id", "threeDS2Container-".concat("{$recurringDetailReference}"));
     </script>
+
+    {if $prestashop16}
+        <button type="submit" class="button btn btn-default standard-checkout button-medium"><span>
+                     {l s='Pay' mod='adyen'} <i class="icon-chevron-right right"></i> </span></button>
+    {/if}
+        </form>
 {/if}
