@@ -114,7 +114,6 @@
                      * Renders checkout card component
                      */
                     function renderCardComponent() {
-                        console.log("card!");
                         // we can now rely on $ within the safety of our "bodyguard" function
                         let card = window.adyenCheckout.create('card', {
                             type: 'card',

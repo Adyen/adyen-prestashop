@@ -398,36 +398,17 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
     }
 
     /**
-     * @param $request
-     * @param $areaCode
-     * @param $storeId
-     * @param $payment
+     * @param array $request
+     * @param $payload
+     * @return array
      */
     public function buildRecurringData($request = [], $payload)
     {
-//        if ($areaCode !== \Magento\Backend\App\Area\FrontNameResolver::AREA_CODE) {
-//            $storeId = null;
-//        }
-//        $enableOneclick = $this->adyenHelper->getAdyenAbstractConfigData('enable_oneclick');
-//        $enableRecurring = $this->adyenHelper->getAdyenAbstractConfigData('enable_recurring');
-
-//        if ($enableOneclick) {
-//            $request['enableOneClick'] = true;
-//        } else {
-//            $request['enableOneClick'] = false;
-//        }
-//
-//        if ($enableRecurring) {
-//            $request['enableRecurring'] = true;
-//        } else {
-//            $request['enableOneClick'] = true;
-//        }
-
-
+        if (!empty($payload['storeCc']) && strpos($payload['storeCc'], 'true') !== false) {
             $request['paymentMethod']['storeDetails'] = true;
             $request['enableOneClick'] = true;
             $request['enableRecurring'] = false;
-
+        }
         return $request;
     }
 
