@@ -4,13 +4,7 @@
         please check your API key in the Adyen Module configuration</h5>
 </form>
 {else}
-{if $prestashop16}
-<p></p>
-    <div class="adyen-payment-method-label">
-        Pay with saved {$name} ending: {$number}
-    </div>
 
-{/if}
 <div class="row adyen-payment">
     <div class="col-xs-12 col-md-6">
         <form id="payment-form" action="{$paymentProcessUrl}" class="adyen-payment-form-{$recurringDetailReference}" method="post">
@@ -23,6 +17,10 @@
                 <link rel="stylesheet" href="/js/jquery/plugins/fancybox/jquery.fancybox.css" type="text/css"
                       media="all"/>
                 <script type="text/javascript" src="/js/jquery/plugins/fancybox/jquery.fancybox.js"></script>
+                <p></p>
+                <div class="adyen-payment-method-label">
+                    Pay with saved {$name} ending: {$number}
+                </div>
             {/if}
 
 
@@ -350,6 +348,7 @@
     {if $prestashop16}
         <button type="submit" class="button btn btn-default standard-checkout button-medium"><span>
                      {l s='Pay' mod='adyen'} <i class="icon-chevron-right right"></i> </span></button>
+
     {/if}
         </form>
 {/if}

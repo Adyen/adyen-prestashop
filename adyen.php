@@ -582,30 +582,8 @@ class Adyen extends PaymentModule
         if(!empty($paymentMethods) && isset($paymentMethods['oneClickPaymentMethods'])){
             $oneClickPaymentMethods = $paymentMethods['oneClickPaymentMethods'];
         }
+
         $payment_options = array();
-        $embeddedOption = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
-
-        $cc_img = 'cc_border.png';
-
-        $this->context->smarty->assign(
-            array(
-                'locale' => $this->helper_data->getLocale($this->context),
-                'originKey' => $this->helper_data->getOriginKeyForOrigin(),
-                'environment' => Configuration::get('ADYEN_MODE'),
-                'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
-                'threeDSProcessUrl' => $this->context->link->getModuleLink($this->name, 'ThreeDSProcess', array(),
-                    true),
-                'prestashop16' => false,
-                'oneClickPaymentMethod' => ""
-            )
-        );
-
-        $embeddedOption->setCallToActionText($this->l('Pay by card'))
-            ->setForm($this->context->smarty->fetch(_PS_MODULE_DIR_ . $this->name . '/views/templates/front/payment.tpl'))
-            ->setLogo(Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $cc_img))
-            ->setAction($this->context->link->getModuleLink($this->name, 'Payment', array(), true));
-        $payment_options[] = $embeddedOption;
-
 
         if(isset($oneClickPaymentMethods)) {
             foreach ($oneClickPaymentMethods as $storedCard) {
@@ -615,7 +593,7 @@ class Adyen extends PaymentModule
                         array(
                             'locale' => $this->helper_data->getLocale($this->context),
                             'originKey' => $this->helper_data->getOriginKeyForOrigin(),
-                            'environment' => \Configuration::get('ADYEN_MODE'),
+                            'environment' => Configuration::get('ADYEN_MODE'),
                             'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(),
                                 true),
                             'threeDSProcessUrl' => $this->context->link->getModuleLink($this->name, 'ThreeDSProcess',
@@ -636,6 +614,29 @@ class Adyen extends PaymentModule
             }
         }
 
+
+        $embeddedOption = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
+
+        $cc_img = 'cc_border.png';
+
+        $this->context->smarty->assign(
+            array(
+                'locale' => $this->helper_data->getLocale($this->context),
+                'originKey' => $this->helper_data->getOriginKeyForOrigin(),
+                'environment' => Configuration::get('ADYEN_MODE'),
+                'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
+                'threeDSProcessUrl' => $this->context->link->getModuleLink($this->name, 'ThreeDSProcess', array(), true),
+                'prestashop16' => false,
+                'oneClickPaymentMethod' => ""
+            )
+        );
+
+        $embeddedOption->setCallToActionText($this->l('Pay by card'))
+            ->setForm($this->context->smarty->fetch(_PS_MODULE_DIR_ . $this->name . '/views/templates/front/payment.tpl'))
+            ->setLogo(\Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $cc_img))
+            ->setAction($this->context->link->getModuleLink($this->name, 'Payment', array(), true));
+        $payment_options[] = $embeddedOption;
+
         return $payment_options;
     }
 
@@ -651,21 +652,6 @@ class Adyen extends PaymentModule
 
         $this->context->controller->addCSS($this->_path . 'css/adyen.css', 'all');
 
-        $this->context->smarty->assign(
-            array(
-                'locale' => $this->helper_data->getLocale($this->context), // no locale in Prestashop1.6 only languageCode that is en-en but we need en_EN
-                'originKey' => $this->helper_data->getOriginKeyForOrigin(),
-                'environment' => Configuration::get('ADYEN_MODE'),
-                'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
-                'threeDSProcessUrl' => $this->context->link->getModuleLink($this->name, 'ThreeDSProcess', array(),
-                    true),
-                'prestashop16' => true,
-                'oneClickPaymentMethod' => "",
-            )
-        );
-
-        $payments = $this->display(__FILE__, '/views/templates/front/payment.tpl');
-
         $amount = $this->context->cart->getOrderTotal();
         $currency = $this->context->currency->iso_code;
         $address = new Address($this->context->cart->id_address_invoice);
@@ -677,7 +663,7 @@ class Adyen extends PaymentModule
         if(!empty($paymentMethods) && isset($paymentMethods['oneClickPaymentMethods'])){
             $oneClickPaymentMethods = $paymentMethods['oneClickPaymentMethods'];
         }
-
+$payments = "";
         if(isset($oneClickPaymentMethods)) {
             foreach ($oneClickPaymentMethods as $storedCard) {
                 if (isset($storedCard["storedDetails"]["card"]["expiryMonth"])) {
@@ -703,7 +689,19 @@ class Adyen extends PaymentModule
             }
         }
 
+        $this->context->smarty->assign(
+            array(
+                'locale' => $this->helper_data->getLocale($this->context), // no locale in Prestashop1.6 only languageCode that is en-en but we need en_EN
+                'originKey' => $this->helper_data->getOriginKeyForOrigin(),
+                'environment' => Configuration::get('ADYEN_MODE'),
+                'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
+                'threeDSProcessUrl' => $this->context->link->getModuleLink($this->name, 'ThreeDSProcess', array(), true),
+                'prestashop16' => true,
+                'oneClickPaymentMethod' => "",
+            )
+        );
 
+        $payments .= $this->display(__FILE__, '/views/templates/front/payment.tpl');
 
         return $payments;
     }
