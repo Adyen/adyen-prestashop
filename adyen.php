@@ -576,18 +576,14 @@ class Adyen extends PaymentModule
         $isoAddress = Country::getIsoById($address->id_country);
         $shopperReference = $this->context->cart->id_customer;
         $shopperLocale = $this->helper_data->getLocale($this->context);
+        $payment_options = array();
 
         //retrieve payment methods
         $paymentMethods = $this->helper_data->fetchPaymentMethods($isoAddress, $amount, $currency, $shopperReference, $shopperLocale);
         if (!empty($paymentMethods['oneClickPaymentMethods'])) {
             $oneClickPaymentMethods = $paymentMethods['oneClickPaymentMethods'];
-        }
-
-        $payment_options = array();
-
-        if(isset($oneClickPaymentMethods)) {
             foreach ($oneClickPaymentMethods as $storedCard) {
-                if (isset($storedCard["storedDetails"]["card"]["expiryMonth"])) {
+                if (!empty($storedCard["storedDetails"]["card"]["expiryMonth"])) {
 
                     $this->context->smarty->assign(
                         array(
@@ -658,10 +654,10 @@ class Adyen extends PaymentModule
         $shopperReference = $this->context->cart->id_customer;
         $shopperLocale = $this->helper_data->getLocale($this->context);
 
+        $payments = "";
         $paymentMethods = $this->helper_data->fetchPaymentMethods($isoAddress, $amount, $currency, $shopperReference, $shopperLocale);
         if (!empty($paymentMethods['oneClickPaymentMethods'])) {
             $oneClickPaymentMethods = $paymentMethods['oneClickPaymentMethods'];
-            $payments = "";
             foreach ($oneClickPaymentMethods as $storedCard) {
                 if (!empty($storedCard["storedDetails"]["card"]["expiryMonth"])) {
                     $this->context->smarty->assign(
