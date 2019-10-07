@@ -136,6 +136,7 @@ class Data
             "shopperLocale" => $shopperLocale
         ];
 
+        $responseData = "";
         try {
             $responseData = $this->adyenCheckoutService->paymentMethods($adyFields);
         } catch (\Adyen\AdyenException $e) {

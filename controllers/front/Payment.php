@@ -404,7 +404,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
      */
     public function buildRecurringData($request = [], $payload)
     {
-        if (!empty($payload['storeCc']) && strpos($payload['storeCc'], 'true') !== false) {
+        if (!empty($payload['storeCc']) && $payload['storeCc'] === 'true') {
             $request['paymentMethod']['storeDetails'] = true;
             $request['enableOneClick'] = true;
             $request['enableRecurring'] = false;

@@ -7,7 +7,7 @@
     {if $prestashop16}
         <p></p>
         <div class="adyen-payment-method-label">
-            Pay with Credit Card
+            {l s='Pay with Credit Card' mod='adyen'}
         </div>
 
     {/if}
@@ -28,7 +28,6 @@
                 <script>
 
                     $(document).ready(function () {
-                    // window.onload = function(){
                     let holderName;
                     let encryptedCardNumber;
                     let encryptedExpiryMonth;

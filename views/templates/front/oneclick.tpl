@@ -19,7 +19,8 @@
                 <script type="text/javascript" src="/js/jquery/plugins/fancybox/jquery.fancybox.js"></script>
                 <p></p>
                 <div class="adyen-payment-method-label">
-                    Pay with saved {$name} ending: {$number}
+                    {l s='Pay with saved ' mod='adyen'} {$name}
+                    {l s=' ending: ' mod='adyen'} {$number}
                 </div>
             {/if}
 

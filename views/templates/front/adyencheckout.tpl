@@ -8,10 +8,7 @@
             window.adyenCheckout = new AdyenCheckout({
                 locale: "{$locale}",
                 originKey: "{$originKey}",
-                environment: "{$environment}",
-                risk: {
-                    enabled: false
-                }
+                environment: "{$environment}"
             });
         });
     </script>
