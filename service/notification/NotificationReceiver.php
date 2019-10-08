@@ -338,7 +338,7 @@ class NotificationReceiver
         }
 
         // do this to set both fields in the correct timezone
-        $date = new \DateTime();
+        $date = new DateTime();
         $data['created_at'] = $date->format('Y-m-d H:i:s');
         $data['updated_at'] = $date->format('Y-m-d H:i:s');
 
