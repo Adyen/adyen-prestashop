@@ -375,4 +375,19 @@ class Data
         }
     }
 
+    /**
+     * Return the required template path for 1.6 or 1.7
+     * Include the full path in the module like: views/templates/front/redirect.tpl
+     *
+     * @param $templatePath
+     * @return string
+     */
+    public function getTemplateFromModulePath($templatePath)
+    {
+        if ($this->isPrestashop16()) {
+            return basename($templatePath);
+        }
+
+        return 'module:adyen/' . ltrim($templatePath, '/');
+    }
 }

@@ -68,11 +68,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                 'termUrl' => $termUrl
             ));
 
-            if ($this->helperData->isPrestashop16()) {
-                return $this->setTemplate('redirect.tpl');
-            } else {
-                return $this->setTemplate('module:adyen/views/templates/front/redirect.tpl');
-            }
+            return $this->setTemplate($this->helperData->getTemplateFromModulePath('views/templates/front/redirect.tpl'));
         }
 
         // Handle payments call in case there is no payments response saved into the session
@@ -239,11 +235,8 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                 $this->module->validateOrder($cart->id, 8, $total, $this->module->displayName, null, $extra_vars,
                     (int)$currency->id, false, $customer->secure_key);
                 $this->helperData->adyenLogger()->logError("There was an error with the payment method. id:  " . $cart->id);
-                if ($this->helperData->isPrestashop16()) {
-                    return $this->setTemplate('error.tpl');
-                } else {
-                    return $this->setTemplate('module:adyen/views/templates/front/error.tpl');
-                }
+
+                return $this->setTemplate($this->helperData->getTemplateFromModulePath('views/templates/front/error.tpl'));
                 break;
         }
 
