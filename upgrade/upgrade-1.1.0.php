@@ -20,14 +20,19 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\service;
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
 
-class Configuration
+/**
+ * This function is automatically called on version upgrades.
+ *
+ * Version 1.1.0 introduces refund feature
+ *
+ * @param Adyen $module
+ * @return bool
+ */
+function upgrade_module_1_1_0(Adyen $module)
 {
-    const CHECKOUT_COMPONENT_JS_TEST = 'https://checkoutshopper-test.adyen.com/checkoutshopper/sdk/3.0.0/adyen.js';
-    const CHECKOUT_COMPONENT_JS_LIVE = 'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/3.0.0/adyen.js';
-    const CHECKOUT_COMPONENT_CSS_TEST = 'https://checkoutshopper-test.adyen.com/checkoutshopper/sdk/3.0.0/adyen.css';
-    const CHECKOUT_COMPONENT_CSS_LIVE = 'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/3.0.0/adyen.css';
-    const VERSION = '1.1.0';
-    const MODULE_NAME = 'adyen-prestashop';
+    return $module->registerHook('actionOrderSlipAdd');
 }
