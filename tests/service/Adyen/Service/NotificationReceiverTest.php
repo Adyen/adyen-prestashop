@@ -27,6 +27,7 @@ use Adyen\PrestaShop\service\notification\AuthenticationException;
 use Adyen\PrestaShop\service\notification\AuthorizationException;
 use Adyen\PrestaShop\service\notification\HMACKeyValidationException;
 use Adyen\PrestaShop\service\notification\MerchantAccountCodeException;
+use Adyen\PrestaShop\service\notification\NotificationReceiver;
 use Adyen\Util\HmacSignature;
 use Db;
 use Mockery as m;
