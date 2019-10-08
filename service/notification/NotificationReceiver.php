@@ -25,6 +25,7 @@ namespace Adyen\PrestaShop\service\notification;
 
 use Adyen\PrestaShop\helper\Data as AdyenHelper;
 use Adyen\Util\HmacSignature;
+use DateTime;
 use Db;
 
 class NotificationReceiver
@@ -174,7 +175,7 @@ class NotificationReceiver
         // validate hmac
 
 
-        if (!$this->verifyHmac($response)) {
+        if (!$this->hmacSignature->isValidNotificationHMAC($this->notificationHMAC, $response)) {
             $message = 'HMAC key validation failed';
             $this->helperData->adyenLogger()->logError($message);
             throw new HMACKeyValidationException($message);
@@ -386,15 +387,5 @@ class NotificationReceiver
             . ' AND `processing` = "' . (int)0 . '"';
 
         return $this->dbInstance->getValue($sql);
-    }
-
-    /**
-     * @param $notification
-     * @return bool
-     * @throws \Adyen\AdyenException
-     */
-    private function verifyHmac($notification)
-    {
-        return $this->hmacSignature->isValidNotificationHMAC($this->notificationHMAC, $notification);
     }
 }
