@@ -14,7 +14,7 @@
  *                               #############
  *                               ############
  *
- * Adyen PrestaShop module
+ * Adyen PrestaShop plugin
  *
  * Copyright (c) 2019 Adyen B.V.
  * This file is open source and available under the MIT license.
@@ -22,6 +22,11 @@
  */
 
 namespace Adyen\PrestaShop\service\adapter\classes\order;
+
+use Order;
+use OrderSlip;
+use PrestaShopDatabaseException;
+use PrestaShopException;
 
 class OrderAdapter
 {
@@ -59,5 +64,17 @@ class OrderAdapter
         }
 
         return $order;
+    }
+
+    /**
+     * @param string $orderSlipId
+     *
+     * @return Order
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    public function getOrderByOrderSlipId($orderSlipId)
+    {
+        return new Order(new OrderSlip($orderSlipId));
     }
 }
