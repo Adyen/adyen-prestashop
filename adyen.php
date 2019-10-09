@@ -21,6 +21,9 @@
  */
 
 // init composer autoload
+use Adyen\PrestaShop\service\modification\Refund;
+use Adyen\Service\Modification;
+
 require __DIR__ . '/vendor/autoload.php';
 
 if (!defined('_PS_VERSION_')) {
