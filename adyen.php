@@ -276,7 +276,7 @@ class Adyen extends PaymentModule
                 $output .= $this->displayError($this->l('Invalid Configuration value for Merchant Account'));
             }
 
-            if (!$notification_username || empty($notification_username) || !Validate::isGenericName($notification_username)) {
+            if (empty($notification_username) || !Validate::isGenericName($notification_username)) {
                 $output .= $this->displayError($this->l('Invalid Configuration value for Notification Username'));
             }
 
