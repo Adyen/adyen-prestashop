@@ -75,6 +75,7 @@ class OrderAdapter
      */
     public function getOrderByOrderSlipId($orderSlipId)
     {
-        return new Order(new OrderSlip($orderSlipId));
+        $orderSlip = new OrderSlip($orderSlipId);
+        return new Order($orderSlip->id_order);
     }
 }
