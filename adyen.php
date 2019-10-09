@@ -280,7 +280,7 @@ class Adyen extends PaymentModule
                 $output .= $this->displayError($this->l('Invalid Configuration value for Notification Username'));
             }
 
-            if (!$notification_password || empty($notification_password) || !Validate::isGenericName($notification_password)) {
+            if (empty($notification_password) || !Validate::isGenericName($notification_password)) {
                 $output .= $this->displayError($this->l('Invalid Configuration value for Notification Password'));
             }
 
