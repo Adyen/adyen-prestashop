@@ -155,7 +155,7 @@ class NotificationProcessor
     {
         $successResult = (strcmp($notification['success'], 'true') == 0 ||
             strcmp($notification['success'], '1') == 0) ? 'true' : 'false';
-        $success = (!empty($notification['reason'])) ? "$successResult <br />reason:" . $notification['reason'] . PHP_EOL : $successResult . PHP_EOL;
+        $success = (!empty($notification['reason'])) ? "$successResult" . PHP_EOL . "reason:" . $notification['reason'] . PHP_EOL : $successResult . PHP_EOL;
 
         $type = 'Adyen HTTP Notification(s):';
         $comment = sprintf(
