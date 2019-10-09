@@ -100,7 +100,7 @@ SQL
                 'value' => $amount,
                 'currency' => $currency
             ],
-            'reference' => "order-slip-{$orderSlip->id}-refund",
+            'reference' => $orderSlip->id,
             'merchantAccount' => $this->merchantAccount
         ]);
         return true;
