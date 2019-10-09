@@ -116,7 +116,7 @@
                             type: 'card',
                             hasHolderName: true,
                             holderNameRequired: true,
-                            enableStoreDetails: true,
+                            enableStoreDetails: "{$loggedInUser}",
 
                             onChange: function (state, component) {
                                 if (state.isValid && !component.state.errors.encryptedSecurityCode) {
