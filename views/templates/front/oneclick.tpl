@@ -5,7 +5,7 @@
 </form>
 {else}
 
-<div class="row adyen-payment">
+    <div class="row adyen-payment">
     <div class="col-xs-12 col-md-6">
         <form id="payment-form" action="{$paymentProcessUrl}" class="adyen-payment-form-{$recurringDetailReference}" method="post">
 
@@ -14,9 +14,6 @@
 
             <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
             {if $prestashop16}
-                <link rel="stylesheet" href="/js/jquery/plugins/fancybox/jquery.fancybox.css" type="text/css"
-                      media="all"/>
-                <script type="text/javascript" src="/js/jquery/plugins/fancybox/jquery.fancybox.js"></script>
                 <p></p>
                 <div class="adyen-payment-method-label">
                     {l s='Pay with saved ' mod='adyen'} {$name}
@@ -352,4 +349,6 @@
 
     {/if}
         </form>
+    </div>
+    </div>
 {/if}

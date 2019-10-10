@@ -25,4 +25,3 @@ div.adyen-payment #errors {
 }
 
 div.adyen-payment-method-label { display: inline-block; margin: 6px; font-size: 16px;}
-div.adyen-payment {display: grid;}
