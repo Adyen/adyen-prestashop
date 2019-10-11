@@ -93,7 +93,6 @@ SQL
             ,
             _DB_PREFIX_, _DB_PREFIX_
         ));
-        $this->logger->logDebug($results);
         $this->modificationClient->refund([
             'originalReference' => $results[0]['pspReference'],
             'modificationAmount' => [
