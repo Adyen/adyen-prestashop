@@ -71,7 +71,7 @@ class Refund
 
     /**
      * @param string $orderId
-     * @param string $amount
+     * @param OrderSlip $orderSlip
      * @param string $currency
      * @return bool
      * @throws AdyenException
