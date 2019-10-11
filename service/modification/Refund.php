@@ -75,7 +75,6 @@ class Refund
      * @param string $currency
      *
      * @return bool
-     * @throws AdyenException
      */
     public function request(OrderSlip $orderSlip, $currency)
     {
@@ -90,15 +89,22 @@ class Refund
             $this->logger->logError($e->getMessage());
             return false;
         }
-        $this->modificationClient->refund([
-            'originalReference' => $pspReference,
-            'modificationAmount' => [
-                'value' => $amount,
-                'currency' => $currency
-            ],
-            'reference' => $orderSlip->id,
-            'merchantAccount' => $this->merchantAccount
-        ]);
+        try {
+            $this->modificationClient->refund(
+                [
+                    'originalReference' => $pspReference,
+                    'modificationAmount' => [
+                        'value' => $amount,
+                        'currency' => $currency
+                    ],
+                    'reference' => $orderSlip->id,
+                    'merchantAccount' => $this->merchantAccount
+                ]
+            );
+        } catch (AdyenException $e) {
+            $this->logger->logError($e->getMessage());
+            return false;
+        }
         return true;
     }
 
