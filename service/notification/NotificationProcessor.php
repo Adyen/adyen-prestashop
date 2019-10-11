@@ -41,48 +41,30 @@ class NotificationProcessor
     private $dbInstance;
 
     /**
-     * CronProcessor constructor.
+     * NotificationProcessor constructor.
      *
      * @param AdyenHelper $helperData
      * @param Db $dbInstance
+     * @param OrderAdapter $orderAdapter
+     * @param CustomerThreadAdapter $customerThreadAdapter
      */
     public function __construct(
         AdyenHelper $helperData,
-        Db $dbInstance
+        Db $dbInstance,
+        OrderAdapter $orderAdapter,
+        CustomerThreadAdapter $customerThreadAdapter
     ) {
         $this->helperData = $helperData;
         $this->dbInstance = $dbInstance;
-        $this->orderAdapter = new OrderAdapter();
-        $this->customerThreadAdapter = new CustomerThreadAdapter();
+        $this->orderAdapter = $orderAdapter;
+        $this->customerThreadAdapter = $customerThreadAdapter;
         $this->context = \Context::getContext();
-    }
-
-    /**
-     *
-     */
-    public function doPostProcess()
-    {
-        $unprocessedNotifications = $this->getUnprocessedNotifications();
-
-        foreach ($unprocessedNotifications as $unprocessedNotification) {
-            // update as processing
-            $this->updateNotificationAsProcessing($unprocessedNotification['entity_id']);
-
-            // Add cron message to order
-            if ($this->addMessage($unprocessedNotification)) {
-                // processing is done
-                $this->updateNotificationAsDone($unprocessedNotification['entity_id']);
-            } else {
-                // processing had some error
-                $this->updateNotificationAsNew($unprocessedNotification['entity_id']);
-            }
-        }
     }
 
     /**
      * @return array|bool|null|object
      */
-    protected function getUnprocessedNotifications()
+    public function getUnprocessedNotifications()
     {
         $dateStart = new \DateTime();
         $dateStart->modify('-1 day');
@@ -105,7 +87,7 @@ class NotificationProcessor
      * @param $id
      * @return mixed
      */
-    protected function updateNotificationAsProcessing($id)
+    public function updateNotificationAsProcessing($id)
     {
         $sql = 'UPDATE ' . _DB_PREFIX_ . 'adyen_notification'
             . ' SET `processing` = 1'
@@ -120,7 +102,7 @@ class NotificationProcessor
      * @param $id
      * @return mixed
      */
-    protected function updateNotificationAsDone($id)
+    public function updateNotificationAsDone($id)
     {
         $sql = 'UPDATE ' . _DB_PREFIX_ . 'adyen_notification'
             . ' SET `processing` = 0, `done` = 1'
@@ -135,7 +117,7 @@ class NotificationProcessor
      * @param $id
      * @return mixed
      */
-    protected function updateNotificationAsNew($id)
+    public function updateNotificationAsNew($id)
     {
         $sql = 'UPDATE ' . _DB_PREFIX_ . 'adyen_notification'
             . ' SET `processing` = 0, `done` = 0'
@@ -146,12 +128,12 @@ class NotificationProcessor
     }
 
     /**
-     * Add order message based on the notification
+     * Add order message based on processing the notification
      *
      * @param $notification
      * @return bool
      */
-    protected function addMessage($notification)
+    public function addMessage($notification)
     {
         $successResult = (strcmp($notification['success'], 'true') == 0 ||
             strcmp($notification['success'], '1') == 0) ? 'true' : 'false';

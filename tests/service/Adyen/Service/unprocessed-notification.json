@@ -2,7 +2,7 @@
   "entity_id": 1,
   "pspreference": "883569413203437H",
   "original_reference": null,
-  "merchant_reference": "76",
+  "merchant_reference": "0",
   "event_code": "AUTHORISATION",
   "success": "true",
   "payment_method": "visa",

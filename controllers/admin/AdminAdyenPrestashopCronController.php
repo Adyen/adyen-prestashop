@@ -59,9 +59,25 @@ class AdminAdyenPrestashopCronController extends \ModuleAdminController
     {
         $notificationProcessor = new \Adyen\PrestaShop\service\notification\NotificationProcessor(
             $this->helperData,
-            Db::getInstance()
-
+            Db::getInstance(),
+            new \Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter(),
+            new \Adyen\PrestaShop\service\adapter\classes\CustomerThreadAdapter()
         );
-        $notificationProcessor->doPostProcess();
+
+        $unprocessedNotifications = $notificationProcessor->getUnprocessedNotifications();
+
+        foreach ($unprocessedNotifications as $unprocessedNotification) {
+            // update as processing
+            $notificationProcessor->updateNotificationAsProcessing($unprocessedNotification['entity_id']);
+
+            // Add cron message to order
+            if ($notificationProcessor->addMessage($unprocessedNotification)) {
+                // processing is done
+                $notificationProcessor->updateNotificationAsDone($unprocessedNotification['entity_id']);
+            } else {
+                // processing had some error
+                $notificationProcessor->updateNotificationAsNew($unprocessedNotification['entity_id']);
+            }
+        }
     }
 }
