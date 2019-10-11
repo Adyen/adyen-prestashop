@@ -84,6 +84,6 @@ class RefundTest extends TestCase
             ->willReturn([['pspReference' => $pspReference, 'orderId' => $orderId]]);
 
         $refund = new Refund($modificationClient, $databaseConnection, $merchantAccount);
-        $this->assertEquals(true, $refund->request($orderId, $amount, $currency));
+        $this->assertEquals(true, $refund->request($amount, $currency));
     }
 }
