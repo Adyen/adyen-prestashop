@@ -24,25 +24,25 @@
 
             <script>
                 $(document).ready(function () {
-                    let encryptedSecurityCode;
-                    let allValidcard;
-                    let recurringDetailReference;
+                    var encryptedSecurityCode;
+                    var allValidcard;
+                    var recurringDetailReference;
 
-                    let screenWidth;
-                    let screenHeight;
-                    let colorDepth;
-                    let timeZoneOffset;
-                    let language;
-                    let javaEnabled;
+                    var screenWidth;
+                    var screenHeight;
+                    var colorDepth;
+                    var timeZoneOffset;
+                    var language;
+                    var javaEnabled;
 
-                    let placeOrderAllowed;
-                    let popupModal;
+                    var placeOrderAllowed;
+                    var popupModal;
 
                     /**
                      * Constructs the first request for the payment call
                      **/
                     function getPaymentData() {
-                        let data = {
+                        var data = {
                             'isAjax': true,
                             'encryptedSecurityCode': encryptedSecurityCode,
                             'recurringDetailReference': itemArray.recurringDetailReference,
@@ -88,7 +88,7 @@
                                 return false;
                             }
 
-                            let data = getPaymentData();
+                            var data = getPaymentData();
                             processPayment(data);
 
                             return false;
@@ -102,7 +102,7 @@
                      * Renders checkout card component
                      */
                     function renderOneClickComponent() {
-                        let card = window.adyenCheckout.create('card', {
+                        var card = window.adyenCheckout.create('card', {
                             type: itemArray.type,
                             oneClick: true,
                             details: itemArray.details,
@@ -134,7 +134,7 @@
                      * Does the initial payments call with the encrypted data from the card component
                      */
                     function processPayment(data) {
-                        let paymentProcessUrl = $('#payment-form.adyen-payment-form-'.concat(itemArray.recurringDetailReference)).attr('action');
+                        var paymentProcessUrl = $('#payment-form.adyen-payment-form-'.concat(itemArray.recurringDetailReference)).attr('action');
 
                         $.ajax({
                             type: "POST",
@@ -174,7 +174,7 @@
                      * @param response
                      */
                     function processThreeDS2(data) {
-                        let threeDSProcessUrl = "{$threeDSProcessUrl nofilter}";
+                        var threeDSProcessUrl = "{$threeDSProcessUrl nofilter}";
 
                         data['isAjax'] = true;
 
@@ -296,7 +296,7 @@
                      *  Using the threeds2-js-utils.js to fill browserinfo
                      */
                     function fillBrowserInfo() {
-                        let browserInfo = ThreedDS2Utils.getBrowserInfo();
+                        var browserInfo = ThreedDS2Utils.getBrowserInfo();
 
                         javaEnabled = browserInfo.javaEnabled;
                         colorDepth = browserInfo.colorDepth;

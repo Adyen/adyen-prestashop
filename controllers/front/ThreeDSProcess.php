@@ -52,15 +52,15 @@ class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\control
         $payload = $_REQUEST;
         if (!empty($_SESSION['paymentData'])) {
             // Add payment data into the request object
-            $request = [
+            $request = array(
                 "paymentData" => $_SESSION['paymentData']
-            ];
+            );
         } else {
             $this->ajaxRender($this->helperData->buildControllerResponseJson(
                 'error',
-                [
+                array(
                     'message' => "3D secure 2.0 failed, payment data not found"
-                ]
+                )
             ));
         }
 
@@ -72,9 +72,9 @@ class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\control
         } else {
             $this->ajaxRender($this->helperData->buildControllerResponseJson(
                 'error',
-                [
+                array(
                     'message' => "3D secure 2.0 failed, payload details are not found"
-                ]
+                )
             ));
         }
 
@@ -89,9 +89,9 @@ class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\control
         } catch (\Adyen\AdyenException $e) {
             $this->ajaxRender($this->helperData->buildControllerResponseJson(
                 'error',
-                [
+                array(
                     'message' => '3D secure 2.0 failed'
-                ]
+                )
             ));
         }
 
@@ -102,10 +102,10 @@ class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\control
         ) {
             $this->ajaxRender($this->helperData->buildControllerResponseJson(
                 'threeDS2',
-                [
+                array(
                     'type' => $result['resultCode'],
                     'token' => $result['authentication']['threeds2.challengeToken']
-                ]
+                )
             ));
         }
 

@@ -572,7 +572,8 @@ class Adyen extends PaymentModule
         $payment_options = array();
         if(!$this->context->customer->is_guest) {
             $amount = $this->context->cart->getOrderTotal();
-            $currency = $this->context->currency->iso_code;
+            $currencyData = Currency::getCurrency($this->context->cart->id_currency);
+            $currency = $currencyData['iso_code'];
             $address = new Address($this->context->cart->id_address_invoice);
             $isoAddress = Country::getIsoById($address->id_country);
             $shopperReference = $this->context->cart->id_customer;
@@ -654,7 +655,8 @@ class Adyen extends PaymentModule
         $this->context->controller->addCSS($this->_path . 'css/adyen.css', 'all');
 
         $amount = $this->context->cart->getOrderTotal();
-        $currency = $this->context->currency->iso_code;
+        $currencyData = Currency::getCurrency($this->context->cart->id_currency);
+        $currency = $currencyData['iso_code'];
         $address = new Address($this->context->cart->id_address_invoice);
         $isoAddress = Country::getIsoById($address->id_country);
         $shopperReference = $this->context->cart->id_customer;

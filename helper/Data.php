@@ -118,23 +118,26 @@ class Data
         $merchantAccount = \Configuration::get('ADYEN_MERCHANT_ACCOUNT');
 
         if (!$merchantAccount) {
+            $this->helperData->adyenLogger()->logError(
+                "The merchant account field is empty, check your Adyen configuration in Prestashop."
+            );
             return [];
         }
 
-        $adyFields = [
+        $adyFields = array(
             "channel" => "Web",
             "merchantAccount" => $merchantAccount,
             "countryCode" => $countryCode,
-            "amount" => [
+            "amount" => array(
                 "currency" => $currency,
                 "value" => $this->formatAmount(
                     $amount,
                     $currency
                 ),
-            ],
+            ),
             "shopperReference" => $shopperReference,
             "shopperLocale" => $shopperLocale
-        ];
+        );
 
         $responseData = "";
         try {

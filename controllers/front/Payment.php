@@ -353,14 +353,14 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
      * @param $request
      * @return mixed
      */
-    public function buildPaymentData($request)
+    public function buildPaymentData($request = array())
     {
         $cart = $this->context->cart;
-        $request['amount'] = [
+        $request['amount'] = array(
             'currency' => $this->context->currency->iso_code,
             'value' => $this->helperData->formatAmount($cart->getOrderTotal(true, \Cart::BOTH),
                 $this->context->currency->iso_code)
-        ];
+        );
 
         $request["reference"] = $cart->id;
         $request["fraudOffset"] = "0";
@@ -372,7 +372,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
      * @param array $request
      * @return array
      */
-    public function buildMerchantAccountData($request = [])
+    public function buildMerchantAccountData($request = array())
     {
         // Retrieve merchant account
         $merchantAccount = \Configuration::get('ADYEN_MERCHANT_ACCOUNT');
@@ -387,12 +387,12 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
      * @param array $request
      * @return array
      */
-    public function buildBrowserData($request = [])
+    public function buildBrowserData($request = array())
     {
-        $request['browserInfo'] = [
+        $request['browserInfo'] = array(
             'userAgent' => $_SERVER['HTTP_USER_AGENT'],
             'acceptHeader' => $_SERVER['HTTP_ACCEPT']
-        ];
+        );
 
         return $request;
     }
@@ -402,7 +402,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
      * @param $payload
      * @return array
      */
-    public function buildRecurringData($request = [], $payload)
+    public function buildRecurringData($request = array(), $payload)
     {
         if (!empty($payload['storeCc']) && $payload['storeCc'] === 'true') {
             $request['paymentMethod']['storeDetails'] = true;
