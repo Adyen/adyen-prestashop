@@ -45,13 +45,13 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
         $this->helperData->adyenLogger()->logDebug("md: " . $requestMD);
         $this->helperData->adyenLogger()->logDebug("PaRes: " . $requestPaRes);
         $this->helperData->adyenLogger()->logDebug("request" . json_encode($_REQUEST));
-        $request = [
+        $request = array(
             "paymentData" => $paymentData,
-            "details" => [
+            "details" => array(
                 "MD" => $requestMD,
                 "PaRes" => $requestPaRes
-            ]
-        ];
+            )
+        );
 
         $client->setAdyenPaymentSource(\Adyen\PrestaShop\service\Configuration::MODULE_NAME, \Adyen\PrestaShop\service\Configuration::VERSION);
 

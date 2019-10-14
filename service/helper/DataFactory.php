@@ -23,6 +23,7 @@
 namespace Adyen\PrestaShop\service\helper;
 
 use Adyen\PrestaShop\service\CheckoutUtilityFactory;
+use Adyen\PrestaShop\service\CheckoutFactory;
 
 class DataFactory
 {
@@ -37,12 +38,14 @@ class DataFactory
     public function createAdyenHelperData($adyenRunningMode, $sslEncryptionKey)
     {
         $checkoutUtilityFactory = new CheckoutUtilityFactory();
+        $checkoutFactory = new CheckoutFactory();
         $apiKey = $this->getAPIKey($adyenRunningMode, $sslEncryptionKey);
         return new \Adyen\PrestaShop\helper\Data(
             \Tools::getHttpHost(true, true),
             array('mode' => $adyenRunningMode, 'apiKey' => $apiKey),
             $sslEncryptionKey,
-            $checkoutUtilityFactory->createDefaultCheckoutUtility($apiKey, \Adyen\Environment::TEST)
+            $checkoutUtilityFactory->createDefaultCheckoutUtility($apiKey, $adyenRunningMode),
+            $checkoutFactory->createDefaultCheckout($apiKey, $adyenRunningMode)
         );
     }
 
