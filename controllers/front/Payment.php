@@ -293,8 +293,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
         }
 
         //Oneclick data
-        if(!empty($payload['recurringDetailReference']) &&
-        $payload['recurringDetailReference']) {
+        if(!empty($payload['recurringDetailReference'])) {
             $request['paymentMethod']['recurringDetailReference'] = $payload['recurringDetailReference'];
         }
 
