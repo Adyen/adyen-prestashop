@@ -21,21 +21,23 @@
  */
 
 // init composer autoload
-use Adyen\PrestaShop\service\modification\Refund;
-use Adyen\Service\Modification;
-
 require __DIR__ . '/vendor/autoload.php';
 
 if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-class Adyen extends \PaymentModule
+use Adyen\AdyenException;
+use Adyen\PrestaShop\exception\GenericLoggedException;
+use Adyen\PrestaShop\service\modification\Refund;
+use Adyen\Service\Modification;
+
+class Adyen extends PaymentModule
 {
     /**
      * Adyen constructor.
      *
-     * @throws \Adyen\AdyenException
+     * @throws AdyenException
      */
     public function __construct()
     {
@@ -546,9 +548,11 @@ class Adyen extends \PaymentModule
 
     /**
      * Hook payment options Prestashop > 1.7
+     *
      * @param $params
+     *
      * @return array
-     * @throws \Adyen\AdyenException
+     * @throws AdyenException
      */
     public function hookPaymentOptions($params)
     {
@@ -579,8 +583,10 @@ class Adyen extends \PaymentModule
 
     /**
      * Hook payment options Prestashop <= 1.6
+     *
      * @param $params
-     * @throws \Adyen\AdyenException
+     *
+     * @throws AdyenException
      */
     public function hookPayment($params)
     {
@@ -674,7 +680,7 @@ class Adyen extends \PaymentModule
         $currency = Currency::getCurrency($order->id_currency);
 
         try {
-            $refundService->request($order->id, $orderSlip, $currency['iso_code']);
+            $refundService->request($orderSlip, $currency['iso_code']);
         } catch (AdyenException $e) {
             $this->addMessageToOrderForOrderSlip(
                 "Problem connecting to Adyen endpoint: " . $e->getMessage(),
