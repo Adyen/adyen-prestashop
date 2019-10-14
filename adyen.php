@@ -571,26 +571,18 @@ class Adyen extends PaymentModule
     {
         $payment_options = array();
         if(!$this->context->customer->is_guest) {
-            $amount = $this->context->cart->getOrderTotal();
-            $currencyData = Currency::getCurrency($this->context->cart->id_currency);
-            $currency = $currencyData['iso_code'];
-            $address = new Address($this->context->cart->id_address_invoice);
-            $isoAddress = Country::getIsoById($address->id_country);
-            $shopperReference = $this->context->cart->id_customer;
-            $shopperLocale = $this->helper_data->getLocale($this->context);
-
 
             //retrieve payment methods
-            $paymentMethods = $this->helper_data->fetchPaymentMethods($isoAddress, $amount, $currency, $shopperReference, $shopperLocale);
+            $paymentMethods = $this->helper_data->fetchPaymentMethods($this->context->cart, $this->context->language);
 
             if (!empty($paymentMethods['oneClickPaymentMethods'])) {
                 $oneClickPaymentMethods = $paymentMethods['oneClickPaymentMethods'];
                 foreach ($oneClickPaymentMethods as $storedCard) {
-                    if (!empty($storedCard["storedDetails"]["card"]["expiryMonth"])) {
+                    if (!empty($storedCard["storedDetails"]["card"])) {
 
                         $this->context->smarty->assign(
                             array(
-                                'locale' => $this->helper_data->getLocale($this->context),
+                                'locale' => $this->helper_data->getLocale($this->context->language),
                                 'originKey' => $this->helper_data->getOriginKeyForOrigin(),
                                 'environment' => Configuration::get('ADYEN_MODE'),
                                 'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment',
@@ -623,7 +615,7 @@ class Adyen extends PaymentModule
 
         $this->context->smarty->assign(
             array(
-                'locale' => $this->helper_data->getLocale($this->context),
+                'locale' => $this->helper_data->getLocale($this->context->language),
                 'originKey' => $this->helper_data->getOriginKeyForOrigin(),
                 'environment' => Configuration::get('ADYEN_MODE'),
                 'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
@@ -654,23 +646,15 @@ class Adyen extends PaymentModule
 
         $this->context->controller->addCSS($this->_path . 'css/adyen.css', 'all');
 
-        $amount = $this->context->cart->getOrderTotal();
-        $currencyData = Currency::getCurrency($this->context->cart->id_currency);
-        $currency = $currencyData['iso_code'];
-        $address = new Address($this->context->cart->id_address_invoice);
-        $isoAddress = Country::getIsoById($address->id_country);
-        $shopperReference = $this->context->cart->id_customer;
-        $shopperLocale = $this->helper_data->getLocale($this->context);
-
         $payments = "";
-        $paymentMethods = $this->helper_data->fetchPaymentMethods($isoAddress, $amount, $currency, $shopperReference, $shopperLocale);
+        $paymentMethods = $this->helper_data->fetchPaymentMethods($this->context->cart, $this->context->language);
         if (!$this->context->customer->is_guest && !empty($paymentMethods['oneClickPaymentMethods'])) {
             $oneClickPaymentMethods = $paymentMethods['oneClickPaymentMethods'];
             foreach ($oneClickPaymentMethods as $storedCard) {
-                if (!empty($storedCard["storedDetails"]["card"]["expiryMonth"])) {
+                if (!empty($storedCard["storedDetails"]["card"])) {
                     $this->context->smarty->assign(
                         array(
-                            'locale' => $this->helper_data->getLocale($this->context),
+                            'locale' => $this->helper_data->getLocale($this->context->language),
                             'originKey' => $this->helper_data->getOriginKeyForOrigin(),
                             'environment' => Configuration::get('ADYEN_MODE'),
                             'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(),
@@ -691,7 +675,7 @@ class Adyen extends PaymentModule
 
         $this->context->smarty->assign(
             array(
-                'locale' => $this->helper_data->getLocale($this->context), // no locale in Prestashop1.6 only languageCode that is en-en but we need en_EN
+                'locale' => $this->helper_data->getLocale($this->context->language), // no locale in Prestashop1.6 only languageCode that is en-en but we need en_EN
                 'originKey' => $this->helper_data->getOriginKeyForOrigin(),
                 'environment' => Configuration::get('ADYEN_MODE'),
                 'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
@@ -737,19 +721,12 @@ class Adyen extends PaymentModule
      */
     public function hookDisplayPaymentTop()
     {
-        $amount = $this->context->cart->getOrderTotal();
-        $currency = $this->context->currency->iso_code;
-        $address = new Address($this->context->cart->id_address_invoice);
-        $isoAddress = Country::getIsoById($address->id_country);
-        $shopperReference = $this->context->cart->id_customer;
-        $shopperLocale = $this->helper_data->getLocale($this->context);
-
         //TODO: controller to prevent double paymentMethods call
-        $paymentMethods = $this->helper_data->fetchPaymentMethods($isoAddress, $amount, $currency, $shopperReference, $shopperLocale);
+        $paymentMethods = $this->helper_data->fetchPaymentMethods($this->context->cart, $this->context->language);
 
         $this->context->smarty->assign(
             array(
-                'locale' => $this->helper_data->getLocale($this->context),
+                'locale' => $this->helper_data->getLocale($this->context->language),
                 'originKey' => $this->helper_data->getOriginKeyForOrigin(),
                 'environment' => Configuration::get('ADYEN_MODE'),
                 'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),

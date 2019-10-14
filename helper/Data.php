@@ -26,6 +26,9 @@ use Adyen;
 use Adyen\AdyenException;
 use Adyen\Service\CheckoutUtility;
 use Adyen\Service\Checkout;
+use \Currency;
+use \Address;
+use \Country;
 
 class Data
 {
@@ -113,16 +116,24 @@ class Data
      * @param $country
      * @return array
      */
-    public function fetchPaymentMethods($countryCode, $amount, $currency, $shopperReference, $shopperLocale)
+    public function fetchPaymentMethods($cart, $language)
     {
         $merchantAccount = \Configuration::get('ADYEN_MERCHANT_ACCOUNT');
 
         if (!$merchantAccount) {
-            $this->helperData->adyenLogger()->logError(
+            $this->adyenLogger()->logError(
                 "The merchant account field is empty, check your Adyen configuration in Prestashop."
             );
             return [];
         }
+
+        $amount = $cart->getOrderTotal();
+        $currencyData = Currency::getCurrency($cart->id_currency);
+        $currency = $currencyData['iso_code'];
+        $address = new Address($cart->id_address_invoice);
+        $countryCode = Country::getIsoById($address->id_country);
+        $shopperReference = $cart->id_customer;
+        $shopperLocale = $this->getLocale($language);
 
         $adyFields = array(
             "channel" => "Web",
@@ -143,7 +154,7 @@ class Data
         try {
             $responseData = $this->adyenCheckoutService->paymentMethods($adyFields);
         } catch (\Adyen\AdyenException $e) {
-            $this->helperData->adyenLogger()->logError("There was an error retrieving the payment methods. message: " . $e->getMessage());
+            $this->adyenLogger()->logError("There was an error retrieving the payment methods. message: " . $e->getMessage());
         }
         return $responseData;
     }
@@ -427,13 +438,13 @@ class Data
      * Get locale for 1.6/1.7
      * @return mixed
      */
-    public function getLocale($context)
+    public function getLocale($language)
     {
         // no locale in Prestashop1.6 only languageCode that is en-en but we need en_EN
         if ($this->isPrestashop16()) {
-            return $context->language->iso_code;
+            return $language->iso_code;
         } else {
-            return $context->language->locale;
+            return $language->locale;
         }
     }
 
