@@ -34,5 +34,7 @@ if (!defined('_PS_VERSION_')) {
  */
 function upgrade_module_1_1_0(Adyen $module)
 {
-    return $module->registerHook('actionOrderSlipAdd');
+   $module->registerHook('actionOrderSlipAdd');
+   $module->registerHook('displayPaymentTop');
+   return true;
 }
