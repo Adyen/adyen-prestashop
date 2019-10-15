@@ -20,6 +20,8 @@
  * See the LICENSE file for more info.
  */
 
+// phpcs:disable PSR1.Classes.ClassDeclaration
+
 use Adyen\PrestaShop\controllers\FrontController;
 use Adyen\PrestaShop\service\notification\NotificationReceiver;
 

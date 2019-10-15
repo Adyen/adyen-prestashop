@@ -20,6 +20,8 @@
  * See the LICENSE file for more info.
  */
 
+// phpcs:disable PSR1.Classes.ClassDeclaration
+
 class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\FrontController
 {
     public $ssl = true;

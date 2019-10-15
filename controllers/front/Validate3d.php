@@ -1,5 +1,4 @@
 <?php
-
 /**
  *                       ######
  *                       ######
@@ -20,6 +19,9 @@
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
+
+// phpcs:disable PSR1.Classes.ClassDeclaration
+
 class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers\FrontController
 {
     public function __construct()

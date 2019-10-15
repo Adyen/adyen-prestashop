@@ -20,6 +20,8 @@
  * See the LICENSE file for more info.
  */
 
+// phpcs:disable PSR1.Classes.ClassDeclaration
+
 class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\controllers\FrontController
 {
     /**

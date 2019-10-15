@@ -20,6 +20,8 @@
  * See the LICENSE file for more info.
  */
 
+// phpcs:disable PSR1.Classes.ClassDeclaration
+
 // init composer autoload
 use Adyen\AdyenException;
 use Adyen\PrestaShop\helper\Data as AdyenHelperData;
