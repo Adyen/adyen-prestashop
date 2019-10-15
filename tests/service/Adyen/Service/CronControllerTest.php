@@ -23,11 +23,20 @@
 namespace Adyen\PrestaShop\service;
 
 use Adyen\PrestaShop\helper\Data as AdyenHelper;
+use Adyen\PrestaShop\service\notification\AuthenticationException;
+use Adyen\PrestaShop\service\notification\AuthorizationException;
+use Adyen\PrestaShop\service\notification\HMACKeyValidationException;
+use Adyen\PrestaShop\service\notification\MerchantAccountCodeException;
 use Db;
 use Mockery as m;
-use PHPUnit\Framework\TestCase;
 
-class CronControllerTest extends TestCase
+function pSQL($string)
+{
+    /** @noinspection PhpUndefinedMethodInspection */
+    return CronControllerTest::$functions->pSQL($string);
+}
+
+class CronControllerTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var m\MockInterface
@@ -56,17 +65,17 @@ class CronControllerTest extends TestCase
     {
         self::$functions = m::mock();
 
-        $this->logger = $this->getMockBuilder('FileLogger')
-                             ->disableOriginalConstructor()
-                             ->getMock();
+        $this->logger = $this->getMockBuilder(\FileLogger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
         $this->logger->method('logError');
 
-        $this->adyenHelper = $this->getMockBuilder('Adyen\PrestaShop\helper\Data')
-                                  ->disableOriginalConstructor()
-                                  ->getMock();
+        $this->adyenHelper = $this->getMockBuilder(AdyenHelper::class)
+            ->disableOriginalConstructor()
+            ->getMock();
         $this->adyenHelper->method('adyenLogger')->willReturn($this->logger);
 
-        $this->dbInstance = $this->getMockBuilder('Db')->disableOriginalConstructor()->getMock();
+        $this->dbInstance = $this->getMockBuilder(Db::class)->disableOriginalConstructor()->getMock();
     }
 
     public function tearDown()

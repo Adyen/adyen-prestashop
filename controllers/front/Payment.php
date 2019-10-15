@@ -79,6 +79,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
             $request = $this->buildCCData($request, $_REQUEST);
             $request = $this->buildPaymentData($request);
             $request = $this->buildMerchantAccountData($request);
+            $request = $this->buildRecurringData($request, $_REQUEST);
 
             // call adyen library
             $service = new \Adyen\Service\Checkout($client);
@@ -286,6 +287,16 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
             $request['paymentMethod']['holderName'] = $holderName;
         }
 
+        $shopperReference = $this->context->cart->id_customer;
+        if(!empty($shopperReference)) {
+            $request['shopperReference'] = $shopperReference;
+        }
+
+        //Oneclick data
+        if(!empty($payload['recurringDetailReference'])) {
+            $request['paymentMethod']['recurringDetailReference'] = $payload['recurringDetailReference'];
+        }
+
         // 3DS2 request data
         $request['additionalData']['allow3DS2'] = true;
         $request['origin'] = $this->helperData->getOrigin();
@@ -317,14 +328,6 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
             }
         }
 
-
-
-//        if (!empty($payload[PaymentInterface::KEY_ADDITIONAL_DATA][AdyenOneclickDataAssignObserver::RECURRING_DETAIL_REFERENCE]) &&
-//            $recurringDetailReference = $payload[PaymentInterface::KEY_ADDITIONAL_DATA][AdyenOneclickDataAssignObserver::RECURRING_DETAIL_REFERENCE]
-//        ) {
-//            $request['paymentMethod']['recurringDetailReference'] = $recurringDetailReference;
-//        }
-
         /**
          * if MOTO for backend is enabled use MOTO as shopper interaction type
          */
@@ -349,14 +352,14 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
      * @param $request
      * @return mixed
      */
-    public function buildPaymentData($request)
+    public function buildPaymentData($request = array())
     {
         $cart = $this->context->cart;
-        $request['amount'] = [
+        $request['amount'] = array(
             'currency' => $this->context->currency->iso_code,
             'value' => $this->helperData->formatAmount($cart->getOrderTotal(true, \Cart::BOTH),
                 $this->context->currency->iso_code)
-        ];
+        );
 
         $request["reference"] = $cart->id;
         $request["fraudOffset"] = "0";
@@ -368,7 +371,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
      * @param array $request
      * @return array
      */
-    public function buildMerchantAccountData($request = [])
+    public function buildMerchantAccountData($request = array())
     {
         // Retrieve merchant account
         $merchantAccount = \Configuration::get('ADYEN_MERCHANT_ACCOUNT');
@@ -383,13 +386,28 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
      * @param array $request
      * @return array
      */
-    public function buildBrowserData($request = [])
+    public function buildBrowserData($request = array())
     {
-        $request['browserInfo'] = [
+        $request['browserInfo'] = array(
             'userAgent' => $_SERVER['HTTP_USER_AGENT'],
             'acceptHeader' => $_SERVER['HTTP_ACCEPT']
-        ];
+        );
 
+        return $request;
+    }
+
+    /**
+     * @param array $request
+     * @param $payload
+     * @return array
+     */
+    public function buildRecurringData($request = array(), $payload)
+    {
+        if (!empty($payload['storeCc']) && $payload['storeCc'] === 'true') {
+            $request['paymentMethod']['storeDetails'] = true;
+            $request['enableOneClick'] = true;
+            $request['enableRecurring'] = false;
+        }
         return $request;
     }
 
