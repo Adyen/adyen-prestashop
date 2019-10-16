@@ -20,7 +20,7 @@
  * See the LICENSE file for more info.
  */
 
-// phpcs:disable PSR1.Classes.ClassDeclaration
+// phpcs:disable PSR1.Files.SideEffects,PSR1.Classes.ClassDeclaration
 
 // init composer autoload
 use Adyen\AdyenException;

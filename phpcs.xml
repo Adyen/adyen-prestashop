@@ -32,7 +32,5 @@
     <arg name="parallel" value="75"/>
     <arg value="p"/>
 
-    <rule ref="PSR1">
-        <exclude name="PSR1.Files.SideEffects"/>
-    </rule>
+    <rule ref="PSR1"/>
 </ruleset>

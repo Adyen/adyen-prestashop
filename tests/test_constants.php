@@ -20,24 +20,6 @@
  * See the LICENSE file for more info.
  */
 
-//phpcs:disable PSR1.Files.SideEffects
-
-if (!defined('_PS_VERSION_')) {
-    exit;
-}
-
-/**
- * This function is automatically called on version upgrades.
- *
- * Version 1.0.1 introduces a database table for notifications from Adyen.
- *
- * @param Adyen $module
- * @return bool
- */
-function upgrade_module_1_0_1($module)
-{
-    $module->createAdyenNotificationTable();
-    $module->updateCronJobToken();
-    $module->installTab();
-    return true;
-}
+define('_PS_IN_TEST_', true);
+define('_PS_ROOT_DIR_', __DIR__ . '/../../..');
+define('_PS_MODULE_DIR_', _PS_ROOT_DIR_ . '/tests/resources/modules/');
