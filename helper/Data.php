@@ -22,13 +22,14 @@
 
 namespace Adyen\PrestaShop\helper;
 
+use Address;
 use Adyen;
 use Adyen\AdyenException;
-use Adyen\Service\CheckoutUtility;
-use Adyen\Service\Checkout;
-use \Currency;
-use \Address;
-use \Country;
+use Adyen\PrestaShop\service\adapter\classes\Configuration;
+use Adyen\PrestaShop\service\Checkout;
+use Adyen\PrestaShop\service\CheckoutUtility;
+use Country;
+use Currency;
 
 class Data
 {
@@ -36,11 +37,6 @@ class Data
      * @var string
      */
     private $httpHost;
-
-    /**
-     * @var array
-     */
-    private $configuration;
 
     /**
      * @var string
@@ -57,18 +53,21 @@ class Data
      */
     private $adyenCheckoutService;
 
+    /**
+     * @var Configuration
+     */
+    private $configuration;
+
     public function __construct(
-        $httpHost,
-        $configuration,
-        $sslEncryptionKey,
+        Configuration $configuration,
         CheckoutUtility $adyenCheckoutUtilityService,
         Checkout $adyenCheckoutService
     ) {
-        $this->httpHost = $httpHost;
-        $this->configuration = $configuration;
-        $this->sslEncryptionKey = $sslEncryptionKey;
+        $this->httpHost = $configuration->httpHost;
+        $this->sslEncryptionKey = $configuration->sslEncryptionKey;
         $this->adyenCheckoutUtilityService = $adyenCheckoutUtilityService;
         $this->adyenCheckoutService = $adyenCheckoutService;
+        $this->configuration = $configuration;
     }
 
     /**
@@ -88,7 +87,6 @@ class Data
      */
     public function getOriginKeyForOrigin()
     {
-
         $origin = $this->getOrigin();
 
         $params = array("originDomains" => array($origin));
@@ -159,10 +157,9 @@ class Data
         return $responseData;
     }
 
-
     public function isDemoMode()
     {
-        if (strpos($this->configuration['mode'], \Adyen\Environment::TEST) !== false) {
+        if (strpos($this->configuration->adyenMode, \Adyen\Environment::TEST) !== false) {
             return true;
         } else {
             return false;
@@ -229,7 +226,7 @@ class Data
      */
     public function getAPIKey()
     {
-        return $this->configuration['apiKey'];
+        return $this->configuration->apiKey;
     }
 
     public function encrypt($data)
@@ -315,7 +312,6 @@ class Data
                     !empty($details['issuerUrl']) &&
                     !empty($details['paymentData']) &&
                     !empty($details['redirectMethod'])) {
-
                     $response = array(
                         'action' => 'threeDS1',
                         'paRequest' => $details['paRequest'],

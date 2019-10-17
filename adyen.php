@@ -24,7 +24,6 @@
 use Adyen\AdyenException;
 use Adyen\PrestaShop\helper\Data as AdyenHelperData;
 use Adyen\PrestaShop\model\Hashing;
-use Adyen\PrestaShop\service\helper\DataFactory as AdyenHelperDataFactory;
 
 require __DIR__ . '/vendor/autoload.php';
 
@@ -75,13 +74,9 @@ class Adyen extends PaymentModule
         $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
         $this->currencies = true;
 
-        $adyenHelperFactory = new AdyenHelperDataFactory();
-        $this->helper_data = $adyenHelperFactory->createAdyenHelperData(
-            Configuration::get('ADYEN_MODE'),
-            _COOKIE_KEY_
-        );
+        $this->helper_data = Adapter_ServiceLocator::get('Adyen\PrestaShop\helper\Data');
 
-        $this->hashing = new Hashing();
+        $this->hashing = Adapter_ServiceLocator::get('Adyen\PrestaShop\model\Hashing');
 
         // start for 1.6
         $this->is_eu_compatible = 1;

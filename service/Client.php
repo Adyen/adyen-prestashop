@@ -1,5 +1,4 @@
 <?php
-
 /**
  *                       ######
  *                       ######
@@ -21,39 +20,26 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\service\adapter\classes\order;
+namespace Adyen\PrestaShop\service;
 
-class OrderAdapter
+class Client extends \Adyen\Client
 {
     /**
-     * OrderAdapter constructor.
-     *
-     * @throws \Adyen\AdyenException
+     * @var adapter\classes\Configuration
      */
-    public function __construct()
+    private $configuration;
+
+    public function __construct(\Adyen\PrestaShop\service\adapter\classes\Configuration $configuration)
     {
-        $this->helperData = Adapter_ServiceLocator::get('Adyen\PrestaShop\helper\Data');
-    }
+        parent::__construct();
+        $this->setXApiKey($configuration->apiKey);
+        $this->setAdyenPaymentSource(
+            \Adyen\PrestaShop\service\Configuration::MODULE_NAME,
+            \Adyen\PrestaShop\service\Configuration::VERSION
+        );
+        $this->setExternalPlatform("PrestaShop", _PS_VERSION_);
+        $this->setEnvironment($configuration->adyenMode, $configuration->liveEndpointPrefix);
 
-    /**
-     * Returns the order instance for cart id
-     *
-     * @param $cartId
-     * @return null|\Order
-     */
-    public function getOrderByCartId($cartId)
-    {
-        $order = null;
-
-        if ($this->helperData->isPrestashop16()) {
-            $orderId = \Order::getOrderByCartId($cartId);
-            if ($orderId) {
-                $order = new \Order($orderId);
-            }
-        } else {
-            $order = \Order::getByCartId($cartId);
-        }
-
-        return $order;
+        $this->configuration = $configuration;
     }
 }

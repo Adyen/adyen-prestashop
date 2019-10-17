@@ -13,7 +13,7 @@
  *                               #############
  *                               ############
  *
- * Adyen PrestaShop Module
+ * Adyen PrestaShop plugin
  *
  * Copyright (c) 2019 Adyen B.V.
  * This file is open source and available under the MIT license.
@@ -22,25 +22,10 @@
 
 namespace Adyen\PrestaShop\service;
 
-
-class CheckoutFactory
+class Checkout extends \Adyen\Service\Checkout
 {
-    /**
-     * Creates a Checkout Utility Service with as little arguments as possible.
-     *
-     * @param string $apiKey
-     * @param string $environment
-     * @return \Adyen\Service\Checkout
-     * @throws \Adyen\AdyenException
-     */
-    public function createDefaultCheckout($apiKey, $environment)
+    public function __construct(Client $client)
     {
-        $clientFactory = new \Adyen\PrestaShop\service\ClientFactory();
-        $adyenCheckoutService = new \Adyen\Service\Checkout(
-            $clientFactory->createDefaultClient(
-                $apiKey, \Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX'), $environment
-            )
-        );
-        return $adyenCheckoutService;
+        parent::__construct($client);
     }
 }

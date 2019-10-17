@@ -20,33 +20,42 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\service\helper;
+namespace Adyen\PrestaShop\service\adapter\classes;
 
-use Adyen\PrestaShop\service\CheckoutUtilityFactory;
-use Adyen\PrestaShop\service\CheckoutFactory;
-
-class DataFactory
+class Configuration
 {
     /**
-     * Creates an Adyen helper object with as little arguments as possible.
-     *
-     * @param $adyenRunningMode
-     * @param $sslEncryptionKey
-     * @return \Adyen\PrestaShop\helper\Data
-     * @throws \Adyen\AdyenException
+     * @var string
      */
-    public function createAdyenHelperData($adyenRunningMode, $sslEncryptionKey)
+    public $httpHost;
+
+    /**
+     * @var string
+     */
+    public $adyenMode;
+
+    /**
+     * @var string
+     */
+    public $sslEncryptionKey;
+
+    /**
+     * @var string
+     */
+    public $apiKey;
+
+    /**
+     * @var string
+     */
+    public $liveEndpointPrefix;
+
+    public function __construct()
     {
-        $checkoutUtilityFactory = new CheckoutUtilityFactory();
-        $checkoutFactory = new CheckoutFactory();
-        $apiKey = $this->getAPIKey($adyenRunningMode, $sslEncryptionKey);
-        return new \Adyen\PrestaShop\helper\Data(
-            \Tools::getHttpHost(true, true),
-            array('mode' => $adyenRunningMode, 'apiKey' => $apiKey),
-            $sslEncryptionKey,
-            $checkoutUtilityFactory->createDefaultCheckoutUtility($apiKey, $adyenRunningMode),
-            $checkoutFactory->createDefaultCheckout($apiKey, $adyenRunningMode)
-        );
+        $this->httpHost = \Tools::getHttpHost(true, true);
+        $this->adyenMode = \Configuration::get('ADYEN_MODE');
+        $this->sslEncryptionKey = _COOKIE_KEY_;
+        $this->apiKey = $this->getAPIKey($this->adyenMode, $this->sslEncryptionKey);
+        $this->liveEndpointPrefix = \Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
     }
 
     /**
@@ -54,6 +63,7 @@ class DataFactory
      *
      * @param string $adyenRunningMode
      * @param $password
+     *
      * @return string
      */
     private function getAPIKey($adyenRunningMode, $password)
@@ -70,6 +80,7 @@ class DataFactory
      * Checks if plug-in is running in test mode or not
      *
      * @param $adyenRunningMode
+     *
      * @return bool
      */
     private function isTestMode($adyenRunningMode)
@@ -86,6 +97,7 @@ class DataFactory
      *
      * @param $data
      * @param $password
+     *
      * @return string
      */
     private function decrypt($data, $password)
@@ -97,5 +109,4 @@ class DataFactory
         list($data, $iv) = explode('::', base64_decode($data), 2);
         return openssl_decrypt($data, 'aes-256-ctr', $password, 0, $iv);
     }
-
 }

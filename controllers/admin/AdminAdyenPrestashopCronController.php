@@ -13,7 +13,7 @@
  *                               #############
  *                               ############
  *
- * Adyen PrestaShop module
+ * Adyen PrestaShop plugin
  *
  * Copyright (c) 2019 Adyen B.V.
  * This file is open source and available under the MIT license.
@@ -34,12 +34,7 @@ class AdminAdyenPrestashopCronController extends \ModuleAdminController
      */
     public function __construct()
     {
-
-        $adyenHelperFactory = new \Adyen\PrestaShop\service\helper\DataFactory();
-        $this->helperData = $adyenHelperFactory->createAdyenHelperData(
-            \Configuration::get('ADYEN_MODE'),
-            _COOKIE_KEY_
-        );
+        $this->helperData = Adapter_ServiceLocator::get('Adyen\PrestaShop\helper\Data');
 
         if (\Tools::getValue('token') != $this->helperData->decrypt(\Configuration::get('ADYEN_CRONJOB_TOKEN'))) {
             die('Invalid token');
