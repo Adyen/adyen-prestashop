@@ -21,16 +21,19 @@
  */
 
 // init composer autoload
-use Adyen\AdyenException;
-use Adyen\PrestaShop\helper\Data as AdyenHelperData;
-use Adyen\PrestaShop\model\Hashing;
-use Adyen\PrestaShop\service\helper\DataFactory as AdyenHelperDataFactory;
-
 require __DIR__ . '/vendor/autoload.php';
 
 if (!defined('_PS_VERSION_')) {
     exit;
 }
+
+use Adyen\AdyenException;
+use Adyen\PrestaShop\exception\GenericLoggedException;
+use Adyen\PrestaShop\helper\Data as AdyenHelperData;
+use Adyen\PrestaShop\model\Hashing;
+use Adyen\PrestaShop\service\helper\DataFactory as AdyenHelperDataFactory;
+use Adyen\PrestaShop\service\modification\Refund;
+use Adyen\Service\Modification;
 
 class Adyen extends PaymentModule
 {
@@ -123,6 +126,7 @@ class Adyen extends PaymentModule
                 && $this->registerHook('displayHeader')
                 && $this->registerHook('displayAdminOrder')
                 && $this->registerHook('moduleRoutes')
+                && $this->registerHook('actionOrderSlipAdd')
                 // the table for notifications from Adyen needs to be both in install and upgrade
                 && $this->createAdyenNotificationTable()
                 && $this->installTab()
@@ -144,6 +148,7 @@ class Adyen extends PaymentModule
             && $this->registerHook('paymentReturn')
             && $this->registerHook('adminOrder')
             && $this->registerHook('moduleRoutes')
+            && $this->registerHook('actionOrderSlipAdd')
             // the table for notifications from Adyen needs to be both in install and upgrade
             && $this->createAdyenNotificationTable();
     }
@@ -566,6 +571,7 @@ class Adyen extends PaymentModule
      * Hook payment options PrestaShop > 1.7
      * @return array
      * @throws SmartyException
+     * @throws AdyenException
      */
     public function hookPaymentOptions()
     {
@@ -740,4 +746,170 @@ class Adyen extends PaymentModule
     }
 
 
+
+    public function hookActionOrderSlipAdd(array $params)
+    {
+        try {
+            $client = $this->helper_data->initializeAdyenClient();
+        } catch (AdyenException $e) {
+            $this->addMessageToOrderForOrderSlipAndLogErrorMessage(
+                'Error initializing Adyen Client in actionOrderSlipAdd hook:' . PHP_EOL . $e->getMessage()
+            );
+            return;
+        }
+        try {
+            $modificationService = new Modification($client);
+        } catch (AdyenException $e) {
+            $this->addMessageToOrderForOrderSlipAndLogErrorMessage(
+                'Error initializing Adyen Modification Service in actionOrderSlipAdd hook:'
+                . PHP_EOL . $e->getMessage()
+            );
+            return;
+        }
+        $refundService = new Refund(
+            $modificationService,
+            Db::getInstance(),
+            \Configuration::get('ADYEN_MERCHANT_ACCOUNT'),
+            $this->helper_data->adyenLogger()
+        );
+
+        /** @var Order $order */
+        $order = $params['order'];
+
+        try {
+            /** @var OrderSlip $orderSlip */
+            $orderSlip = $order->getOrderSlipsCollection()->orderBy('date_upd', 'desc')->getFirst();
+        } catch (PrestaShopException $e) {
+            $this->addMessageToOrderForOrderSlipAndLogErrorMessage(
+                'Error fetching order slips in actionOrderSlipAdd hook:' . PHP_EOL . $e->getMessage()
+            );
+            return;
+        }
+
+        $currency = Currency::getCurrency($order->id_currency);
+
+        try {
+            $refundService->request($orderSlip, $currency['iso_code']);
+        } catch (AdyenException $e) {
+            $this->addMessageToOrderForOrderSlip(
+                "Problem connecting to Adyen endpoint: " . $e->getMessage(),
+                $order,
+                $orderSlip
+            );
+        } catch (PrestaShopDatabaseException $e) {
+            $this->addMessageToOrderForOrderSlip(
+                "Problem with database connection: " . $e->getMessage(),
+                $order,
+                $orderSlip
+            );
+        }
+    }
+
+    private function addMessageToOrderForOrderSlipAndLogErrorMessage(
+        $message,
+        Order $order = null,
+        OrderSlip $orderSlip = null
+    ) {
+        if (isset($order) && isset($orderSlip)) {
+            $this->addMessageToOrderForOrderSlip($message, $order, $orderSlip);
+        }
+        $this->helper_data->adyenLogger()->logError($message);
+    }
+
+    /**
+     * @param string $message
+     * @param Order $order
+     * @param OrderSlip $orderSlip
+     * @return bool
+     */
+    private function addMessageToOrderForOrderSlip($message, Order $order, OrderSlip $orderSlip)
+    {
+        try {
+            $customer = $order->getCustomer();
+            if (empty($customer)) {
+                throw new GenericLoggedException(
+                    "Customer with id: \"{$order->id_customer}\" cannot be found for" .
+                    " order with id: \"{$order->id}\" while processing" .
+                    " order slip with id: \"{$orderSlip->id}\"."
+                );
+            }
+            $customerThread = $this->createCustomerThread($order, $orderSlip, $customer);
+            $this->createCustomerMessage($message, $customerThread);
+        } catch (GenericLoggedException $e) {
+            $this->helper_data->adyenLogger()->logError($e->getMessage());
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @param Order $order
+     * @param OrderSlip $orderSlip
+     * @param Customer $customer
+     * @return CustomerThread
+     * @throws GenericLoggedException
+     */
+    private function createCustomerThread(Order $order, OrderSlip $orderSlip, Customer $customer)
+    {
+        try {
+            $customerThread = new CustomerThread(
+                CustomerThread::getIdCustomerThreadByEmailAndIdOrder($customer->email, $order->id)
+            );
+            if (empty($customerThread->id)) {
+                $customerThread = new CustomerThread();
+                $customerThread->id_contact = 0;
+                $customerThread->id_customer = (int)$customer->id;
+                $customerThread->id_shop = (int)$this->context->shop->id;
+                $customerThread->id_order = (int)$order->id;
+                $customerThread->id_lang = (int)$this->context->language->id;
+                $customerThread->email = $customer->email;
+                $customerThread->status = 'open';
+                $customerThread->token = Tools::passwdGen(12);
+                if (!$customerThread->add()) {
+                    throw new GenericLoggedException(
+                        "Could not start a Customer Thread for Order Slip with id \"{$orderSlip->id}\"."
+                    );
+                }
+            }
+        } catch (PrestaShopDatabaseException $e) {
+            throw new GenericLoggedException(
+                'Could not start a Customer Thread for Order Slip with id "' . $orderSlip->id .
+                '". Reason:' . PHP_EOL . $e->getMessage()
+            );
+        } catch (PrestaShopException $e) {
+            throw new GenericLoggedException(
+                "Could not start a Customer Thread for Order Slip with id \"" . $orderSlip->id .
+                '". Reason:' . PHP_EOL . $e->getMessage()
+            );
+        }
+        return $customerThread;
+    }
+
+    /**
+     * @param $message
+     * @param CustomerThread $customerThread
+     * @throws GenericLoggedException
+     */
+    private function createCustomerMessage($message, CustomerThread $customerThread)
+    {
+        try {
+            $customerMessage = new CustomerMessage();
+            $customerMessage->id_customer_thread = $customerThread->id;
+            $customerMessage->id_employee = $this->context->employee->id;
+            $customerMessage->message = $message;
+            $customerMessage->private = 1;
+
+            if (!$customerMessage->add()) {
+                throw new GenericLoggedException('An error occurred while saving the message.');
+            }
+        } catch (PrestaShopDatabaseException $e) {
+            throw new GenericLoggedException(
+                'An error occurred while saving the message. Reason:' . PHP_EOL . $e->getMessage()
+            );
+        } catch (PrestaShopException $e) {
+            throw new GenericLoggedException(
+                'An error occurred while saving the message. Reason:' . PHP_EOL . $e->getMessage()
+            );
+        }
+    }
 }

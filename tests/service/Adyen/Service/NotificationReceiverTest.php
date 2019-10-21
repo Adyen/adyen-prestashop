@@ -20,17 +20,13 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\service;
+namespace Adyen\PrestaShop\service\notification;
 
 use Adyen\PrestaShop\helper\Data as AdyenHelper;
-use Adyen\PrestaShop\service\notification\AuthenticationException;
-use Adyen\PrestaShop\service\notification\AuthorizationException;
-use Adyen\PrestaShop\service\notification\HMACKeyValidationException;
-use Adyen\PrestaShop\service\notification\MerchantAccountCodeException;
-use Adyen\PrestaShop\service\notification\NotificationReceiver;
 use Adyen\Util\HmacSignature;
 use Db;
 use Mockery as m;
+use PHPUnit\Framework\TestCase;
 
 function pSQL($string)
 {
@@ -38,7 +34,7 @@ function pSQL($string)
     return NotificationReceiverTest::$functions->pSQL($string);
 }
 
-class NotificationReceiverTest extends \PHPUnit_Framework_TestCase
+class NotificationReceiverTest extends TestCase
 {
     /**
      * @var m\MockInterface
@@ -69,19 +65,19 @@ class NotificationReceiverTest extends \PHPUnit_Framework_TestCase
     {
         self::$functions = m::mock();
 
-        $this->logger = $this->getMockBuilder(\FileLogger::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $this->logger = $this->getMockBuilder('FileLogger')
+                             ->disableOriginalConstructor()
+                             ->getMock();
         $this->logger->method('logError');
 
-        $this->adyenHelper = $this->getMockBuilder(AdyenHelper::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $this->adyenHelper = $this->getMockBuilder('Adyen\PrestaShop\helper\Data')
+                                  ->disableOriginalConstructor()
+                                  ->getMock();
         $this->adyenHelper->method('adyenLogger')->willReturn($this->logger);
 
-        $this->hmacSignature = $this->getMock(HmacSignature::class);
+        $this->hmacSignature = $this->getMock('Adyen\Util\HmacSignature');
 
-        $this->dbInstance = $this->getMockBuilder(Db::class)->disableOriginalConstructor()->getMock();
+        $this->dbInstance = $this->getMockBuilder('Db')->disableOriginalConstructor()->getMock();
     }
 
     public function tearDown()
@@ -108,7 +104,7 @@ class NotificationReceiverTest extends \PHPUnit_Framework_TestCase
             $this->dbInstance
         );
 
-        $this->setExpectedException(HMACKeyValidationException::class);
+        $this->setExpectedException('Adyen\PrestaShop\service\notification\HMACKeyValidationException');
 
         /** @noinspection PhpUnhandledExceptionInspection */
         $notificationReceiver->doPostProcess(
@@ -130,7 +126,7 @@ class NotificationReceiverTest extends \PHPUnit_Framework_TestCase
             $this->dbInstance
         );
 
-        $this->setExpectedException(AuthenticationException::class);
+        $this->setExpectedException('Adyen\PrestaShop\service\notification\AuthenticationException');
 
         /** @noinspection PhpUnhandledExceptionInspection */
         $notificationReceiver->doPostProcess(
@@ -155,7 +151,7 @@ class NotificationReceiverTest extends \PHPUnit_Framework_TestCase
         $_SERVER['PHP_AUTH_USER'] = 'username';
         $_SERVER['PHP_AUTH_PW'] = 'password';
 
-        $this->setExpectedException(MerchantAccountCodeException::class);
+        $this->setExpectedException('Adyen\PrestaShop\service\notification\MerchantAccountCodeException');
 
         /** @noinspection PhpUnhandledExceptionInspection */
         $notificationReceiver->doPostProcess(
@@ -180,7 +176,7 @@ class NotificationReceiverTest extends \PHPUnit_Framework_TestCase
         $_SERVER['PHP_AUTH_USER'] = 'username';
         $_SERVER['PHP_AUTH_PW'] = 'password';
 
-        $this->setExpectedException(AuthorizationException::class);
+        $this->setExpectedException('Adyen\PrestaShop\service\notification\AuthorizationException');
 
         /** @noinspection PhpUnhandledExceptionInspection */
         $notificationReceiver->doPostProcess(
