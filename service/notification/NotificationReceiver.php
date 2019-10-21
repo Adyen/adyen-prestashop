@@ -25,6 +25,7 @@ namespace Adyen\PrestaShop\service\notification;
 
 use Adyen\PrestaShop\helper\Data as AdyenHelper;
 use Adyen\Util\HmacSignature;
+use DateTime;
 use Db;
 
 class NotificationReceiver
@@ -174,7 +175,7 @@ class NotificationReceiver
         // validate hmac
 
 
-        if (!$this->verifyHmac($response)) {
+        if (!$this->hmacSignature->isValidNotificationHMAC($this->notificationHMAC, $response)) {
             $message = 'HMAC key validation failed';
             $this->helperData->adyenLogger()->logError($message);
             throw new HMACKeyValidationException($message);
@@ -337,7 +338,7 @@ class NotificationReceiver
         }
 
         // do this to set both fields in the correct timezone
-        $date = new \DateTime();
+        $date = new DateTime();
         $data['created_at'] = $date->format('Y-m-d H:i:s');
         $data['updated_at'] = $date->format('Y-m-d H:i:s');
 
@@ -386,15 +387,5 @@ class NotificationReceiver
             . ' AND `processing` = "' . (int)0 . '"';
 
         return $this->dbInstance->getValue($sql);
-    }
-
-    /**
-     * @param $notification
-     * @return bool
-     * @throws \Adyen\AdyenException
-     */
-    private function verifyHmac($notification)
-    {
-        return $this->hmacSignature->isValidNotificationHMAC($this->notificationHMAC, $notification);
     }
 }

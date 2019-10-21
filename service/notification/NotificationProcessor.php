@@ -27,6 +27,8 @@ use Adyen\PrestaShop\helper\Data as AdyenHelper;
 use Adyen\PrestaShop\service\adapter\classes\CustomerThreadAdapter;
 use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
 use Db;
+use PrestaShopDatabaseException;
+use PrestaShopException;
 
 class NotificationProcessor
 {
@@ -131,13 +133,16 @@ class NotificationProcessor
      * Add order message based on processing the notification
      *
      * @param $notification
+     *
      * @return bool
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     public function addMessage($notification)
     {
         $successResult = (strcmp($notification['success'], 'true') == 0 ||
             strcmp($notification['success'], '1') == 0) ? 'true' : 'false';
-        $success = (!empty($notification['reason'])) ? "$successResult <br />reason:" . $notification['reason'] . PHP_EOL : $successResult . PHP_EOL;
+        $success = (!empty($notification['reason'])) ? "$successResult" . PHP_EOL . "reason:" . $notification['reason'] . PHP_EOL : $successResult . PHP_EOL;
 
         $type = 'Adyen HTTP Notification(s):';
         $comment = sprintf(
@@ -150,7 +155,11 @@ class NotificationProcessor
             $success
         );
 
-        $order = $this->orderAdapter->getOrderByCartId($notification['merchant_reference']);
+        if ($notification['event_code'] == 'REFUND') {
+            $order = $this->orderAdapter->getOrderByOrderSlipId($notification['merchant_reference']);
+        } else {
+            $order = $this->orderAdapter->getOrderByCartId($notification['merchant_reference']);
+        }
 
         if (empty($order)) {
             $this->helperData->adyenLogger()->logError('Order with id: "' . $notification['merchant_reference'] . '" cannot be found while notification with id: "' . $notification['entity_id'] . '" was processed.');
