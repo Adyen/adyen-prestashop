@@ -20,6 +20,10 @@
  * See the LICENSE file for more info.
  */
 
+// This class is not in a namespace because of the way PrestaShop loads
+// Controllers, which breaks a PSR1 element.
+// phpcs:disable PSR1.Classes.ClassDeclaration
+
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 
 class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\controllers\FrontController
