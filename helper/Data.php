@@ -386,7 +386,7 @@ class Data
      */
     public function getLocale($language)
     {
-        // no locale in Prestashop1.6 only languageCode that is en-en but we need en_EN
+        // no locale in PrestaShop1.6 only languageCode that is en-en but we need en_EN
         if ($this->isPrestashop16()) {
             return $language->iso_code;
         } else {
