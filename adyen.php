@@ -502,7 +502,7 @@ class Adyen extends PaymentModule
     }
 
     /**
-     * Hook for header Prestashop 1.6 & > 1.7
+     * Hook for header PrestaShop 1.6 & > 1.7
      */
     public function hookHeader()
     {
@@ -686,7 +686,7 @@ class Adyen extends PaymentModule
 
         $this->context->smarty->assign(
             array(
-                'locale' => $this->helper_data->getLocale($this->context->language), // no locale in Prestashop1.6 only languageCode that is en-en but we need en_EN
+                'locale' => $this->helper_data->getLocale($this->context->language), // no locale in PrestaShop1.6 only languageCode that is en-en but we need en_EN
                 'originKey' => $this->helper_data->getOriginKeyForOrigin(),
                 'environment' => Configuration::get('ADYEN_MODE'),
                 'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),

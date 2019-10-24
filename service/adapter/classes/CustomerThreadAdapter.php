@@ -14,7 +14,7 @@
  *                               #############
  *                               ############
  *
- * Adyen PrestaShop module
+ * Adyen PrestaShop plugin
  *
  * Copyright (c) 2019 Adyen B.V.
  * This file is open source and available under the MIT license.
