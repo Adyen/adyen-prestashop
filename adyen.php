@@ -602,6 +602,51 @@ class Adyen extends PaymentModule
             }
         }
 
+        if (!empty($paymentMethods['paymentMethods'])) {
+            foreach ($paymentMethods['paymentMethods'] as $paymentMethod) {
+                $issuerList = [];
+                if (empty($paymentMethod['type']) || $paymentMethod['type'] == 'scheme') {
+                    continue;
+                }
+                if (isset($paymentMethod['details'])) {
+                    foreach ($paymentMethod['details'] as $paymentMethodDetails) {
+                        if (key_exists('key', $paymentMethodDetails) && $paymentMethodDetails['key'] == 'issuer') {
+                            $issuerList = $paymentMethodDetails['items'];
+                            break;
+                        }
+                    }
+                }
+                $this->context->smarty->assign(
+                    array(
+                        'locale' => $this->helper_data->getLocale($this->context->language),
+                        'originKey' => $this->helper_data->getOriginKeyForOrigin(),
+                        'environment' => Configuration::get('ADYEN_MODE'),
+                        'issuerList' => json_encode($issuerList),
+                        'paymentMethodType' => $paymentMethod['type'],
+                        'paymentMethodName' => $paymentMethod['name'],
+                        'paymentProcessUrl' => $this->context->link->getModuleLink(
+                            $this->name,
+                            'Payment',
+                            array(),
+                            true
+                        ),
+                        'renderPayButton' => false,
+                    )
+                );
+                $localPaymentMethod = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
+                $localPaymentMethod->setCallToActionText($this->l('Pay by ' . $paymentMethod['name']))
+                                   ->setForm(
+                                       $this->context->smarty->fetch(
+                                           _PS_MODULE_DIR_ . $this->name . '/views/templates/front/local-payment-method.tpl'
+                                       )
+                                   )
+                                   ->setAction(
+                                       $this->context->link->getModuleLink($this->name, 'Payment', array(), true)
+                                   );
+
+                $payment_options[] = $localPaymentMethod;
+            }
+        }
 
         $embeddedOption = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
 
@@ -664,6 +709,42 @@ class Adyen extends PaymentModule
                     );
                 }
                 $payments .= $this->display(__FILE__, '/views/templates/front/oneclick.tpl');
+            }
+        }
+
+        if (!empty($paymentMethods['paymentMethods'])) {
+            foreach ($paymentMethods['paymentMethods'] as $paymentMethod) {
+                $issuerList = [];
+                if (empty($paymentMethod['type']) || $paymentMethod['type'] == 'scheme') {
+                    continue;
+                }
+                if (isset($paymentMethod['details'])) {
+                    foreach ($paymentMethod['details'] as $paymentMethodDetails) {
+                        if (key_exists('key', $paymentMethodDetails) && $paymentMethodDetails['key'] == 'issuer') {
+                            $issuerList = $paymentMethodDetails['items'];
+                            break;
+                        }
+                    }
+                }
+                $this->context->smarty->assign(
+                    array(
+                        'locale' => $this->helper_data->getLocale($this->context->language),
+                        'originKey' => $this->helper_data->getOriginKeyForOrigin(),
+                        'environment' => Configuration::get('ADYEN_MODE'),
+                        'prestashop16' => true,
+                        'issuerList' => json_encode($issuerList),
+                        'paymentMethodType' => $paymentMethod['type'],
+                        'paymentMethodName' => $paymentMethod['name'],
+                        'paymentProcessUrl' => $this->context->link->getModuleLink(
+                            $this->name,
+                            'Payment',
+                            array(),
+                            true
+                        ),
+                        'renderPayButton' => true,
+                    )
+                );
+                $payments .= $this->display(__FILE__, '/views/templates/front/local-payment-method.tpl');
             }
         }
 
