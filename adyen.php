@@ -37,7 +37,6 @@ use Adyen\PrestaShop\exception\GenericLoggedException;
 use Adyen\PrestaShop\helper\Data as AdyenHelperData;
 use Adyen\PrestaShop\model\Hashing;
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
-use Adyen\PrestaShop\service\helper\DataFactory as AdyenHelperDataFactory;
 use Adyen\PrestaShop\service\modification\Refund;
 use Adyen\Service\Modification;
 
