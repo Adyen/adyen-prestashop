@@ -20,6 +20,8 @@
  * See the LICENSE file for more info.
  */
 
+use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
+
 class AdminAdyenPrestashopCronController extends \ModuleAdminController
 {
     /**
@@ -34,7 +36,7 @@ class AdminAdyenPrestashopCronController extends \ModuleAdminController
      */
     public function __construct()
     {
-        $this->helperData = Adapter_ServiceLocator::get('Adyen\PrestaShop\helper\Data');
+        $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
 
         if (\Tools::getValue('token') != $this->helperData->decrypt(\Configuration::get('ADYEN_CRONJOB_TOKEN'))) {
             die('Invalid token');

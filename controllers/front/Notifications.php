@@ -21,6 +21,7 @@
  */
 
 use Adyen\PrestaShop\controllers\FrontController;
+use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use Adyen\PrestaShop\service\notification\NotificationReceiver;
 
 class AdyenNotificationsModuleFrontController extends FrontController
@@ -33,7 +34,7 @@ class AdyenNotificationsModuleFrontController extends FrontController
     public function __construct()
     {
         parent::__construct();
-        $this->helperData = Adapter_ServiceLocator::get('Adyen\PrestaShop\helper\Data');
+        $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
     }
 
     /**

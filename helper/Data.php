@@ -409,4 +409,12 @@ class Data
 
         return 'module:adyen/' . ltrim($templatePath, '/');
     }
+
+    /**
+     * @return string
+     */
+    public function getHttpHost()
+    {
+        return $this->httpHost;
+    }
 }

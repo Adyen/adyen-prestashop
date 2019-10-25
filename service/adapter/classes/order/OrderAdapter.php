@@ -23,6 +23,8 @@
 
 namespace Adyen\PrestaShop\service\adapter\classes\order;
 
+use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
+
 class OrderAdapter
 {
     /**
@@ -32,7 +34,7 @@ class OrderAdapter
      */
     public function __construct()
     {
-        $this->helperData = Adapter_ServiceLocator::get('Adyen\PrestaShop\helper\Data');
+        $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
     }
 
     /**

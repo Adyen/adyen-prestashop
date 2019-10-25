@@ -1,5 +1,4 @@
 <?php
-
 /**
  *                       ######
  *                       ######
@@ -20,13 +19,16 @@
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
+
+use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
+
 class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers\FrontController
 {
     public function __construct()
     {
         parent::__construct();
         $this->context = \Context::getContext();
-        $this->helperData = Adapter_ServiceLocator::get('Adyen\PrestaShop\helper\Data');
+        $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
     }
 
     public function postProcess()

@@ -20,6 +20,8 @@
  * See the LICENSE file for more info.
  */
 
+use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
+
 class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\controllers\FrontController
 {
     /**
@@ -34,7 +36,7 @@ class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\control
     {
         parent::__construct();
         $this->context = \Context::getContext();
-        $this->helperData = Adapter_ServiceLocator::get('Adyen\PrestaShop\helper\Data');
+        $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
 
         $this->helperData->startSession();
     }
