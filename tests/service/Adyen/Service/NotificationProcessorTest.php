@@ -28,12 +28,6 @@ use Adyen\PrestaShop\service\notification\NotificationProcessor;
 use Db;
 use Mockery as m;
 
-function pSQL($string)
-{
-    /** @noinspection PhpUndefinedMethodInspection */
-    return NotificationProcessorTest::$functions->pSQL($string);
-}
-
 class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
 {
     /**

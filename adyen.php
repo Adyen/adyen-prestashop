@@ -132,7 +132,6 @@ class Adyen extends PaymentModule
                 && $this->registerHook('displayAdminOrder')
                 && $this->registerHook('moduleRoutes')
                 && $this->registerHook('actionOrderSlipAdd')
-                // the table for notifications from Adyen needs to be both in install and upgrade
                 && $this->createAdyenNotificationTable()
                 && $this->installTab()
             ) {
@@ -154,7 +153,6 @@ class Adyen extends PaymentModule
             && $this->registerHook('adminOrder')
             && $this->registerHook('moduleRoutes')
             && $this->registerHook('actionOrderSlipAdd')
-            // the table for notifications from Adyen needs to be both in install and upgrade
             && $this->createAdyenNotificationTable();
     }
 
@@ -211,12 +209,38 @@ class Adyen extends PaymentModule
      */
     public function uninstall()
     {
-        // TODO: delete adyen configurations (api-key)
+
         $db = Db::getInstance();
         /** @noinspection SqlWithoutWhere SqlResolve */
         $db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'adyen_notification`');
 
-        return parent::uninstall() && $this->uninstallTab();
+        return parent::uninstall() &&
+            $this->uninstallTab() &&
+            $this->removeConfigurationsFromDatabase();
+    }
+
+    /**
+     * Removes Adyen settings from configuration table
+     *
+     * @return bool
+     */
+    private function removeConfigurationsFromDatabase()
+    {
+        $adyenConfigurationNames = array(
+            'ADYEN_MERCHANT_ACCOUNT',
+            'ADYEN_MODE',
+            'ADYEN_NOTI_USERNAME',
+            'ADYEN_NOTI_PASSWORD',
+            'ADYEN_APIKEY_TEST',
+            'ADYEN_APIKEY_LIVE',
+            'ADYEN_NOTI_HMAC',
+            'ADYEN_LIVE_ENDPOINT_URL_PREFIX',
+            'ADYEN_CRONJOB_TOKEN'
+        );
+
+        $db = Db::getInstance();
+        /** @noinspection SqlWithoutWhere SqlResolve */
+        return $db->execute('DELETE FROM `' . _DB_PREFIX_ . 'configuration` WHERE `name` IN ("' . implode('", "', $adyenConfigurationNames) . '") ');
     }
 
     /**
@@ -397,7 +421,7 @@ class Adyen extends PaymentModule
                 ),
                 array(
                     'type' => 'text',
-                    'desc' => $this->l('Your adyen cron job processor\'s url includes this secure token . Your URL looks like: ' . _PS_BASE_URL_ . '/' . basename(_PS_ADMIN_DIR_) . '/index.php?fc=module&controller=AdminAdyenPrestashopCron&token=' . $this->helper_data->decrypt(Configuration::get('ADYEN_CRONJOB_TOKEN'))),
+                    'desc' => $this->l('Your adyen cron job processor\'s url includes this secure token . Your URL looks like: ' . Tools::getShopDomainSsl() . '/' . basename(_PS_ADMIN_DIR_) . '/index.php?fc=module&controller=AdminAdyenPrestashopCron&token=' . $this->helper_data->decrypt(Configuration::get('ADYEN_CRONJOB_TOKEN'))),
                     'label' => $this->l('Secure token for cron job'),
                     'name' => 'ADYEN_CRONJOB_TOKEN',
                     'size' => 20,
