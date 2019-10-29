@@ -225,7 +225,7 @@ class Adyen extends PaymentModule
     public function installTab()
     {
         try {
-            $tab = new Tab();// invisible tab
+            $tab = new Tab();
             $tab->id_parent = -1; // invisible tab
             $tab->active = 1;
             $tab->name = array();
