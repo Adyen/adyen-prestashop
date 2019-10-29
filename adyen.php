@@ -400,7 +400,7 @@ class Adyen extends PaymentModule
                     'label' => $this->l('Notification Username'),
                     'name' => 'ADYEN_NOTI_USERNAME',
                     'size' => 20,
-                    'required' => true,
+                    'required' => false,
                     'hint' => $this->l('Must correspond to the notification username in the Adyen Backoffice under Settings => Notifications')
                 ),
                 array(
@@ -408,7 +408,7 @@ class Adyen extends PaymentModule
                     'label' => $this->l('Notification Password'),
                     'name' => 'ADYEN_NOTI_PASSWORD',
                     'size' => 20,
-                    'required' => true,
+                    'required' => false,
                     'hint' => $this->l('Must correspond to the notification password in the Adyen Backoffice under Settings => Notifications')
                 ),
                 array(

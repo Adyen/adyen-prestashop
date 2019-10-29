@@ -47,8 +47,8 @@ Configure the Adyen plugin in your PrestaShop admin panel: 
 |--- |--- |
 |**Merchant Account**|Name of your Adyen merchant account for which the payments will be processed.|
 |**Test/Production Mode**|Select whether you want to use test or production mode.|
-|**Notification User Name**(not used at the moment)|This can be any username, as long as it matches the username for basic authentication that you entered in your Adyen Customer Area.|
-|**Notification Password**(not used at the moment)|This can be any password, as long as it matches the password for basic authentication that you entered in your Adyen Customer Area.|
+|**Notification User Name**|This can be any username, as long as it matches the username for basic authentication that you entered in your Adyen Customer Area.|
+|**Notification Password**|This can be any password, as long as it matches the password for basic authentication that you entered in your Adyen Customer Area.|
 |**API key for Test**|Your API key from Adyen test Customer Area (*) .|
 |**API key for Live**|Your API key from Adyen live Customer Area (*) .|
 |**Live endpoint prefix**|The URL prefix [random]-[company name] from your Adyen live > Account > API URLs. For more information, refer to Checkout endpoints.|
