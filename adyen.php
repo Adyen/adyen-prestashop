@@ -226,7 +226,7 @@ class Adyen extends PaymentModule
     {
         try {
             $tab = new Tab();// invisible tab
-            $tab->id_parent = -1;
+            $tab->id_parent = -1; // invisible tab
             $tab->active = 1;
             $tab->name = array();
             foreach (Language::getLanguages(true) as $lang) {
