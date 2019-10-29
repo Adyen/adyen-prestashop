@@ -135,7 +135,7 @@ class Data
         $shopperReference = $cart->id_customer;
         $shopperLocale = $this->getLocale($language);
 
-        $adyFields = array(
+        $adyenFields = array(
             "channel" => "Web",
             "merchantAccount" => $merchantAccount,
             "countryCode" => $countryCode,
