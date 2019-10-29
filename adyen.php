@@ -397,7 +397,7 @@ class Adyen extends PaymentModule
                 ),
                 array(
                     'type' => 'text',
-                    'desc' => $this->l('Your adyen cron job processor\'s url includes this secure token . Your URL looks like: ' . _PS_BASE_URL_ . '/' . basename(_PS_ADMIN_DIR_) . '/index.php?fc=module&controller=AdminAdyenPrestashopCron&token=' . $this->helper_data->decrypt(Configuration::get('ADYEN_CRONJOB_TOKEN'))),
+                    'desc' => $this->l('Your adyen cron job processor\'s url includes this secure token . Your URL looks like: ' . Tools::getShopDomainSsl() . '/' . basename(_PS_ADMIN_DIR_) . '/index.php?fc=module&controller=AdminAdyenPrestashopCron&token=' . $this->helper_data->decrypt(Configuration::get('ADYEN_CRONJOB_TOKEN'))),
                     'label' => $this->l('Secure token for cron job'),
                     'name' => 'ADYEN_CRONJOB_TOKEN',
                     'size' => 20,
