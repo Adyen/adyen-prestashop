@@ -20,10 +20,12 @@
             {/if}
             <script>
                 $(document).ready(function () {
-                    var idealIssuerInput = document.getElementById('adyen-payment-issuer-{$paymentMethodType}');
+                    var issuerInput = document.getElementById('adyen-payment-issuer-{$paymentMethodType}');
                     var configuration = {
                         'onChange': function (state) {
-                            idealIssuerInput.value = state.data.paymentMethod.issuer;
+                            if (state.isValid) {
+                                issuerInput.value = state.data.paymentMethod.issuer;
+                            }
                         }
                     };
                     var issuerList = {$issuerList};
