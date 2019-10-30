@@ -700,79 +700,14 @@ class Adyen extends PaymentModule
         $payments = "";
         $paymentMethods = $this->helper_data->fetchPaymentMethods($this->context->cart, $this->context->language);
         if (!$this->context->customer->is_guest && !empty($paymentMethods['oneClickPaymentMethods'])) {
-            $oneClickPaymentMethods = $paymentMethods['oneClickPaymentMethods'];
-            foreach ($oneClickPaymentMethods as $storedCard) {
-                if (!empty($storedCard["storedDetails"]["card"])) {
-                    $this->context->smarty->assign(
-                        array(
-                            'locale' => $this->helper_data->getLocale($this->context->language),
-                            'originKey' => $this->helper_data->getOriginKeyForOrigin(),
-                            'environment' => Configuration::get('ADYEN_MODE'),
-                            'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(),
-                                true),
-                            'threeDSProcessUrl' => $this->context->link->getModuleLink($this->name, 'ThreeDSProcess',
-                                array(), true),
-                            'prestashop16' => true,
-                            'oneClickPaymentMethod' => json_encode($storedCard),
-                            'recurringDetailReference' => $storedCard['recurringDetailReference'],
-                            'name' => $storedCard['name'],
-                            'number' => $storedCard['storedDetails']['card']['number']
-                        )
-                    );
-                }
-                $payments .= $this->display(__FILE__, '/views/templates/front/oneclick.tpl');
-            }
+            $payments .= $this->getOneClickPaymentMethods($paymentMethods);
         }
 
         if (!empty($paymentMethods['paymentMethods'])) {
-            foreach ($paymentMethods['paymentMethods'] as $paymentMethod) {
-                $issuerList = [];
-                if (empty($paymentMethod['type']) || $paymentMethod['type'] == 'scheme') {
-                    continue;
-                }
-                if (isset($paymentMethod['details'])) {
-                    foreach ($paymentMethod['details'] as $paymentMethodDetails) {
-                        if (key_exists('key', $paymentMethodDetails) && $paymentMethodDetails['key'] == 'issuer') {
-                            $issuerList = $paymentMethodDetails['items'];
-                            break;
-                        }
-                    }
-                }
-                $this->context->smarty->assign(
-                    array(
-                        'locale' => $this->helper_data->getLocale($this->context->language),
-                        'originKey' => $this->helper_data->getOriginKeyForOrigin(),
-                        'environment' => Configuration::get('ADYEN_MODE'),
-                        'prestashop16' => true,
-                        'issuerList' => json_encode($issuerList),
-                        'paymentMethodType' => $paymentMethod['type'],
-                        'paymentMethodName' => $paymentMethod['name'],
-                        'paymentProcessUrl' => $this->context->link->getModuleLink(
-                            $this->name,
-                            'Payment',
-                            array(),
-                            true
-                        ),
-                        'renderPayButton' => true,
-                    )
-                );
-                $payments .= $this->display(__FILE__, '/views/templates/front/local-payment-method.tpl');
-            }
+            $payments .= $this->getLocalPaymentMethods($paymentMethods);
         }
 
-        $this->context->smarty->assign(
-            array(
-                'locale' => $this->helper_data->getLocale($this->context->language), // no locale in PrestaShop1.6 only languageCode that is en-en but we need en_EN
-                'originKey' => $this->helper_data->getOriginKeyForOrigin(),
-                'environment' => Configuration::get('ADYEN_MODE'),
-                'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
-                'threeDSProcessUrl' => $this->context->link->getModuleLink($this->name, 'ThreeDSProcess', array(), true),
-                'prestashop16' => true,
-                'loggedInUser' => !$this->context->customer->is_guest
-            )
-        );
-
-        $payments .= $this->display(__FILE__, '/views/templates/front/payment.tpl');
+        $payments .= $this->getStandardPaymentMethod();
 
         return $payments;
     }
@@ -992,5 +927,110 @@ class Adyen extends PaymentModule
                 'An error occurred while saving the message. Reason:' . PHP_EOL . $e->getMessage()
             );
         }
+    }
+
+    /**
+     * @param array $paymentMethods
+     *
+     * @return string
+     */
+    private function getOneClickPaymentMethods(array $paymentMethods)
+    {
+        $payments = '';
+        $oneClickPaymentMethods = $paymentMethods['oneClickPaymentMethods'];
+        foreach ($oneClickPaymentMethods as $storedCard) {
+            if (!empty($storedCard["storedDetails"]["card"])) {
+                $this->context->smarty->assign(
+                    array(
+                        'locale' => $this->helper_data->getLocale($this->context->language),
+                        'originKey' => $this->helper_data->getOriginKeyForOrigin(),
+                        'environment' => Configuration::get('ADYEN_MODE'),
+                        'paymentProcessUrl' => $this->context->link->getModuleLink(
+                            $this->name, 'Payment', array(),
+                            true
+                        ),
+                        'threeDSProcessUrl' => $this->context->link->getModuleLink(
+                            $this->name, 'ThreeDSProcess',
+                            array(), true
+                        ),
+                        'prestashop16' => true,
+                        'oneClickPaymentMethod' => json_encode($storedCard),
+                        'recurringDetailReference' => $storedCard['recurringDetailReference'],
+                        'name' => $storedCard['name'],
+                        'number' => $storedCard['storedDetails']['card']['number']
+                    )
+                );
+            }
+            $payments .= $this->display(__FILE__, '/views/templates/front/oneclick.tpl');
+        }
+        return $payments;
+    }
+
+    /**
+     * @param array $paymentMethods
+     *
+     * @return string
+     */
+    private function getLocalPaymentMethods(array $paymentMethods)
+    {
+        $payments = '';
+        foreach ($paymentMethods['paymentMethods'] as $paymentMethod) {
+            $issuerList = [];
+            if (empty($paymentMethod['type']) || $paymentMethod['type'] == 'scheme') {
+                continue;
+            }
+            if (isset($paymentMethod['details'])) {
+                foreach ($paymentMethod['details'] as $paymentMethodDetails) {
+                    if (key_exists('key', $paymentMethodDetails) && $paymentMethodDetails['key'] == 'issuer') {
+                        $issuerList = $paymentMethodDetails['items'];
+                        break;
+                    }
+                }
+            }
+            $this->context->smarty->assign(
+                array(
+                    'locale' => $this->helper_data->getLocale($this->context->language),
+                    'originKey' => $this->helper_data->getOriginKeyForOrigin(),
+                    'environment' => Configuration::get('ADYEN_MODE'),
+                    'issuerList' => json_encode($issuerList),
+                    'paymentMethodType' => $paymentMethod['type'],
+                    'paymentMethodName' => $paymentMethod['name'],
+                    'paymentProcessUrl' => $this->context->link->getModuleLink(
+                        $this->name,
+                        'Payment',
+                        array(),
+                        true
+                    ),
+                    'renderPayButton' => true,
+                )
+            );
+            $payments .= $this->display(__FILE__, '/views/templates/front/local-payment-method.tpl');
+        }
+        return $payments;
+    }
+
+    /**
+     * @return string
+     */
+    private function getStandardPaymentMethod()
+    {
+        $payments = '';
+        $this->context->smarty->assign(
+            array(
+                'locale' => $this->helper_data->getLocale($this->context->language),
+                // no locale in PrestaShop1.6 only languageCode that is en-en but we need en_EN
+                'originKey' => $this->helper_data->getOriginKeyForOrigin(),
+                'environment' => Configuration::get('ADYEN_MODE'),
+                'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
+                'threeDSProcessUrl' => $this->context->link->getModuleLink(
+                    $this->name, 'ThreeDSProcess', array(), true
+                ),
+                'prestashop16' => true,
+                'loggedInUser' => !$this->context->customer->is_guest
+            )
+        );
+
+        $payments .= $this->display(__FILE__, '/views/templates/front/payment.tpl');
+        return $payments;
     }
 }
