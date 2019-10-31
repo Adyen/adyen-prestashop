@@ -24,6 +24,8 @@
 // Controllers, which breaks a PSR1 element.
 // phpcs:disable PSR1.Classes.ClassDeclaration
 
+use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
+
 class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\FrontController
 {
     public $ssl = true;
@@ -32,11 +34,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
     {
         parent::__construct();
         $this->context = \Context::getContext();
-        $adyenHelperFactory = new \Adyen\PrestaShop\service\helper\DataFactory();
-        $this->helperData = $adyenHelperFactory->createAdyenHelperData(
-            \Configuration::get('ADYEN_MODE'),
-            _COOKIE_KEY_
-        );
+        $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
 
         $this->helperData->startSession();
     }
@@ -48,8 +46,6 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
     public function postProcess()
     {
         $cart = $this->context->cart;
-        $client = $this->helperData->initializeAdyenClient();
-
         // Handle 3DS1 flow, when the payments call is already done and the details are submitted from the frontend, by the place order button
         if (!empty($_REQUEST['paRequest']) && !empty($_REQUEST['md']) && !empty($_REQUEST['issuerUrl']) && !empty($_REQUEST['paymentData']) && !empty($_REQUEST['redirectMethod'])) {
 
@@ -86,7 +82,8 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
             $request = $this->buildRecurringData($request, $_REQUEST);
 
             // call adyen library
-            $service = new \Adyen\Service\Checkout($client);
+            /** @var Adyen\PrestaShop\service\Checkout $service */
+            $service = ServiceLocator::get('Adyen\PrestaShop\service\Checkout');
 
             try {
                 $response = $service->payments($request);
@@ -303,7 +300,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
 
         // 3DS2 request data
         $request['additionalData']['allow3DS2'] = true;
-        $request['origin'] = $this->helperData->getOrigin();
+        $request['origin'] = $this->helperData->getHttpHost();
         $request['channel'] = 'web';
 
         if (!empty($payload['browserInfo'])) {

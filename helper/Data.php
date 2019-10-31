@@ -22,13 +22,14 @@
 
 namespace Adyen\PrestaShop\helper;
 
+use Address;
 use Adyen;
 use Adyen\AdyenException;
-use Adyen\Service\CheckoutUtility;
-use Adyen\Service\Checkout;
-use \Currency;
-use \Address;
-use \Country;
+use Adyen\PrestaShop\service\adapter\classes\Configuration;
+use Adyen\PrestaShop\service\Checkout;
+use Adyen\PrestaShop\service\CheckoutUtility;
+use Country;
+use Currency;
 
 class Data
 {
@@ -36,11 +37,6 @@ class Data
      * @var string
      */
     private $httpHost;
-
-    /**
-     * @var array
-     */
-    private $configuration;
 
     /**
      * @var string
@@ -57,41 +53,31 @@ class Data
      */
     private $adyenCheckoutService;
 
+    /**
+     * @var Configuration
+     */
+    private $configuration;
+
     public function __construct(
-        $httpHost,
-        $configuration,
-        $sslEncryptionKey,
+        Configuration $configuration,
         CheckoutUtility $adyenCheckoutUtilityService,
         Checkout $adyenCheckoutService
     ) {
-        $this->httpHost = $httpHost;
-        $this->configuration = $configuration;
-        $this->sslEncryptionKey = $sslEncryptionKey;
+        $this->httpHost = $configuration->httpHost;
+        $this->sslEncryptionKey = $configuration->sslEncryptionKey;
         $this->adyenCheckoutUtilityService = $adyenCheckoutUtilityService;
         $this->adyenCheckoutService = $adyenCheckoutService;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getOrigin()
-    {
-        return $this->httpHost;
+        $this->configuration = $configuration;
     }
 
     /**
      * Get origin key for a specific origin using the adyen api library client
      *
-     * @param $origin
-     * @param int|null $storeId
      * @return string
      */
     public function getOriginKeyForOrigin()
     {
-
-        $origin = $this->getOrigin();
-
-        $params = array("originDomains" => array($origin));
+        $params = array("originDomains" => array($this->httpHost));
 
         try {
             $response = $this->adyenCheckoutUtilityService->originKeys($params);
@@ -102,8 +88,8 @@ class Data
         $originKey = "";
 
         // TODO: improve error treatment
-        if (!empty($response['originKeys'][$origin])) {
-            $originKey = $response['originKeys'][$origin];
+        if (!empty($response['originKeys'][$this->httpHost])) {
+            $originKey = $response['originKeys'][$this->httpHost];
         } else {
             $this->adyenLogger()->logError("OriginKey is empty, please verify that your API key is correct");
         }
@@ -112,8 +98,9 @@ class Data
     }
 
     /**
-     * @param $store
-     * @param $country
+     * @param $cart
+     * @param $language
+     *
      * @return array
      */
     public function fetchPaymentMethods($cart, $language)
@@ -159,10 +146,9 @@ class Data
         return $responseData;
     }
 
-
     public function isDemoMode()
     {
-        if (strpos($this->configuration['mode'], \Adyen\Environment::TEST) !== false) {
+        if (strpos($this->configuration->adyenMode, \Adyen\Environment::TEST) !== false) {
             return true;
         } else {
             return false;
@@ -187,49 +173,6 @@ class Data
         $logger->setFilename($dirPath . '/debug.log');
 
         return $logger;
-    }
-
-    /**
-     * Initializes and returns Adyen Client and sets the required parameters of it
-     *
-     * @return \Adyen\Client
-     * @throws AdyenException
-     */
-    public function initializeAdyenClient()
-    {
-        $apiKey = $this->getAPIKey();
-        $client = $this->createAdyenClient();
-        $client->setApplicationName("Prestashop plugin");
-        $client->setXApiKey($apiKey);
-        $client->setAdyenPaymentSource(\Adyen\PrestaShop\service\Configuration::MODULE_NAME, \Adyen\PrestaShop\service\Configuration::VERSION);
-        $client->setExternalPlatform("Prestashop", _PS_VERSION_);
-
-        if ($this->isDemoMode()) {
-            $client->setEnvironment(\Adyen\Environment::TEST);
-        } else {
-            $client->setEnvironment(\Adyen\Environment::LIVE, \Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX'));
-        }
-        return $client;
-    }
-
-    /**
-     * @return \Adyen\Client
-     * @throws \Adyen\AdyenException
-     */
-    private function createAdyenClient()
-    {
-        return new \Adyen\Client();
-    }
-
-    /**
-     * Retrieve the API key
-     *
-     * @param int|null $storeId
-     * @return string
-     */
-    public function getAPIKey()
-    {
-        return $this->configuration['apiKey'];
     }
 
     public function encrypt($data)
@@ -315,7 +258,6 @@ class Data
                     !empty($details['issuerUrl']) &&
                     !empty($details['paymentData']) &&
                     !empty($details['redirectMethod'])) {
-
                     $response = array(
                         'action' => 'threeDS1',
                         'paRequest' => $details['paRequest'],
@@ -386,7 +328,11 @@ class Data
 
     /**
      * @param $context
-     * @return int
+     * @param $cart
+     *
+     * @return void
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      */
     public function cloneCurrentCart($context, $cart)
     {
@@ -462,5 +408,13 @@ class Data
         }
 
         return 'module:adyen/' . ltrim($templatePath, '/');
+    }
+
+    /**
+     * @return string
+     */
+    public function getHttpHost()
+    {
+        return $this->httpHost;
     }
 }

@@ -24,17 +24,16 @@
 // Controllers, which breaks a PSR1 element.
 // phpcs:disable PSR1.Classes.ClassDeclaration
 
+
+use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
+
 class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers\FrontController
 {
     public function __construct()
     {
         parent::__construct();
         $this->context = \Context::getContext();
-        $adyenHelperFactory = new \Adyen\PrestaShop\service\helper\DataFactory();
-        $this->helperData = $adyenHelperFactory->createAdyenHelperData(
-            \Configuration::get('ADYEN_MODE'),
-            _COOKIE_KEY_
-        );
+        $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
     }
 
     public function postProcess()

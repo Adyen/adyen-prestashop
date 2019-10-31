@@ -23,6 +23,7 @@
 
 namespace Adyen\PrestaShop\service\adapter\classes\order;
 
+use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use Order;
 use OrderSlip;
 use PrestaShopDatabaseException;
@@ -37,11 +38,7 @@ class OrderAdapter
      */
     public function __construct()
     {
-        $adyenHelperFactory = new \Adyen\PrestaShop\service\helper\DataFactory();
-        $this->helperData = $adyenHelperFactory->createAdyenHelperData(
-            \Configuration::get('ADYEN_MODE'),
-            _COOKIE_KEY_
-        );
+        $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
     }
 
     /**

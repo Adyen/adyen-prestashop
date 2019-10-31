@@ -32,8 +32,6 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-// this file cannot contain the `use` operator for PrestaShop 1.6
-
 class Adyen extends PaymentModule
 {
     /**
@@ -64,7 +62,7 @@ class Adyen extends PaymentModule
     /**
      * Adyen constructor.
      *
-     * @throws Adyen\AdyenException
+     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
      */
     public function __construct()
     {
@@ -77,13 +75,8 @@ class Adyen extends PaymentModule
         $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
         $this->currencies = true;
 
-        $adyenHelperFactory = new Adyen\PrestaShop\service\helper\DataFactory();
-        $this->helper_data = $adyenHelperFactory->createAdyenHelperData(
-            Configuration::get('ADYEN_MODE'),
-            _COOKIE_KEY_
-        );
-
-        $this->hashing = new Adyen\PrestaShop\model\Hashing();
+        $this->helper_data = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
+        $this->hashing = ServiceLocator::get('Adyen\PrestaShop\model\Hashing');
 
         // start for 1.6
         $this->is_eu_compatible = 1;
@@ -614,6 +607,51 @@ class Adyen extends PaymentModule
             }
         }
 
+        if (!empty($paymentMethods['paymentMethods'])) {
+            foreach ($paymentMethods['paymentMethods'] as $paymentMethod) {
+                $issuerList = [];
+                if (empty($paymentMethod['type']) || $paymentMethod['type'] == 'scheme') {
+                    continue;
+                }
+                if (!empty($paymentMethod['details'])) {
+                    foreach ($paymentMethod['details'] as $paymentMethodDetails) {
+                        if (key_exists('key', $paymentMethodDetails) && $paymentMethodDetails['key'] == 'issuer') {
+                            $issuerList = $paymentMethodDetails['items'];
+                            break;
+                        }
+                    }
+                }
+                $this->context->smarty->assign(
+                    array(
+                        'locale' => $this->helper_data->getLocale($this->context->language),
+                        'originKey' => $this->helper_data->getOriginKeyForOrigin(),
+                        'environment' => Configuration::get('ADYEN_MODE'),
+                        'issuerList' => json_encode($issuerList),
+                        'paymentMethodType' => $paymentMethod['type'],
+                        'paymentMethodName' => $paymentMethod['name'],
+                        'paymentProcessUrl' => $this->context->link->getModuleLink(
+                            $this->name,
+                            'Payment',
+                            array(),
+                            true
+                        ),
+                        'renderPayButton' => false,
+                    )
+                );
+                $localPaymentMethod = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
+                $localPaymentMethod->setCallToActionText($this->l('Pay by ' . $paymentMethod['name']))
+                                   ->setForm(
+                                       $this->context->smarty->fetch(
+                                           _PS_MODULE_DIR_ . $this->name . '/views/templates/front/local-payment-method.tpl'
+                                       )
+                                   )
+                                   ->setAction(
+                                       $this->context->link->getModuleLink($this->name, 'Payment', array(), true)
+                                   );
+
+                $payment_options[] = $localPaymentMethod;
+            }
+        }
 
         $embeddedOption = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
 
@@ -676,6 +714,42 @@ class Adyen extends PaymentModule
                     );
                 }
                 $payments .= $this->display(__FILE__, '/views/templates/front/oneclick.tpl');
+            }
+        }
+
+        if (!empty($paymentMethods['paymentMethods'])) {
+            foreach ($paymentMethods['paymentMethods'] as $paymentMethod) {
+                $issuerList = [];
+                if (empty($paymentMethod['type']) || $paymentMethod['type'] == 'scheme') {
+                    continue;
+                }
+                if (isset($paymentMethod['details'])) {
+                    foreach ($paymentMethod['details'] as $paymentMethodDetails) {
+                        if (key_exists('key', $paymentMethodDetails) && $paymentMethodDetails['key'] == 'issuer') {
+                            $issuerList = $paymentMethodDetails['items'];
+                            break;
+                        }
+                    }
+                }
+                $this->context->smarty->assign(
+                    array(
+                        'locale' => $this->helper_data->getLocale($this->context->language),
+                        'originKey' => $this->helper_data->getOriginKeyForOrigin(),
+                        'environment' => Configuration::get('ADYEN_MODE'),
+                        'prestashop16' => true,
+                        'issuerList' => json_encode($issuerList),
+                        'paymentMethodType' => $paymentMethod['type'],
+                        'paymentMethodName' => $paymentMethod['name'],
+                        'paymentProcessUrl' => $this->context->link->getModuleLink(
+                            $this->name,
+                            'Payment',
+                            array(),
+                            true
+                        ),
+                        'renderPayButton' => true,
+                    )
+                );
+                $payments .= $this->display(__FILE__, '/views/templates/front/local-payment-method.tpl');
             }
         }
 
