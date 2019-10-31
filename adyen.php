@@ -620,7 +620,7 @@ class Adyen extends PaymentModule
                 if (empty($paymentMethod['type']) || $paymentMethod['type'] == 'scheme') {
                     continue;
                 }
-                if (isset($paymentMethod['details'])) {
+                if (!empty($paymentMethod['details'])) {
                     foreach ($paymentMethod['details'] as $paymentMethodDetails) {
                         if (key_exists('key', $paymentMethodDetails) && $paymentMethodDetails['key'] == 'issuer') {
                             $issuerList = $paymentMethodDetails['items'];
