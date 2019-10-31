@@ -32,14 +32,6 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-use Adyen\AdyenException;
-use Adyen\PrestaShop\exception\GenericLoggedException;
-use Adyen\PrestaShop\helper\Data as AdyenHelperData;
-use Adyen\PrestaShop\model\Hashing;
-use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
-use Adyen\PrestaShop\service\modification\Refund;
-use Adyen\Service\Modification;
-
 class Adyen extends PaymentModule
 {
     /**
@@ -58,12 +50,12 @@ class Adyen extends PaymentModule
     public $meta_title;
 
     /**
-     * @var AdyenHelperData
+     * @var Adyen\PrestaShop\helper\Data
      */
     private $helper_data;
 
     /**
-     * @var Hashing
+     * @var Adyen\PrestaShop\model\Hashing
      */
     private $hashing;
 
@@ -220,8 +212,8 @@ class Adyen extends PaymentModule
     public function installTab()
     {
         try {
-            $tab = new Tab();// invisible tab
-            $tab->id_parent = -1;
+            $tab = new Tab();
+            $tab->id_parent = -1; // invisible tab
             $tab->active = 1;
             $tab->name = array();
             foreach (Language::getLanguages(true) as $lang) {
@@ -392,7 +384,7 @@ class Adyen extends PaymentModule
                 ),
                 array(
                     'type' => 'text',
-                    'desc' => $this->l('Your adyen cron job processor\'s url includes this secure token . Your URL looks like: ' . _PS_BASE_URL_ . '/' . basename(_PS_ADMIN_DIR_) . '/index.php?fc=module&controller=AdminAdyenPrestashopCron&token=' . $this->helper_data->decrypt(Configuration::get('ADYEN_CRONJOB_TOKEN'))),
+                    'desc' => $this->l('Your adyen cron job processor\'s url includes this secure token . Your URL looks like: ' . Tools::getShopDomainSsl() . '/' . basename(_PS_ADMIN_DIR_) . '/index.php?fc=module&controller=AdminAdyenPrestashopCron&token=' . $this->helper_data->decrypt(Configuration::get('ADYEN_CRONJOB_TOKEN'))),
                     'label' => $this->l('Secure token for cron job'),
                     'name' => 'ADYEN_CRONJOB_TOKEN',
                     'size' => 20,
@@ -569,9 +561,10 @@ class Adyen extends PaymentModule
 
     /**
      * Hook payment options PrestaShop > 1.7
+     *
      * @return array
      * @throws SmartyException
-     * @throws AdyenException
+     * @throws Adyen\AdyenException
      */
     public function hookPaymentOptions()
     {
@@ -832,22 +825,22 @@ class Adyen extends PaymentModule
     {
         try {
             $client = $this->helper_data->initializeAdyenClient();
-        } catch (AdyenException $e) {
+        } catch (Adyen\AdyenException $e) {
             $this->addMessageToOrderForOrderSlipAndLogErrorMessage(
                 'Error initializing Adyen Client in actionOrderSlipAdd hook:' . PHP_EOL . $e->getMessage()
             );
             return;
         }
         try {
-            $modificationService = new Modification($client);
-        } catch (AdyenException $e) {
+            $modificationService = new Adyen\Service\Modification($client);
+        } catch (Adyen\AdyenException $e) {
             $this->addMessageToOrderForOrderSlipAndLogErrorMessage(
                 'Error initializing Adyen Modification Service in actionOrderSlipAdd hook:'
                 . PHP_EOL . $e->getMessage()
             );
             return;
         }
-        $refundService = new Refund(
+        $refundService = new Adyen\PrestaShop\service\modification\Refund(
             $modificationService,
             Db::getInstance(),
             \Configuration::get('ADYEN_MERCHANT_ACCOUNT'),
@@ -869,21 +862,7 @@ class Adyen extends PaymentModule
 
         $currency = Currency::getCurrency($order->id_currency);
 
-        try {
-            $refundService->request($orderSlip, $currency['iso_code']);
-        } catch (AdyenException $e) {
-            $this->addMessageToOrderForOrderSlip(
-                "Problem connecting to Adyen endpoint: " . $e->getMessage(),
-                $order,
-                $orderSlip
-            );
-        } catch (PrestaShopDatabaseException $e) {
-            $this->addMessageToOrderForOrderSlip(
-                "Problem with database connection: " . $e->getMessage(),
-                $order,
-                $orderSlip
-            );
-        }
+        $refundService->request($orderSlip, $currency['iso_code']);
     }
 
     private function addMessageToOrderForOrderSlipAndLogErrorMessage(
@@ -908,7 +887,7 @@ class Adyen extends PaymentModule
         try {
             $customer = $order->getCustomer();
             if (empty($customer)) {
-                throw new GenericLoggedException(
+                throw new Adyen\PrestaShop\exception\GenericLoggedException(
                     "Customer with id: \"{$order->id_customer}\" cannot be found for" .
                     " order with id: \"{$order->id}\" while processing" .
                     " order slip with id: \"{$orderSlip->id}\"."
@@ -916,7 +895,7 @@ class Adyen extends PaymentModule
             }
             $customerThread = $this->createCustomerThread($order, $orderSlip, $customer);
             $this->createCustomerMessage($message, $customerThread);
-        } catch (GenericLoggedException $e) {
+        } catch (Adyen\PrestaShop\exception\GenericLoggedException $e) {
             $this->helper_data->adyenLogger()->logError($e->getMessage());
             return false;
         }
@@ -927,8 +906,9 @@ class Adyen extends PaymentModule
      * @param Order $order
      * @param OrderSlip $orderSlip
      * @param Customer $customer
+     *
      * @return CustomerThread
-     * @throws GenericLoggedException
+     * @throws Adyen\PrestaShop\exception\GenericLoggedException
      */
     private function createCustomerThread(Order $order, OrderSlip $orderSlip, Customer $customer)
     {
@@ -947,18 +927,18 @@ class Adyen extends PaymentModule
                 $customerThread->status = 'open';
                 $customerThread->token = Tools::passwdGen(12);
                 if (!$customerThread->add()) {
-                    throw new GenericLoggedException(
+                    throw new Adyen\PrestaShop\exception\GenericLoggedException(
                         "Could not start a Customer Thread for Order Slip with id \"{$orderSlip->id}\"."
                     );
                 }
             }
         } catch (PrestaShopDatabaseException $e) {
-            throw new GenericLoggedException(
+            throw new Adyen\PrestaShop\exception\GenericLoggedException(
                 'Could not start a Customer Thread for Order Slip with id "' . $orderSlip->id .
                 '". Reason:' . PHP_EOL . $e->getMessage()
             );
         } catch (PrestaShopException $e) {
-            throw new GenericLoggedException(
+            throw new Adyen\PrestaShop\exception\GenericLoggedException(
                 "Could not start a Customer Thread for Order Slip with id \"" . $orderSlip->id .
                 '". Reason:' . PHP_EOL . $e->getMessage()
             );
@@ -969,7 +949,8 @@ class Adyen extends PaymentModule
     /**
      * @param $message
      * @param CustomerThread $customerThread
-     * @throws GenericLoggedException
+     *
+     * @throws Adyen\PrestaShop\exception\GenericLoggedException
      */
     private function createCustomerMessage($message, CustomerThread $customerThread)
     {
@@ -981,14 +962,15 @@ class Adyen extends PaymentModule
             $customerMessage->private = 1;
 
             if (!$customerMessage->add()) {
-                throw new GenericLoggedException('An error occurred while saving the message.');
+                throw new Adyen\PrestaShop\exception\GenericLoggedException(
+                    'An error occurred while saving the message.');
             }
         } catch (PrestaShopDatabaseException $e) {
-            throw new GenericLoggedException(
+            throw new Adyen\PrestaShop\exception\GenericLoggedException(
                 'An error occurred while saving the message. Reason:' . PHP_EOL . $e->getMessage()
             );
         } catch (PrestaShopException $e) {
-            throw new GenericLoggedException(
+            throw new Adyen\PrestaShop\exception\GenericLoggedException(
                 'An error occurred while saving the message. Reason:' . PHP_EOL . $e->getMessage()
             );
         }
