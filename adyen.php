@@ -118,13 +118,9 @@ class Adyen extends PaymentModule
             if (
                 parent::install()
                 && $this->registerHook('displayPaymentTop')
-                && $this->registerHook('displayBackOfficeHeader')
                 && $this->registerHook('payment')
                 && $this->registerHook('displayPaymentEU')
                 && $this->registerHook('paymentReturn')
-                && $this->registerHook('displayHeader')
-                && $this->registerHook('displayAdminOrder')
-                && $this->registerHook('moduleRoutes')
                 && $this->registerHook('actionOrderSlipAdd')
                 && $this->createAdyenNotificationTable()
                 && $this->installTab()
@@ -144,8 +140,6 @@ class Adyen extends PaymentModule
             && $this->registerHook('orderConfirmation')
             && $this->registerHook('paymentOptions')
             && $this->registerHook('paymentReturn')
-            && $this->registerHook('adminOrder')
-            && $this->registerHook('moduleRoutes')
             && $this->registerHook('actionOrderSlipAdd')
             && $this->createAdyenNotificationTable();
     }
@@ -486,23 +480,15 @@ class Adyen extends PaymentModule
             $mode = (string)Tools::getValue('ADYEN_MODE');
             $notification_username = (string)Tools::getValue('ADYEN_NOTI_USERNAME');
             $notification_password = (string)Tools::getValue('ADYEN_NOTI_PASSWORD');
-            $notification_HMAC = $this->hashing->hash(Tools::getValue('ADYEN_NOTI_HMAC', _COOKIE_KEY_));
             $cron_job_token = Tools::getValue('ADYEN_CRONJOB_TOKEN');
             $live_endpoint_url_prefix = (string)Tools::getValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
-            $api_key_test = $this->hashing->hash(Tools::getValue('ADYEN_APIKEY_TEST'), _COOKIE_KEY_);
-            $api_key_live = $this->hashing->hash(Tools::getValue('ADYEN_APIKEY_LIVE'), _COOKIE_KEY_);
         } else {
             $merchant_account = Configuration::get('ADYEN_MERCHANT_ACCOUNT');
             $mode = Configuration::get('ADYEN_MODE');
             $notification_username = Configuration::get('ADYEN_NOTI_USERNAME');
             $notification_password = Configuration::get('ADYEN_NOTI_PASSWORD');
-            $notification_HMAC = $this->hashing->hash(Configuration::get('ADYEN_NOTI_HMAC'), _COOKIE_KEY_);
             $cron_job_token = $this->helper_data->decrypt(Configuration::get('ADYEN_CRONJOB_TOKEN'));
             $live_endpoint_url_prefix = Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
-            $api_key_test = $this->hashing->hash(Configuration::get('ADYEN_APIKEY_TEST'),
-                _COOKIE_KEY_);;
-            $api_key_live = $this->hashing->hash(Configuration::get('ADYEN_APIKEY_LIVE'),
-                _COOKIE_KEY_);
         }
 
         // Load current value
@@ -510,10 +496,7 @@ class Adyen extends PaymentModule
         $helper->fields_value['ADYEN_MODE'] = $mode;
         $helper->fields_value['ADYEN_NOTI_USERNAME'] = $notification_username;
         $helper->fields_value['ADYEN_NOTI_PASSWORD'] = $notification_password;
-        $helper->fields_value['ADYEN_NOTI_HMAC'] = $notification_HMAC;
         $helper->fields_value['ADYEN_CRONJOB_TOKEN'] = $cron_job_token;
-        $helper->fields_value['ADYEN_APIKEY_TEST'] = $api_key_test;
-        $helper->fields_value['ADYEN_APIKEY_LIVE'] = $api_key_live;
         $helper->fields_value['ADYEN_LIVE_ENDPOINT_URL_PREFIX'] = $live_endpoint_url_prefix;
 
         return $helper->generateForm($fields_form);
@@ -743,6 +726,9 @@ class Adyen extends PaymentModule
      */
     public function hookPaymentReturn()
     {
+        if (!$this->active) {
+            return;
+        }
         return;
     }
 
@@ -751,7 +737,10 @@ class Adyen extends PaymentModule
      */
     public function hookDisplayPaymentTop()
     {
-        //TODO: controller to prevent double paymentMethods call
+        if (!$this->active) {
+            return;
+        }
+
         $paymentMethods = $this->helper_data->fetchPaymentMethods($this->context->cart, $this->context->language);
 
         $this->context->smarty->assign(
@@ -773,6 +762,10 @@ class Adyen extends PaymentModule
 
     public function hookActionOrderSlipAdd(array $params)
     {
+        if (!$this->active) {
+            return;
+        }
+
         try {
             $client = $this->helper_data->initializeAdyenClient();
         } catch (Adyen\AdyenException $e) {
