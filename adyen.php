@@ -126,7 +126,6 @@ class Adyen extends PaymentModule
                 && $this->registerHook('displayAdminOrder')
                 && $this->registerHook('moduleRoutes')
                 && $this->registerHook('actionOrderSlipAdd')
-                // the table for notifications from Adyen needs to be both in install and upgrade
                 && $this->createAdyenNotificationTable()
                 && $this->installTab()
             ) {
@@ -148,7 +147,6 @@ class Adyen extends PaymentModule
             && $this->registerHook('adminOrder')
             && $this->registerHook('moduleRoutes')
             && $this->registerHook('actionOrderSlipAdd')
-            // the table for notifications from Adyen needs to be both in install and upgrade
             && $this->createAdyenNotificationTable();
     }
 
@@ -205,12 +203,38 @@ class Adyen extends PaymentModule
      */
     public function uninstall()
     {
-        // TODO: delete adyen configurations (api-key)
+
         $db = Db::getInstance();
         /** @noinspection SqlWithoutWhere SqlResolve */
         $db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'adyen_notification`');
 
-        return parent::uninstall() && $this->uninstallTab();
+        return parent::uninstall() &&
+            $this->uninstallTab() &&
+            $this->removeConfigurationsFromDatabase();
+    }
+
+    /**
+     * Removes Adyen settings from configuration table
+     *
+     * @return bool
+     */
+    private function removeConfigurationsFromDatabase()
+    {
+        $adyenConfigurationNames = array(
+            'ADYEN_MERCHANT_ACCOUNT',
+            'ADYEN_MODE',
+            'ADYEN_NOTI_USERNAME',
+            'ADYEN_NOTI_PASSWORD',
+            'ADYEN_APIKEY_TEST',
+            'ADYEN_APIKEY_LIVE',
+            'ADYEN_NOTI_HMAC',
+            'ADYEN_LIVE_ENDPOINT_URL_PREFIX',
+            'ADYEN_CRONJOB_TOKEN'
+        );
+
+        $db = Db::getInstance();
+        /** @noinspection SqlWithoutWhere SqlResolve */
+        return $db->execute('DELETE FROM `' . _DB_PREFIX_ . 'configuration` WHERE `name` IN ("' . implode('", "', $adyenConfigurationNames) . '") ');
     }
 
     /**
@@ -370,7 +394,7 @@ class Adyen extends PaymentModule
                     'label' => $this->l('Notification Username'),
                     'name' => 'ADYEN_NOTI_USERNAME',
                     'size' => 20,
-                    'required' => true,
+                    'required' => false,
                     'hint' => $this->l('Must correspond to the notification username in the Adyen Backoffice under Settings => Notifications')
                 ),
                 array(
@@ -378,7 +402,7 @@ class Adyen extends PaymentModule
                     'label' => $this->l('Notification Password'),
                     'name' => 'ADYEN_NOTI_PASSWORD',
                     'size' => 20,
-                    'required' => true,
+                    'required' => false,
                     'hint' => $this->l('Must correspond to the notification password in the Adyen Backoffice under Settings => Notifications')
                 ),
                 array(
