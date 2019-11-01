@@ -137,8 +137,8 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                 if (\Validate::isLoadedObject($new_order)) {
                     $paymentCollection = $new_order->getOrderPaymentCollection();
                     foreach ($paymentCollection as $payment) {
-                        if (!empty($response['additionalData']['cardBin'] &&
-                            !empty($response['additionalData']['cardSummary']))) {
+                        if (!empty($response['additionalData']['cardBin']) &&
+                            !empty($response['additionalData']['cardSummary'])) {
                             $payment->card_number = pSQL($response['additionalData']['cardBin'] . " *** " . $response['additionalData']['cardSummary']);
                         }
                         if (!empty($response['additionalData']['paymentMethod'])) {
