@@ -51,13 +51,11 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
     public function postProcess()
     {
         $cart = $this->context->cart;
-
         $adyenPaymentType = Tools::getValue('adyen-payment-type');
         if (!empty($adyenPaymentType)) {
             $this->processLocalPaymentMethod($cart, $adyenPaymentType, Tools::getValue('adyen-payment-issuer'));
             return;
         }
-
         // Handle 3DS1 flow, when the payments call is already done and the details are submitted from the frontend, by the place order button
         if (!empty($_REQUEST['paRequest']) && !empty($_REQUEST['md']) && !empty($_REQUEST['issuerUrl']) && !empty($_REQUEST['paymentData']) && !empty($_REQUEST['redirectMethod'])) {
 
