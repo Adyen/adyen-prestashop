@@ -511,6 +511,18 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                     $isValid = false;
                 }
                 break;
+            default:
+                $this->helperData->adyenLogger()->logError(
+                    'Unsupported result code in response: ' . print_r($response, true)
+                );
+
+                $this->ajaxRender(
+                    $this->helperData->buildControllerResponseJson(
+                        'error',
+                        ['message' => "Unsupported result code: {$response['resultCode']}"]
+                    )
+                );
+                return;
         }
     }
 }
