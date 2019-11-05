@@ -24,6 +24,8 @@ namespace Adyen\PrestaShop\helper;
 
 use Adyen;
 use Adyen\AdyenException;
+use Adyen\Service\CheckoutUtility;
+use Adyen\Service\Checkout;
 use \Currency;
 use \Address;
 use \Country;
@@ -59,8 +61,8 @@ class Data
         $httpHost,
         $configuration,
         $sslEncryptionKey,
-        $adyenCheckoutUtilityService,
-        $adyenCheckoutService
+        CheckoutUtility $adyenCheckoutUtilityService,
+        Checkout $adyenCheckoutService
     ) {
         $this->httpHost = $httpHost;
         $this->configuration = $configuration;
