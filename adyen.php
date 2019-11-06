@@ -77,9 +77,14 @@ class Adyen extends PaymentModule
         $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
         $this->currencies = true;
 
+        $adyenRunningMode = 'test';
+        if (!empty(\Configuration::get('ADYEN_MODE'))) {
+            $adyenRunningMode = \Configuration::get('ADYEN_MODE');
+        }
+
         $adyenHelperFactory = new Adyen\PrestaShop\service\helper\DataFactory();
         $this->helper_data = $adyenHelperFactory->createAdyenHelperData(
-            Configuration::get('ADYEN_MODE'),
+            $adyenRunningMode,
             _COOKIE_KEY_
         );
 
