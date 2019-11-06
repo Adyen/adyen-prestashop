@@ -127,6 +127,7 @@ class Adyen extends PaymentModule
                 && $this->registerHook('displayPaymentEU')
                 && $this->registerHook('paymentReturn')
                 && $this->registerHook('actionOrderSlipAdd')
+                && $this->registerHook('displayHeader')
                 && $this->createAdyenNotificationTable()
                 && $this->installTab()
             ) {
