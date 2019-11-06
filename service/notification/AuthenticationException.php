@@ -20,9 +20,9 @@
  * See the LICENSE file for more info.
  */
 
-header("Cache-Control: no-store, no-cache, must-revalidate");
-header("Cache-Control: post-check=0, pre-check=0", false);
-header("Pragma: no-cache");
+namespace Adyen\PrestaShop\service\notification;
 
-header("Location: ../");
-exit;
+class AuthenticationException extends \Exception
+{
+
+}

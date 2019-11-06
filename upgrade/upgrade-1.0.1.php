@@ -20,9 +20,26 @@
  * See the LICENSE file for more info.
  */
 
-header("Cache-Control: no-store, no-cache, must-revalidate");
-header("Cache-Control: post-check=0, pre-check=0", false);
-header("Pragma: no-cache");
+// This file declares a function and checks if PrestaShop is loaded to follow
+// PrestaShop's good practices, which breaks a PSR1 element.
+//phpcs:disable PSR1.Files.SideEffects
 
-header("Location: ../");
-exit;
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
+/**
+ * This function is automatically called on version upgrades.
+ *
+ * Version 1.0.1 introduces a database table for notifications from Adyen.
+ *
+ * @param Adyen $module
+ * @return bool
+ */
+function upgrade_module_1_0_1($module)
+{
+    $module->createAdyenNotificationTable();
+    $module->updateCronJobToken();
+    $module->installTab();
+    return true;
+}

@@ -36,6 +36,7 @@ upload/
 #development
 .idea/
 *.iml
+.DS_Store
 
 #composer
 vendor/

@@ -20,6 +20,10 @@
  * See the LICENSE file for more info.
  */
 
+// This class is not in a namespace because of the way PrestaShop loads
+// Controllers, which breaks a PSR1 element.
+// phpcs:disable PSR1.Classes.ClassDeclaration
+
 class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\FrontController
 {
     public $ssl = true;
@@ -28,13 +32,13 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
     {
         parent::__construct();
         $this->context = \Context::getContext();
-        $adyenHelperFactory = new \Adyen\PrestaShop\service\Adyen\Helper\DataFactory();
-        $this->helper_data = $adyenHelperFactory->createAdyenHelperData(
+        $adyenHelperFactory = new \Adyen\PrestaShop\service\helper\DataFactory();
+        $this->helperData = $adyenHelperFactory->createAdyenHelperData(
             \Configuration::get('ADYEN_MODE'),
             _COOKIE_KEY_
         );
 
-        $this->helper_data->startSession();
+        $this->helperData->startSession();
     }
 
     /**
@@ -44,7 +48,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
     public function postProcess()
     {
         $cart = $this->context->cart;
-        $client = $this->helper_data->initializeAdyenClient();
+        $client = $this->helperData->initializeAdyenClient();
 
         // Handle 3DS1 flow, when the payments call is already done and the details are submitted from the frontend, by the place order button
         if (!empty($_REQUEST['paRequest']) && !empty($_REQUEST['md']) && !empty($_REQUEST['issuerUrl']) && !empty($_REQUEST['paymentData']) && !empty($_REQUEST['redirectMethod'])) {
@@ -68,11 +72,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                 'termUrl' => $termUrl
             ));
 
-            if ($this->helper_data->isPrestashop16()) {
-                return $this->setTemplate('redirect.tpl');
-            } else {
-                return $this->setTemplate('module:adyen/views/templates/front/redirect.tpl');
-            }
+            return $this->setTemplate($this->helperData->getTemplateFromModulePath('views/templates/front/redirect.tpl'));
         }
 
         // Handle payments call in case there is no payments response saved into the session
@@ -83,6 +83,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
             $request = $this->buildCCData($request, $_REQUEST);
             $request = $this->buildPaymentData($request);
             $request = $this->buildMerchantAccountData($request);
+            $request = $this->buildRecurringData($request, $_REQUEST);
 
             // call adyen library
             $service = new \Adyen\Service\Checkout($client);
@@ -90,7 +91,16 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
             try {
                 $response = $service->payments($request);
             } catch (\Adyen\AdyenException $e) {
-                $this->helper_data->adyenLogger()->logError("There was an error with the payment method. id:  " . $cart->id . " Response: " . $e->getMessage());
+                $this->helperData->adyenLogger()->logError("There was an error with the payment method. id:  " . $cart->id . " Response: " . $e->getMessage());
+
+                $this->ajaxRender(
+                    $this->helperData->buildControllerResponseJson(
+                        'error',
+                        [
+                            'message' => "There was an error with the payment method, please choose another one."
+                        ]
+                    )
+                );
             }
         } else {
             // in case the payments response is already present use it from the session then unset it
@@ -102,10 +112,10 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
 
         if (!\Validate::isLoadedObject($customer)) {
             if (empty($_REQUEST['isAjax'])) {
-                \Tools::redirect('index.php?controller=order&step=1');
+                \Tools::redirect($this->context->link->getPageLink('order', $this->ssl, null, 'step=1'));
             } else {
-                $this->ajaxRender($this->helper_data->buildControllerResponseJson('redirect',
-                    ['redirectUrl' => 'index.php?controller=order&step=1']));
+                $this->ajaxRender($this->helperData->buildControllerResponseJson('redirect',
+                    ['redirectUrl' => $this->context->link->getPageLink('order', $this->ssl, null, 'step=1')]));
             }
         }
 
@@ -150,33 +160,33 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
 
                 // Since this controller handles ajax and non ajax form submissions as well, both server side and client side redirects needs to be handled based on the isAjax request parameter
                 if (empty($_REQUEST['isAjax'])) {
-                    \Tools::redirect('index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key);
-
+                    \Tools::redirect($this->context->link->getPageLink('order-confirmation', $this->ssl, null, 'id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key));
                 } else {
-                    $this->ajaxRender($this->helper_data->buildControllerResponseJson('redirect',
-                        ['redirectUrl' => 'index.php?controller=order-confirmation&id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key]));
+                    $this->ajaxRender($this->helperData->buildControllerResponseJson('redirect',
+                        ['redirectUrl' => $this->context->link->getPageLink('order-confirmation', $this->ssl, null, 'id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key)]));
                 }
 
                 break;
             case 'Refused':
                 // In case of refused payment there is no order created and the cart needs to be cloned and reinitiated
-                $this->helper_data->cloneCurrentCart($this->context, $cart);
-                $this->helper_data->adyenLogger()->logError("The payment was refused, id:  " . $cart->id);
+                $this->helperData->cloneCurrentCart($this->context, $cart);
+                $this->helperData->adyenLogger()->logError("The payment was refused, id:  " . $cart->id);
 
-                $this->ajax = true;
-                echo $this->helper_data->buildControllerResponseJson(
-                    'error',
-                    [
-                        'message' => "The payment was refused"
-                    ]
+                $this->ajaxRender(
+                    $this->helperData->buildControllerResponseJson(
+                        'error',
+                        [
+                            'message' => "The payment was refused"
+                        ]
+                    )
                 );
-                return;
+
                 break;
             case 'IdentifyShopper':
-                $this->ajax = true;
+
                 $_SESSION['paymentData'] = $response['paymentData'];
 
-                $this->ajaxRender($this->helper_data->buildControllerResponseJson(
+                $this->ajaxRender($this->helperData->buildControllerResponseJson(
                     'threeDS2',
                     [
                         'type' => 'IdentifyShopper',
@@ -186,10 +196,10 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
 
                 break;
             case 'ChallengeShopper':
-                $this->ajax = true;
+
                 $_SESSION['paymentData'] = $response['paymentData'];
 
-                $this->ajaxRender($this->helper_data->buildControllerResponseJson(
+                $this->ajaxRender($this->helperData->buildControllerResponseJson(
                     'threeDS2',
                     [
                         'type' => 'ChallengeShopper',
@@ -198,8 +208,6 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                 ));
                 break;
             case 'RedirectShopper':
-                $this->ajax = true;
-                
                 // store cart in tempory value and remove the cart from session
                 $cartId = $this->context->cart->id;
                 $this->context->cookie->__set("id_cart", "");
@@ -213,7 +221,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                 $paymentData = $response['paymentData'];
                 $redirectMethod = $response['redirect']['method'];
 
-                    $this->ajaxRender($this->helper_data->buildControllerResponseJson(
+                    $this->ajaxRender($this->helperData->buildControllerResponseJson(
                         'threeDS1',
                         [
                             'paRequest' => $paRequest,
@@ -224,19 +232,16 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                         ]
                     ));
                 } else {
-                    $this->helper_data->adyenLogger()->logError("3DS secure is not valid. ID:  " . $cart->id);
+                    $this->helperData->adyenLogger()->logError("3DS secure is not valid. ID:  " . $cart->id);
                 }
                 break;
             default:
                 //8_PS_OS_ERROR_ : payment error
                 $this->module->validateOrder($cart->id, 8, $total, $this->module->displayName, null, $extra_vars,
                     (int)$currency->id, false, $customer->secure_key);
-                $this->helper_data->adyenLogger()->logError("There was an error with the payment method. id:  " . $cart->id);
-                if ($this->helper_data->isPrestashop16()) {
-                    return $this->setTemplate('error.tpl');
-                } else {
-                    return $this->setTemplate('module:adyen/views/templates/front/error.tpl');
-                }
+                $this->helperData->adyenLogger()->logError("There was an error with the payment method. id:  " . $cart->id);
+
+                return $this->setTemplate($this->helperData->getTemplateFromModulePath('views/templates/front/error.tpl'));
                 break;
         }
 
@@ -286,9 +291,19 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
             $request['paymentMethod']['holderName'] = $holderName;
         }
 
+        $shopperReference = $this->context->cart->id_customer;
+        if(!empty($shopperReference)) {
+            $request['shopperReference'] = $shopperReference;
+        }
+
+        //Oneclick data
+        if(!empty($payload['recurringDetailReference'])) {
+            $request['paymentMethod']['recurringDetailReference'] = $payload['recurringDetailReference'];
+        }
+
         // 3DS2 request data
         $request['additionalData']['allow3DS2'] = true;
-        $request['origin'] = $this->helper_data->getOrigin();
+        $request['origin'] = $this->helperData->getOrigin();
         $request['channel'] = 'web';
 
         if (!empty($payload['browserInfo'])) {
@@ -317,14 +332,6 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
             }
         }
 
-
-
-//        if (!empty($payload[PaymentInterface::KEY_ADDITIONAL_DATA][AdyenOneclickDataAssignObserver::RECURRING_DETAIL_REFERENCE]) &&
-//            $recurringDetailReference = $payload[PaymentInterface::KEY_ADDITIONAL_DATA][AdyenOneclickDataAssignObserver::RECURRING_DETAIL_REFERENCE]
-//        ) {
-//            $request['paymentMethod']['recurringDetailReference'] = $recurringDetailReference;
-//        }
-
         /**
          * if MOTO for backend is enabled use MOTO as shopper interaction type
          */
@@ -349,14 +356,14 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
      * @param $request
      * @return mixed
      */
-    public function buildPaymentData($request)
+    public function buildPaymentData($request = array())
     {
         $cart = $this->context->cart;
-        $request['amount'] = [
+        $request['amount'] = array(
             'currency' => $this->context->currency->iso_code,
-            'value' => $this->helper_data->formatAmount($cart->getOrderTotal(true, \Cart::BOTH),
+            'value' => $this->helperData->formatAmount($cart->getOrderTotal(true, \Cart::BOTH),
                 $this->context->currency->iso_code)
-        ];
+        );
 
         $request["reference"] = $cart->id;
         $request["fraudOffset"] = "0";
@@ -368,7 +375,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
      * @param array $request
      * @return array
      */
-    public function buildMerchantAccountData($request = [])
+    public function buildMerchantAccountData($request = array())
     {
         // Retrieve merchant account
         $merchantAccount = \Configuration::get('ADYEN_MERCHANT_ACCOUNT');
@@ -383,13 +390,28 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
      * @param array $request
      * @return array
      */
-    public function buildBrowserData($request = [])
+    public function buildBrowserData($request = array())
     {
-        $request['browserInfo'] = [
+        $request['browserInfo'] = array(
             'userAgent' => $_SERVER['HTTP_USER_AGENT'],
             'acceptHeader' => $_SERVER['HTTP_ACCEPT']
-        ];
+        );
 
+        return $request;
+    }
+
+    /**
+     * @param array $request
+     * @param $payload
+     * @return array
+     */
+    public function buildRecurringData($request = array(), $payload)
+    {
+        if (!empty($payload['storeCc']) && $payload['storeCc'] === 'true') {
+            $request['paymentMethod']['storeDetails'] = true;
+            $request['enableOneClick'] = true;
+            $request['enableRecurring'] = false;
+        }
         return $request;
     }
 

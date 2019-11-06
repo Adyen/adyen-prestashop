@@ -1,4 +1,5 @@
 <?php
+
 /**
  *                       ######
  *                       ######
@@ -20,9 +21,19 @@
  * See the LICENSE file for more info.
  */
 
-header("Cache-Control: no-store, no-cache, must-revalidate");
-header("Cache-Control: post-check=0, pre-check=0", false);
-header("Pragma: no-cache");
+namespace Adyen\PrestaShop\service\adapter\classes;
 
-header("Location: ../");
-exit;
+class CustomerThreadAdapter
+{
+    /**
+     * Returns Customer thread instance by customer email address and order id
+     *
+     * @param $email
+     * @param $orderId
+     * @return \CustomerThread
+     */
+    public function getCustomerThreadByEmailAndOrderId($email, $orderId)
+    {
+        return new \CustomerThread(\CustomerThread::getIdCustomerThreadByEmailAndIdOrder($email, $orderId));
+    }
+}

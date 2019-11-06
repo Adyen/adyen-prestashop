@@ -20,7 +20,7 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\service\Adyen;
+namespace Adyen\PrestaShop\service;
 
 class ClientFactory
 {
@@ -37,7 +37,7 @@ class ClientFactory
     {
         $client = new \Adyen\Client();
         $client->setXApiKey($encryptedApiKey);
-        $client->setAdyenPaymentSource(\Adyen::MODULE_NAME, \Adyen::VERSION);
+        $client->setAdyenPaymentSource(\Adyen\PrestaShop\service\Configuration::MODULE_NAME, \Adyen\PrestaShop\service\Configuration::VERSION);
         $client->setExternalPlatform("PrestaShop", _PS_VERSION_);
         $client->setEnvironment($environment, $liveEndpointUrlPrefix);
         return $client;

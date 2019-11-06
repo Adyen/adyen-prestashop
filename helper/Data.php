@@ -25,6 +25,10 @@ namespace Adyen\PrestaShop\helper;
 use Adyen;
 use Adyen\AdyenException;
 use Adyen\Service\CheckoutUtility;
+use Adyen\Service\Checkout;
+use \Currency;
+use \Address;
+use \Country;
 
 class Data
 {
@@ -48,16 +52,23 @@ class Data
      */
     private $adyenCheckoutUtilityService;
 
+    /**
+     * @var Checkout
+     */
+    private $adyenCheckoutService;
+
     public function __construct(
         $httpHost,
         $configuration,
         $sslEncryptionKey,
-        CheckoutUtility $adyenCheckoutUtilityService
+        CheckoutUtility $adyenCheckoutUtilityService,
+        Checkout $adyenCheckoutService
     ) {
         $this->httpHost = $httpHost;
         $this->configuration = $configuration;
         $this->sslEncryptionKey = $sslEncryptionKey;
         $this->adyenCheckoutUtilityService = $adyenCheckoutUtilityService;
+        $this->adyenCheckoutService = $adyenCheckoutService;
     }
 
     /**
@@ -98,6 +109,54 @@ class Data
         }
 
         return $originKey;
+    }
+
+    /**
+     * @param $store
+     * @param $country
+     * @return array
+     */
+    public function fetchPaymentMethods($cart, $language)
+    {
+        $merchantAccount = \Configuration::get('ADYEN_MERCHANT_ACCOUNT');
+
+        if (!$merchantAccount) {
+            $this->adyenLogger()->logError(
+                "The merchant account field is empty, check your Adyen configuration in Prestashop."
+            );
+            return [];
+        }
+
+        $amount = $cart->getOrderTotal();
+        $currencyData = Currency::getCurrency($cart->id_currency);
+        $currency = $currencyData['iso_code'];
+        $address = new Address($cart->id_address_invoice);
+        $countryCode = Country::getIsoById($address->id_country);
+        $shopperReference = $cart->id_customer;
+        $shopperLocale = $this->getLocale($language);
+
+        $adyenFields = array(
+            "channel" => "Web",
+            "merchantAccount" => $merchantAccount,
+            "countryCode" => $countryCode,
+            "amount" => array(
+                "currency" => $currency,
+                "value" => $this->formatAmount(
+                    $amount,
+                    $currency
+                ),
+            ),
+            "shopperReference" => $shopperReference,
+            "shopperLocale" => $shopperLocale
+        );
+
+        $responseData = "";
+        try {
+            $responseData = $this->adyenCheckoutService->paymentMethods($adyenFields);
+        } catch (\Adyen\AdyenException $e) {
+            $this->adyenLogger()->logError("There was an error retrieving the payment methods. message: " . $e->getMessage());
+        }
+        return $responseData;
     }
 
 
@@ -142,7 +201,7 @@ class Data
         $client = $this->createAdyenClient();
         $client->setApplicationName("Prestashop plugin");
         $client->setXApiKey($apiKey);
-        $client->setAdyenPaymentSource(Adyen::MODULE_NAME, Adyen::VERSION);
+        $client->setAdyenPaymentSource(\Adyen\PrestaShop\service\Configuration::MODULE_NAME, \Adyen\PrestaShop\service\Configuration::VERSION);
         $client->setExternalPlatform("Prestashop", _PS_VERSION_);
 
         if ($this->isDemoMode()) {
@@ -274,7 +333,7 @@ class Data
 
                 $response = array(
                     'action' => 'error',
-                    'message' => 'Somethng went wrong'
+                    'message' => 'Something went wrong'
                 );
 
                 break;
@@ -375,4 +434,33 @@ class Data
         }
     }
 
+    /**
+     * Get locale for 1.6/1.7
+     * @return mixed
+     */
+    public function getLocale($language)
+    {
+        // no locale in PrestaShop1.6 only languageCode that is en-en but we need en_EN
+        if ($this->isPrestashop16()) {
+            return $language->iso_code;
+        } else {
+            return $language->locale;
+        }
+    }
+
+    /**
+     * Return the required template path for 1.6 or 1.7
+     * Include the full path in the module like: views/templates/front/redirect.tpl
+     *
+     * @param $templatePath
+     * @return string
+     */
+    public function getTemplateFromModulePath($templatePath)
+    {
+        if ($this->isPrestashop16()) {
+            return basename($templatePath);
+        }
+
+        return 'module:adyen/' . ltrim($templatePath, '/');
+    }
 }

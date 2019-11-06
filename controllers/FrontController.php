@@ -22,7 +22,6 @@
 
 namespace Adyen\PrestaShop\controllers;
 
-
 use PrestaShopException;
 
 abstract class FrontController extends \ModuleFrontController
@@ -30,7 +29,7 @@ abstract class FrontController extends \ModuleFrontController
     /**
      * @var \Adyen\PrestaShop\helper\Data
      */
-    protected $helper_data;
+    protected $helperData;
 
     /**
      * @param null $value
@@ -40,10 +39,13 @@ abstract class FrontController extends \ModuleFrontController
      */
     protected function ajaxRender($value = null, $controller = null, $method = null)
     {
-        if ($this->helper_data->isPrestashop16()) {
+        header('content-type: application/json; charset=utf-8');
+        if ($this->helperData->isPrestashop16()) {
+            $this->ajax = true;
             parent::ajaxDie($value, $controller, $method);
         } else {
             parent::ajaxRender($value, $controller, $method);
+            exit;
         }
     }
 }

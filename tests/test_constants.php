@@ -20,9 +20,6 @@
  * See the LICENSE file for more info.
  */
 
-header("Cache-Control: no-store, no-cache, must-revalidate");
-header("Cache-Control: post-check=0, pre-check=0", false);
-header("Pragma: no-cache");
-
-header("Location: ../");
-exit;
+define('_PS_IN_TEST_', true);
+define('_PS_ROOT_DIR_', __DIR__ . '/../../..');
+define('_PS_MODULE_DIR_', _PS_ROOT_DIR_ . '/tests/resources/modules/');

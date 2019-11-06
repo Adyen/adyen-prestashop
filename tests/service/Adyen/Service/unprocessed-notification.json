@@ -1,0 +1,18 @@
+{
+  "entity_id": 1,
+  "pspreference": "883569413203437H",
+  "original_reference": null,
+  "merchant_reference": "0",
+  "event_code": "AUTHORISATION",
+  "success": "true",
+  "payment_method": "visa",
+  "amount_value": "2600",
+  "amount_currency": "EUR",
+  "reason": "40446:1111:10/2020",
+  "live": null,
+  "additional_data": "a:37:{s:32:\"fraudCheck-25-CVCAuthResultCheck\";s:1:\"0\";s:9:\"avsResult\";s:38:\"4 AVS not supported for this card type\";s:43:\"fraudCheck-41-PaymentDetailNonFraudRefCheck\";s:2:\"50\";s:11:\"cardSummary\";s:4:\"1111\";s:16:\"refusalReasonRaw\";s:10:\"AUTHORISED\";s:15:\"totalFraudScore\";s:2:\"51\";s:13:\"hmacSignature\";s:44:\"m2aacYH3DiS/4T5cvR8UR6O+lNVUvhGnJC7WHjuA9Kc=\";s:10:\"expiryDate\";s:7:\"10/2020\";s:36:\"fraudCheck-15-IssuingCountryReferral\";s:1:\"0\";s:7:\"cardBin\";s:6:\"411111\";s:19:\"threeDAuthenticated\";s:5:\"false\";s:5:\"alias\";s:16:\"H167852639363479\";s:12:\"cvcResultRaw\";s:1:\"M\";s:28:\"fraudCheck-4-HolderNameUsage\";s:1:\"0\";s:17:\"merchantReference\";s:2:\"76\";s:17:\"acquirerReference\";s:11:\"7CB2HLCPRLU\";s:27:\"fraudCheck-2-CardChunkUsage\";s:1:\"0\";s:28:\"fraudCheck-13-IssuerRefCheck\";s:1:\"0\";s:38:\"fraudCheck-10-HolderNameContainsNumber\";s:1:\"0\";s:18:\"cardIssuingCountry\";s:2:\"NL\";s:11:\"fraudOffset\";s:1:\"0\";s:14:\"liabilityShift\";s:5:\"false\";s:15:\"fraudResultType\";s:5:\"AMBER\";s:8:\"authCode\";s:5:\"40446\";s:14:\"cardHolderName\";s:6:\"attila\";s:17:\"fraudManualReview\";s:4:\"true\";s:13:\"threeDOffered\";s:4:\"true\";s:31:\"fraudCheck-3-PaymentDetailUsage\";s:1:\"0\";s:15:\"cardIssuingBank\";s:15:\"ADYEN TEST BANK\";s:29:\"fraudCheck-27-PmOwnerRefCheck\";s:1:\"0\";s:33:\"fraudCheck-11-HolderNameIsOneWord\";s:1:\"1\";s:9:\"cvcResult\";s:9:\"1 Matches\";s:34:\"fraudCheck-1-PaymentDetailRefCheck\";s:1:\"0\";s:9:\"aliasType\";s:7:\"Default\";s:12:\"avsResultRaw\";s:1:\"4\";s:17:\"cardPaymentMethod\";s:4:\"visa\";s:12:\"acquirerCode\";s:15:\"TestPmmAcquirer\";}",
+  "done": 0,
+  "processing": 0,
+  "created_at": "2019-09-25 14:06:44",
+  "updated_at": "2019-09-25 12:31:10"
+}

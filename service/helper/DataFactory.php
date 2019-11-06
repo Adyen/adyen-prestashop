@@ -20,15 +20,15 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\service\Adyen\Helper;
+namespace Adyen\PrestaShop\service\helper;
 
-
-use Adyen\PrestaShop\service\Adyen\Service\CheckoutUtilityFactory;
+use Adyen\PrestaShop\service\CheckoutUtilityFactory;
+use Adyen\PrestaShop\service\CheckoutFactory;
 
 class DataFactory
 {
     /**
-     * Creates an Adyen Helper object with as little arguments as possible.
+     * Creates an Adyen helper object with as little arguments as possible.
      *
      * @param $adyenRunningMode
      * @param $sslEncryptionKey
@@ -38,12 +38,14 @@ class DataFactory
     public function createAdyenHelperData($adyenRunningMode, $sslEncryptionKey)
     {
         $checkoutUtilityFactory = new CheckoutUtilityFactory();
+        $checkoutFactory = new CheckoutFactory();
         $apiKey = $this->getAPIKey($adyenRunningMode, $sslEncryptionKey);
         return new \Adyen\PrestaShop\helper\Data(
             \Tools::getHttpHost(true, true),
             array('mode' => $adyenRunningMode, 'apiKey' => $apiKey),
             $sslEncryptionKey,
-            $checkoutUtilityFactory->createDefaultCheckoutUtility($apiKey, \Adyen\Environment::TEST)
+            $checkoutUtilityFactory->createDefaultCheckoutUtility($apiKey, $adyenRunningMode),
+            $checkoutFactory->createDefaultCheckout($apiKey, $adyenRunningMode)
         );
     }
 

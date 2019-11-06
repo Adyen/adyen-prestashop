@@ -20,9 +20,27 @@
  * See the LICENSE file for more info.
  */
 
-header("Cache-Control: no-store, no-cache, must-revalidate");
-header("Cache-Control: post-check=0, pre-check=0", false);
-header("Pragma: no-cache");
+namespace Adyen\PrestaShop\service;
 
-header("Location: ../");
-exit;
+
+class CheckoutFactory
+{
+    /**
+     * Creates a Checkout Utility Service with as little arguments as possible.
+     *
+     * @param string $apiKey
+     * @param string $environment
+     * @return \Adyen\Service\Checkout
+     * @throws \Adyen\AdyenException
+     */
+    public function createDefaultCheckout($apiKey, $environment)
+    {
+        $clientFactory = new \Adyen\PrestaShop\service\ClientFactory();
+        $adyenCheckoutService = new \Adyen\Service\Checkout(
+            $clientFactory->createDefaultClient(
+                $apiKey, \Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX'), $environment
+            )
+        );
+        return $adyenCheckoutService;
+    }
+}

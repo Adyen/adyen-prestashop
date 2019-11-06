@@ -23,3 +23,5 @@ div.adyen-payment #errors {
 	width: 210px;
 	display: none;
 }
+
+div.adyen-payment-method-label { display: inline-block; margin: 6px; font-size: 16px;}
