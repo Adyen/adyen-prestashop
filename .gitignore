@@ -40,4 +40,3 @@ upload/
 
 #composer
 vendor/
-composer.lock
