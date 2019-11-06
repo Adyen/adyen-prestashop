@@ -105,6 +105,17 @@ class NotificationReceiver
      */
     public function doPostProcess($notificationItems)
     {
+        if (empty($notificationItems)) {
+            $message = 'Notification is not formatted correctly';
+            $this->helperData->adyenLogger()->logError($message);
+            return json_encode(
+                [
+                    'success' => false,
+                    'message' => $message
+                ]
+            );
+        }
+
         if (!empty($notificationItems['live']) && $this->validateNotificationMode($notificationItems['live'])) {
 
             $acceptedMessage = '[accepted]';
