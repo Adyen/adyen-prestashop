@@ -450,7 +450,6 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
         $request = $this->buildLocalPaymentMethodData($paymentType, $paymentIssuer, $request);
         $request = $this->buildPaymentData($request);
         $request = $this->buildMerchantAccountData($request);
-        $request = $this->buildRecurringData($request, $_REQUEST);
         $request = $this->buildReturnURL($request);
 
         // call adyen library
