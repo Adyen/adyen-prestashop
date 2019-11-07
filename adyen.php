@@ -624,7 +624,8 @@ class Adyen extends PaymentModule
         if (!empty($paymentMethods['paymentMethods'])) {
             foreach ($paymentMethods['paymentMethods'] as $paymentMethod) {
                 $issuerList = [];
-                if (empty($paymentMethod['type']) || $paymentMethod['type'] == 'scheme') {
+                // restrict to iDeal only for now
+                if (empty($paymentMethod['type']) || $paymentMethod['type'] == 'scheme' || $paymentMethod['type'] != 'ideal') {
                     continue;
                 }
                 if (!empty($paymentMethod['details'])) {
@@ -981,6 +982,10 @@ class Adyen extends PaymentModule
     {
         $payments = '';
         foreach ($paymentMethods['paymentMethods'] as $paymentMethod) {
+            // restrict to iDeal only for now
+            if ($paymentMethod['type'] != 'ideal') {
+                continue;
+            }
             $issuerList = [];
             if (empty($paymentMethod['type']) || $paymentMethod['type'] == 'scheme') {
                 continue;
