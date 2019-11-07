@@ -7,9 +7,13 @@ The plugin integrates card component(Secured Fields) using Adyen Checkout for al
 ## Requirements
 This plugin supports PrestaShop version 1.6 or 1.7.
 
-## Collaboration
-We commit all our new features directly into our GitHub repository.
-But you can also request or suggest new features or code changes yourself!
+## Contributing
+We strongly encourage you to join us in contributing to this repository so everyone can benefit from:
+* New features and functionality
+* Resolved bug fixes and issues
+* Any general improvements
+
+Read our [**contribution guidelines**](CONTRIBUTING.md) to find out how.
 
 ## Installation
 Copy the folders into the **/modules/adyen** folder of your main PrestaShop environment.
