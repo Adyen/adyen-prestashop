@@ -24,7 +24,6 @@
 // Controllers, which breaks a PSR1 element.
 // phpcs:disable PSR1.Classes.ClassDeclaration
 
-
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 
 class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers\FrontController
@@ -40,7 +39,6 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
     {
         // retrieve cart from temp value and restore the cart to approve payment
         $cart = new Cart((int)$this->context->cookie->__get("id_cart_temp"));
-        $client = $this->helperData->initializeAdyenClient();
 
         $requestMD = $_REQUEST['MD'];
         $requestPaRes = $_REQUEST['PaRes'];
@@ -56,12 +54,9 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
             )
         );
 
-        $client->setAdyenPaymentSource(\Adyen\PrestaShop\service\Configuration::MODULE_NAME, \Adyen\PrestaShop\service\Configuration::VERSION);
-
         try {
-            $client = $this->helperData->initializeAdyenClient();
-            // call lib
-            $service = new \Adyen\Service\Checkout($client);
+            /** @var \Adyen\PrestaShop\service\Checkout $service */
+            $service = ServiceLocator::get('Adyen\PrestaShop\service\Checkout');
             $response = $service->paymentsDetails($request);
         } catch (\Adyen\AdyenException $e) {
             $this->helperData->adyenLogger()->logError("Error during validate3d paymentsDetails call: exception: " . $e->getMessage());

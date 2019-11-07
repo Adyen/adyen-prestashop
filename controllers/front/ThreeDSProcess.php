@@ -82,10 +82,8 @@ class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\control
 
         // Send the payments details request
         try {
-            $client = $this->helperData->initializeAdyenClient();
-
-            // call lib
-            $service = new \Adyen\Service\Checkout($client);
+            /** @var \Adyen\PrestaShop\service\Client $service */
+            $service = ServiceLocator::get('Adyen\PrestaShop\service\Client');
 
             $result = $service->paymentsDetails($request);
         } catch (\Adyen\AdyenException $e) {
@@ -94,7 +92,17 @@ class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\control
                 array(
                     'message' => '3D secure 2.0 failed'
                 )
-            ));
+            )
+            );
+        } catch (\PrestaShop\PrestaShop\Adapter\CoreException $e) {
+            $this->ajaxRender(
+                $this->helperData->buildControllerResponseJson(
+                    'error',
+                    array(
+                        'message' => '3D secure 2.0 failed'
+                    )
+                )
+            );
         }
 
         // Check if result is challenge shopper, if yes return the token
