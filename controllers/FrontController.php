@@ -22,6 +22,7 @@
 
 namespace Adyen\PrestaShop\controllers;
 
+use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use PrestaShopException;
 
 abstract class FrontController extends \ModuleFrontController
@@ -30,6 +31,12 @@ abstract class FrontController extends \ModuleFrontController
      * @var \Adyen\PrestaShop\helper\Data
      */
     protected $helperData;
+
+    public function __construct()
+    {
+        parent::__construct();
+        ServiceLocator::get('Adyen\PrestaShop\helper\Data')->startSession();
+    }
 
     /**
      * @param null $value
