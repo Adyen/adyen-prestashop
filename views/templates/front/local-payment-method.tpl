@@ -28,7 +28,7 @@
                             }
                         }
                     };
-                    var issuerList = {$issuerList};
+                    var issuerList = {$issuerList nofilter};
                     if (issuerList.length) {
                         configuration.items = issuerList;
                     }
