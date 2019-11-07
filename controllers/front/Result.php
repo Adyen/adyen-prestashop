@@ -24,6 +24,8 @@
 // Controllers, which breaks a PSR1 element.
 // phpcs:disable PSR1.Classes.ClassDeclaration
 
+use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
+
 class AdyenResultModuleFrontController extends \Adyen\PrestaShop\controllers\FrontController
 {
     /**
@@ -33,8 +35,46 @@ class AdyenResultModuleFrontController extends \Adyen\PrestaShop\controllers\Fro
 
     public function postProcess()
     {
-        var_dump($this->context->cookie->id_cart_temp);
-        var_dump($_REQUEST);
-        die;
+        if (!isset($_SESSION['paymentData'])) {
+            \Tools::redirect($this->context->link->getPageLink('order', $this->ssl));
+            return;
+        }
+        /** @var \Adyen\PrestaShop\service\Checkout $checkout */
+        $checkout = ServiceLocator::get('Adyen\PrestaShop\service\Checkout');
+        $response = $checkout->paymentsDetails(
+            array(
+                'paymentData' => $_SESSION['paymentData'],
+                'details' => Tools::getAllValues()
+            )
+        );
+        unset($_SESSION['paymentData']);
+        $cart = new Cart($this->context->cookie->id_cart_temp);
+        if ($response['resultCode'] == 'Authorised') {
+            $total = (float)$cart->getOrderTotal(true, \Cart::BOTH);
+            $extra_vars = array();
+            if (!empty($response['pspReference'])) {
+                $extra_vars['transaction_id'] = $response['pspReference'];
+            }
+            $currencyId = $cart->id_currency;
+            $customer = new \Customer($cart->id_customer);
+            $this->module->validateOrder(
+                $cart->id, 2, $total, $this->module->displayName, null, $extra_vars,
+                (int)$currencyId, false, $customer->secure_key
+            );
+            \Tools::redirect(
+                $this->context->link->getPageLink(
+                    'order-confirmation', $this->ssl, null,
+                    'id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key
+                )
+            );
+        } else {
+            /** @var \Adyen\PrestaShop\helper\Data $helperData */
+            $helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
+            // create new cart from the current cart
+            $helperData->cloneCurrentCart($this->context, $cart);
+
+            $helperData->adyenLogger()->logError("The payment was refused, id:  " . $cart->id);
+            $this->setTemplate($helperData->getTemplateFromModulePath('views/templates/front/error.tpl'));
+        }
     }
 }
