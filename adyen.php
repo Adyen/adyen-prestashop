@@ -784,16 +784,16 @@ class Adyen extends PaymentModule
         }
 
         try {
-            $client = $this->helper_data->initializeAdyenClient();
+            $modificationService = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
+                'Adyen\Service\ResourceModel\Modification'
+            );
         } catch (Adyen\AdyenException $e) {
             $this->addMessageToOrderForOrderSlipAndLogErrorMessage(
-                'Error initializing Adyen Client in actionOrderSlipAdd hook:' . PHP_EOL . $e->getMessage()
+                'Error initializing Adyen Modification Service in actionOrderSlipAdd hook:'
+                . PHP_EOL . $e->getMessage()
             );
             return;
-        }
-        try {
-            $modificationService = new Adyen\Service\Modification($client);
-        } catch (Adyen\AdyenException $e) {
+        } catch (\PrestaShop\PrestaShop\Adapter\CoreException $e) {
             $this->addMessageToOrderForOrderSlipAndLogErrorMessage(
                 'Error initializing Adyen Modification Service in actionOrderSlipAdd hook:'
                 . PHP_EOL . $e->getMessage()
