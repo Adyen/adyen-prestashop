@@ -64,6 +64,7 @@ class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\control
                     'message' => "3D secure 2.0 failed, payment data not found"
                 )
             ));
+            return;
         }
 
         // Depends on the component's response we send a fingerprint or the challenge result
@@ -82,8 +83,8 @@ class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\control
 
         // Send the payments details request
         try {
-            /** @var \Adyen\PrestaShop\service\Client $service */
-            $service = ServiceLocator::get('Adyen\PrestaShop\service\Client');
+            /** @var \Adyen\PrestaShop\service\Checkout $service */
+            $service = ServiceLocator::get('Adyen\PrestaShop\service\Checkout');
 
             $result = $service->paymentsDetails($request);
         } catch (\Adyen\AdyenException $e) {
