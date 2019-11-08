@@ -35,7 +35,8 @@ abstract class FrontController extends \ModuleFrontController
     public function __construct()
     {
         parent::__construct();
-        ServiceLocator::get('Adyen\PrestaShop\helper\Data')->startSession();
+        $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
+        $this->helperData->startSession();
     }
 
     /**
