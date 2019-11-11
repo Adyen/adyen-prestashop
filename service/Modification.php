@@ -22,25 +22,10 @@
 
 namespace Adyen\PrestaShop\service;
 
-class CheckoutUtilityFactory
+class Modification extends \Adyen\Service\Modification
 {
-
-    /**
-     * Creates a Checkout Utility Service with as little arguments as possible.
-     *
-     * @param string $apiKey
-     * @param string $environment
-     * @return \Adyen\Service\CheckoutUtility
-     * @throws \Adyen\AdyenException
-     */
-    public function createDefaultCheckoutUtility($apiKey, $environment)
+    public function __construct(Client $client)
     {
-        $clientFactory = new \Adyen\PrestaShop\service\ClientFactory();
-        $adyenCheckoutUtilityService = new \Adyen\Service\CheckoutUtility(
-            $clientFactory->createDefaultClient(
-                $apiKey, \Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX'), $environment
-            )
-        );
-        return $adyenCheckoutUtilityService;
+        parent::__construct($client);
     }
 }

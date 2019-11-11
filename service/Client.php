@@ -20,40 +20,26 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\controllers;
+namespace Adyen\PrestaShop\service;
 
-use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
-use PrestaShopException;
-
-abstract class FrontController extends \ModuleFrontController
+class Client extends \Adyen\Client
 {
     /**
-     * @var \Adyen\PrestaShop\helper\Data
+     * @var adapter\classes\Configuration
      */
-    protected $helperData;
+    private $configuration;
 
-    public function __construct()
+    public function __construct(\Adyen\PrestaShop\service\adapter\classes\Configuration $configuration)
     {
         parent::__construct();
-        $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
-        $this->helperData->startSession();
-    }
+        $this->setXApiKey($configuration->apiKey);
+        $this->setAdyenPaymentSource(
+            \Adyen\PrestaShop\service\Configuration::MODULE_NAME,
+            \Adyen\PrestaShop\service\Configuration::VERSION
+        );
+        $this->setExternalPlatform("PrestaShop", _PS_VERSION_);
+        $this->setEnvironment($configuration->adyenMode, $configuration->liveEndpointPrefix);
 
-    /**
-     * @param null $value
-     * @param null $controller
-     * @param null $method
-     * @throws PrestaShopException
-     */
-    protected function ajaxRender($value = null, $controller = null, $method = null)
-    {
-        header('content-type: application/json; charset=utf-8');
-        if ($this->helperData->isPrestashop16()) {
-            $this->ajax = true;
-            parent::ajaxDie($value, $controller, $method);
-        } else {
-            parent::ajaxRender($value, $controller, $method);
-            exit;
-        }
+        $this->configuration = $configuration;
     }
 }

@@ -20,40 +20,24 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\controllers;
+namespace Adyen\PrestaShop\service\adapter\classes;
 
-use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
-use PrestaShopException;
+use PrestaShop\PrestaShop\Adapter\CoreException;
 
-abstract class FrontController extends \ModuleFrontController
+class ServiceLocator
 {
     /**
-     * @var \Adyen\PrestaShop\helper\Data
+     * @param string $serviceName
+     *
+     * @return mixed|object
+     * @throws CoreException
      */
-    protected $helperData;
-
-    public function __construct()
+    public static function get($serviceName)
     {
-        parent::__construct();
-        $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
-        $this->helperData->startSession();
-    }
-
-    /**
-     * @param null $value
-     * @param null $controller
-     * @param null $method
-     * @throws PrestaShopException
-     */
-    protected function ajaxRender($value = null, $controller = null, $method = null)
-    {
-        header('content-type: application/json; charset=utf-8');
-        if ($this->helperData->isPrestashop16()) {
-            $this->ajax = true;
-            parent::ajaxDie($value, $controller, $method);
+        if (class_exists('Adapter_ServiceLocator')) {
+            return \Adapter_ServiceLocator::get($serviceName);
         } else {
-            parent::ajaxRender($value, $controller, $method);
-            exit;
+            return \PrestaShop\PrestaShop\Adapter\ServiceLocator::get($serviceName);
         }
     }
 }

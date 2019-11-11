@@ -24,19 +24,22 @@
 // Controllers, which breaks a PSR1 element.
 // phpcs:disable PSR1.Classes.ClassDeclaration
 
+use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
+
 class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\FrontController
 {
     public $ssl = true;
+
+    /**
+     * @var \Adyen\PrestaShop\helper\Data
+     */
+    protected $helperData;
 
     public function __construct()
     {
         parent::__construct();
         $this->context = \Context::getContext();
-        $adyenHelperFactory = new \Adyen\PrestaShop\service\helper\DataFactory();
-        $this->helperData = $adyenHelperFactory->createAdyenHelperData(
-            \Configuration::get('ADYEN_MODE'),
-            _COOKIE_KEY_
-        );
+        $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
 
         $this->helperData->startSession();
     }
@@ -48,8 +51,11 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
     public function postProcess()
     {
         $cart = $this->context->cart;
-        $client = $this->helperData->initializeAdyenClient();
-
+        $adyenPaymentType = Tools::getValue('adyen-payment-type');
+        if (!empty($adyenPaymentType)) {
+            $this->processLocalPaymentMethod($cart, $adyenPaymentType, Tools::getValue('adyen-payment-issuer'));
+            return;
+        }
         // Handle 3DS1 flow, when the payments call is already done and the details are submitted from the frontend, by the place order button
         if (!empty($_REQUEST['paRequest']) && !empty($_REQUEST['md']) && !empty($_REQUEST['issuerUrl']) && !empty($_REQUEST['paymentData']) && !empty($_REQUEST['redirectMethod'])) {
 
@@ -86,7 +92,8 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
             $request = $this->buildRecurringData($request, $_REQUEST);
 
             // call adyen library
-            $service = new \Adyen\Service\Checkout($client);
+            /** @var Adyen\PrestaShop\service\Checkout $service */
+            $service = ServiceLocator::get('Adyen\PrestaShop\service\Checkout');
 
             try {
                 $response = $service->payments($request);
@@ -140,8 +147,8 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                 if (\Validate::isLoadedObject($new_order)) {
                     $paymentCollection = $new_order->getOrderPaymentCollection();
                     foreach ($paymentCollection as $payment) {
-                        if (!empty($response['additionalData']['cardBin'] &&
-                            !empty($response['additionalData']['cardSummary']))) {
+                        if (!empty($response['additionalData']['cardBin']) &&
+                            !empty($response['additionalData']['cardSummary'])) {
                             $payment->card_number = pSQL($response['additionalData']['cardBin'] . " *** " . $response['additionalData']['cardSummary']);
                         }
                         if (!empty($response['additionalData']['paymentMethod'])) {
@@ -303,7 +310,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
 
         // 3DS2 request data
         $request['additionalData']['allow3DS2'] = true;
-        $request['origin'] = $this->helperData->getOrigin();
+        $request['origin'] = $this->helperData->getHttpHost();
         $request['channel'] = 'web';
 
         if (!empty($payload['browserInfo'])) {
@@ -366,7 +373,6 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
         );
 
         $request["reference"] = $cart->id;
-        $request["fraudOffset"] = "0";
 
         return $request;
     }
@@ -415,4 +421,105 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
         return $request;
     }
 
+    private function buildLocalPaymentMethodData($paymentType, $paymentIssuer, $request = array())
+    {
+        $request['paymentMethod']['type'] = $paymentType;
+        if (!empty($paymentIssuer)) {
+            $request['paymentMethod']['issuer'] = $paymentIssuer;
+        }
+
+        return $request;
+    }
+
+    private function buildReturnURL($request)
+    {
+        $request['returnUrl'] = $this->context->link->getModuleLink(
+            $this->module->name,
+            'Result',
+            array(),
+            $this->ssl
+        );
+
+        return $request;
+    }
+
+    private function processLocalPaymentMethod(\Cart $cart, $paymentType, $paymentIssuer)
+    {
+        $request = array();
+        $request = $this->buildBrowserData($request);
+        $request = $this->buildLocalPaymentMethodData($paymentType, $paymentIssuer, $request);
+        $request = $this->buildPaymentData($request);
+        $request = $this->buildMerchantAccountData($request);
+        $request = $this->buildReturnURL($request);
+
+        // call adyen library
+        /** @var Adyen\PrestaShop\service\Checkout $service */
+        $service = ServiceLocator::get('Adyen\PrestaShop\service\Checkout');
+
+        try {
+            $response = $service->payments($request);
+        } catch (\Adyen\AdyenException $e) {
+            $this->helperData->adyenLogger()->logError(
+                "There was an error with the payment method. id:  " . $cart->id . " Response: " . $e->getMessage()
+            );
+
+            $this->ajaxRender(
+                $this->helperData->buildControllerResponseJson(
+                    'error',
+                    [
+                        'message' => "There was an error with the payment method, please choose another one."
+                    ]
+                )
+            );
+            return;
+        }
+
+        switch ($response['resultCode']) {
+            case 'RedirectShopper':
+                $redirectUrl = null;
+                $redirectMethod = null;
+                $paymentData = null;
+
+                if (!empty($response['redirect']['url'])) {
+                    $redirectUrl = $response['redirect']['url'];
+                }
+
+                if (!empty($response['redirect']['method'])) {
+                    $redirectMethod = $response['redirect']['method'];
+                }
+
+                if (!empty($response['paymentData'])) {
+                    $paymentData = $response['paymentData'];
+                }
+
+                if ($redirectUrl && $redirectMethod && $paymentData) {
+                    $_SESSION['redirectUrl'] = $redirectUrl;
+                    $_SESSION['redirectMethod'] = $redirectMethod;
+                    $_SESSION['paymentData'] = $paymentData;
+
+                    $cartId = $this->context->cart->id;
+                    $this->context->cookie->id_cart = "";
+                    $this->context->cookie->id_cart_temp = $cartId;
+
+                    Tools::redirect($redirectUrl);
+                    return;
+                } else {
+                    // invalid parameters
+                    $isValid = false;
+                }
+                break;
+            default:
+                $this->helperData->adyenLogger()->logError(
+                    'Unsupported result code in response: ' . print_r($response, true)
+                );
+
+                $this->ajaxRender(
+                    $this->helperData->buildControllerResponseJson(
+                        'error',
+                        ['message' => "Unsupported result code: {$response['resultCode']}"]
+                    )
+                );
+                return;
+        }
+    }
 }

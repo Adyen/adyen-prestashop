@@ -24,6 +24,8 @@
 // Controllers, which breaks a PSR1 element.
 // phpcs:disable PSR1.Classes.ClassDeclaration
 
+use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
+
 class AdminAdyenPrestashopCronController extends \ModuleAdminController
 {
     /**
@@ -38,12 +40,7 @@ class AdminAdyenPrestashopCronController extends \ModuleAdminController
      */
     public function __construct()
     {
-
-        $adyenHelperFactory = new \Adyen\PrestaShop\service\helper\DataFactory();
-        $this->helperData = $adyenHelperFactory->createAdyenHelperData(
-            \Configuration::get('ADYEN_MODE'),
-            _COOKIE_KEY_
-        );
+        $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
 
         if (\Tools::getValue('token') != $this->helperData->decrypt(\Configuration::get('ADYEN_CRONJOB_TOKEN'))) {
             die('Invalid token');
