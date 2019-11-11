@@ -624,8 +624,7 @@ class Adyen extends PaymentModule
         if (!empty($paymentMethods['paymentMethods'])) {
             foreach ($paymentMethods['paymentMethods'] as $paymentMethod) {
                 $issuerList = [];
-                // restrict to iDeal only for now
-                if (empty($paymentMethod['type']) || $paymentMethod['type'] == 'scheme' || $paymentMethod['type'] != 'ideal') {
+                if (!$this->isSimplePaymentMethod($paymentMethod)) {
                     continue;
                 }
                 if (!empty($paymentMethod['details'])) {
@@ -982,12 +981,8 @@ class Adyen extends PaymentModule
     {
         $payments = '';
         foreach ($paymentMethods['paymentMethods'] as $paymentMethod) {
-            // restrict to iDeal only for now
-            if ($paymentMethod['type'] != 'ideal') {
-                continue;
-            }
             $issuerList = [];
-            if (empty($paymentMethod['type']) || $paymentMethod['type'] == 'scheme') {
+            if (!$this->isSimplePaymentMethod($paymentMethod)) {
                 continue;
             }
             if (isset($paymentMethod['details'])) {
@@ -1043,5 +1038,21 @@ class Adyen extends PaymentModule
 
         $payments .= $this->display(__FILE__, '/views/templates/front/payment.tpl');
         return $payments;
+    }
+
+    /**
+     * @param $paymentMethod
+     *
+     * @return bool
+     */
+    private function isSimplePaymentMethod($paymentMethod)
+    {
+        return !empty($paymentMethod['type'])
+            && $paymentMethod['type'] != 'scheme'
+            && (
+                empty($paymentMethod['details']) || (
+                    $paymentMethod['details'][0]['key'] == 'issuer' && $paymentMethod['details'][0]['type'] == 'select'
+                )
+            );
     }
 }
