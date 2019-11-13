@@ -1047,11 +1047,15 @@ class Adyen extends PaymentModule
      */
     private function isSimplePaymentMethod($paymentMethod)
     {
+        $details = $paymentMethod['details'];
         return !empty($paymentMethod['type'])
             && $paymentMethod['type'] != 'scheme'
             && (
-                empty($paymentMethod['details']) || (
-                    $paymentMethod['details'][0]['key'] == 'issuer' && $paymentMethod['details'][0]['type'] == 'select'
+                empty($details) || (
+                    is_array($details)
+                    && count($details) == 1
+                    && $details[0]['key'] == 'issuer'
+                    && $details[0]['type'] == 'select'
                 )
             );
     }
