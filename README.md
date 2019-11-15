@@ -2,7 +2,7 @@
 Use Adyen's plugin for PrestaShop to offer frictionless payments online, in-app, and in-store.
 
 ## Integration
-The plugin integrates card component(Secured Fields) using Adyen Checkout for all card payments.
+The plugin integrates card component(Secured Fields) using Adyen Checkout for all card payments. Local payment methods are integrated with Checkout Payment Methods.
 
 ## Requirements
 This plugin supports PrestaShop version 1.6 or 1.7.
