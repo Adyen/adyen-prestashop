@@ -194,7 +194,9 @@ class Data
 
     /**
      * Determine if PrestaShop is 1.6
+     *
      * @return bool
+     * @deprecated use Adyen\PrestaShop\application\VersionChecker instead
      */
     public function isPrestashop16()
     {
