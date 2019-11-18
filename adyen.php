@@ -1,5 +1,4 @@
-<?php
-/**
+<?php /**
  *                       ######
  *                       ######
  * ############    ####( ######  #####. ######  ############   ############
@@ -18,8 +17,7 @@
  * Copyright (c) 2019 Adyen B.V.
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
- */
-
+ */ /** @noinspection PhpFullyQualifiedNameUsageInspection */
 // PrestaShop good practices ask developers to check if PrestaShop is loaded
 // before running any other PHP code, which breaks a PSR1 element.
 // Also, the main class is not in a namespace, which breaks another element.
@@ -679,7 +677,7 @@ class Adyen extends PaymentModule
                 'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
                 'threeDSProcessUrl' => $this->context->link->getModuleLink($this->name, 'ThreeDSProcess', array(), true),
                 'prestashop16' => false,
-                'loggedInUser' => !$this->context->customer->is_guest
+                'loggedInUser' => (int)!$this->context->customer->is_guest
             )
         );
 
@@ -750,14 +748,18 @@ class Adyen extends PaymentModule
 
     /**
      *
+     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
      */
     public function hookDisplayPaymentTop()
     {
         if (!$this->active) {
-            return;
+            return null;
         }
 
         $paymentMethods = $this->helper_data->fetchPaymentMethods($this->context->cart, $this->context->language);
+
+        /** @var \Adyen\PrestaShop\application\VersionChecker $versionChecker */
+        $versionChecker = $this->getService('Adyen\PrestaShop\application\VersionChecker');
 
         $this->context->smarty->assign(
             array(
@@ -767,7 +769,8 @@ class Adyen extends PaymentModule
                 'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
                 'threeDSProcessUrl' => $this->context->link->getModuleLink($this->name, 'ThreeDSProcess', array(), true),
                 'paymentMethodsResponse' => json_encode($paymentMethods),
-                'prestashop16' => $this->helper_data->isPrestashop16()
+                // string value is needed to be used in JavaScript code.
+                'isPrestaShop16' => $versionChecker->isPrestaShop16() ? 'true' : 'false'
             )
         );
 
