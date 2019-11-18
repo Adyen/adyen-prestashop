@@ -20,5 +20,7 @@
  */
 
 jQuery(document).ready(function () {
-    window.adyenCheckout = new AdyenCheckout(ADYEN_CHECKOUT_CONFIG);
+    if (window.ADYEN_CHECKOUT_CONFIG) {
+        window.adyenCheckout = new AdyenCheckout(ADYEN_CHECKOUT_CONFIG);
+    }
 });

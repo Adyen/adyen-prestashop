@@ -20,6 +20,10 @@
  */
 
 jQuery(function ($) {
+    if (!window.adyenCheckout) {
+        return;
+    }
+
     var containers = $('[data-local-payment-method]');
     containers.each(function (index, element) {
         element = $(element);

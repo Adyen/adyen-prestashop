@@ -20,6 +20,10 @@
  */
 
 jQuery(function ($) {
+    if (!window.adyenCheckout) {
+        return;
+    }
+
     var holderName;
     var encryptedCardNumber;
     var encryptedExpiryMonth;

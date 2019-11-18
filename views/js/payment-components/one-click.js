@@ -21,6 +21,10 @@
 
 
 jQuery(function ($) {
+    if (!window.adyenCheckout) {
+        return;
+    }
+
     var encryptedSecurityCode;
     var allValidcard;
     var recurringDetailReference;
