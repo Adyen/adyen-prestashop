@@ -17,6 +17,25 @@
  * Copyright (c) 2019 Adyen B.V.
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
+ */ /**
+ *                       ######
+ *                       ######
+ * ############    ####( ######  #####. ######  ############   ############
+ * #############  #####( ######  #####. ######  #############  #############
+ *        ######  #####( ######  #####. ######  #####  ######  #####  ######
+ * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
+ * ###### ######  #####( ######  #####. ######  #####          #####  ######
+ * #############  #############  #############  #############  #####  ######
+ *  ############   ############  #############   ############  #####  ######
+ *                                      ######
+ *                               #############
+ *                               ############
+ *
+ * Adyen PrestaShop plugin
+ *
+ * Copyright (c) 2019 Adyen B.V.
+ * This file is open source and available under the MIT license.
+ * See the LICENSE file for more info.
  */ /** @noinspection PhpFullyQualifiedNameUsageInspection */
 // PrestaShop good practices ask developers to check if PrestaShop is loaded
 // before running any other PHP code, which breaks a PSR1 element.
@@ -119,7 +138,7 @@ class Adyen extends PaymentModule
                 && $this->registerHook('displayPaymentEU')
                 && $this->registerHook('paymentReturn')
                 && $this->registerHook('actionOrderSlipAdd')
-                && $this->registerHook('displayHeader')
+                && $this->registerHook('actionFrontControllerSetMedia')
                 && $this->createAdyenNotificationTable()
                 && $this->installTab()
             ) {
@@ -134,7 +153,7 @@ class Adyen extends PaymentModule
         return parent::install()
             && $this->registerHook('displayPaymentTop')
             && $this->installTab()
-            && $this->registerHook('header')
+            && $this->registerHook('actionFrontControllerSetMedia')
             && $this->registerHook('orderConfirmation')
             && $this->registerHook('paymentOptions')
             && $this->registerHook('paymentReturn')
@@ -498,67 +517,6 @@ class Adyen extends PaymentModule
         $helper->fields_value['ADYEN_LIVE_ENDPOINT_URL_PREFIX'] = $live_endpoint_url_prefix;
 
         return $helper->generateForm($fields_form);
-    }
-
-    /**
-     * Hook for header PrestaShop 1.6 & > 1.7
-     */
-    public function hookHeader()
-    {
-        if ($this->helper_data->isDemoMode()) {
-
-            if (version_compare(_PS_VERSION_, '1.7', '<')) {
-                $this->context->controller->addJS(\Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_JS_TEST);
-                $this->context->controller->addCSS(\Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_CSS_TEST);
-                $this->context->controller->addJS($this->_path . 'views/js/threeds2-js-utils.js');
-            } else {
-                $this->context->controller->registerJavascript(
-                    'component', // Unique ID
-                    \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_JS_TEST, // JS path
-                    array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
-                );
-                $this->context->controller->registerJavascript(
-                    'threeDS2Utils', // Unique ID
-                    $this->_path . 'views/js/threeds2-js-utils.js', // JS path
-                    array('position' => 'bottom', 'priority' => 160) // Arguments
-                );
-                $this->context->controller->registerStylesheet(
-                    'stylecheckout', // Unique ID
-                    \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_CSS_TEST, // CSS path
-                    array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
-                );
-
-                $this->context->controller->registerStylesheet($this->name . '-adyencss',
-                    $this->_path . '/css/adyen.css');
-
-            }
-        } else {
-
-            if (version_compare(_PS_VERSION_, '1.7', '<')) {
-                $this->context->controller->addJS(\Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_JS_LIVE);
-                $this->context->controller->addCSS(\Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_CSS_LIVE);
-                $this->context->controller->addJS($this->_path . 'views/js/threeds2-js-utils.js');
-            } else {
-                $this->context->controller->registerJavascript(
-                    'component', // Unique ID
-                    \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_JS_LIVE, // JS path
-                    array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
-                );
-                $this->context->controller->registerJavascript(
-                    'threeDS2Utils', // Unique ID
-                    $this->_path . 'views/js/threeds2-js-utils.js', // JS path
-                    array('position' => 'bottom', 'priority' => 160) // Arguments
-                );
-                $this->context->controller->registerStylesheet(
-                    'stylecheckout', // Unique ID
-                    \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_CSS_LIVE, // CSS path
-                    array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
-                );
-            }
-
-
-        }
-
     }
 
     /**
@@ -1063,5 +1021,106 @@ class Adyen extends PaymentModule
                     && $details[0]['type'] == 'select'
                 )
             );
+    }
+
+    /**
+     * @param $params
+     *
+     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
+     */
+    public function hookActionFrontControllerSetMedia($params)
+    {
+        $controller = $this->context->controller;
+        if ($controller->php_self == 'order') {
+            $this->registerAdyenJavascript($controller);
+        }
+    }
+
+    /**
+     * @param FrontController $controller
+     *
+     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
+     */
+    private function registerAdyenJavascript($controller)
+    {
+        /** @var \Adyen\PrestaShop\service\adapter\classes\Controller $controllerAdapter */
+        $controllerAdapter = $this->getService('Adyen\PrestaShop\service\adapter\classes\Controller');
+        $controllerAdapter->setController($controller);
+        if ($this->helper_data->isDemoMode()) {
+            $controllerAdapter->registerJavascript(
+                'adyen-component', // Unique ID
+                \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_JS_TEST, // JS path
+                array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
+            );
+            $controllerAdapter->registerJavascript(
+                'adyen-threeDS2Utils', // Unique ID
+                $this->_path . 'views/js/threeds2-js-utils.js', // JS path
+                array('position' => 'bottom', 'priority' => 160) // Arguments
+            );
+            $controllerAdapter->registerStylesheet(
+                'adyen-stylecheckout', // Unique ID
+                \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_CSS_TEST, // CSS path
+                array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
+            );
+
+            $controllerAdapter->registerStylesheet(
+                $this->name . '-adyencss',
+                $this->_path . '/css/adyen.css'
+            );
+        } else {
+            $controllerAdapter->registerJavascript(
+                'adyen-component', // Unique ID
+                \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_JS_LIVE, // JS path
+                array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
+            );
+            $controllerAdapter->registerJavascript(
+                'adyen-threeDS2Utils', // Unique ID
+                $this->_path . 'views/js/threeds2-js-utils.js', // JS path
+                array('position' => 'bottom', 'priority' => 160) // Arguments
+            );
+            $controllerAdapter->registerStylesheet(
+                'adyen-stylecheckout', // Unique ID
+                \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_CSS_LIVE, // CSS path
+                array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
+            );
+        }
+
+        $controllerAdapter->registerJavascript(
+            'adyen-component-renderer',
+            $this->_path . 'views/js/checkout-component-renderer.js',
+            array('position' => 'bottom', 'priority' => 170)
+        );
+        $controllerAdapter->registerJavascript(
+            'adyen-credit-card-validator',
+            $this->_path . 'views/js/payment-components/credit-card.js',
+            array('position' => 'bottom', 'priority' => 170)
+        );
+        $controllerAdapter->registerJavascript(
+            'adyen-local-payment-method',
+            $this->_path . 'views/js/payment-components/local-payment-method.js',
+            array('position' => 'bottom', 'priority' => 170)
+        );
+        $controllerAdapter->registerJavascript(
+            'adyen-one-click',
+            $this->_path . 'views/js/payment-components/one-click.js',
+            array('position' => 'bottom', 'priority' => 170)
+        );
+
+        /** @var \Adyen\PrestaShop\application\VersionChecker $versionChecker */
+        $versionChecker = $this->getService('Adyen\PrestaShop\application\VersionChecker');
+        if ($versionChecker->isPrestaShop16()) {
+            $controller->addJqueryPlugin('fancybox');
+        }
+    }
+
+    /**
+     * @param $serviceName
+     *
+     * @return mixed|object
+     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
+     */
+    private function getService($serviceName)
+    {
+        return \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get($serviceName);
     }
 }

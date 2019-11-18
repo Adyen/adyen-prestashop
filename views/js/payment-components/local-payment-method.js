@@ -1,5 +1,4 @@
-<?php
-/**
+/*
  *                       ######
  *                       ######
  * ############    ####( ######  #####. ######  ############   ############
@@ -20,14 +19,24 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\service;
+jQuery(function ($) {
+    var containers = $('[data-local-payment-method]');
+    containers.each(function (index, element) {
+        element = $(element);
+        var localPaymentMethodSpecifics = element.data();
+        var configuration = {
+            'onChange': function (state) {
+                if (state.isValid) {
+                    element.find('[name="adyen-payment-issuer"]').val(state.data.paymentMethod.issuer);
+                }
+            }
+        };
+        if (localPaymentMethodSpecifics.issuerList && localPaymentMethodSpecifics.issuerList.length) {
+            configuration.items = localPaymentMethodSpecifics.issuerList;
+        }
+        adyenCheckout
+            .create(localPaymentMethodSpecifics.localPaymentMethod, configuration)
+            .mount(element.find('[data-adyen-payment-container]').get(0));
+    });
+});
 
-class Configuration
-{
-    const CHECKOUT_COMPONENT_JS_TEST = 'https://checkoutshopper-test.adyen.com/checkoutshopper/sdk/3.0.0/adyen.js';
-    const CHECKOUT_COMPONENT_JS_LIVE = 'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/3.0.0/adyen.js';
-    const CHECKOUT_COMPONENT_CSS_TEST = 'https://checkoutshopper-test.adyen.com/checkoutshopper/sdk/3.0.0/adyen.css';
-    const CHECKOUT_COMPONENT_CSS_LIVE = 'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/3.0.0/adyen.css';
-    const VERSION = '1.2.0';
-    const MODULE_NAME = 'adyen-prestashop';
-}
