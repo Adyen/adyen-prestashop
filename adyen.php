@@ -115,7 +115,7 @@ class Adyen extends PaymentModule
 	 */
     public function install()
     {
-        if (!$this->versionChecker->isPrestashopSupportedVersion()) {
+        if (!$this->versionChecker->isPrestaShopSupportedVersion()) {
             $this->_errors[] = $this->l('Sorry, this module is not compatible with your version.');
             return false;
         }
