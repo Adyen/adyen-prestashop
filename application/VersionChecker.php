@@ -20,14 +20,23 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\service;
+namespace Adyen\PrestaShop\application;
 
-class Configuration
+class VersionChecker
 {
-    const CHECKOUT_COMPONENT_JS_TEST = 'https://checkoutshopper-test.adyen.com/checkoutshopper/sdk/3.0.0/adyen.js';
-    const CHECKOUT_COMPONENT_JS_LIVE = 'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/3.0.0/adyen.js';
-    const CHECKOUT_COMPONENT_CSS_TEST = 'https://checkoutshopper-test.adyen.com/checkoutshopper/sdk/3.0.0/adyen.css';
-    const CHECKOUT_COMPONENT_CSS_LIVE = 'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/3.0.0/adyen.css';
-    const VERSION = '1.2.0';
-    const MODULE_NAME = 'adyen-prestashop';
+    /**
+     * Determine if PrestaShop is 1.6 or not
+     *
+     * @return bool
+     */
+    public function isPrestaShop16()
+    {
+        if (
+            version_compare(_PS_VERSION_, '1.6', '>=')
+            && version_compare(_PS_VERSION_, '1.7', '<')
+        ) {
+            return true;
+        }
+        return false;
+    }
 }
