@@ -27,7 +27,7 @@ if (!defined('_PS_VERSION_')) {
 /**
  * This function is automatically called on version upgrades.
  *
- * Version 1.1.0 introduces refund feature
+ *
  *
  * @param Adyen $module
  *
