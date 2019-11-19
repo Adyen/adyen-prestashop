@@ -31,15 +31,12 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
     public $ssl = true;
 
     /**
-     * @var \Adyen\PrestaShop\helper\Data
+     * AdyenPaymentModuleFrontController constructor.
      */
-    protected $helperData;
-
     public function __construct()
     {
         parent::__construct();
         $this->context = \Context::getContext();
-        $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
 
         $this->helperData->startSession();
     }
@@ -84,7 +81,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
         // Handle payments call in case there is no payments response saved into the session
         if (empty($_SESSION['paymentsResponse'])) {
 
-            $request = [];
+            $request = array();
             $request = $this->buildBrowserData($request);
             $request = $this->buildCCData($request, $_REQUEST);
             $request = $this->buildPaymentData($request);
@@ -128,7 +125,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
 
         $currency = $this->context->currency;
         $total = (float)$cart->getOrderTotal(true, \Cart::BOTH);
-        $extra_vars = [];
+        $extra_vars = array();
 
         if (!empty($response['pspReference'])) {
             $extra_vars['transaction_id'] = $response['pspReference'];

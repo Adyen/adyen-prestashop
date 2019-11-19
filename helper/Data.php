@@ -111,7 +111,7 @@ class Data
             $this->adyenLogger()->logError(
                 "The merchant account field is empty, check your Adyen configuration in Prestashop."
             );
-            return [];
+            return array();
         }
 
         $amount = $cart->getOrderTotal();

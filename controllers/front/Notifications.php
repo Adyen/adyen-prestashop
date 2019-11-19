@@ -25,7 +25,6 @@
 // phpcs:disable PSR1.Classes.ClassDeclaration
 
 use Adyen\PrestaShop\controllers\FrontController;
-use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use Adyen\PrestaShop\service\notification\NotificationReceiver;
 
 class AdyenNotificationsModuleFrontController extends FrontController
@@ -33,12 +32,10 @@ class AdyenNotificationsModuleFrontController extends FrontController
 
     /**
      * AdyenNotificationsModuleFrontController constructor.
-     * @throws \Adyen\AdyenException
      */
     public function __construct()
     {
         parent::__construct();
-        $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
     }
 
     /**

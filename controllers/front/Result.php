@@ -33,6 +33,9 @@ class AdyenResultModuleFrontController extends \Adyen\PrestaShop\controllers\Fro
      */
     public $ssl = true;
 
+    /**
+     * @throws \Adyen\AdyenException
+     */
     public function postProcess()
     {
         if (!isset($_SESSION['paymentData'])) {
@@ -68,13 +71,11 @@ class AdyenResultModuleFrontController extends \Adyen\PrestaShop\controllers\Fro
                 )
             );
         } else {
-            /** @var \Adyen\PrestaShop\helper\Data $helperData */
-            $helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
             // create new cart from the current cart
-            $helperData->cloneCurrentCart($this->context, $cart);
+            $this->helperData->cloneCurrentCart($this->context, $cart);
 
-            $helperData->adyenLogger()->logError("The payment was refused, id:  " . $cart->id);
-            $this->setTemplate($helperData->getTemplateFromModulePath('views/templates/front/error.tpl'));
+            $this->helperData->adyenLogger()->logError("The payment was refused, id:  " . $cart->id);
+            $this->setTemplate($this->helperData->getTemplateFromModulePath('views/templates/front/error.tpl'));
         }
     }
 }

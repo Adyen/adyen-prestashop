@@ -40,8 +40,6 @@ class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\control
     {
         parent::__construct();
         $this->context = \Context::getContext();
-        $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
-
         $this->helperData->startSession();
     }
 
