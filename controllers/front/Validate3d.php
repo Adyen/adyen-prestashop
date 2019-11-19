@@ -28,13 +28,19 @@ use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 
 class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers\FrontController
 {
+    /**
+     * AdyenValidate3dModuleFrontController constructor.
+     */
     public function __construct()
     {
         parent::__construct();
         $this->context = \Context::getContext();
-        $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
     }
 
+    /**
+     * @return mixed
+     * @throws \Adyen\AdyenException
+     */
     public function postProcess()
     {
         // retrieve cart from temp value and restore the cart to approve payment

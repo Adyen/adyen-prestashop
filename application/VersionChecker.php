@@ -39,4 +39,18 @@ class VersionChecker
         }
         return false;
     }
+
+    /**
+     * Verifies if the current PrestaShop version is supported or not by the plugin
+     *
+     * @return bool
+     */
+    public function isPrestashopSupportedVersion()
+    {
+        if (version_compare(_PS_VERSION_, '1.5', '<')) {
+            return false;
+        }
+
+        return true;
+    }
 }

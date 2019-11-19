@@ -1,4 +1,5 @@
-<?php /**
+<?php
+/**
  *                       ######
  *                       ######
  * ############    ####( ######  #####. ######  ############   ############
@@ -17,26 +18,8 @@
  * Copyright (c) 2019 Adyen B.V.
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
- */ /**
- *                       ######
- *                       ######
- * ############    ####( ######  #####. ######  ############   ############
- * #############  #####( ######  #####. ######  #############  #############
- *        ######  #####( ######  #####. ######  #####  ######  #####  ######
- * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
- * ###### ######  #####( ######  #####. ######  #####          #####  ######
- * #############  #############  #############  #############  #####  ######
- *  ############   ############  #############   ############  #####  ######
- *                                      ######
- *                               #############
- *                               ############
- *
- * Adyen PrestaShop plugin
- *
- * Copyright (c) 2019 Adyen B.V.
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
- */ /** @noinspection PhpFullyQualifiedNameUsageInspection */
+ */
+/** @noinspection PhpFullyQualifiedNameUsageInspection */
 // PrestaShop good practices ask developers to check if PrestaShop is loaded
 // before running any other PHP code, which breaks a PSR1 element.
 // Also, the main class is not in a namespace, which breaks another element.
@@ -79,6 +62,11 @@ class Adyen extends PaymentModule
     private $hashing;
 
     /**
+     * @var Adyen\PrestaShop\application\VersionChecker
+     */
+    private $versionChecker;
+
+    /**
      * Adyen constructor.
      *
      * @throws \PrestaShop\PrestaShop\Adapter\CoreException
@@ -97,8 +85,13 @@ class Adyen extends PaymentModule
         $this->helper_data = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
             'Adyen\PrestaShop\helper\Data'
         );
+
         $this->hashing = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
             'Adyen\PrestaShop\model\Hashing'
+        );
+
+        $this->versionChecker = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
+            'Adyen\PrestaShop\application\VersionChecker'
         );
 
         // start for 1.6
@@ -122,14 +115,14 @@ class Adyen extends PaymentModule
 	 */
     public function install()
     {
-        if (version_compare(_PS_VERSION_, '1.5', '<')) {
+        if (!$this->versionChecker->isPrestashopSupportedVersion()) {
             $this->_errors[] = $this->l('Sorry, this module is not compatible with your version.');
             return false;
         }
 
         $this->updateCronJobToken();
 
-        if ($this->helper_data->isPrestashop16()) {
+        if ($this->versionChecker->isPrestashop16()) {
             // Version 1.6 requires a different set of hooks
             if (
                 parent::install()
@@ -525,7 +518,7 @@ class Adyen extends PaymentModule
     public function hookOrderConfirmation()
     {
         if (!$this->active) {
-            return;
+            return null;
         }
     }
 
@@ -579,7 +572,7 @@ class Adyen extends PaymentModule
 
         if (!empty($paymentMethods['paymentMethods'])) {
             foreach ($paymentMethods['paymentMethods'] as $paymentMethod) {
-                $issuerList = [];
+                $issuerList = array();
                 if (!$this->isSimplePaymentMethod($paymentMethod)) {
                     continue;
                 }
@@ -655,7 +648,7 @@ class Adyen extends PaymentModule
     public function hookPayment()
     {
         if (!$this->active) {
-            return;
+            return null;
         }
 
         $this->context->controller->addCSS($this->_path . 'css/adyen.css', 'all');
@@ -681,7 +674,7 @@ class Adyen extends PaymentModule
     public function hookDisplayPaymentEU()
     {
         if (!$this->active) {
-            return;
+            return null;
         }
 
         $payment_options = array(
@@ -699,7 +692,7 @@ class Adyen extends PaymentModule
     public function hookPaymentReturn()
     {
         if (!$this->active) {
-            return;
+            return null;
         }
         return;
     }
@@ -716,9 +709,6 @@ class Adyen extends PaymentModule
 
         $paymentMethods = $this->helper_data->fetchPaymentMethods($this->context->cart, $this->context->language);
 
-        /** @var \Adyen\PrestaShop\application\VersionChecker $versionChecker */
-        $versionChecker = $this->getService('Adyen\PrestaShop\application\VersionChecker');
-
         $this->context->smarty->assign(
             array(
                 'locale' => $this->helper_data->getLocale($this->context->language),
@@ -728,7 +718,7 @@ class Adyen extends PaymentModule
                 'threeDSProcessUrl' => $this->context->link->getModuleLink($this->name, 'ThreeDSProcess', array(), true),
                 'paymentMethodsResponse' => json_encode($paymentMethods),
                 // string value is needed to be used in JavaScript code.
-                'isPrestaShop16' => $versionChecker->isPrestaShop16() ? 'true' : 'false'
+                'isPrestaShop16' => $this->versionChecker->isPrestaShop16() ? 'true' : 'false'
             )
         );
 
@@ -740,7 +730,7 @@ class Adyen extends PaymentModule
     public function hookActionOrderSlipAdd(array $params)
     {
         if (!$this->active) {
-            return;
+            return null;
         }
 
         try {
@@ -942,7 +932,7 @@ class Adyen extends PaymentModule
     {
         $payments = '';
         foreach ($paymentMethods['paymentMethods'] as $paymentMethod) {
-            $issuerList = [];
+            $issuerList = array();
             if (!$this->isSimplePaymentMethod($paymentMethod)) {
                 continue;
             }
@@ -1106,9 +1096,7 @@ class Adyen extends PaymentModule
             array('position' => 'bottom', 'priority' => 170)
         );
 
-        /** @var \Adyen\PrestaShop\application\VersionChecker $versionChecker */
-        $versionChecker = $this->getService('Adyen\PrestaShop\application\VersionChecker');
-        if ($versionChecker->isPrestaShop16()) {
+        if ($this->versionChecker->isPrestaShop16()) {
             $controller->addJqueryPlugin('fancybox');
         }
     }
