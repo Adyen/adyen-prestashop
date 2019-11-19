@@ -45,7 +45,7 @@ class VersionChecker
      *
      * @return bool
      */
-    public function isPrestashopSupportedVersion()
+    public function isPrestaShopSupportedVersion()
     {
         if (version_compare(_PS_VERSION_, '1.5', '<')) {
             return false;
