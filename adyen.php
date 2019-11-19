@@ -122,7 +122,7 @@ class Adyen extends PaymentModule
 
         $this->updateCronJobToken();
 
-        if ($this->versionChecker->isPrestashop16()) {
+        if ($this->versionChecker->isPrestaShop16()) {
             // Version 1.6 requires a different set of hooks
             if (
                 parent::install()
