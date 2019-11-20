@@ -119,7 +119,9 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                 \Tools::redirect($this->context->link->getPageLink('order', $this->ssl, null, 'step=1'));
             } else {
                 $this->ajaxRender($this->helperData->buildControllerResponseJson('redirect',
-                    ['redirectUrl' => $this->context->link->getPageLink('order', $this->ssl, null, 'step=1')]));
+                    array('redirectUrl' => $this->context->link->getPageLink('order', $this->ssl, null, 'step=1'))
+                )
+                );
             }
         }
 
