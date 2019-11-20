@@ -92,15 +92,15 @@ class Refund
         }
         try {
             $this->modificationClient->refund(
-                [
+                array(
                     'originalReference' => $pspReference,
-                    'modificationAmount' => [
+                    'modificationAmount' => array(
                         'value' => $amount,
                         'currency' => $currency
-                    ],
+                    ),
                     'reference' => $orderSlip->id,
                     'merchantAccount' => $this->merchantAccount
-                ]
+                )
             );
         } catch (AdyenException $e) {
             $this->logger->logError($e->getMessage());
