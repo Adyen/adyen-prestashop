@@ -585,6 +585,12 @@ class Adyen extends PaymentModule
                 if (!$this->isSimplePaymentMethod($paymentMethod)) {
                     continue;
                 }
+
+                // Skip unsupported payment methods
+                if ($this->isUnsupportedPaymentMethod($paymentMethod['type'])) {
+                    continue;
+                }
+
                 if (!empty($paymentMethod['details'])) {
                     foreach ($paymentMethod['details'] as $paymentMethodDetails) {
                         if (key_exists('key', $paymentMethodDetails) && $paymentMethodDetails['key'] == 'issuer') {
@@ -944,6 +950,12 @@ class Adyen extends PaymentModule
             if (!$this->isSimplePaymentMethod($paymentMethod)) {
                 continue;
             }
+
+            // Skip unsupported payment methods
+            if ($this->isUnsupportedPaymentMethod($paymentMethod['type'])) {
+                continue;
+            }
+
             if (isset($paymentMethod['details'])) {
                 foreach ($paymentMethod['details'] as $paymentMethodDetails) {
                     if (key_exists('key', $paymentMethodDetails) && $paymentMethodDetails['key'] == 'issuer') {
@@ -1019,6 +1031,33 @@ class Adyen extends PaymentModule
                     && $details[0]['type'] == 'select'
                 )
             );
+    }
+
+    /**
+     * Returns true if payment method is unsupported
+     *
+     * @param $paymentMethodType
+     * @return bool
+     */
+    private function isUnsupportedPaymentMethod($paymentMethodType)
+    {
+        $unsupportedPaymentMethods = array(
+            'bcmc_mobile_QR',
+            'wechatpay',
+            'wechatpay_pos',
+            'wechatpaySdk',
+            'wechatpayQr',
+            'klarna',
+            'klarna_b2b',
+            'klarna_account',
+            'klarna_paynow'
+        );
+
+        if (in_array($paymentMethodType, $unsupportedPaymentMethods)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
