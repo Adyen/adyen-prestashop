@@ -78,7 +78,8 @@ class Refund
      */
     public function request(OrderSlip $orderSlip, $currency)
     {
-        $amount = (new Currency())->sanitize($orderSlip->amount, $currency);
+        $currencyConverter = new Currency();
+        $amount = $currencyConverter->sanitize($orderSlip->amount, $currency);
 
         try {
             $pspReference = $this->getPSPReferenceByOrderId($orderSlip->id_order);
