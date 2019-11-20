@@ -100,9 +100,9 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                 $this->ajaxRender(
                     $this->helperData->buildControllerResponseJson(
                         'error',
-                        [
+                        array(
                             'message' => "There was an error with the payment method, please choose another one."
-                        ]
+                        )
                     )
                 );
             }
@@ -119,7 +119,9 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                 \Tools::redirect($this->context->link->getPageLink('order', $this->ssl, null, 'step=1'));
             } else {
                 $this->ajaxRender($this->helperData->buildControllerResponseJson('redirect',
-                    ['redirectUrl' => $this->context->link->getPageLink('order', $this->ssl, null, 'step=1')]));
+                    array('redirectUrl' => $this->context->link->getPageLink('order', $this->ssl, null, 'step=1'))
+                )
+                );
             }
         }
 
@@ -166,8 +168,16 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                 if (empty($_REQUEST['isAjax'])) {
                     \Tools::redirect($this->context->link->getPageLink('order-confirmation', $this->ssl, null, 'id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key));
                 } else {
-                    $this->ajaxRender($this->helperData->buildControllerResponseJson('redirect',
-                        ['redirectUrl' => $this->context->link->getPageLink('order-confirmation', $this->ssl, null, 'id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key)]));
+                    $this->ajaxRender(
+                        $this->helperData->buildControllerResponseJson(
+                            'redirect', array(
+                            'redirectUrl' => $this->context->link->getPageLink(
+                                'order-confirmation', $this->ssl, null,
+                                'id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key
+                            )
+                        )
+                        )
+                    );
                 }
 
                 break;
@@ -179,9 +189,9 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                 $this->ajaxRender(
                     $this->helperData->buildControllerResponseJson(
                         'error',
-                        [
+                        array(
                             'message' => "The payment was refused"
-                        ]
+                        )
                     )
                 );
 
@@ -192,10 +202,10 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
 
                 $this->ajaxRender($this->helperData->buildControllerResponseJson(
                     'threeDS2',
-                    [
+                    array(
                         'type' => 'IdentifyShopper',
                         'token' => $response['authentication']['threeds2.fingerprintToken']
-                    ]
+                    )
                 ));
 
                 break;
@@ -205,10 +215,10 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
 
                 $this->ajaxRender($this->helperData->buildControllerResponseJson(
                     'threeDS2',
-                    [
+                    array(
                         'type' => 'ChallengeShopper',
                         'token' => $response['authentication']['threeds2.challengeToken']
-                    ]
+                    )
                 ));
                 break;
             case 'RedirectShopper':
@@ -227,13 +237,13 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
 
                     $this->ajaxRender($this->helperData->buildControllerResponseJson(
                         'threeDS1',
-                        [
+                        array(
                             'paRequest' => $paRequest,
                             'md' => $md,
                             'issuerUrl' => $issuerUrl,
                             'paymentData' => $paymentData,
                             'redirectMethod' => $redirectMethod
-                        ]
+                        )
                     ));
                 } else {
                     $this->helperData->adyenLogger()->logError("3DS secure is not valid. ID:  " . $cart->id);
@@ -463,9 +473,9 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
             $this->ajaxRender(
                 $this->helperData->buildControllerResponseJson(
                     'error',
-                    [
+                    array(
                         'message' => "There was an error with the payment method, please choose another one."
-                    ]
+                    )
                 )
             );
             return;
@@ -513,7 +523,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                 $this->ajaxRender(
                     $this->helperData->buildControllerResponseJson(
                         'error',
-                        ['message' => "Unsupported result code: {$response['resultCode']}"]
+                        array('message' => "Unsupported result code: {$response['resultCode']}")
                     )
                 );
                 return;

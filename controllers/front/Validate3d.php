@@ -67,7 +67,9 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
         } catch (\Adyen\AdyenException $e) {
             $this->helperData->adyenLogger()->logError("Error during validate3d paymentsDetails call: exception: " . $e->getMessage());
             $this->ajaxRender(
-                $this->helperData->buildControllerResponseJson('error', ['message' => "Something went wrong. Please choose another payment method."])
+                $this->helperData->buildControllerResponseJson(
+                    'error', array('message' => "Something went wrong. Please choose another payment method.")
+                )
             );
         }
         $this->helperData->adyenLogger()->logDebug("result: " . json_encode($response));

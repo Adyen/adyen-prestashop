@@ -202,7 +202,7 @@ class NotificationReceiverTest extends TestCase
         $this->dbInstance->method('insert')->with(
             _DB_PREFIX_ . 'adyen_notification',
             $this->callback(function ($subject) use ($notificationRequestItem) {
-                $arr = [
+                $arr = array(
                     'pspreference' => $notificationRequestItem['pspReference'],
                     'merchant_reference' => $notificationRequestItem['merchantReference'],
                     'event_code' => $notificationRequestItem['eventCode'],
@@ -214,7 +214,7 @@ class NotificationReceiverTest extends TestCase
                     'additional_data' => pSQL(serialize($notificationRequestItem['additionalData'])),
                     'created_at' => $subject['created_at'],
                     'updated_at' => $subject['updated_at']
-                ];
+                );
                 return $arr == $subject;
             }),
             false,
