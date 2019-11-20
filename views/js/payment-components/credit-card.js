@@ -120,7 +120,7 @@ jQuery(function ($) {
      * component
      * To render the challenge for the customer at the response of ChallengeShopper render the
      * threeDS2Challenge component
-     * Both of them is going to be rendered in a Magento dialog popup
+     * Both of them are going to be rendered in a popup
      *
      * @param type
      * @param token
