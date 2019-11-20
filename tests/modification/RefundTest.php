@@ -31,10 +31,10 @@ class RefundTest extends TestCase
 {
     public function refundDataProvider()
     {
-        return [
-            ['1234567890abcdef', '123', 'EUR', '1', 'PrestaShopTest', '1'],
-            ['abcdef1234567890', '100', 'BRL', '2', 'PrestaShopTest', '1']
-        ];
+        return array(
+            array('1234567890abcdef', '123', 'EUR', '1', 'PrestaShopTest', '1'),
+            array('abcdef1234567890', '100', 'BRL', '2', 'PrestaShopTest', '1')
+        );
     }
 
     /**
@@ -61,17 +61,21 @@ class RefundTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $modificationClient->expects($this->once())
-            ->method('refund')
-            ->with($this->equalTo([
+                           ->method('refund')
+                           ->with(
+                               $this->equalTo(
+                                   array(
                 'originalReference' => $pspReference,
-                'modificationAmount' => [
+                                       'modificationAmount' => array(
                     'value' => $amount * 100,
                     'currency' => $currency
-                ],
+                                       ),
                 'reference' => (string)$merchantReference,
                 'merchantAccount' => $merchantAccount
-            ]))
-            ->willReturn(true);
+                                   )
+                               )
+                           )
+                           ->willReturn(true);
 
         /** @var PHPUnit_Framework_MockObject_MockObject|OrderSlip $orderSlip */
         $orderSlip = $this->getMockBuilder('OrderSlip')
@@ -91,7 +95,7 @@ class RefundTest extends TestCase
         $databaseConnection->expects($this->once())
                            ->method('executeS')
                            ->with($this->matchesRegularExpression("/$pattern/si"))
-                           ->willReturn([['pspReference' => $pspReference]]);
+                           ->willReturn(array(array('pspReference' => $pspReference)));
 
         $refund = new Refund($modificationClient, $databaseConnection, $merchantAccount);
         $this->assertEquals(true, $refund->request($orderSlip, $currency));

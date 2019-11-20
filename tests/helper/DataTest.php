@@ -49,8 +49,8 @@ class DataTest extends \PHPUnit_Framework_TestCase
                                             ->getMock();
 
         $adyenCheckoutUtilityService->method('originKeys')
-            ->with(["originDomains" => [$originDomain]])
-            ->willReturn(['originKeys' => [$originDomain => 'asdf']]);
+                                    ->with(array("originDomains" => array($originDomain)))
+                                    ->willReturn(array('originKeys' => array($originDomain => 'asdf')));
 
         /** @var Checkout|\PHPUnit_Framework_MockObject_MockObject $adyenCheckoutService */
         $adyenCheckoutService = $this->getMockBuilder('Adyen\PrestaShop\service\Checkout')
