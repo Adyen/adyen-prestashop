@@ -58,24 +58,24 @@ class AdyenNotificationsModuleFrontController extends FrontController
             );
         } catch (\Adyen\PrestaShop\service\notification\AuthenticationException $e) {
             $this->helperData->adyenLogger()->logError($e->getMessage());
-            die(json_encode(['success' => false, 'message' => $e->getMessage()]));
+            die(json_encode(array('success' => false, 'message' => $e->getMessage())));
         } catch (\Adyen\PrestaShop\service\notification\HMACKeyValidationException $e) {
             $this->helperData->adyenLogger()->logError($e->getMessage());
-            die(json_encode(['success' => false, 'message' => $e->getMessage()]));
+            die(json_encode(array('success' => false, 'message' => $e->getMessage())));
         } catch (\Adyen\PrestaShop\service\notification\MerchantAccountCodeException $e) {
             $this->helperData->adyenLogger()->logError($e->getMessage());
-            die(json_encode(['success' => false, 'message' => $e->getMessage()]));
+            die(json_encode(array('success' => false, 'message' => $e->getMessage())));
         } catch (\Adyen\AdyenException $e) {
             $this->helperData->adyenLogger()->logError($e->getMessage());
-            die(json_encode(['success' => false, 'message' => $e->getMessage()]));
+            die(json_encode(array('success' => false, 'message' => $e->getMessage())));
         } catch (PrestaShopDatabaseException $e) {
             $this->helperData->adyenLogger()->logError($e->getMessage());
-            die(json_encode(['success' => false, 'message' => "Database error \n{$e->getMessage()}"]));
+            die(json_encode(array('success' => false, 'message' => "Database error \n{$e->getMessage()}")));
         } catch (\Adyen\PrestaShop\service\notification\AuthorizationException $e) {
             header('HTTP/1.1 401 Unauthorized', true, 401);
             header('Status: 401 Unauthorized');
             $this->helperData->adyenLogger()->logError($e->getMessage());
-            die(json_encode(['success' => false, 'message' => $e->getMessage()]));
+            die(json_encode(array('success' => false, 'message' => $e->getMessage())));
         }
     }
 }
