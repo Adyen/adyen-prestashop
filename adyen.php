@@ -110,9 +110,15 @@ class Adyen extends PaymentModule
         $this->confirmUninstall = $this->l('Are you sure you want to uninstall?');
     }
 
-    /*
-	 * for installing the plugin
-	 */
+    /**
+     * Install script
+     *
+     * This function is called when
+     * when User installs the module or
+     * when User resets the module and selects the do not keep the data option
+     *
+     * @return bool
+     */
     public function install()
     {
         if (!$this->versionChecker->isPrestaShopSupportedVersion()) {
@@ -120,41 +126,82 @@ class Adyen extends PaymentModule
             return false;
         }
 
-        $this->updateCronJobToken();
-
+        // Version 1.6
         if ($this->versionChecker->isPrestaShop16()) {
-            // Version 1.6 requires a different set of hooks
-            if (
-                parent::install()
-                && $this->registerHook('displayPaymentTop')
-                && $this->registerHook('payment')
-                && $this->registerHook('displayPaymentEU')
-                && $this->registerHook('paymentReturn')
-                && $this->registerHook('actionOrderSlipAdd')
-                && $this->registerHook('actionFrontControllerSetMedia')
-                && $this->createAdyenNotificationTable()
-                && $this->installTab()
+            if (parent::install() &&
+                $this->registerHook('displayPaymentTop') &&
+                $this->registerHook('payment') &&
+                $this->registerHook('displayPaymentEU') &&
+                $this->registerHook('paymentReturn') &&
+                $this->registerHook('actionOrderSlipAdd') &&
+                $this->registerHook('actionFrontControllerSetMedia') &&
+                $this->createAdyenNotificationTable() &&
+                $this->installTab() &&
+                $this->updateCronJobToken()
             ) {
                 return true;
             } else {
-                Logger::addLog('Adyen module: installation failed!', 4);
+                $this->helper_data->adyenLogger()->logDebug('Adyen module: installation failed!', 4);
                 return false;
             }
         }
 
-        // install hooks for version 1.7 or higher
-        return parent::install()
-            && $this->registerHook('displayPaymentTop')
-            && $this->installTab()
-            && $this->registerHook('actionFrontControllerSetMedia')
-            && $this->registerHook('orderConfirmation')
-            && $this->registerHook('paymentOptions')
-            && $this->registerHook('paymentReturn')
-            && $this->registerHook('actionOrderSlipAdd')
-            && $this->createAdyenNotificationTable();
+        // Version 1.7 or higher
+        if (parent::install() &&
+            $this->registerHook('displayPaymentTop') &&
+            $this->installTab() &&
+            $this->registerHook('actionFrontControllerSetMedia') &&
+            $this->registerHook('orderConfirmation') &&
+            $this->registerHook('paymentOptions') &&
+            $this->registerHook('paymentReturn') &&
+            $this->registerHook('actionOrderSlipAdd') &&
+            $this->createAdyenNotificationTable() &&
+            $this->updateCronJobToken()) {
+            return true;
+        } else {
+            $this->helper_data->adyenLogger()->logDebug('Adyen module: installation failed!', 4);
+            return false;
+        }
     }
 
     /**
+     * Uninstall script
+     *
+     * This function is called when
+     * when User uninstalls the module or
+     * when User resets the module and selects the do not keep the data option
+     *
+     * @return bool
+     */
+    public function uninstall()
+    {
+        return parent::uninstall() &&
+            $this->uninstallTab() &&
+            $this->removeAdyenDatabaseTables() &&
+            $this->removeConfigurationsFromDatabase();
+    }
+
+    /**
+     * Reset script
+     *
+     * This function is called when User resets the module and selects the reset only the parameters option
+     *
+     * @return bool
+     */
+    public function reset()
+    {
+        if ($this->removeConfigurationsFromDatabase() &&
+            $this->updateCronJobToken()) {
+            return true;
+        } else {
+            $this->helper_data->adyenLogger()->logDebug('Adyen module: reset failed!', 4);
+            return false;
+        }
+    }
+
+    /**
+     * Updating the cron job token
+     *
      * @param string $token
      * @return bool
      */
@@ -201,20 +248,13 @@ class Adyen extends PaymentModule
     }
 
     /**
-     * Uninstall script
      *
-     * @return bool
      */
-    public function uninstall()
+    private function removeAdyenDatabaseTables()
     {
-
         $db = Db::getInstance();
         /** @noinspection SqlWithoutWhere SqlResolve */
-        $db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'adyen_notification`');
-
-        return parent::uninstall() &&
-            $this->uninstallTab() &&
-            $this->removeConfigurationsFromDatabase();
+        return $db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'adyen_notification`');
     }
 
     /**
@@ -236,9 +276,15 @@ class Adyen extends PaymentModule
             'ADYEN_CRONJOB_TOKEN'
         );
 
-        $db = Db::getInstance();
-        /** @noinspection SqlWithoutWhere SqlResolve */
-        return $db->execute('DELETE FROM `' . _DB_PREFIX_ . 'configuration` WHERE `name` IN ("' . implode('", "', $adyenConfigurationNames) . '") ');
+        $result = true;
+
+        foreach ($adyenConfigurationNames as $adyenConfigurationName) {
+            if (!Configuration::deleteByName($adyenConfigurationName)) {
+                $result = false;
+            }
+        }
+
+        return $result;
     }
 
     /**
@@ -573,6 +619,7 @@ class Adyen extends PaymentModule
         if (!empty($paymentMethods['paymentMethods'])) {
             foreach ($paymentMethods['paymentMethods'] as $paymentMethod) {
                 $issuerList = array();
+
                 if (!$this->isSimplePaymentMethod($paymentMethod)) {
                     continue;
                 }
@@ -939,6 +986,7 @@ class Adyen extends PaymentModule
         $payments = '';
         foreach ($paymentMethods['paymentMethods'] as $paymentMethod) {
             $issuerList = array();
+
             if (!$this->isSimplePaymentMethod($paymentMethod)) {
                 continue;
             }
