@@ -40,7 +40,7 @@ jQuery(function ($) {
         }
         adyenCheckout
             .create(localPaymentMethodSpecifics.localPaymentMethod, configuration)
-            .mount(element.find('[data-adyen-payment-container]').first());
+            .mount(element.find('[data-adyen-payment-container]').get(0));
     });
 });
 
