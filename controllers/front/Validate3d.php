@@ -87,11 +87,24 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
                 if (\Validate::isLoadedObject($new_order)) {
                     $payment = $new_order->getOrderPaymentCollection();
                     if (isset($payment[0])) {
-                        //todo add !empty
-                        $payment[0]->card_number = pSQL($response['additionalData']['cardBin'] . " *** " . $response['additionalData']['cardSummary']);
-                        $payment[0]->card_brand = pSQL($response['additionalData']['paymentMethod']);
-                        $payment[0]->card_expiration = pSQL($response['additionalData']['expiryDate']);
-                        $payment[0]->card_holder = pSQL($response['additionalData']['cardHolderName']);
+                        $cardSummary = !empty($response['additionalData']['cardSummary'])
+                            ? pSQL($response['additionalData']['cardSummary'])
+                            : '****';
+                        $cardBin = !empty($response['additionalData']['cardBin'])
+                            ? pSQL($response['additionalData']['cardBin'])
+                            : '******';
+                        $paymentMethod = !empty($response['additionalData']['paymentMethod'])
+                            ? pSQL($response['additionalData']['paymentMethod'])
+                            : 'Adyen';
+                        $expiryDate = !empty($response['additionalData']['expiryDate'])
+                            ? pSQL($response['additionalData']['expiryDate'])
+                            : '';
+                        $cardHolderName = !empty($response['additionalData']['cardHolderName'])
+                            ? pSQL($response['additionalData']['cardHolderName']) : '';
+                        $payment[0]->card_number = $cardBin . ' *** ' . $cardSummary;
+                        $payment[0]->card_brand = $paymentMethod;
+                        $payment[0]->card_expiration = $expiryDate;
+                        $payment[0]->card_holder = $cardHolderName;
                         $payment[0]->save();
                     }
                 }
