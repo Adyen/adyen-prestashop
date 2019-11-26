@@ -19,7 +19,7 @@
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
-
+/** @noinspection PhpFullyQualifiedNameUsageInspection */
 // PrestaShop good practices ask developers to check if PrestaShop is loaded
 // before running any other PHP code, which breaks a PSR1 element.
 // Also, the main class is not in a namespace, which breaks another element.
@@ -62,9 +62,14 @@ class Adyen extends PaymentModule
     private $hashing;
 
     /**
+     * @var Adyen\PrestaShop\application\VersionChecker
+     */
+    private $versionChecker;
+
+    /**
      * Adyen constructor.
      *
-     * @throws Adyen\AdyenException
+     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
      */
     public function __construct()
     {
@@ -77,18 +82,17 @@ class Adyen extends PaymentModule
         $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
         $this->currencies = true;
 
-        $adyenRunningMode = \Adyen\Environment::TEST;
-        if (!empty(\Configuration::get('ADYEN_MODE'))) {
-            $adyenRunningMode = \Configuration::get('ADYEN_MODE');
-        }
-
-        $adyenHelperFactory = new Adyen\PrestaShop\service\helper\DataFactory();
-        $this->helper_data = $adyenHelperFactory->createAdyenHelperData(
-            $adyenRunningMode,
-            _COOKIE_KEY_
+        $this->helper_data = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
+            'Adyen\PrestaShop\helper\Data'
         );
 
-        $this->hashing = new Adyen\PrestaShop\model\Hashing();
+        $this->hashing = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
+            'Adyen\PrestaShop\model\Hashing'
+        );
+
+        $this->versionChecker = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
+            'Adyen\PrestaShop\application\VersionChecker'
+        );
 
         // start for 1.6
         $this->is_eu_compatible = 1;
@@ -111,14 +115,14 @@ class Adyen extends PaymentModule
 	 */
     public function install()
     {
-        if (version_compare(_PS_VERSION_, '1.5', '<')) {
+        if (!$this->versionChecker->isPrestaShopSupportedVersion()) {
             $this->_errors[] = $this->l('Sorry, this module is not compatible with your version.');
             return false;
         }
 
         $this->updateCronJobToken();
 
-        if ($this->helper_data->isPrestashop16()) {
+        if ($this->versionChecker->isPrestaShop16()) {
             // Version 1.6 requires a different set of hooks
             if (
                 parent::install()
@@ -127,7 +131,7 @@ class Adyen extends PaymentModule
                 && $this->registerHook('displayPaymentEU')
                 && $this->registerHook('paymentReturn')
                 && $this->registerHook('actionOrderSlipAdd')
-                && $this->registerHook('displayHeader')
+                && $this->registerHook('actionFrontControllerSetMedia')
                 && $this->createAdyenNotificationTable()
                 && $this->installTab()
             ) {
@@ -142,7 +146,7 @@ class Adyen extends PaymentModule
         return parent::install()
             && $this->registerHook('displayPaymentTop')
             && $this->installTab()
-            && $this->registerHook('header')
+            && $this->registerHook('actionFrontControllerSetMedia')
             && $this->registerHook('orderConfirmation')
             && $this->registerHook('paymentOptions')
             && $this->registerHook('paymentReturn')
@@ -509,73 +513,12 @@ class Adyen extends PaymentModule
     }
 
     /**
-     * Hook for header PrestaShop 1.6 & > 1.7
-     */
-    public function hookHeader()
-    {
-        if ($this->helper_data->isDemoMode()) {
-
-            if (version_compare(_PS_VERSION_, '1.7', '<')) {
-                $this->context->controller->addJS(\Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_JS_TEST);
-                $this->context->controller->addCSS(\Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_CSS_TEST);
-                $this->context->controller->addJS($this->_path . 'views/js/threeds2-js-utils.js');
-            } else {
-                $this->context->controller->registerJavascript(
-                    'component', // Unique ID
-                    \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_JS_TEST, // JS path
-                    array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
-                );
-                $this->context->controller->registerJavascript(
-                    'threeDS2Utils', // Unique ID
-                    $this->_path . 'views/js/threeds2-js-utils.js', // JS path
-                    array('position' => 'bottom', 'priority' => 160) // Arguments
-                );
-                $this->context->controller->registerStylesheet(
-                    'stylecheckout', // Unique ID
-                    \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_CSS_TEST, // CSS path
-                    array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
-                );
-
-                $this->context->controller->registerStylesheet($this->name . '-adyencss',
-                    $this->_path . '/css/adyen.css');
-
-            }
-        } else {
-
-            if (version_compare(_PS_VERSION_, '1.7', '<')) {
-                $this->context->controller->addJS(\Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_JS_LIVE);
-                $this->context->controller->addCSS(\Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_CSS_LIVE);
-                $this->context->controller->addJS($this->_path . 'views/js/threeds2-js-utils.js');
-            } else {
-                $this->context->controller->registerJavascript(
-                    'component', // Unique ID
-                    \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_JS_LIVE, // JS path
-                    array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
-                );
-                $this->context->controller->registerJavascript(
-                    'threeDS2Utils', // Unique ID
-                    $this->_path . 'views/js/threeds2-js-utils.js', // JS path
-                    array('position' => 'bottom', 'priority' => 160) // Arguments
-                );
-                $this->context->controller->registerStylesheet(
-                    'stylecheckout', // Unique ID
-                    \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_CSS_LIVE, // CSS path
-                    array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
-                );
-            }
-
-
-        }
-
-    }
-
-    /**
      * Hook order confirmation PrestaShop 1.6 & > 1.7
      */
     public function hookOrderConfirmation()
     {
         if (!$this->active) {
-            return;
+            return null;
         }
     }
 
@@ -627,6 +570,57 @@ class Adyen extends PaymentModule
             }
         }
 
+        if (!empty($paymentMethods['paymentMethods'])) {
+            foreach ($paymentMethods['paymentMethods'] as $paymentMethod) {
+                $issuerList = array();
+                if (!$this->isSimplePaymentMethod($paymentMethod)) {
+                    continue;
+                }
+
+                // Skip unsupported payment methods
+                if ($this->isUnsupportedPaymentMethod($paymentMethod['type'])) {
+                    continue;
+                }
+
+                if (!empty($paymentMethod['details'])) {
+                    foreach ($paymentMethod['details'] as $paymentMethodDetails) {
+                        if (key_exists('key', $paymentMethodDetails) && $paymentMethodDetails['key'] == 'issuer') {
+                            $issuerList = $paymentMethodDetails['items'];
+                            break;
+                        }
+                    }
+                }
+                $this->context->smarty->assign(
+                    array(
+                        'locale' => $this->helper_data->getLocale($this->context->language),
+                        'originKey' => $this->helper_data->getOriginKeyForOrigin(),
+                        'environment' => Configuration::get('ADYEN_MODE'),
+                        'issuerList' => json_encode($issuerList),
+                        'paymentMethodType' => $paymentMethod['type'],
+                        'paymentMethodName' => $paymentMethod['name'],
+                        'paymentProcessUrl' => $this->context->link->getModuleLink(
+                            $this->name,
+                            'Payment',
+                            array(),
+                            true
+                        ),
+                        'renderPayButton' => false,
+                    )
+                );
+                $localPaymentMethod = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
+                $localPaymentMethod->setCallToActionText($this->l('Pay by ' . $paymentMethod['name']))
+                                   ->setForm(
+                                       $this->context->smarty->fetch(
+                                           _PS_MODULE_DIR_ . $this->name . '/views/templates/front/local-payment-method.tpl'
+                                       )
+                                   )
+                                   ->setAction(
+                                       $this->context->link->getModuleLink($this->name, 'Payment', array(), true)
+                                   );
+
+                $payment_options[] = $localPaymentMethod;
+            }
+        }
 
         $embeddedOption = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
 
@@ -640,7 +634,7 @@ class Adyen extends PaymentModule
                 'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
                 'threeDSProcessUrl' => $this->context->link->getModuleLink($this->name, 'ThreeDSProcess', array(), true),
                 'prestashop16' => false,
-                'loggedInUser' => !$this->context->customer->is_guest
+                'loggedInUser' => (int)!$this->context->customer->is_guest
             )
         );
 
@@ -660,7 +654,7 @@ class Adyen extends PaymentModule
     public function hookPayment()
     {
         if (!$this->active) {
-            return;
+            return null;
         }
 
         $this->context->controller->addCSS($this->_path . 'css/adyen.css', 'all');
@@ -668,43 +662,14 @@ class Adyen extends PaymentModule
         $payments = "";
         $paymentMethods = $this->helper_data->fetchPaymentMethods($this->context->cart, $this->context->language);
         if (!$this->context->customer->is_guest && !empty($paymentMethods['oneClickPaymentMethods'])) {
-            $oneClickPaymentMethods = $paymentMethods['oneClickPaymentMethods'];
-            foreach ($oneClickPaymentMethods as $storedCard) {
-                if (!empty($storedCard["storedDetails"]["card"])) {
-                    $this->context->smarty->assign(
-                        array(
-                            'locale' => $this->helper_data->getLocale($this->context->language),
-                            'originKey' => $this->helper_data->getOriginKeyForOrigin(),
-                            'environment' => Configuration::get('ADYEN_MODE'),
-                            'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(),
-                                true),
-                            'threeDSProcessUrl' => $this->context->link->getModuleLink($this->name, 'ThreeDSProcess',
-                                array(), true),
-                            'prestashop16' => true,
-                            'oneClickPaymentMethod' => json_encode($storedCard),
-                            'recurringDetailReference' => $storedCard['recurringDetailReference'],
-                            'name' => $storedCard['name'],
-                            'number' => $storedCard['storedDetails']['card']['number']
-                        )
-                    );
-                }
-                $payments .= $this->display(__FILE__, '/views/templates/front/oneclick.tpl');
-            }
+            $payments .= $this->getOneClickPaymentMethods($paymentMethods);
         }
 
-        $this->context->smarty->assign(
-            array(
-                'locale' => $this->helper_data->getLocale($this->context->language), // no locale in PrestaShop1.6 only languageCode that is en-en but we need en_EN
-                'originKey' => $this->helper_data->getOriginKeyForOrigin(),
-                'environment' => Configuration::get('ADYEN_MODE'),
-                'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
-                'threeDSProcessUrl' => $this->context->link->getModuleLink($this->name, 'ThreeDSProcess', array(), true),
-                'prestashop16' => true,
-                'loggedInUser' => !$this->context->customer->is_guest
-            )
-        );
+        if (!empty($paymentMethods['paymentMethods'])) {
+            $payments .= $this->getLocalPaymentMethods($paymentMethods);
+        }
 
-        $payments .= $this->display(__FILE__, '/views/templates/front/payment.tpl');
+        $payments .= $this->getStandardPaymentMethod();
 
         return $payments;
     }
@@ -715,7 +680,7 @@ class Adyen extends PaymentModule
     public function hookDisplayPaymentEU()
     {
         if (!$this->active) {
-            return;
+            return null;
         }
 
         $payment_options = array(
@@ -733,18 +698,19 @@ class Adyen extends PaymentModule
     public function hookPaymentReturn()
     {
         if (!$this->active) {
-            return;
+            return null;
         }
         return;
     }
 
     /**
      *
+     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
      */
     public function hookDisplayPaymentTop()
     {
         if (!$this->active) {
-            return;
+            return null;
         }
 
         $paymentMethods = $this->helper_data->fetchPaymentMethods($this->context->cart, $this->context->language);
@@ -757,7 +723,8 @@ class Adyen extends PaymentModule
                 'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
                 'threeDSProcessUrl' => $this->context->link->getModuleLink($this->name, 'ThreeDSProcess', array(), true),
                 'paymentMethodsResponse' => json_encode($paymentMethods),
-                'prestashop16' => $this->helper_data->isPrestashop16()
+                // string value is needed to be used in JavaScript code.
+                'isPrestaShop16' => $this->versionChecker->isPrestaShop16() ? 'true' : 'false'
             )
         );
 
@@ -769,20 +736,20 @@ class Adyen extends PaymentModule
     public function hookActionOrderSlipAdd(array $params)
     {
         if (!$this->active) {
-            return;
+            return null;
         }
 
         try {
-            $client = $this->helper_data->initializeAdyenClient();
+            $modificationService = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
+                'Adyen\Service\ResourceModel\Modification'
+            );
         } catch (Adyen\AdyenException $e) {
             $this->addMessageToOrderForOrderSlipAndLogErrorMessage(
-                'Error initializing Adyen Client in actionOrderSlipAdd hook:' . PHP_EOL . $e->getMessage()
+                'Error initializing Adyen Modification Service in actionOrderSlipAdd hook:'
+                . PHP_EOL . $e->getMessage()
             );
             return;
-        }
-        try {
-            $modificationService = new Adyen\Service\Modification($client);
-        } catch (Adyen\AdyenException $e) {
+        } catch (\PrestaShop\PrestaShop\Adapter\CoreException $e) {
             $this->addMessageToOrderForOrderSlipAndLogErrorMessage(
                 'Error initializing Adyen Modification Service in actionOrderSlipAdd hook:'
                 . PHP_EOL . $e->getMessage()
@@ -923,5 +890,264 @@ class Adyen extends PaymentModule
                 'An error occurred while saving the message. Reason:' . PHP_EOL . $e->getMessage()
             );
         }
+    }
+
+    /**
+     * @param array $paymentMethods
+     *
+     * @return string
+     */
+    private function getOneClickPaymentMethods(array $paymentMethods)
+    {
+        $payments = '';
+        $oneClickPaymentMethods = $paymentMethods['oneClickPaymentMethods'];
+        foreach ($oneClickPaymentMethods as $storedCard) {
+            if (!empty($storedCard["storedDetails"]["card"])) {
+                $this->context->smarty->assign(
+                    array(
+                        'locale' => $this->helper_data->getLocale($this->context->language),
+                        'originKey' => $this->helper_data->getOriginKeyForOrigin(),
+                        'environment' => Configuration::get('ADYEN_MODE'),
+                        'paymentProcessUrl' => $this->context->link->getModuleLink(
+                            $this->name, 'Payment', array(),
+                            true
+                        ),
+                        'threeDSProcessUrl' => $this->context->link->getModuleLink(
+                            $this->name, 'ThreeDSProcess',
+                            array(), true
+                        ),
+                        'prestashop16' => true,
+                        'oneClickPaymentMethod' => json_encode($storedCard),
+                        'recurringDetailReference' => $storedCard['recurringDetailReference'],
+                        'name' => $storedCard['name'],
+                        'number' => $storedCard['storedDetails']['card']['number']
+                    )
+                );
+            }
+            $payments .= $this->display(__FILE__, '/views/templates/front/oneclick.tpl');
+        }
+        return $payments;
+    }
+
+    /**
+     * @param array $paymentMethods
+     *
+     * @return string
+     */
+    private function getLocalPaymentMethods(array $paymentMethods)
+    {
+        $payments = '';
+        foreach ($paymentMethods['paymentMethods'] as $paymentMethod) {
+            $issuerList = array();
+            if (!$this->isSimplePaymentMethod($paymentMethod)) {
+                continue;
+            }
+
+            // Skip unsupported payment methods
+            if ($this->isUnsupportedPaymentMethod($paymentMethod['type'])) {
+                continue;
+            }
+
+            if (isset($paymentMethod['details'])) {
+                foreach ($paymentMethod['details'] as $paymentMethodDetails) {
+                    if (key_exists('key', $paymentMethodDetails) && $paymentMethodDetails['key'] == 'issuer') {
+                        $issuerList = $paymentMethodDetails['items'];
+                        break;
+                    }
+                }
+            }
+            $this->context->smarty->assign(
+                array(
+                    'locale' => $this->helper_data->getLocale($this->context->language),
+                    'originKey' => $this->helper_data->getOriginKeyForOrigin(),
+                    'environment' => Configuration::get('ADYEN_MODE'),
+                    'issuerList' => json_encode($issuerList),
+                    'paymentMethodType' => $paymentMethod['type'],
+                    'paymentMethodName' => $paymentMethod['name'],
+                    'paymentProcessUrl' => $this->context->link->getModuleLink(
+                        $this->name,
+                        'Payment',
+                        array(),
+                        true
+                    ),
+                    'renderPayButton' => true,
+                )
+            );
+            $payments .= $this->display(__FILE__, '/views/templates/front/local-payment-method.tpl');
+        }
+        return $payments;
+    }
+
+    /**
+     * @return string
+     */
+    private function getStandardPaymentMethod()
+    {
+        $payments = '';
+        $this->context->smarty->assign(
+            array(
+                'locale' => $this->helper_data->getLocale($this->context->language),
+                // no locale in PrestaShop1.6 only languageCode that is en-en but we need en_EN
+                'originKey' => $this->helper_data->getOriginKeyForOrigin(),
+                'environment' => Configuration::get('ADYEN_MODE'),
+                'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
+                'threeDSProcessUrl' => $this->context->link->getModuleLink(
+                    $this->name, 'ThreeDSProcess', array(), true
+                ),
+                'prestashop16' => true,
+                'loggedInUser' => !$this->context->customer->is_guest
+            )
+        );
+
+        $payments .= $this->display(__FILE__, '/views/templates/front/payment.tpl');
+        return $payments;
+    }
+
+    /**
+     * @param array $paymentMethod
+     *
+     * @return bool
+     */
+    private function isSimplePaymentMethod($paymentMethod)
+    {
+        if (!empty($paymentMethod['details'])) {
+            $details = $paymentMethod['details'];
+        }
+        return !empty($paymentMethod['type'])
+            && $paymentMethod['type'] != 'scheme'
+            && (
+                empty($details) || (
+                    is_array($details)
+                    && count($details) == 1
+                    && $details[0]['key'] == 'issuer'
+                    && $details[0]['type'] == 'select'
+                )
+            );
+    }
+
+    /**
+     * Returns true if payment method is unsupported
+     *
+     * @param $paymentMethodType
+     * @return bool
+     */
+    private function isUnsupportedPaymentMethod($paymentMethodType)
+    {
+        $unsupportedPaymentMethods = array(
+            'bcmc_mobile_QR',
+            'wechatpay',
+            'wechatpay_pos',
+            'wechatpaySdk',
+            'wechatpayQr',
+            'klarna',
+            'klarna_b2b',
+            'klarna_account',
+            'klarna_paynow'
+        );
+
+        if (in_array($paymentMethodType, $unsupportedPaymentMethods)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param $params
+     *
+     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
+     */
+    public function hookActionFrontControllerSetMedia($params)
+    {
+        $controller = $this->context->controller;
+        if ($controller->php_self == 'order') {
+            $this->registerAdyenJavascript($controller);
+        }
+    }
+
+    /**
+     * @param FrontController $controller
+     *
+     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
+     */
+    private function registerAdyenJavascript($controller)
+    {
+        /** @var \Adyen\PrestaShop\service\adapter\classes\Controller $controllerAdapter */
+        $controllerAdapter = $this->getService('Adyen\PrestaShop\service\adapter\classes\Controller');
+        $controllerAdapter->setController($controller);
+        if ($this->helper_data->isDemoMode()) {
+            $controllerAdapter->registerJavascript(
+                'adyen-checkout-component', // Unique ID
+                \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_JS_TEST, // JS path
+                array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
+            );
+            $controllerAdapter->registerJavascript(
+                'adyen-threeDS2Utils', // Unique ID
+                $this->_path . 'views/js/threeds2-js-utils.js', // JS path
+                array('position' => 'bottom', 'priority' => 160) // Arguments
+            );
+            $controllerAdapter->registerStylesheet(
+                'adyen-stylecheckout', // Unique ID
+                \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_CSS_TEST, // CSS path
+                array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
+            );
+
+            $controllerAdapter->registerStylesheet(
+                $this->name . '-adyencss',
+                $this->_path . '/css/adyen.css'
+            );
+        } else {
+            $controllerAdapter->registerJavascript(
+                'adyen-component', // Unique ID
+                \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_JS_LIVE, // JS path
+                array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
+            );
+            $controllerAdapter->registerJavascript(
+                'adyen-threeDS2Utils', // Unique ID
+                $this->_path . 'views/js/threeds2-js-utils.js', // JS path
+                array('position' => 'bottom', 'priority' => 160) // Arguments
+            );
+            $controllerAdapter->registerStylesheet(
+                'adyen-stylecheckout', // Unique ID
+                \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_CSS_LIVE, // CSS path
+                array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
+            );
+        }
+
+        $controllerAdapter->registerJavascript(
+            'adyen-component-renderer',
+            $this->_path . 'views/js/checkout-component-renderer.js',
+            array('position' => 'bottom', 'priority' => 170)
+        );
+        $controllerAdapter->registerJavascript(
+            'adyen-credit-card-validator',
+            $this->_path . 'views/js/payment-components/credit-card.js',
+            array('position' => 'bottom', 'priority' => 170)
+        );
+        $controllerAdapter->registerJavascript(
+            'adyen-local-payment-method',
+            $this->_path . 'views/js/payment-components/local-payment-method.js',
+            array('position' => 'bottom', 'priority' => 170)
+        );
+        $controllerAdapter->registerJavascript(
+            'adyen-one-click',
+            $this->_path . 'views/js/payment-components/one-click.js',
+            array('position' => 'bottom', 'priority' => 170)
+        );
+
+        if ($this->versionChecker->isPrestaShop16()) {
+            $controller->addJqueryPlugin('fancybox');
+        }
+    }
+
+    /**
+     * @param $serviceName
+     *
+     * @return mixed|object
+     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
+     */
+    private function getService($serviceName)
+    {
+        return \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get($serviceName);
     }
 }

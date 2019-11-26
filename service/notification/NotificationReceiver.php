@@ -109,10 +109,10 @@ class NotificationReceiver
             $message = 'Notification is not formatted correctly';
             $this->helperData->adyenLogger()->logError($message);
             return json_encode(
-                [
+                array(
                     'success' => false,
                     'message' => $message
-                ]
+                )
             );
         }
 
@@ -142,10 +142,10 @@ class NotificationReceiver
             $message = 'Mismatch between Live/Test modes of PrestaShop store and the Adyen platform';
             $this->helperData->adyenLogger()->logError($message);
             return json_encode(
-                [
+                array(
                     'success' => false,
                     'message' => $message
-                ]
+                )
             );
         }
     }

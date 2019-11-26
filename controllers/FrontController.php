@@ -22,7 +22,7 @@
 
 namespace Adyen\PrestaShop\controllers;
 
-use PrestaShopException;
+use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 
 abstract class FrontController extends \ModuleFrontController
 {
@@ -30,6 +30,22 @@ abstract class FrontController extends \ModuleFrontController
      * @var \Adyen\PrestaShop\helper\Data
      */
     protected $helperData;
+
+    /**
+     * @var Adyen\PrestaShop\application\VersionChecker
+     */
+    protected  $versionChecker;
+
+    /**
+     * FrontController constructor.
+     */
+    public function __construct()
+    {
+        parent::__construct();
+        $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
+        $this->versionChecker = ServiceLocator::get('Adyen\PrestaShop\application\VersionChecker');
+        $this->helperData->startSession();
+    }
 
     /**
      * @param null $value
@@ -40,7 +56,7 @@ abstract class FrontController extends \ModuleFrontController
     protected function ajaxRender($value = null, $controller = null, $method = null)
     {
         header('content-type: application/json; charset=utf-8');
-        if ($this->helperData->isPrestashop16()) {
+        if ($this->versionChecker->isPrestaShop16()) {
             $this->ajax = true;
             parent::ajaxDie($value, $controller, $method);
         } else {

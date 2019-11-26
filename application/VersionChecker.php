@@ -20,41 +20,37 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\service;
+namespace Adyen\PrestaShop\application;
 
-class ClientFactory
+class VersionChecker
 {
     /**
-     * Initializes and returns Adyen Client and sets the required parameters of it.
+     * Determine if PrestaShop is 1.6 or not
      *
-     * @param string $encryptedApiKey
-     * @param string $liveEndpointUrlPrefix
-     * @param string $environment
-     * @return \Adyen\Client
-     * @throws \Adyen\AdyenException
+     * @return bool
      */
-    public function createDefaultClient($encryptedApiKey, $liveEndpointUrlPrefix, $environment)
+    public function isPrestaShop16()
     {
-        $client = new \Adyen\Client();
-        $client->setXApiKey($encryptedApiKey);
-        $client->setAdyenPaymentSource(\Adyen\PrestaShop\service\Configuration::MODULE_NAME, \Adyen\PrestaShop\service\Configuration::VERSION);
-        $client->setExternalPlatform("PrestaShop", _PS_VERSION_);
-        $client->setEnvironment($environment, $liveEndpointUrlPrefix);
-        return $client;
+        if (
+            version_compare(_PS_VERSION_, '1.6', '>=')
+            && version_compare(_PS_VERSION_, '1.7', '<')
+        ) {
+            return true;
+        }
+        return false;
     }
 
     /**
-     * Determines if PrestaShop is running in demo mode
+     * Verifies if the current PrestaShop version is supported or not by the plugin
      *
-     * @param string $mode
      * @return bool
      */
-    public function isDemoMode($mode)
+    public function isPrestaShopSupportedVersion()
     {
-        if (strpos($mode, 'test') !== false) {
-            return true;
-        } else {
+        if (version_compare(_PS_VERSION_, '1.5', '<')) {
             return false;
         }
+
+        return true;
     }
 }

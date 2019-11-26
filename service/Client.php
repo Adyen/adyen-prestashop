@@ -20,25 +20,26 @@
  * See the LICENSE file for more info.
  */
 
-// This file declares a function and checks if PrestaShop is loaded to follow
-// PrestaShop's good practices, which breaks a PSR1 element.
-//phpcs:disable PSR1.Files.SideEffects
+namespace Adyen\PrestaShop\service;
 
-if (!defined('_PS_VERSION_')) {
-    exit;
-}
-
-/**
- * This function is automatically called on version upgrades.
- *
- * Version 1.1.0 introduces refund feature
- *
- * @param Adyen $module
- * @return bool
- */
-function upgrade_module_1_1_0(Adyen $module)
+class Client extends \Adyen\Client
 {
-   $module->registerHook('actionOrderSlipAdd');
-   $module->registerHook('displayPaymentTop');
-   return true;
+    /**
+     * @var adapter\classes\Configuration
+     */
+    private $configuration;
+
+    public function __construct(\Adyen\PrestaShop\service\adapter\classes\Configuration $configuration)
+    {
+        parent::__construct();
+        $this->setXApiKey($configuration->apiKey);
+        $this->setAdyenPaymentSource(
+            \Adyen\PrestaShop\service\Configuration::MODULE_NAME,
+            \Adyen\PrestaShop\service\Configuration::VERSION
+        );
+        $this->setExternalPlatform("PrestaShop", _PS_VERSION_);
+        $this->setEnvironment($configuration->adyenMode, $configuration->liveEndpointPrefix);
+
+        $this->configuration = $configuration;
+    }
 }

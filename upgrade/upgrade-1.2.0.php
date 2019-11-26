@@ -31,14 +31,15 @@ if (!defined('_PS_VERSION_')) {
 /**
  * This function is automatically called on version upgrades.
  *
- * Version 1.1.0 introduces refund feature
+ *
  *
  * @param Adyen $module
+ *
  * @return bool
  */
-function upgrade_module_1_1_0(Adyen $module)
+function upgrade_module_1_2_0(Adyen $module)
 {
-   $module->registerHook('actionOrderSlipAdd');
-   $module->registerHook('displayPaymentTop');
-   return true;
+    return $module->registerHook('actionFrontControllerSetMedia')
+        && $module->unregisterHook('header')
+        && $module->unregisterHook('displayHeader');
 }

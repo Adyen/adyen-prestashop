@@ -24,6 +24,8 @@
 // Controllers, which breaks a PSR1 element.
 // phpcs:disable PSR1.Classes.ClassDeclaration
 
+use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
+
 class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\controllers\FrontController
 {
     /**
@@ -38,12 +40,6 @@ class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\control
     {
         parent::__construct();
         $this->context = \Context::getContext();
-        $adyenHelperFactory = new \Adyen\PrestaShop\service\helper\DataFactory();
-        $this->helperData = $adyenHelperFactory->createAdyenHelperData(
-            \Configuration::get('ADYEN_MODE'),
-            _COOKIE_KEY_
-        );
-
         $this->helperData->startSession();
     }
 
@@ -66,6 +62,7 @@ class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\control
                     'message' => "3D secure 2.0 failed, payment data not found"
                 )
             ));
+            return;
         }
 
         // Depends on the component's response we send a fingerprint or the challenge result
@@ -84,10 +81,8 @@ class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\control
 
         // Send the payments details request
         try {
-            $client = $this->helperData->initializeAdyenClient();
-
-            // call lib
-            $service = new \Adyen\Service\Checkout($client);
+            /** @var \Adyen\PrestaShop\service\Checkout $service */
+            $service = ServiceLocator::get('Adyen\PrestaShop\service\Checkout');
 
             $result = $service->paymentsDetails($request);
         } catch (\Adyen\AdyenException $e) {
@@ -96,7 +91,17 @@ class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\control
                 array(
                     'message' => '3D secure 2.0 failed'
                 )
-            ));
+            )
+            );
+        } catch (\PrestaShop\PrestaShop\Adapter\CoreException $e) {
+            $this->ajaxRender(
+                $this->helperData->buildControllerResponseJson(
+                    'error',
+                    array(
+                        'message' => '3D secure 2.0 failed'
+                    )
+                )
+            );
         }
 
         // Check if result is challenge shopper, if yes return the token

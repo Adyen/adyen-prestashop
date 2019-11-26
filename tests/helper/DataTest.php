@@ -22,7 +22,9 @@
 
 namespace Adyen\PrestaShop\helper;
 
-use Adyen\Service\CheckoutUtility;
+use Adyen\PrestaShop\service\adapter\classes\Configuration;
+use Adyen\PrestaShop\service\Checkout;
+use Adyen\PrestaShop\service\CheckoutUtility;
 
 class DataTest extends \PHPUnit_Framework_TestCase
 {
@@ -31,23 +33,34 @@ class DataTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $sslEncryptionKey = 'adyen-prestashop-fake-key';
         $originDomain = 'https://example.com';
 
+        /** @var Configuration|\PHPUnit_Framework_MockObject_MockObject $configuration */
+        $configuration = $this->getMockBuilder('Adyen\PrestaShop\service\adapter\classes\Configuration')
+                              ->disableOriginalConstructor()
+                              ->getMock();
+
+        $configuration->sslEncryptionKey = 'adyen-prestashop-fake-key';
+        $configuration->httpHost = $originDomain;
+
         /** @var CheckoutUtility|\PHPUnit_Framework_MockObject_MockObject $adyenCheckoutUtilityService */
-        $adyenCheckoutUtilityService = $this->getMockBuilder(CheckoutUtility::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $adyenCheckoutUtilityService = $this->getMockBuilder('Adyen\PrestaShop\service\CheckoutUtility')
+                                            ->disableOriginalConstructor()
+                                            ->getMock();
 
         $adyenCheckoutUtilityService->method('originKeys')
-            ->with(["originDomains" => [$originDomain]])
-            ->willReturn(['originKeys' => [$originDomain => 'asdf']]);
+                                    ->with(array("originDomains" => array($originDomain)))
+                                    ->willReturn(array('originKeys' => array($originDomain => 'asdf')));
+
+        /** @var Checkout|\PHPUnit_Framework_MockObject_MockObject $adyenCheckoutService */
+        $adyenCheckoutService = $this->getMockBuilder('Adyen\PrestaShop\service\Checkout')
+                                     ->disableOriginalConstructor()
+                                     ->getMock();
 
         $this->adyenHelper = new Data(
-            $originDomain,
-            ['mode' => \Adyen\Environment::TEST, 'apiKey' => 'ADYEN_APIKEY_TEST'],
-            $sslEncryptionKey,
-            $adyenCheckoutUtilityService
+            $configuration,
+            $adyenCheckoutUtilityService,
+            $adyenCheckoutService
         );
     }
 
