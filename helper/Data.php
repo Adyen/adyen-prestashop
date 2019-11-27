@@ -185,9 +185,14 @@ class Data
         return base64_encode($encrypted . '::' . $iv);
     }
 
+    /**
+     * @param $data
+     * @return false|string
+     */
     public function decrypt($data)
     {
         if (empty($data)) {
+            $this->adyenLogger()->logDebug("decrypt got empty parameter");
             return '';
         }
 
