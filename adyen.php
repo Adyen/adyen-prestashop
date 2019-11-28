@@ -280,7 +280,7 @@ class Adyen extends PaymentModule
 
         foreach ($adyenConfigurationNames as $adyenConfigurationName) {
             if (!Configuration::deleteByName($adyenConfigurationName)) {
-                $this->adyenLogger()->logDebug("Configuration couldn't be deleted by name: " . $adyenConfigurationName);
+                $this->helper_data->adyenLogger()->logDebug("Configuration couldn't be deleted by name: " . $adyenConfigurationName);
                 $result = false;
             }
         }
