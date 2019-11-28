@@ -4,7 +4,7 @@
             please check your API key in the Adyen Module configuration</h5>
     </form>
 {else}
-    <div class="row"
+    <div class="row {$paymentMethodType|escape:'html'}"
          data-local-payment-method="{$paymentMethodType|escape:'html'}"
          data-issuer-list="{$issuerList|escape:'html'}"
     >
