@@ -185,8 +185,17 @@ class Data
         return base64_encode($encrypted . '::' . $iv);
     }
 
+    /**
+     * @param $data
+     * @return false|string
+     */
     public function decrypt($data)
     {
+        if (empty($data)) {
+            $this->adyenLogger()->logDebug("decrypt got empty parameter");
+            return '';
+        }
+
         // To decrypt, split the encrypted data from our IV - our unique separator used was "::"
         list($data, $iv) = explode('::', base64_decode($data), 2);
         return openssl_decrypt($data, 'aes-256-ctr', $this->sslEncryptionKey, 0, $iv);
