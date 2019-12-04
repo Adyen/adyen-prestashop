@@ -152,7 +152,6 @@ class Adyen extends PaymentModule
             $this->registerHook('displayPaymentTop') &&
             $this->installTab() &&
             $this->registerHook('actionFrontControllerSetMedia') &&
-            $this->registerHook('orderConfirmation') &&
             $this->registerHook('paymentOptions') &&
             $this->registerHook('paymentReturn') &&
             $this->registerHook('actionOrderSlipAdd') &&
@@ -594,16 +593,6 @@ class Adyen extends PaymentModule
     }
 
     /**
-     * Hook order confirmation PrestaShop 1.6 & > 1.7
-     */
-    public function hookOrderConfirmation()
-    {
-        if (!$this->active) {
-            return null;
-        }
-    }
-
-    /**
      * Hook payment options PrestaShop > 1.7
      *
      * @return array
@@ -621,21 +610,23 @@ class Adyen extends PaymentModule
             $storedPaymentMethods = $paymentMethods['storedPaymentMethods'];
             foreach ($storedPaymentMethods as $storedPaymentMethod) {
                 if (!empty($storedPaymentMethod)) {
-                    $this->context->smarty->assign(
-                        array(
-                            'locale' => $this->helper_data->getLocale($this->context->language),
-                            'originKey' => $this->helper_data->getOriginKeyForOrigin(),
-                            'environment' => Configuration::get('ADYEN_MODE'),
-                            'paymentProcessUrl' => $this->context->link->getModuleLink(
-                                $this->name, 'Payment', array(), true
-                            ),
-                            'threeDSProcessUrl' => $this->context->link->getModuleLink(
-                                $this->name, 'ThreeDSProcess', array(), true
-                            ),
-                            'prestashop16' => false,
-                            'storedPaymentApiId' => $storedPaymentMethod['id']
-                        )
+
+                    $smartyVariables = array(
+                        'paymentProcessUrl' => $this->context->link->getModuleLink(
+                            $this->name, 'Payment', array(), true
+                        ),
+                        'threeDSProcessUrl' => $this->context->link->getModuleLink(
+                            $this->name, 'ThreeDSProcess', array(), true
+                        ),
+                        'prestashop16' => false,
+                        'storedPaymentApiId' => $storedPaymentMethod['id']
                     );
+
+                    // Add checkout component default configuration parameters for smarty variables
+                    $smartyVariables = array_merge($smartyVariables, $this->getCheckoutComponentInitData());
+
+                    // Assign variables to frontend
+                    $this->context->smarty->assign($smartyVariables);
                 }
                 $oneClickOption = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
                 $oneClickOption->setCallToActionText(
@@ -680,23 +671,26 @@ class Adyen extends PaymentModule
                         }
                     }
                 }
-                $this->context->smarty->assign(
-                    array(
-                        'locale' => $this->helper_data->getLocale($this->context->language),
-                        'originKey' => $this->helper_data->getOriginKeyForOrigin(),
-                        'environment' => Configuration::get('ADYEN_MODE'),
-                        'issuerList' => json_encode($issuerList),
-                        'paymentMethodType' => $paymentMethod['type'],
-                        'paymentMethodName' => $paymentMethod['name'],
-                        'paymentProcessUrl' => $this->context->link->getModuleLink(
-                            $this->name,
-                            'Payment',
-                            array(),
-                            true
-                        ),
-                        'renderPayButton' => false,
-                    )
+
+                $smartyVariables = array(
+                    'issuerList' => json_encode($issuerList),
+                    'paymentMethodType' => $paymentMethod['type'],
+                    'paymentMethodName' => $paymentMethod['name'],
+                    'paymentProcessUrl' => $this->context->link->getModuleLink(
+                        $this->name,
+                        'Payment',
+                        array(),
+                        true
+                    ),
+                    'renderPayButton' => false,
                 );
+
+                // Add checkout component default configuration parameters for smarty variables
+                $smartyVariables = array_merge($smartyVariables, $this->getCheckoutComponentInitData());
+
+                // Assign variables to frontend
+                $this->context->smarty->assign($smartyVariables);
+
                 $localPaymentMethod = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
                 $localPaymentMethod->setCallToActionText($this->l('Pay by ' . $paymentMethod['name']))
                                    ->setForm(
@@ -715,17 +709,18 @@ class Adyen extends PaymentModule
 
         $cc_img = 'cc_border.png';
 
-        $this->context->smarty->assign(
-            array(
-                'locale' => $this->helper_data->getLocale($this->context->language),
-                'originKey' => $this->helper_data->getOriginKeyForOrigin(),
-                'environment' => Configuration::get('ADYEN_MODE'),
-                'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
-                'threeDSProcessUrl' => $this->context->link->getModuleLink($this->name, 'ThreeDSProcess', array(), true),
-                'prestashop16' => false,
-                'loggedInUser' => (int)!$this->context->customer->is_guest
-            )
+        $smartyVariables = array(
+            'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
+            'threeDSProcessUrl' => $this->context->link->getModuleLink($this->name, 'ThreeDSProcess', array(), true),
+            'prestashop16' => false,
+            'loggedInUser' => (int)!$this->context->customer->is_guest
         );
+
+        // Add checkout component default configuration parameters for smarty variables
+        $smartyVariables = array_merge($smartyVariables, $this->getCheckoutComponentInitData());
+
+        // Assign variables to frontend
+        $this->context->smarty->assign($smartyVariables);
 
         $embeddedOption->setCallToActionText($this->l('Pay by card'))
             ->setForm($this->context->smarty->fetch(_PS_MODULE_DIR_ . $this->name . '/views/templates/front/payment.tpl'))
@@ -782,6 +777,20 @@ class Adyen extends PaymentModule
     }
 
     /**
+     * Retrieve the necessary default configuration parameters for a checkout component
+     *
+     * @return array
+     */
+    public function getCheckoutComponentInitData()
+    {
+        return array(
+            'locale' => $this->helper_data->getLocale($this->context->language),
+            'originKey' => $this->helper_data->getOriginKeyForOrigin(),
+            'environment' => Configuration::get('ADYEN_MODE')
+        );
+    }
+
+    /**
      *
      */
     public function hookPaymentReturn()
@@ -789,7 +798,19 @@ class Adyen extends PaymentModule
         if (!$this->active) {
             return null;
         }
-        return;
+
+        $smartyVariables = array(
+            'isPrestaShop16' => $this->versionChecker->isPrestaShop16() ? 'true' : 'false',
+            'action' => "" //TODO add stored action
+        );
+
+        // Add checkout component default configuration parameters for smarty variables
+        $smartyVariables = array_merge($smartyVariables, $this->getCheckoutComponentInitData());
+
+        // Assign variables to frontend
+        $this->context->smarty->assign($smartyVariables);
+
+        return $this->display(__FILE__, '/views/templates/front/order-confirmation.tpl');
     }
 
     /**
@@ -804,18 +825,18 @@ class Adyen extends PaymentModule
 
         $paymentMethods = $this->helper_data->fetchPaymentMethods($this->context->cart, $this->context->language);
 
-        $this->context->smarty->assign(
-            array(
-                'locale' => $this->helper_data->getLocale($this->context->language),
-                'originKey' => $this->helper_data->getOriginKeyForOrigin(),
-                'environment' => Configuration::get('ADYEN_MODE'),
-                'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
-                'threeDSProcessUrl' => $this->context->link->getModuleLink($this->name, 'ThreeDSProcess', array(), true),
-                'paymentMethodsResponse' => json_encode($paymentMethods),
-                // string value is needed to be used in JavaScript code.
-                'isPrestaShop16' => $this->versionChecker->isPrestaShop16() ? 'true' : 'false'
-            )
+        $smartyVariables = array(
+            'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
+            'threeDSProcessUrl' => $this->context->link->getModuleLink($this->name, 'ThreeDSProcess', array(), true),
+            'paymentMethodsResponse' => json_encode($paymentMethods),
+            'isPrestaShop16' => $this->versionChecker->isPrestaShop16() ? 'true' : 'false'
         );
+
+        // Add checkout component default configuration parameters for smarty variables
+        $smartyVariables = array_merge($smartyVariables, $this->getCheckoutComponentInitData());
+
+        // Assign variables to frontend
+        $this->context->smarty->assign($smartyVariables);
 
         return $this->display(__FILE__, '/views/templates/front/adyencheckout.tpl');
     }
@@ -990,28 +1011,28 @@ class Adyen extends PaymentModule
     {
         $payments = '';
         $storedPaymentMethods = $paymentMethods['storedPaymentMethods'];
-
         foreach ($storedPaymentMethods as $storedPayment) {
             if (!empty($storedPayment)) {
-                $this->context->smarty->assign(
-                    array(
-                        'locale' => $this->helper_data->getLocale($this->context->language),
-                        'originKey' => $this->helper_data->getOriginKeyForOrigin(),
-                        'environment' => Configuration::get('ADYEN_MODE'),
-                        'paymentProcessUrl' => $this->context->link->getModuleLink(
-                            $this->name, 'Payment', array(),
-                            true
-                        ),
-                        'threeDSProcessUrl' => $this->context->link->getModuleLink(
-                            $this->name, 'ThreeDSProcess',
-                            array(), true
-                        ),
-                        'prestashop16' => true,
-                        'storedPaymentApiId' => $storedPayment['id'],
-                        'name' => $storedPayment['name'],
-                        'number' => $storedPayment['lastFour']
-                    )
+                $smartyVariables = array(
+                    'paymentProcessUrl' => $this->context->link->getModuleLink(
+                        $this->name, 'Payment', array(),
+                        true
+                    ),
+                    'threeDSProcessUrl' => $this->context->link->getModuleLink(
+                        $this->name, 'ThreeDSProcess',
+                        array(), true
+                    ),
+                    'prestashop16' => true,
+                    'storedPaymentApiId' => $storedPayment['id'],
+                    'name' => $storedPayment['name'],
+                    'number' => $storedPayment['lastFour']
                 );
+
+                // Add checkout component default configuration parameters for smarty variables
+                $smartyVariables = array_merge($smartyVariables, $this->getCheckoutComponentInitData());
+
+                // Assign variables to frontend
+                $this->context->smarty->assign($smartyVariables);
             }
             $payments .= $this->display(__FILE__, '/views/templates/front/stored-payment-method.tpl');
         }
@@ -1046,23 +1067,26 @@ class Adyen extends PaymentModule
                     }
                 }
             }
-            $this->context->smarty->assign(
-                array(
-                    'locale' => $this->helper_data->getLocale($this->context->language),
-                    'originKey' => $this->helper_data->getOriginKeyForOrigin(),
-                    'environment' => Configuration::get('ADYEN_MODE'),
-                    'issuerList' => json_encode($issuerList),
-                    'paymentMethodType' => $paymentMethod['type'],
-                    'paymentMethodName' => $paymentMethod['name'],
-                    'paymentProcessUrl' => $this->context->link->getModuleLink(
-                        $this->name,
-                        'Payment',
-                        array(),
-                        true
-                    ),
-                    'renderPayButton' => true,
-                )
+
+            $smartyVariables = array(
+                'issuerList' => json_encode($issuerList),
+                'paymentMethodType' => $paymentMethod['type'],
+                'paymentMethodName' => $paymentMethod['name'],
+                'paymentProcessUrl' => $this->context->link->getModuleLink(
+                    $this->name,
+                    'Payment',
+                    array(),
+                    true
+                ),
+                'renderPayButton' => true
             );
+
+            // Add checkout component default configuration parameters for smarty variables
+            $smartyVariables = array_merge($smartyVariables, $this->getCheckoutComponentInitData());
+
+            // Assign variables to frontend
+            $this->context->smarty->assign($smartyVariables);
+
             $payments .= $this->display(__FILE__, '/views/templates/front/local-payment-method.tpl');
         }
         return $payments;
@@ -1074,20 +1098,21 @@ class Adyen extends PaymentModule
     private function getStandardPaymentMethod()
     {
         $payments = '';
-        $this->context->smarty->assign(
-            array(
-                'locale' => $this->helper_data->getLocale($this->context->language),
-                // no locale in PrestaShop1.6 only languageCode that is en-en but we need en_EN
-                'originKey' => $this->helper_data->getOriginKeyForOrigin(),
-                'environment' => Configuration::get('ADYEN_MODE'),
-                'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
-                'threeDSProcessUrl' => $this->context->link->getModuleLink(
-                    $this->name, 'ThreeDSProcess', array(), true
-                ),
-                'prestashop16' => true,
-                'loggedInUser' => !$this->context->customer->is_guest
-            )
+
+        $smartyVariables = array(
+            'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
+            'threeDSProcessUrl' => $this->context->link->getModuleLink(
+                $this->name, 'ThreeDSProcess', array(), true
+            ),
+            'prestashop16' => true,
+            'loggedInUser' => !$this->context->customer->is_guest
         );
+
+        // Add checkout component default configuration parameters for smarty variables
+        $smartyVariables = array_merge($smartyVariables, $this->getCheckoutComponentInitData());
+
+        // Assign variables to frontend
+        $this->context->smarty->assign($smartyVariables);
 
         $payments .= $this->display(__FILE__, '/views/templates/front/payment.tpl');
         return $payments;

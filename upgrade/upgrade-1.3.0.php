@@ -31,13 +31,12 @@ if (!defined('_PS_VERSION_')) {
 /**
  * This function is automatically called on version upgrades.
  *
- *
- *
  * @param Adyen $module
  *
  * @return bool
  */
 function upgrade_module_1_3_0(Adyen $module)
 {
-    return $module->createWaitingForPaymentOrderStatus();
+    return $module->unregisterHook('orderConfirmation') &&
+        $module->createWaitingForPaymentOrderStatus();
 }

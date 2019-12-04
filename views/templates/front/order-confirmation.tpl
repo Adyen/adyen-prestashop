@@ -1,0 +1,1 @@
+<div>Order confirmation template placeholder</div>
