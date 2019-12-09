@@ -582,7 +582,7 @@ class Adyen extends PaymentModule
 
         //retrieve payment methods
         $paymentMethods = $this->helper_data->fetchPaymentMethods($this->context->cart, $this->context->language);
-        
+
         if (!$this->context->customer->is_guest && !empty($paymentMethods['storedPaymentMethods'])) {
             $storedPaymentMethods = $paymentMethods['storedPaymentMethods'];
             foreach ($storedPaymentMethods as $storedPaymentMethod) {
@@ -611,7 +611,7 @@ class Adyen extends PaymentModule
                 )
                                ->setForm(
                                    $this->context->smarty->fetch(
-                                       _PS_MODULE_DIR_ . $this->name . '/views/templates/front/oneclick.tpl'
+                                       _PS_MODULE_DIR_ . $this->name . '/views/templates/front/stored-payment-method.tpl'
                                    )
                                )
                                ->setLogo(
@@ -979,7 +979,7 @@ class Adyen extends PaymentModule
                     )
                 );
             }
-            $payments .= $this->display(__FILE__, '/views/templates/front/oneclick.tpl');
+            $payments .= $this->display(__FILE__, '/views/templates/front/stored-payment-method.tpl');
         }
         return $payments;
     }
@@ -1176,8 +1176,8 @@ class Adyen extends PaymentModule
             array('position' => 'bottom', 'priority' => 170)
         );
         $controllerAdapter->registerJavascript(
-            'adyen-one-click',
-            $this->_path . 'views/js/payment-components/one-click.js',
+            'adyen-stored-payment-method',
+            $this->_path . 'views/js/payment-components/stored-payment-method.js',
             array('position' => 'bottom', 'priority' => 170)
         );
 
