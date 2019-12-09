@@ -82,7 +82,6 @@ jQuery(function ($) {
     });
 
     renderCardComponent();
-    fillBrowserInfo();
 
     /**
      * Renders checkout card component
@@ -105,6 +104,13 @@ jQuery(function ($) {
                     if (state.data.paymentMethod.encryptedSecurityCode) {
                         encryptedSecurityCode = state.data.paymentMethod.encryptedSecurityCode;
                     }
+
+                    javaEnabled = state.data.browserInfo.javaEnabled;
+                    colorDepth = state.data.browserInfo.colorDepth;
+                    screenWidth = state.data.browserInfo.screenWidth;
+                    screenHeight = state.data.browserInfo.screenHeight;
+                    timeZoneOffset = state.data.browserInfo.timeZoneOffset;
+                    language = state.data.browserInfo.language;
 
                     allValidCard = true;
                 } else {
@@ -288,19 +294,5 @@ jQuery(function ($) {
         encryptedExpiryYear = "";
         encryptedSecurityCode = "";
         allValidCard = false;
-    }
-
-    /**
-     *  Using the threeds2-js-utils.js to fill browserinfo
-     */
-    function fillBrowserInfo() {
-        var browserInfo = ThreedDS2Utils.getBrowserInfo();
-
-        javaEnabled = browserInfo.javaEnabled;
-        colorDepth = browserInfo.colorDepth;
-        screenWidth = browserInfo.screenWidth;
-        screenHeight = browserInfo.screenHeight;
-        timeZoneOffset = browserInfo.timeZoneOffset;
-        language = browserInfo.language;
     }
 });
