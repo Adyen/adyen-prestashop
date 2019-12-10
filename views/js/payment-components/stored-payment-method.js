@@ -51,7 +51,7 @@ jQuery(function ($) {
             if the container doesn't exits don't try to render the component
         */
         var storedPaymentMethodContainer = $("#cardContainer-" + storedPaymentMethod.id);
-        
+
         // container doesn't exist, something went wrong on the template side
         if (!storedPaymentMethodContainer.length) {
             return;
@@ -97,8 +97,9 @@ jQuery(function ($) {
      * Renders checkout card component
      */
     function renderStoredPaymentComponent(storedPaymentMethod) {
-        var card = window.adyenCheckout.create('card', Object.assign(
-            storedPaymentMethod, {
+
+        /*Use the storedPaymentMethod object and the custom onChange function as the configuration object together*/
+         var configuration = mergeObjects([storedPaymentMethod, {
             onChange: function (state, component) {
                 if (state.isValid && !component.state.errors.encryptedSecurityCode) {
                     if (state.data.paymentMethod.encryptedSecurityCode) {
@@ -116,8 +117,25 @@ jQuery(function ($) {
                 } else {
                     resetFields();
                 }
-            }
-        })).mount("#cardContainer-" + storedPaymentMethod.id);
+            }}]
+         );
+
+        var card = window.adyenCheckout.create('card', configuration).mount("#cardContainer-" + storedPaymentMethod.id);
+    }
+
+    /**
+     * Merge objects from an array of objects, key by key, IE 9+ compatible
+     * @param objectArray
+     * @returns {*}
+     */
+    function mergeObjects(objectArray)
+    {
+        return objectArray.reduce(function (r, o) {
+            Object.keys(o).forEach(function (k) {
+                r[k] = o[k];
+            });
+            return r;
+        }, {});
     }
 
     /**
