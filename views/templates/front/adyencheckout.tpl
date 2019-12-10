@@ -9,6 +9,7 @@
             locale: "{$locale}",
             originKey: "{$originKey}",
             environment: "{$environment}",
+            showPayButton: false,
             paymentMethodsResponse: {$paymentMethodsResponse nofilter}
         };
     </script>

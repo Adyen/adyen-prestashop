@@ -652,7 +652,6 @@ class Adyen extends PaymentModule
 
         if (!empty($paymentMethods['paymentMethods'])) {
             foreach ($paymentMethods['paymentMethods'] as $paymentMethod) {
-                $issuerList = array();
 
                 if (!$this->isSimplePaymentMethod($paymentMethod)) {
                     continue;
@@ -663,17 +662,7 @@ class Adyen extends PaymentModule
                     continue;
                 }
 
-                if (!empty($paymentMethod['details'])) {
-                    foreach ($paymentMethod['details'] as $paymentMethodDetails) {
-                        if (key_exists('key', $paymentMethodDetails) && $paymentMethodDetails['key'] == 'issuer') {
-                            $issuerList = $paymentMethodDetails['items'];
-                            break;
-                        }
-                    }
-                }
-
                 $smartyVariables = array(
-                    'issuerList' => json_encode($issuerList),
                     'paymentMethodType' => $paymentMethod['type'],
                     'paymentMethodName' => $paymentMethod['name'],
                     'paymentProcessUrl' => $this->context->link->getModuleLink(
@@ -801,7 +790,8 @@ class Adyen extends PaymentModule
 
         $smartyVariables = array(
             'isPrestaShop16' => $this->versionChecker->isPrestaShop16() ? 'true' : 'false',
-            'action' => "" //TODO add stored action
+            'paymentMethodsResponse' => '{}',
+            'action' => "{}" //TODO add stored action
         );
 
         // Add checkout component default configuration parameters for smarty variables
@@ -1048,7 +1038,6 @@ class Adyen extends PaymentModule
     {
         $payments = '';
         foreach ($paymentMethods['paymentMethods'] as $paymentMethod) {
-            $issuerList = array();
 
             if (!$this->isSimplePaymentMethod($paymentMethod)) {
                 continue;
@@ -1059,17 +1048,7 @@ class Adyen extends PaymentModule
                 continue;
             }
 
-            if (isset($paymentMethod['details'])) {
-                foreach ($paymentMethod['details'] as $paymentMethodDetails) {
-                    if (key_exists('key', $paymentMethodDetails) && $paymentMethodDetails['key'] == 'issuer') {
-                        $issuerList = $paymentMethodDetails['items'];
-                        break;
-                    }
-                }
-            }
-
             $smartyVariables = array(
-                'issuerList' => json_encode($issuerList),
                 'paymentMethodType' => $paymentMethod['type'],
                 'paymentMethodName' => $paymentMethod['name'],
                 'paymentProcessUrl' => $this->context->link->getModuleLink(
@@ -1174,9 +1153,13 @@ class Adyen extends PaymentModule
      */
     public function hookActionFrontControllerSetMedia($params)
     {
+        // List of front controllers where we set the assets
+        $frontControllers = array('order', 'order-confirmation');
+
         $controller = $this->context->controller;
-        if ($controller->php_self == 'order') {
-            $this->registerAdyenJavascript($controller);
+
+        if (in_array($controller->php_self, $frontControllers)) {
+            $this->registerAdyenAssets($controller);
         }
     }
 
@@ -1185,11 +1168,13 @@ class Adyen extends PaymentModule
      *
      * @throws \PrestaShop\PrestaShop\Adapter\CoreException
      */
-    private function registerAdyenJavascript($controller)
+    private function registerAdyenAssets($controller)
     {
         /** @var \Adyen\PrestaShop\service\adapter\classes\Controller $controllerAdapter */
         $controllerAdapter = $this->getService('Adyen\PrestaShop\service\adapter\classes\Controller');
         $controllerAdapter->setController($controller);
+
+        // needs to be rendered for each controller
         $controllerAdapter->registerJavascript(
             'adyen-polyfill',
             $this->_path . 'views/js/polyfill.js',
@@ -1201,15 +1186,11 @@ class Adyen extends PaymentModule
                 \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_JS_TEST, // JS path
                 array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
             );
+
             $controllerAdapter->registerStylesheet(
                 'adyen-stylecheckout', // Unique ID
                 \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_CSS_TEST, // CSS path
                 array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
-            );
-
-            $controllerAdapter->registerStylesheet(
-                $this->name . '-adyencss',
-                $this->_path . '/css/adyen.css'
             );
         } else {
             $controllerAdapter->registerJavascript(
@@ -1217,6 +1198,7 @@ class Adyen extends PaymentModule
                 \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_JS_LIVE, // JS path
                 array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
             );
+
             $controllerAdapter->registerStylesheet(
                 'adyen-stylecheckout', // Unique ID
                 \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_CSS_LIVE, // CSS path
@@ -1229,24 +1211,56 @@ class Adyen extends PaymentModule
             $this->_path . 'views/js/checkout-component-renderer.js',
             array('position' => 'bottom', 'priority' => 170)
         );
-        $controllerAdapter->registerJavascript(
-            'adyen-credit-card-validator',
-            $this->_path . 'views/js/payment-components/credit-card.js',
-            array('position' => 'bottom', 'priority' => 170)
-        );
-        $controllerAdapter->registerJavascript(
-            'adyen-local-payment-method',
-            $this->_path . 'views/js/payment-components/local-payment-method.js',
-            array('position' => 'bottom', 'priority' => 170)
-        );
-        $controllerAdapter->registerJavascript(
-            'adyen-stored-payment-method',
-            $this->_path . 'views/js/payment-components/stored-payment-method.js',
-            array('position' => 'bottom', 'priority' => 170)
+
+        $controllerAdapter->registerStylesheet(
+            'adyen-adyencss',
+            $this->_path . '/css/adyen.css'
         );
 
-        if ($this->versionChecker->isPrestaShop16()) {
-            $controller->addJqueryPlugin('fancybox');
+        // Only for Order controller
+        if ($controller->php_self == 'order') {
+            if ($this->helper_data->isDemoMode()) {
+                $controllerAdapter->registerJavascript(
+                    'adyen-threeDS2Utils', // Unique ID
+                    $this->_path . 'views/js/threeds2-js-utils.js', // JS path
+                    array('position' => 'bottom', 'priority' => 160) // Arguments
+                );
+            } else {
+                $controllerAdapter->registerJavascript(
+                    'adyen-threeDS2Utils', // Unique ID
+                    $this->_path . 'views/js/threeds2-js-utils.js', // JS path
+                    array('position' => 'bottom', 'priority' => 160) // Arguments
+                );
+            }
+
+            $controllerAdapter->registerJavascript(
+                'adyen-credit-card-validator',
+                $this->_path . 'views/js/payment-components/credit-card.js',
+                array('position' => 'bottom', 'priority' => 170)
+            );
+            $controllerAdapter->registerJavascript(
+                'adyen-local-payment-method',
+                $this->_path . 'views/js/payment-components/local-payment-method.js',
+                array('position' => 'bottom', 'priority' => 170)
+            );
+            $controllerAdapter->registerJavascript(
+                'adyen-one-click',
+                $this->_path . 'views/js/payment-components/one-click.js',
+                array('position' => 'bottom', 'priority' => 170)
+            );
+
+            if ($this->versionChecker->isPrestaShop16()) {
+                $controller->addJqueryPlugin('fancybox');
+            }
+        }
+
+        // Only for Order-confirmation controller
+        if ($controller->php_self == 'order-confirmation') {
+            $controllerAdapter->registerJavascript(
+                'adyen-order-confirmation',
+                $this->_path . 'views/js/payment-components/order-confirmation.js',
+                array('position' => 'bottom', 'priority' => 170)
+            );
         }
     }
 
