@@ -788,10 +788,19 @@ class Adyen extends PaymentModule
             return null;
         }
 
+        // Start session to retrieve stored action
+        $this->helper_data->startSession();
+        
+        $paymentAction = false;
+
+        if (!empty($_SESSION['paymentAction'])) {
+            $paymentAction = $_SESSION['paymentAction'];
+        }
+
         $smartyVariables = array(
             'isPrestaShop16' => $this->versionChecker->isPrestaShop16() ? 'true' : 'false',
             'paymentMethodsResponse' => '{}',
-            'action' => "{}" //TODO add stored action
+            'action' => json_encode($paymentAction)
         );
 
         // Add checkout component default configuration parameters for smarty variables

@@ -48,6 +48,9 @@ class AdyenPaymentModuleFrontController extends FrontController
      */
     public function postProcess()
     {
+
+        unset($_SESSION['paymentAction']);
+
         $isAjax = false;
         if (!empty($_REQUEST['isAjax'])) {
             $isAjax = true;
@@ -508,7 +511,8 @@ class AdyenPaymentModuleFrontController extends FrontController
                 }
                 break;
             case 'PresentToShopper':
-                // TODO save action in db
+
+                $_SESSION['paymentAction'] = $response['action'];
 
                 $customer = new \Customer($cart->id_customer);
 

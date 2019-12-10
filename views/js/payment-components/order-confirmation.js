@@ -31,7 +31,12 @@ jQuery(function ($) {
         return;
     }
 
-    var paymentAction = paymentActionContainer.data().adyenPaymentAction.action;
+    var paymentAction = paymentActionContainer.data().adyenPaymentAction;
+
+    // If payment action is false, don't try to render the component
+    if (!paymentAction) {
+        return;
+    }
 
     window.adyenCheckout
         .createFromAction(paymentAction)
