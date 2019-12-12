@@ -137,7 +137,8 @@ class Adyen extends PaymentModule
                 $this->registerHook('actionFrontControllerSetMedia') &&
                 $this->createAdyenNotificationTable() &&
                 $this->installTab() &&
-                $this->updateCronJobToken()
+                $this->updateCronJobToken() &&
+                $this->createWaitingForPaymentOrderStatus()
             ) {
                 return true;
             } else {
@@ -156,7 +157,8 @@ class Adyen extends PaymentModule
             $this->registerHook('paymentReturn') &&
             $this->registerHook('actionOrderSlipAdd') &&
             $this->createAdyenNotificationTable() &&
-            $this->updateCronJobToken()) {
+            $this->updateCronJobToken() &&
+            $this->createWaitingForPaymentOrderStatus()) {
             return true;
         } else {
             $this->helper_data->adyenLogger()->logDebug('Adyen module: installation failed!', 4);
@@ -248,6 +250,38 @@ class Adyen extends PaymentModule
     }
 
     /**
+     * Create a new order status: "waiting for payment"
+     * @return mixed
+     */
+    public function createWaitingForPaymentOrderStatus()
+    {
+        if (!\Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT')) {
+            $order_state = new \OrderState(); $order_state->name = [];
+            foreach (\Language::getLanguages() as $language) {
+                $order_state->name[$language['id_lang']] = 'Custom Error State';
+            }
+
+            $order_state->send_email = false;
+            $order_state->invoice = false;
+            $order_state->color = '#ffee12';
+            $order_state->logable = true;
+            $order_state->delivery = false;
+            $order_state->hidden = false;
+            $order_state->shipped = false;
+            $order_state->paid = false;
+            if ($order_state->add()) {
+                $source = _PS_ROOT_DIR_ . '/img/os/' . \Configuration::get('PS_OS_ERROR') . '.gif';
+                $destination = _PS_ROOT_DIR_ . '/img/os/' . (int)$order_state->id . '.gif';
+                copy($source, $destination);
+            }
+
+            return \Configuration::updateValue('ADYEN_OS_WAITING_FOR_PAYMENT', (int)$order_state->id);
+        }
+
+        return true;
+    }
+
+    /**
      *
      */
     private function removeAdyenDatabaseTables()
@@ -273,7 +307,8 @@ class Adyen extends PaymentModule
             'ADYEN_APIKEY_LIVE',
             'ADYEN_NOTI_HMAC',
             'ADYEN_LIVE_ENDPOINT_URL_PREFIX',
-            'ADYEN_CRONJOB_TOKEN'
+            'ADYEN_CRONJOB_TOKEN',
+            'ADYEN_OS_WAITING_FOR_PAYMENT'
         );
 
         $result = true;
