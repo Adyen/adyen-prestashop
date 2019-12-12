@@ -28,12 +28,7 @@ jQuery(function ($) {
     var encryptedSecurityCode;
     var allValidcard;
 
-    var screenWidth;
-    var screenHeight;
-    var colorDepth;
-    var timeZoneOffset;
-    var language;
-    var javaEnabled;
+    var browserInfo;
 
     var placeOrderAllowed;
     var popupModal;
@@ -81,14 +76,7 @@ jQuery(function ($) {
                 'isAjax': true,
                 'encryptedSecurityCode': encryptedSecurityCode,
                 'storedPaymentMethodId': storedPaymentMethod.storedPaymentMethodId,
-                'browserInfo': {
-                    'screenWidth': screenWidth,
-                    'screenHeight': screenHeight,
-                    'colorDepth': colorDepth,
-                    'timeZoneOffset': timeZoneOffset,
-                    'language': language,
-                    'javaEnabled': javaEnabled
-                }
+                'browserInfo': browserInfo
             }, storedPaymentMethod, paymentForm);
         });
     });
@@ -106,13 +94,7 @@ jQuery(function ($) {
                         encryptedSecurityCode = state.data.paymentMethod.encryptedSecurityCode;
                     }
 
-                    javaEnabled = state.data.browserInfo.javaEnabled;
-                    colorDepth = state.data.browserInfo.colorDepth;
-                    screenWidth = state.data.browserInfo.screenWidth;
-                    screenHeight = state.data.browserInfo.screenHeight;
-                    timeZoneOffset = state.data.browserInfo.timeZoneOffset;
-                    language = state.data.browserInfo.language;
-
+                    browserInfo = state.data.browserInfo;
                     allValidcard = true;
                 } else {
                     resetFields();
