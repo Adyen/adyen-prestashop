@@ -270,7 +270,7 @@ class Adyen extends PaymentModule
             $order_state->shipped = false;
             $order_state->paid = false;
             if ($order_state->add()) {
-                $source = _PS_ROOT_DIR_ . '/img/os/13.gif';
+                $source = _PS_ROOT_DIR_ . '/img/os/' . \Configuration::get('PS_OS_BANKWIRE') . '.gif';
                 $destination = _PS_ROOT_DIR_ . '/img/os/' . (int)$order_state->id . '.gif';
                 copy($source, $destination);
             }
