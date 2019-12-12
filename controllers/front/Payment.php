@@ -522,8 +522,7 @@ class AdyenPaymentModuleFrontController extends FrontController
                     $total = (float)$cart->getOrderTotal(true, \Cart::BOTH);
                     $extra_vars = array();
 
-                    // TODO change id from 1 to the newly created waiting for payment status
-                    $this->module->validateOrder($cart->id, 1, $total, $this->module->displayName, null, $extra_vars,
+                    $this->module->validateOrder($cart->id, \Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT'), $total, $this->module->displayName, null, $extra_vars,
                         (int)$currency->id, false, $customer->secure_key);
 
                     $this->redirectUserToPageLink($this->context->link->getPageLink('order-confirmation', $this->ssl, null, 'id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key), $isAjax);
