@@ -1203,7 +1203,7 @@ class Adyen extends PaymentModule
             );
         } else {
             $controllerAdapter->registerJavascript(
-                'adyen-component', // Unique ID
+               'adyen-checkout-component', // Unique ID
                 \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_JS_LIVE, // JS path
                 array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
             );
