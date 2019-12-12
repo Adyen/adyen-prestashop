@@ -1131,6 +1131,11 @@ class Adyen extends PaymentModule
         /** @var \Adyen\PrestaShop\service\adapter\classes\Controller $controllerAdapter */
         $controllerAdapter = $this->getService('Adyen\PrestaShop\service\adapter\classes\Controller');
         $controllerAdapter->setController($controller);
+        $controllerAdapter->registerJavascript(
+            'adyen-polyfill',
+            $this->_path . 'views/js/polyfill.js',
+            array('position' => 'bottom', 'priority' => 140)
+        );
         if ($this->helper_data->isDemoMode()) {
             $controllerAdapter->registerJavascript(
                 'adyen-checkout-component', // Unique ID

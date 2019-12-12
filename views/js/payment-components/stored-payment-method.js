@@ -87,7 +87,7 @@ jQuery(function ($) {
     function renderStoredPaymentComponent(storedPaymentMethod) {
 
         /*Use the storedPaymentMethod object and the custom onChange function as the configuration object together*/
-         var configuration = mergeObjects([storedPaymentMethod, {
+        var configuration = Object.assign(storedPaymentMethod, {
             onChange: function (state, component) {
                 if (state.isValid && !component.state.errors.encryptedSecurityCode) {
                     if (state.data.paymentMethod.encryptedSecurityCode) {
@@ -99,25 +99,11 @@ jQuery(function ($) {
                 } else {
                     resetFields();
                 }
-            }}]
+            }
+            }
          );
 
         var card = window.adyenCheckout.create('card', configuration).mount("#cardContainer-" + storedPaymentMethod.id);
-    }
-
-    /**
-     * Merge objects from an array of objects, key by key, IE 9+ compatible
-     * @param objectArray
-     * @returns {*}
-     */
-    function mergeObjects(objectArray)
-    {
-        return objectArray.reduce(function (r, o) {
-            Object.keys(o).forEach(function (k) {
-                r[k] = o[k];
-            });
-            return r;
-        }, {});
     }
 
     /**
