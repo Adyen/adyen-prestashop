@@ -258,19 +258,19 @@ class Adyen extends PaymentModule
         if (!\Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT')) {
             $order_state = new \OrderState(); $order_state->name = [];
             foreach (\Language::getLanguages() as $language) {
-                $order_state->name[$language['id_lang']] = 'Custom Error State';
+                $order_state->name[$language['id_lang']] = 'Waiting for payment';
             }
 
             $order_state->send_email = false;
             $order_state->invoice = false;
-            $order_state->color = '#ffee12';
+            $order_state->color = '#4169E1';
             $order_state->logable = true;
             $order_state->delivery = false;
             $order_state->hidden = false;
             $order_state->shipped = false;
             $order_state->paid = false;
             if ($order_state->add()) {
-                $source = _PS_ROOT_DIR_ . '/img/os/' . \Configuration::get('PS_OS_ERROR') . '.gif';
+                $source = _PS_ROOT_DIR_ . '/img/os/13.gif';
                 $destination = _PS_ROOT_DIR_ . '/img/os/' . (int)$order_state->id . '.gif';
                 copy($source, $destination);
             }
@@ -307,8 +307,7 @@ class Adyen extends PaymentModule
             'ADYEN_APIKEY_LIVE',
             'ADYEN_NOTI_HMAC',
             'ADYEN_LIVE_ENDPOINT_URL_PREFIX',
-            'ADYEN_CRONJOB_TOKEN',
-            'ADYEN_OS_WAITING_FOR_PAYMENT'
+            'ADYEN_CRONJOB_TOKEN'
         );
 
         $result = true;
