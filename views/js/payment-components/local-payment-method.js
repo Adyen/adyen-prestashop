@@ -34,7 +34,6 @@ jQuery(function ($) {
             return;
         }
 
-        //  paymentMethod.type = $paymentMethodType in the local-payment-method.tpl
         //  if the container doesn't exits don't try to render the component
         var paymentMethodContainer = $('[data-local-payment-method="' + paymentMethod.type + '"]');
 
