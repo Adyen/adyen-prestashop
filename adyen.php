@@ -256,7 +256,7 @@ class Adyen extends PaymentModule
     public function createWaitingForPaymentOrderStatus()
     {
         if (!\Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT')) {
-            $order_state = new \OrderState(); $order_state->name = [];
+            $order_state = new \OrderState(); $order_state->name = array();
             foreach (\Language::getLanguages() as $language) {
                 $order_state->name[$language['id_lang']] = 'Waiting for payment';
             }
