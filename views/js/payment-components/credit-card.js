@@ -31,12 +31,7 @@ jQuery(function ($) {
     var encryptedSecurityCode;
     var allValidCard;
 
-    var screenWidth;
-    var screenHeight;
-    var colorDepth;
-    var timeZoneOffset;
-    var language;
-    var javaEnabled;
+    var browserInfo;
 
     var placeOrderAllowed;
     var popupModal;
@@ -65,14 +60,7 @@ jQuery(function ($) {
                 'encryptedExpiryYear': encryptedExpiryYear,
                 'encryptedSecurityCode': encryptedSecurityCode,
                 'storeCc': storeCc,
-                'browserInfo': {
-                    'screenWidth': screenWidth,
-                    'screenHeight': screenHeight,
-                    'colorDepth': colorDepth,
-                    'timeZoneOffset': timeZoneOffset,
-                    'language': language,
-                    'javaEnabled': javaEnabled
-                }
+                'browserInfo': browserInfo
             });
 
             return false;
@@ -82,7 +70,6 @@ jQuery(function ($) {
     });
 
     renderCardComponent();
-    fillBrowserInfo();
 
     /**
      * Renders checkout card component
@@ -106,6 +93,7 @@ jQuery(function ($) {
                         encryptedSecurityCode = state.data.paymentMethod.encryptedSecurityCode;
                     }
 
+                    browserInfo = state.data.browserInfo;
                     allValidCard = true;
                 } else {
                     resetFields();
@@ -288,19 +276,5 @@ jQuery(function ($) {
         encryptedExpiryYear = "";
         encryptedSecurityCode = "";
         allValidCard = false;
-    }
-
-    /**
-     *  Using the threeds2-js-utils.js to fill browserinfo
-     */
-    function fillBrowserInfo() {
-        var browserInfo = ThreedDS2Utils.getBrowserInfo();
-
-        javaEnabled = browserInfo.javaEnabled;
-        colorDepth = browserInfo.colorDepth;
-        screenWidth = browserInfo.screenWidth;
-        screenHeight = browserInfo.screenHeight;
-        timeZoneOffset = browserInfo.timeZoneOffset;
-        language = browserInfo.language;
     }
 });

@@ -310,9 +310,9 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
             $request['shopperReference'] = $shopperReference;
         }
 
-        //Oneclick data
-        if(!empty($payload['recurringDetailReference'])) {
-            $request['paymentMethod']['recurringDetailReference'] = $payload['recurringDetailReference'];
+        //storedPayment data
+        if(!empty($payload['storedPaymentMethodId'])) {
+            $request['paymentMethod']['storedPaymentMethodId'] = $payload['storedPaymentMethodId'];
         }
 
         // 3DS2 request data

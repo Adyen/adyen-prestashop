@@ -583,10 +583,10 @@ class Adyen extends PaymentModule
         //retrieve payment methods
         $paymentMethods = $this->helper_data->fetchPaymentMethods($this->context->cart, $this->context->language);
 
-        if (!$this->context->customer->is_guest && !empty($paymentMethods['oneClickPaymentMethods'])) {
-            $oneClickPaymentMethods = $paymentMethods['oneClickPaymentMethods'];
-            foreach ($oneClickPaymentMethods as $storedCard) {
-                if (!empty($storedCard["storedDetails"]["card"])) {
+        if (!$this->context->customer->is_guest && !empty($paymentMethods['storedPaymentMethods'])) {
+            $storedPaymentMethods = $paymentMethods['storedPaymentMethods'];
+            foreach ($storedPaymentMethods as $storedPaymentMethod) {
+                if (!empty($storedPaymentMethod)) {
                     $this->context->smarty->assign(
                         array(
                             'locale' => $this->helper_data->getLocale($this->context->language),
@@ -599,25 +599,24 @@ class Adyen extends PaymentModule
                                 $this->name, 'ThreeDSProcess', array(), true
                             ),
                             'prestashop16' => false,
-                            'oneClickPaymentMethod' => json_encode($storedCard),
-                            'recurringDetailReference' => $storedCard['recurringDetailReference']
+                            'storedPaymentApiId' => $storedPaymentMethod['id']
                         )
                     );
                 }
                 $oneClickOption = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
                 $oneClickOption->setCallToActionText(
                     $this->l(
-                        'Pay by saved ' . $storedCard['name'] . " ending: " . $storedCard['storedDetails']['card']['number']
+                        'Pay by saved ' . $storedPaymentMethod['name'] . " ending: " . $storedPaymentMethod['lastFour']
                     )
                 )
                                ->setForm(
                                    $this->context->smarty->fetch(
-                                       _PS_MODULE_DIR_ . $this->name . '/views/templates/front/oneclick.tpl'
+                                       _PS_MODULE_DIR_ . $this->name . '/views/templates/front/stored-payment-method.tpl'
                                    )
                                )
                                ->setLogo(
                                    \Media::getMediaPath(
-                                       _PS_MODULE_DIR_ . $this->name . '/views/img/' . $storedCard['type'] . '.png'
+                                       _PS_MODULE_DIR_ . $this->name . '/views/img/' . $storedPaymentMethod['type'] . '.png'
                                    )
                                )
                                ->setAction($this->context->link->getModuleLink($this->name, 'Payment', array(), true));
@@ -717,7 +716,7 @@ class Adyen extends PaymentModule
 
         $payments = "";
         $paymentMethods = $this->helper_data->fetchPaymentMethods($this->context->cart, $this->context->language);
-        if (!$this->context->customer->is_guest && !empty($paymentMethods['oneClickPaymentMethods'])) {
+        if (!$this->context->customer->is_guest && !empty($paymentMethods['storedPaymentMethods'])) {
             $payments .= $this->getOneClickPaymentMethods($paymentMethods);
         }
 
@@ -956,9 +955,10 @@ class Adyen extends PaymentModule
     private function getOneClickPaymentMethods(array $paymentMethods)
     {
         $payments = '';
-        $oneClickPaymentMethods = $paymentMethods['oneClickPaymentMethods'];
-        foreach ($oneClickPaymentMethods as $storedCard) {
-            if (!empty($storedCard["storedDetails"]["card"])) {
+        $storedPaymentMethods = $paymentMethods['storedPaymentMethods'];
+
+        foreach ($storedPaymentMethods as $storedPayment) {
+            if (!empty($storedPayment)) {
                 $this->context->smarty->assign(
                     array(
                         'locale' => $this->helper_data->getLocale($this->context->language),
@@ -973,14 +973,13 @@ class Adyen extends PaymentModule
                             array(), true
                         ),
                         'prestashop16' => true,
-                        'oneClickPaymentMethod' => json_encode($storedCard),
-                        'recurringDetailReference' => $storedCard['recurringDetailReference'],
-                        'name' => $storedCard['name'],
-                        'number' => $storedCard['storedDetails']['card']['number']
+                        'storedPaymentApiId' => $storedPayment['id'],
+                        'name' => $storedPayment['name'],
+                        'number' => $storedPayment['lastFour']
                     )
                 );
             }
-            $payments .= $this->display(__FILE__, '/views/templates/front/oneclick.tpl');
+            $payments .= $this->display(__FILE__, '/views/templates/front/stored-payment-method.tpl');
         }
         return $payments;
     }
@@ -1132,16 +1131,16 @@ class Adyen extends PaymentModule
         /** @var \Adyen\PrestaShop\service\adapter\classes\Controller $controllerAdapter */
         $controllerAdapter = $this->getService('Adyen\PrestaShop\service\adapter\classes\Controller');
         $controllerAdapter->setController($controller);
+        $controllerAdapter->registerJavascript(
+            'adyen-polyfill',
+            $this->_path . 'views/js/polyfill.js',
+            array('position' => 'bottom', 'priority' => 140)
+        );
         if ($this->helper_data->isDemoMode()) {
             $controllerAdapter->registerJavascript(
                 'adyen-checkout-component', // Unique ID
                 \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_JS_TEST, // JS path
                 array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
-            );
-            $controllerAdapter->registerJavascript(
-                'adyen-threeDS2Utils', // Unique ID
-                $this->_path . 'views/js/threeds2-js-utils.js', // JS path
-                array('position' => 'bottom', 'priority' => 160) // Arguments
             );
             $controllerAdapter->registerStylesheet(
                 'adyen-stylecheckout', // Unique ID
@@ -1158,11 +1157,6 @@ class Adyen extends PaymentModule
                 'adyen-component', // Unique ID
                 \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_JS_LIVE, // JS path
                 array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
-            );
-            $controllerAdapter->registerJavascript(
-                'adyen-threeDS2Utils', // Unique ID
-                $this->_path . 'views/js/threeds2-js-utils.js', // JS path
-                array('position' => 'bottom', 'priority' => 160) // Arguments
             );
             $controllerAdapter->registerStylesheet(
                 'adyen-stylecheckout', // Unique ID
@@ -1187,8 +1181,8 @@ class Adyen extends PaymentModule
             array('position' => 'bottom', 'priority' => 170)
         );
         $controllerAdapter->registerJavascript(
-            'adyen-one-click',
-            $this->_path . 'views/js/payment-components/one-click.js',
+            'adyen-stored-payment-method',
+            $this->_path . 'views/js/payment-components/stored-payment-method.js',
             array('position' => 'bottom', 'priority' => 170)
         );
 
