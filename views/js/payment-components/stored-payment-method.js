@@ -42,7 +42,7 @@ jQuery(function ($) {
     checkoutStoredPaymentMethods.forEach(function (storedPaymentMethod) {
 
         //  storedPaymentMethod.id = $storedPaymentApiId in the stored-payment-method.tpl
-        //  if the container doesn't exits don't try to render the component
+        //  don't try to render the component if the container doesn't exist
         var storedPaymentMethodContainer = $("#cardContainer-" + storedPaymentMethod.id);
 
         // container doesn't exist, something went wrong on the template side
