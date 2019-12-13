@@ -1184,11 +1184,6 @@ class Adyen extends PaymentModule
         $controllerAdapter->setController($controller);
 
         // needs to be rendered for each controller
-        $controllerAdapter->registerJavascript(
-            'adyen-polyfill',
-            $this->_path . 'views/js/polyfill.js',
-            array('position' => 'bottom', 'priority' => 140)
-        );
         if ($this->helper_data->isDemoMode()) {
             $controllerAdapter->registerJavascript(
                 'adyen-checkout-component', // Unique ID
@@ -1214,6 +1209,12 @@ class Adyen extends PaymentModule
                 array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
             );
         }
+
+        $controllerAdapter->registerJavascript(
+            'adyen-polyfill',
+            $this->_path . 'views/js/polyfill.js',
+            array('position' => 'bottom', 'priority' => 140)
+        );
 
         $controllerAdapter->registerJavascript(
             'adyen-component-renderer',
