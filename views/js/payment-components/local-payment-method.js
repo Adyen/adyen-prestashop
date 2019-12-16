@@ -43,13 +43,13 @@ jQuery(function ($) {
         }
 
         /*Use the storedPaymentMethod object and the custom onChange function as the configuration object together*/
-        var configuration = mergeObjects([paymentMethod, {
+        var configuration = Object.assign(paymentMethod, {
             'onChange': function (state) {
                 if (state.isValid) {
                     paymentMethodContainer.find('[name="adyen-payment-issuer"]').val(state.data.paymentMethod.issuer);
                 }
             }
-        }]);
+        });
 
         adyenCheckout
             .create(paymentMethod.type, configuration)
