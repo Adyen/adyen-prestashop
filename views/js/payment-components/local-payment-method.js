@@ -46,7 +46,7 @@ jQuery(function ($) {
         var configuration = mergeObjects([paymentMethod, {
             'onChange': function (state) {
                 if (state.isValid) {
-                    element.find('[name="adyen-payment-issuer"]').val(state.data.paymentMethod.issuer);
+                    paymentMethodContainer.find('[name="adyen-payment-issuer"]').val(state.data.paymentMethod.issuer);
                 }
             }
         }]);
@@ -56,20 +56,5 @@ jQuery(function ($) {
             .mount(paymentMethodContainer.find('[data-adyen-payment-container]').get(0));
 
     });
-
-    /**
-     * Merge objects from an array of objects, key by key, IE 9+ compatible
-     * @param objectArray
-     * @returns {*}
-     */
-    function mergeObjects(objectArray)
-    {
-        return objectArray.reduce(function (r, o) {
-            Object.keys(o).forEach(function (k) {
-                r[k] = o[k];
-            });
-            return r;
-        }, {});
-    }
 });
 
