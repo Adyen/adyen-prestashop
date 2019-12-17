@@ -118,6 +118,15 @@ class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\control
             ));
         }
 
+        if ($result['resultCode'] == 'Refused') {
+            $this->ajaxRender(
+                $this->helperData->buildControllerResponseJson(
+                    'error',
+                    array('message' => 'The payment was refused')
+                )
+            );
+        }
+
         // Payment can get back to the original flow
         // Save the payments response because we are going to need it during the place order flow
         $_SESSION["paymentsResponse"] = $result;
