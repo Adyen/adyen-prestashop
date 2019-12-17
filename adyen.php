@@ -610,7 +610,10 @@ class Adyen extends PaymentModule
             $storedPaymentMethods = $paymentMethods['storedPaymentMethods'];
             foreach ($storedPaymentMethods as $storedPaymentMethod) {
                 if (!empty($storedPaymentMethod)) {
-
+                    // Only show on the frontend the Ecommerce stored payment methods and not the ContAuth
+                    if (!in_array('Ecommerce', $storedPaymentMethod['supportedShopperInteractions'])) {
+                        continue;
+                    }
                     $smartyVariables = array(
                         'paymentProcessUrl' => $this->context->link->getModuleLink(
                             $this->name, 'Payment', array(), true
@@ -1012,6 +1015,11 @@ class Adyen extends PaymentModule
         $storedPaymentMethods = $paymentMethods['storedPaymentMethods'];
         foreach ($storedPaymentMethods as $storedPayment) {
             if (!empty($storedPayment)) {
+                // Only show on the frontend the Ecommerce stored payment methods and not the ContAuth
+                if (!in_array('Ecommerce', $storedPayment['supportedShopperInteractions'])) {
+                    continue;
+                }
+
                 $smartyVariables = array(
                     'paymentProcessUrl' => $this->context->link->getModuleLink(
                         $this->name, 'Payment', array(),
