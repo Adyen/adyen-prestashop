@@ -1,5 +1,4 @@
-<?php
-/**
+/*
  *                       ######
  *                       ######
  * ############    ####( ######  #####. ######  ############   ############
@@ -20,23 +19,27 @@
  * See the LICENSE file for more info.
  */
 
-// This file declares a function and checks if PrestaShop is loaded to follow
-// PrestaShop's good practices, which breaks a PSR1 element.
-//phpcs:disable PSR1.Files.SideEffects
+jQuery(function ($) {
+    if (!window.adyenCheckout) {
+        return;
+    }
 
-if (!defined('_PS_VERSION_')) {
-    exit;
-}
+    var paymentActionContainer = $('[data-adyen-payment-action-container]');
 
-/**
- * This function is automatically called on version upgrades.
- *
- * @param Adyen $module
- *
- * @return bool
- */
-function upgrade_module_1_3_0(Adyen $module)
-{
-    return $module->unregisterHook('orderConfirmation') &&
-        $module->createWaitingForPaymentOrderStatus();
-}
+    // container doesn't exist, something went wrong on the template side
+    if (!paymentActionContainer.length) {
+        return;
+    }
+
+    var paymentAction = paymentActionContainer.data().adyenPaymentAction;
+
+    // If payment action is false, don't try to render the component
+    if (!paymentAction) {
+        return;
+    }
+
+    window.adyenCheckout
+        .createFromAction(paymentAction)
+        .mount('[data-adyen-payment-action-container]');
+});
+

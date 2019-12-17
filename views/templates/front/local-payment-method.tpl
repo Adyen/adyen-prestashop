@@ -6,7 +6,6 @@
 {else}
     <div class="row {$paymentMethodType|escape:'html'}"
          data-local-payment-method="{$paymentMethodType|escape:'html'}"
-         data-issuer-list="{$issuerList|escape:'html'}"
     >
         <div class="adyen-payment-method-label">{l s='Pay with ' mod='adyen'}{$paymentMethodName}</div>
         <form action="{$paymentProcessUrl}" method="post">

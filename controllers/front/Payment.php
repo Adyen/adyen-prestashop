@@ -25,8 +25,10 @@
 // phpcs:disable PSR1.Classes.ClassDeclaration
 
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
+use Adyen\PrestaShop\controllers\FrontController;
+use \Adyen\AdyenException;
 
-class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\FrontController
+class AdyenPaymentModuleFrontController extends FrontController
 {
     public $ssl = true;
 
@@ -36,22 +38,29 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
     public function __construct()
     {
         parent::__construct();
-        $this->context = \Context::getContext();
 
         $this->helperData->startSession();
     }
 
     /**
-     * @return mixed
-     * @throws \Adyen\AdyenException
+     * @return mixed|null
+     * @throws AdyenException
      */
     public function postProcess()
     {
+
+        unset($_SESSION['paymentAction']);
+
+        $isAjax = false;
+        if (!empty($_REQUEST['isAjax'])) {
+            $isAjax = true;
+        }
+
         $cart = $this->context->cart;
         $adyenPaymentType = Tools::getValue('adyen-payment-type');
         if (!empty($adyenPaymentType)) {
-            $this->processLocalPaymentMethod($cart, $adyenPaymentType, Tools::getValue('adyen-payment-issuer'));
-            return;
+            $this->processLocalPaymentMethod($cart, $adyenPaymentType, Tools::getValue('adyen-payment-issuer'), $isAjax);
+            return null;
         }
         // Handle 3DS1 flow, when the payments call is already done and the details are submitted from the frontend, by the place order button
         if (!empty($_REQUEST['paRequest']) && !empty($_REQUEST['md']) && !empty($_REQUEST['issuerUrl']) && !empty($_REQUEST['paymentData']) && !empty($_REQUEST['redirectMethod'])) {
@@ -94,7 +103,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
 
             try {
                 $response = $service->payments($request);
-            } catch (\Adyen\AdyenException $e) {
+            } catch (AdyenException $e) {
                 $this->helperData->adyenLogger()->logError("There was an error with the payment method. id:  " . $cart->id . " Response: " . $e->getMessage());
 
                 $this->ajaxRender(
@@ -115,14 +124,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
         $customer = new \Customer($cart->id_customer);
 
         if (!\Validate::isLoadedObject($customer)) {
-            if (empty($_REQUEST['isAjax'])) {
-                \Tools::redirect($this->context->link->getPageLink('order', $this->ssl, null, 'step=1'));
-            } else {
-                $this->ajaxRender($this->helperData->buildControllerResponseJson('redirect',
-                    array('redirectUrl' => $this->context->link->getPageLink('order', $this->ssl, null, 'step=1'))
-                )
-                );
-            }
+            $this->redirectUserToPageLink($this->context->link->getPageLink('order', $this->ssl, null, 'step=1'), $isAjax);
         }
 
         $currency = $this->context->currency;
@@ -164,21 +166,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                     }
                 }
 
-                // Since this controller handles ajax and non ajax form submissions as well, both server side and client side redirects needs to be handled based on the isAjax request parameter
-                if (empty($_REQUEST['isAjax'])) {
-                    \Tools::redirect($this->context->link->getPageLink('order-confirmation', $this->ssl, null, 'id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key));
-                } else {
-                    $this->ajaxRender(
-                        $this->helperData->buildControllerResponseJson(
-                            'redirect', array(
-                            'redirectUrl' => $this->context->link->getPageLink(
-                                'order-confirmation', $this->ssl, null,
-                                'id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key
-                            )
-                        )
-                        )
-                    );
-                }
+                $this->redirectUserToPageLink($this->context->link->getPageLink('order-confirmation', $this->ssl, null, 'id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key), $isAjax);
 
                 break;
             case 'Refused':
@@ -450,7 +438,14 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
         return $request;
     }
 
-    private function processLocalPaymentMethod(\Cart $cart, $paymentType, $paymentIssuer)
+    /**
+     * @param Cart $cart
+     * @param $paymentType
+     * @param $paymentIssuer
+     * @param $isAjax
+     * @throws AdyenException
+     */
+    private function processLocalPaymentMethod(\Cart $cart, $paymentType, $paymentIssuer, $isAjax)
     {
         $request = array();
         $request = $this->buildBrowserData($request);
@@ -465,7 +460,7 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
 
         try {
             $response = $service->payments($request);
-        } catch (\Adyen\AdyenException $e) {
+        } catch (AdyenException $e) {
             $this->helperData->adyenLogger()->logError(
                 "There was an error with the payment method. id:  " . $cart->id . " Response: " . $e->getMessage()
             );
@@ -515,6 +510,25 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                     $isValid = false;
                 }
                 break;
+            case 'PresentToShopper':
+
+                $_SESSION['paymentAction'] = $response['action'];
+
+                $customer = new \Customer($cart->id_customer);
+
+                if (\Validate::isLoadedObject($customer)) {
+
+                    $currency = $this->context->currency;
+                    $total = (float)$cart->getOrderTotal(true, \Cart::BOTH);
+                    $extra_vars = array();
+
+                    $this->module->validateOrder($cart->id, \Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT'), $total, $this->module->displayName, null, $extra_vars,
+                        (int)$currency->id, false, $customer->secure_key);
+
+                    $this->redirectUserToPageLink($this->context->link->getPageLink('order-confirmation', $this->ssl, null, 'id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key), $isAjax);
+                }
+
+                break;
             default:
                 $this->helperData->adyenLogger()->logError(
                     'Unsupported result code in response: ' . print_r($response, true)
@@ -527,6 +541,29 @@ class AdyenPaymentModuleFrontController extends \Adyen\PrestaShop\controllers\Fr
                     )
                 );
                 return;
+        }
+    }
+
+    /**
+     * This controller handles ajax and non ajax form submissions as well, both server side and client side redirects
+     * needs to be handled based on the $isAjax parameter
+     *
+     * @param string $pageLink
+     * @param bool $isAjax
+     * @throws AdyenException
+     */
+    private function redirectUserToPageLink($pageLink, $isAjax = false)
+    {
+        if (!$isAjax) {
+            \Tools::redirect($pageLink);
+        } else {
+            $this->ajaxRender(
+                $this->helperData->buildControllerResponseJson(
+                    'redirect', array(
+                        'redirectUrl' => $pageLink
+                    )
+                )
+            );
         }
     }
 }
