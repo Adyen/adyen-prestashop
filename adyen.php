@@ -1237,20 +1237,6 @@ class Adyen extends PaymentModule
 
         // Only for Order controller
         if ($controller->php_self == 'order') {
-            if ($this->helper_data->isDemoMode()) {
-                $controllerAdapter->registerJavascript(
-                    'adyen-threeDS2Utils', // Unique ID
-                    $this->_path . 'views/js/threeds2-js-utils.js', // JS path
-                    array('position' => 'bottom', 'priority' => 160) // Arguments
-                );
-            } else {
-                $controllerAdapter->registerJavascript(
-                    'adyen-threeDS2Utils', // Unique ID
-                    $this->_path . 'views/js/threeds2-js-utils.js', // JS path
-                    array('position' => 'bottom', 'priority' => 160) // Arguments
-                );
-            }
-
             $controllerAdapter->registerJavascript(
                 'adyen-credit-card-validator',
                 $this->_path . 'views/js/payment-components/credit-card.js',
@@ -1262,8 +1248,8 @@ class Adyen extends PaymentModule
                 array('position' => 'bottom', 'priority' => 170)
             );
             $controllerAdapter->registerJavascript(
-                'adyen-one-click',
-                $this->_path . 'views/js/payment-components/one-click.js',
+                'adyen-stored-payment-method',
+                $this->_path . 'views/js/payment-components/stored-payment-method.js',
                 array('position' => 'bottom', 'priority' => 170)
             );
 
