@@ -773,7 +773,7 @@ class Adyen extends PaymentModule
      *
      * @return array
      */
-    public function getCheckoutComponentInitData()
+    private function getCheckoutComponentInitData()
     {
         return array(
             'locale' => $this->helper_data->getLocale($this->context->language),
