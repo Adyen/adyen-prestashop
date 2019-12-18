@@ -118,7 +118,7 @@ class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\control
             ));
         }
 
-        if ($result['resultCode'] == 'Refused') {
+        if (!empty($result['resultCode']) && $result['resultCode'] == 'Refused') {
             $this->ajaxRender(
                 $this->helperData->buildControllerResponseJson(
                     'error',
