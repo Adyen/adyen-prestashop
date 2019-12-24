@@ -1,3 +1,24 @@
+/*
+ *                       ######
+ *                       ######
+ * ############    ####( ######  #####. ######  ############   ############
+ * #############  #####( ######  #####. ######  #############  #############
+ *        ######  #####( ######  #####. ######  #####  ######  #####  ######
+ * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
+ * ###### ######  #####( ######  #####. ######  #####          #####  ######
+ * #############  #############  #############  #############  #####  ######
+ *  ############   ############  #############   ############  #####  ######
+ *                                      ######
+ *                               #############
+ *                               ############
+ *
+ * Adyen PrestaShop plugin
+ *
+ * Copyright (c) 2019 Adyen B.V.
+ * This file is open source and available under the MIT license.
+ * See the LICENSE file for more info.
+ */
+
 .adyen-logo-link { margin-top: 10px;}
 .adyen-logo { margin-top: -13px;} 
 
@@ -14,13 +35,6 @@ ul.adyen-hpp-options { list-style-type:none; margin-left:10px;}
 				ul.adyen-hpp-options li ul.payment_form_ideal input { margin-top:25px;}
 
 div.adyen-payment #errors {
-	margin: 0 0 10px 0;
-	padding: 10px;
-	border: 1px solid #900;
-	color: #900;
-	font-size: 13px;
-	background: #FCC;
-	width: 210px;
 	display: none;
 }
 

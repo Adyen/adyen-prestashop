@@ -19,7 +19,7 @@
             >
 
                 <!-- Display payment errors -->
-                <div id="errors" role="alert"></div>
+                <div id="errors" class="alert alert-danger" role="alert"></div>
 
                 <div class="checkout-container" id="cardContainer"></div>
                 <input type="hidden" name="paymentData"/>
