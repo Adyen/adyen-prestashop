@@ -29,7 +29,17 @@ class Client extends \Adyen\Client
      */
     private $configuration;
 
-    public function __construct(\Adyen\PrestaShop\service\adapter\classes\Configuration $configuration)
+    /**
+     * Client constructor.
+     *
+     * @param adapter\classes\Configuration $configuration
+     * @param logger\Logger $logger
+     * @throws \Adyen\AdyenException
+     */
+    public function __construct(
+        \Adyen\PrestaShop\service\adapter\classes\Configuration $configuration,
+        \Adyen\PrestaShop\service\logger\Logger $logger
+    )
     {
         parent::__construct();
         $this->setXApiKey($configuration->apiKey);
@@ -39,6 +49,8 @@ class Client extends \Adyen\Client
         );
         $this->setExternalPlatform("PrestaShop", _PS_VERSION_);
         $this->setEnvironment($configuration->adyenMode, $configuration->liveEndpointPrefix);
+
+        $this->setLogger($logger);
 
         $this->configuration = $configuration;
     }
