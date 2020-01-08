@@ -104,7 +104,7 @@ class AdyenPaymentModuleFrontController extends FrontController
             try {
                 $response = $service->payments($request);
             } catch (AdyenException $e) {
-                $this->helperData->adyenLogger()->logError("There was an error with the payment method. id:  " . $cart->id . " Response: " . $e->getMessage());
+                $this->logger->error("There was an error with the payment method. id:  " . $cart->id . " Response: " . $e->getMessage());
 
                 $this->ajaxRender(
                     $this->helperData->buildControllerResponseJson(
@@ -172,7 +172,7 @@ class AdyenPaymentModuleFrontController extends FrontController
             case 'Refused':
                 // In case of refused payment there is no order created and the cart needs to be cloned and reinitiated
                 $this->helperData->cloneCurrentCart($this->context, $cart);
-                $this->helperData->adyenLogger()->logError("The payment was refused, id:  " . $cart->id);
+                $this->logger->error("The payment was refused, id:  " . $cart->id);
 
                 $this->ajaxRender(
                     $this->helperData->buildControllerResponseJson(
@@ -234,14 +234,14 @@ class AdyenPaymentModuleFrontController extends FrontController
                         )
                     ));
                 } else {
-                    $this->helperData->adyenLogger()->logError("3DS secure is not valid. ID:  " . $cart->id);
+                    $this->logger->error("3DS secure is not valid. ID:  " . $cart->id);
                 }
                 break;
             default:
                 //8_PS_OS_ERROR_ : payment error
                 $this->module->validateOrder($cart->id, 8, $total, $this->module->displayName, null, $extra_vars,
                     (int)$currency->id, false, $customer->secure_key);
-                $this->helperData->adyenLogger()->logError("There was an error with the payment method. id:  " . $cart->id);
+                $this->logger->error("There was an error with the payment method. id:  " . $cart->id);
 
                 return $this->setTemplate($this->helperData->getTemplateFromModulePath('views/templates/front/error.tpl'));
                 break;
@@ -461,7 +461,7 @@ class AdyenPaymentModuleFrontController extends FrontController
         try {
             $response = $service->payments($request);
         } catch (AdyenException $e) {
-            $this->helperData->adyenLogger()->logError(
+            $this->logger->error(
                 "There was an error with the payment method. id:  " . $cart->id . " Response: " . $e->getMessage()
             );
 
@@ -530,7 +530,7 @@ class AdyenPaymentModuleFrontController extends FrontController
 
                 break;
             default:
-                $this->helperData->adyenLogger()->logError(
+                $this->logger->error(
                     'Unsupported result code in response: ' . print_r($response, true)
                 );
 

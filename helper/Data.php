@@ -28,6 +28,7 @@ use Adyen\AdyenException;
 use Adyen\PrestaShop\service\adapter\classes\Configuration;
 use Adyen\PrestaShop\service\Checkout;
 use Adyen\PrestaShop\service\CheckoutUtility;
+use Adyen\PrestaShop\service\logger\Logger;
 use Country;
 use Currency;
 
@@ -58,16 +59,31 @@ class Data
      */
     private $configuration;
 
+    /**
+     * @var Logger
+     */
+    private $logger;
+
+    /**
+     * Data constructor.
+     *
+     * @param Configuration $configuration
+     * @param CheckoutUtility $adyenCheckoutUtilityService
+     * @param Checkout $adyenCheckoutService
+     * @param Logger $logger
+     */
     public function __construct(
         Configuration $configuration,
         CheckoutUtility $adyenCheckoutUtilityService,
-        Checkout $adyenCheckoutService
+        Checkout $adyenCheckoutService,
+        Logger $logger
     ) {
         $this->httpHost = $configuration->httpHost;
         $this->sslEncryptionKey = $configuration->sslEncryptionKey;
         $this->adyenCheckoutUtilityService = $adyenCheckoutUtilityService;
         $this->adyenCheckoutService = $adyenCheckoutService;
         $this->configuration = $configuration;
+        $this->logger = $logger;
     }
 
     /**
@@ -82,7 +98,7 @@ class Data
         try {
             $response = $this->adyenCheckoutUtilityService->originKeys($params);
         } catch (AdyenException $e) {
-            $this->adyenLogger()->logError("exception: " . $e->getMessage());
+            $this->logger->error("getOriginKeyForOrigin failed. ", $e);
         }
 
         $originKey = "";
@@ -91,7 +107,7 @@ class Data
         if (!empty($response['originKeys'][$this->httpHost])) {
             $originKey = $response['originKeys'][$this->httpHost];
         } else {
-            $this->adyenLogger()->logError("OriginKey is empty, please verify that your API key is correct");
+            $this->logger->error("OriginKey is empty, please verify that your API key is correct");
         }
 
         return $originKey;
@@ -108,7 +124,7 @@ class Data
         $merchantAccount = \Configuration::get('ADYEN_MERCHANT_ACCOUNT');
 
         if (!$merchantAccount) {
-            $this->adyenLogger()->logError(
+            $this->logger->error(
                 "The merchant account field is empty, check your Adyen configuration in Prestashop."
             );
             return array();
@@ -141,7 +157,7 @@ class Data
         try {
             $responseData = $this->adyenCheckoutService->paymentMethods($adyenFields);
         } catch (\Adyen\AdyenException $e) {
-            $this->adyenLogger()->logError("There was an error retrieving the payment methods. message: " . $e->getMessage());
+            $this->logger->error("There was an error retrieving the payment methods. message: " . $e->getMessage());
         }
         return $responseData;
     }
@@ -196,7 +212,7 @@ class Data
     public function decrypt($data)
     {
         if (empty($data)) {
-            $this->adyenLogger()->logDebug("decrypt got empty parameter");
+            $this->logger->debug("decrypt got empty parameter");
             return '';
         }
 

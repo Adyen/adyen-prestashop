@@ -84,10 +84,10 @@ class Refund
         try {
             $pspReference = $this->getPSPReferenceByOrderId($orderSlip->id_order);
         } catch (NotificationNotFoundException $e) {
-            $this->logger->logError($e->getMessage());
+            $this->logger->error($e->getMessage());
             return false;
         } catch (PrestaShopDatabaseException $e) {
-            $this->logger->logError($e->getMessage());
+            $this->logger->error($e->getMessage());
             return false;
         }
         try {
@@ -103,7 +103,7 @@ class Refund
                 )
             );
         } catch (AdyenException $e) {
-            $this->logger->logError($e->getMessage());
+            $this->logger->error($e->getMessage());
             return false;
         }
         return true;

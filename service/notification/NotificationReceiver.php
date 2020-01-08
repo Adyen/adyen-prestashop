@@ -27,6 +27,7 @@ use Adyen\PrestaShop\helper\Data as AdyenHelper;
 use Adyen\Util\HmacSignature;
 use DateTime;
 use Db;
+use Psr\Log\AbstractLogger;
 
 class NotificationReceiver
 {
@@ -66,7 +67,13 @@ class NotificationReceiver
     private $dbInstance;
 
     /**
+     * @var AbstractLogger
+     */
+    private $logger;
+
+    /**
      * NotificationReceiver constructor.
+     *
      * @param AdyenHelper $helperData
      * @param HmacSignature $hmacSignature
      * @param $notificationHMAC
@@ -74,6 +81,7 @@ class NotificationReceiver
      * @param $notificationUsername
      * @param $notificationPassword
      * @param Db $dbInstance
+     * @param AbstractLogger $logger
      */
     public function __construct(
         AdyenHelper $helperData,
@@ -82,7 +90,8 @@ class NotificationReceiver
         $merchantAccount,
         $notificationUsername,
         $notificationPassword,
-        Db $dbInstance
+        Db $dbInstance,
+        AbstractLogger $logger
     ) {
         $this->helperData = $helperData;
         $this->hmacSignature = $hmacSignature;
@@ -91,6 +100,7 @@ class NotificationReceiver
         $this->notificationUsername = $notificationUsername;
         $this->notificationPassword = $notificationPassword;
         $this->dbInstance = $dbInstance;
+        $this->logger = $logger;
     }
 
     /**
@@ -107,7 +117,7 @@ class NotificationReceiver
     {
         if (empty($notificationItems)) {
             $message = 'Notification is not formatted correctly';
-            $this->helperData->adyenLogger()->logError($message);
+            $this->logger->error($message);
             return json_encode(
                 array(
                     'success' => false,
@@ -136,11 +146,11 @@ class NotificationReceiver
                 }
             }
 
-            $this->helperData->adyenLogger()->logDebug('The result is accepted');
+            $this->logger->debug('The result is accepted');
             return $this->returnAccepted($acceptedMessage);
         } else {
             $message = 'Mismatch between Live/Test modes of PrestaShop store and the Adyen platform';
-            $this->helperData->adyenLogger()->logError($message);
+            $this->logger->error($message);
             return json_encode(
                 array(
                     'success' => false,
@@ -177,7 +187,7 @@ class NotificationReceiver
         if ((!isset($_SERVER['PHP_AUTH_USER']) && !isset($_SERVER['PHP_AUTH_PW']))) {
             if ($isTestNotification) {
                 $message = 'Authentication failed: PHP_AUTH_USER and PHP_AUTH_PW are empty.';
-                $this->helperData->adyenLogger()->logError($message);
+                $this->logger->error($message);
                 throw new AuthenticationException($message);
             }
             return false;
@@ -188,7 +198,7 @@ class NotificationReceiver
 
         if (!$this->hmacSignature->isValidNotificationHMAC($this->notificationHMAC, $response)) {
             $message = 'HMAC key validation failed';
-            $this->helperData->adyenLogger()->logError($message);
+            $this->logger->error($message);
             throw new HMACKeyValidationException($message);
         }
 
@@ -202,7 +212,7 @@ class NotificationReceiver
         if ($isTestNotification) {
             if ($usernameCmp != 0 || $passwordCmp != 0) {
                 $message = 'username (PHP_AUTH_USER) and\or password (PHP_AUTH_PW) are not the same as PrestaShop settings';
-                $this->helperData->adyenLogger()->logError($message);
+                $this->logger->error($message);
                 throw new AuthenticationException($message);
             }
         }
@@ -245,13 +255,13 @@ class NotificationReceiver
         if ($this->authorised($response)) {
 
             // log the notification
-            $this->helperData->adyenLogger()->logDebug(
+            $this->logger->debug(
                 'The content of the notification item is: ' . print_r($response, 1)
             );
 
             // skip report notifications
             if ($this->isReportNotification($response['eventCode'])) {
-                $this->helperData->adyenLogger()->logDebug('Notification is a REPORT notification from Adyen Customer Area');
+                $this->logger->debug('Notification is a REPORT notification from Adyen Customer Area');
                 return true;
             }
 
@@ -261,7 +271,7 @@ class NotificationReceiver
                 return true;
             } else {
                 // duplicated so do nothing but return accepted to Adyen
-                $this->helperData->adyenLogger()->logDebug('Notification is a TEST notification from Adyen Customer Area');
+                $this->logger->debug('Notification is a TEST notification from Adyen Customer Area');
                 return true;
             }
         }

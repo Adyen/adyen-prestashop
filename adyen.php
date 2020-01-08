@@ -67,6 +67,11 @@ class Adyen extends PaymentModule
     private $versionChecker;
 
     /**
+     * @var \Adyen\PrestaShop\service\logger\Logger
+     */
+    private $logger;
+
+    /**
      * Adyen constructor.
      *
      * @throws \PrestaShop\PrestaShop\Adapter\CoreException
@@ -92,6 +97,10 @@ class Adyen extends PaymentModule
 
         $this->versionChecker = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
             'Adyen\PrestaShop\application\VersionChecker'
+        );
+
+        $this->logger = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
+            'Adyen\PrestaShop\service\logger\Logger'
         );
 
         // start for 1.6
@@ -142,7 +151,7 @@ class Adyen extends PaymentModule
             ) {
                 return true;
             } else {
-                $this->helper_data->adyenLogger()->logDebug('Adyen module: installation failed!', 4);
+                $this->logger->debug('Adyen module: installation failed!', 4);
                 return false;
             }
         }
@@ -160,7 +169,7 @@ class Adyen extends PaymentModule
             $this->createWaitingForPaymentOrderStatus()) {
             return true;
         } else {
-            $this->helper_data->adyenLogger()->logDebug('Adyen module: installation failed!', 4);
+            $this->logger->debug('Adyen module: installation failed!', 4);
             return false;
         }
     }
@@ -195,7 +204,7 @@ class Adyen extends PaymentModule
             $this->updateCronJobToken()) {
             return true;
         } else {
-            $this->helper_data->adyenLogger()->logDebug('Adyen module: reset failed!', 4);
+            $this->logger->debug('Adyen module: reset failed!', 4);
             return false;
         }
     }
@@ -313,7 +322,7 @@ class Adyen extends PaymentModule
 
         foreach ($adyenConfigurationNames as $adyenConfigurationName) {
             if (!Configuration::deleteByName($adyenConfigurationName)) {
-                $this->helper_data->adyenLogger()->logDebug("Configuration couldn't be deleted by name: " . $adyenConfigurationName);
+                $this->logger->debug("Configuration couldn't be deleted by name: " . $adyenConfigurationName);
                 $result = false;
             }
         }
@@ -872,7 +881,7 @@ class Adyen extends PaymentModule
             $modificationService,
             Db::getInstance(),
             \Configuration::get('ADYEN_MERCHANT_ACCOUNT'),
-            $this->helper_data->adyenLogger()
+            $this->logger
         );
 
         /** @var Order $order */
@@ -901,7 +910,7 @@ class Adyen extends PaymentModule
         if (isset($order) && isset($orderSlip)) {
             $this->addMessageToOrderForOrderSlip($message, $order, $orderSlip);
         }
-        $this->helper_data->adyenLogger()->logError($message);
+        $this->logger->error($message);
     }
 
     /**
@@ -924,7 +933,7 @@ class Adyen extends PaymentModule
             $customerThread = $this->createCustomerThread($order, $orderSlip, $customer);
             $this->createCustomerMessage($message, $customerThread);
         } catch (Adyen\PrestaShop\exception\GenericLoggedException $e) {
-            $this->helper_data->adyenLogger()->logError($e->getMessage());
+            $this->logger->error($e->getMessage());
             return false;
         }
         return true;
