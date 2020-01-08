@@ -155,6 +155,10 @@ class Data
         }
     }
 
+    /**
+     * @deprecated Use \Adyen\PrestaShop\service\logger instead
+     * @return \FileLogger
+     */
     public function adyenLogger()
     {
         // TODO: debug level should be in configuration
