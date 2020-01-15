@@ -67,6 +67,11 @@ class Adyen extends PaymentModule
     private $versionChecker;
 
     /**
+     * @var Adyen\PrestaShop\service\adapter\classes\Language
+     */
+    private $languageAdapter;
+
+    /**
      * Adyen constructor.
      *
      * @throws \PrestaShop\PrestaShop\Adapter\CoreException
@@ -92,6 +97,10 @@ class Adyen extends PaymentModule
 
         $this->versionChecker = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
             'Adyen\PrestaShop\application\VersionChecker'
+        );
+
+        $this->languageAdapter = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
+            'Adyen\PrestaShop\service\adapter\classes\Language'
         );
 
         // start for 1.6
@@ -776,7 +785,7 @@ class Adyen extends PaymentModule
     private function getCheckoutComponentInitData()
     {
         return array(
-            'locale' => $this->helper_data->getLocale($this->context->language),
+            'locale' => $this->languageAdapter->getLocaleCode($this->context->language),
             'originKey' => $this->helper_data->getOriginKeyForOrigin(),
             'environment' => Configuration::get('ADYEN_MODE')
         );
