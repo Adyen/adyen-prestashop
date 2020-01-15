@@ -1149,11 +1149,7 @@ class Adyen extends PaymentModule
             'wechatpay',
             'wechatpay_pos',
             'wechatpaySdk',
-            'wechatpayQr',
-            'klarna',
-            'klarna_b2b',
-            'klarna_account',
-            'klarna_paynow'
+            'wechatpayQr'
         );
 
         if (in_array($paymentMethodType, $unsupportedPaymentMethods)) {
