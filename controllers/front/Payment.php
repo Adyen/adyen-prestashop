@@ -33,11 +33,36 @@ class AdyenPaymentModuleFrontController extends FrontController
     public $ssl = true;
 
     /**
+     * @var Adyen\PrestaShop\service\Payment
+     */
+    private $paymentService;
+
+    /**
+     * @var Adyen\PrestaShop\service\builder\Customer
+     */
+    private $customerBuilder;
+
+    /**
+     * @var Adyen\PrestaShop\service\builder\OpenInvoice
+     */
+    private $openInvoiceBuilder;
+
+    /**
+     * @var Adyen\PrestaShop\service\adapter\classes\Language
+     */
+    private $languageAdapter;
+
+    /**
      * AdyenPaymentModuleFrontController constructor.
      */
     public function __construct()
     {
         parent::__construct();
+
+        $this->paymentService = ServiceLocator::get('Adyen\PrestaShop\service\Payment');
+        $this->customerBuilder = ServiceLocator::get('Adyen\PrestaShop\service\builder\Customer');
+        $this->openInvoiceBuilder = ServiceLocator::get('Adyen\PrestaShop\service\builder\OpenInvoice');
+        $this->languageAdapter = ServiceLocator::get('Adyen\PrestaShop\service\adapter\classes\Language');
 
         $this->helperData->startSession();
     }
@@ -57,9 +82,11 @@ class AdyenPaymentModuleFrontController extends FrontController
         }
 
         $cart = $this->context->cart;
+
         $adyenPaymentType = Tools::getValue('adyen-payment-type');
         if (!empty($adyenPaymentType)) {
-            $this->processLocalPaymentMethod($cart, $adyenPaymentType, Tools::getValue('adyen-payment-issuer'), $isAjax);
+            $this->processLocalPaymentMethod($cart, $adyenPaymentType, Tools::getValue('adyen-payment-issuer'),
+                $isAjax);
             return null;
         }
         // Handle 3DS1 flow, when the payments call is already done and the details are submitted from the frontend, by the place order button
@@ -124,7 +151,8 @@ class AdyenPaymentModuleFrontController extends FrontController
         $customer = new \Customer($cart->id_customer);
 
         if (!\Validate::isLoadedObject($customer)) {
-            $this->redirectUserToPageLink($this->context->link->getPageLink('order', $this->ssl, null, 'step=1'), $isAjax);
+            $this->redirectUserToPageLink($this->context->link->getPageLink('order', $this->ssl, null, 'step=1'),
+                $isAjax);
         }
 
         $currency = $this->context->currency;
@@ -138,8 +166,7 @@ class AdyenPaymentModuleFrontController extends FrontController
         // Based on the result code start different payment flows
         $resultCode = $response['resultCode'];
 
-        switch ($resultCode)
-        {
+        switch ($resultCode) {
             case 'Authorised':
                 $this->module->validateOrder($cart->id, 2, $total, $this->module->displayName, null, $extra_vars,
                     (int)$currency->id, false, $customer->secure_key);
@@ -166,7 +193,9 @@ class AdyenPaymentModuleFrontController extends FrontController
                     }
                 }
 
-                $this->redirectUserToPageLink($this->context->link->getPageLink('order-confirmation', $this->ssl, null, 'id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key), $isAjax);
+                $this->redirectUserToPageLink($this->context->link->getPageLink('order-confirmation', $this->ssl, null,
+                    'id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key),
+                    $isAjax);
 
                 break;
             case 'Refused':
@@ -217,11 +246,11 @@ class AdyenPaymentModuleFrontController extends FrontController
 
                 if (!empty($response['redirect']['data']['PaReq']) && !empty($response['redirect']['data']['MD']) && !empty($response['redirect']['url']) && !empty($response['paymentData']) && !empty($response['redirect']['method'])) {
 
-                $paRequest = $response['redirect']['data']['PaReq'];
-                $md = $response['redirect']['data']['MD'];
-                $issuerUrl = $response['redirect']['url'];
-                $paymentData = $response['paymentData'];
-                $redirectMethod = $response['redirect']['method'];
+                    $paRequest = $response['redirect']['data']['PaReq'];
+                    $md = $response['redirect']['data']['MD'];
+                    $issuerUrl = $response['redirect']['url'];
+                    $paymentData = $response['paymentData'];
+                    $redirectMethod = $response['redirect']['method'];
 
                     $this->ajaxRender($this->helperData->buildControllerResponseJson(
                         'threeDS1',
@@ -293,13 +322,8 @@ class AdyenPaymentModuleFrontController extends FrontController
             $request['paymentMethod']['holderName'] = $holderName;
         }
 
-        $shopperReference = $this->context->cart->id_customer;
-        if(!empty($shopperReference)) {
-            $request['shopperReference'] = $shopperReference;
-        }
-
         //storedPayment data
-        if(!empty($payload['storedPaymentMethodId'])) {
+        if (!empty($payload['storedPaymentMethodId'])) {
             $request['paymentMethod']['storedPaymentMethodId'] = $payload['storedPaymentMethodId'];
         }
 
@@ -440,19 +464,36 @@ class AdyenPaymentModuleFrontController extends FrontController
 
     /**
      * @param Cart $cart
-     * @param $paymentType
+     * @param $paymentMethod
      * @param $paymentIssuer
      * @param $isAjax
      * @throws AdyenException
      */
-    private function processLocalPaymentMethod(\Cart $cart, $paymentType, $paymentIssuer, $isAjax)
+    private function processLocalPaymentMethod(\Cart $cart, $paymentMethod, $paymentIssuer, $isAjax)
     {
+
+        $isOpenInvoice = $this->paymentService->isOpenInvoicePaymentMethod($paymentMethod);
+
         $request = array();
         $request = $this->buildBrowserData($request);
-        $request = $this->buildLocalPaymentMethodData($paymentType, $paymentIssuer, $request);
+        $request = $this->buildLocalPaymentMethodData($paymentMethod, $paymentIssuer, $request);
         $request = $this->buildPaymentData($request);
         $request = $this->buildMerchantAccountData($request);
         $request = $this->buildReturnURL($request);
+
+        // Invoicing address is equal to delivery address if no invoicing address is defined during checkout
+        $invoicingAddress = new Address($cart->id_address_invoice);
+        $customer = new \Customer($cart->id_customer);
+
+        $countryCode = \CountryCore::getIsoById($invoicingAddress->id_country);
+        $language = new \Language($cart->id_lang);
+        $localeCode = $this->languageAdapter->getLocaleCode($language);
+
+        $request = $this->customerBuilder->buildCustomerData($isOpenInvoice, $customer->email, $invoicingAddress->phone, $invoicingAddress->firstname, $invoicingAddress->lastname, $countryCode, $localeCode, $customer->id, $request);
+
+        if ($isOpenInvoice) {
+            $request = $this-> buildOpenInvoiceLinesForCart($cart, $request);
+        }
 
         // call adyen library
         /** @var Adyen\PrestaShop\service\Checkout $service */
@@ -514,18 +555,20 @@ class AdyenPaymentModuleFrontController extends FrontController
 
                 $_SESSION['paymentAction'] = $response['action'];
 
-                $customer = new \Customer($cart->id_customer);
-
                 if (\Validate::isLoadedObject($customer)) {
 
                     $currency = $this->context->currency;
                     $total = (float)$cart->getOrderTotal(true, \Cart::BOTH);
                     $extra_vars = array();
 
-                    $this->module->validateOrder($cart->id, \Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT'), $total, $this->module->displayName, null, $extra_vars,
+                    $this->module->validateOrder($cart->id, \Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT'), $total,
+                        $this->module->displayName, null, $extra_vars,
                         (int)$currency->id, false, $customer->secure_key);
 
-                    $this->redirectUserToPageLink($this->context->link->getPageLink('order-confirmation', $this->ssl, null, 'id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key), $isAjax);
+                    $this->redirectUserToPageLink($this->context->link->getPageLink('order-confirmation', $this->ssl,
+                        null,
+                        'id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key),
+                        $isAjax);
                 }
 
                 break;
@@ -542,6 +585,40 @@ class AdyenPaymentModuleFrontController extends FrontController
                 );
                 return;
         }
+    }
+
+    /**
+     * @param Cart $cart
+     */
+    private function buildOpenInvoiceLinesForCart(\Cart $cart, $request)
+    {
+        $products = $cart->getProducts();
+        $lineItems = array();
+
+        $count = 0;
+
+        $currency =  \CurrencyCore::getCurrency($cart->id_currency);
+
+        foreach ($products as $product) {
+            $count++;
+            $productPrice = $product->getPrice(false);
+            $productPriceWithoutTax = $product->getPrice(true);
+            $tax = $productPrice - $productPriceWithoutTax;
+
+            echo '<pre>';
+            print_r($product);
+            echo '</pre>';
+            exit;
+
+            //$lineItems[] = $this->openInvoiceBuilder->buildOpenInvoiceLineItem($count, $currency->iso_code, $product->description_short, $productPriceWithoutTax, $tax, 1, $product->, getVatCategory);
+        }
+
+        if (!empty($lineItems)) {
+            $request['lineItems'] = $lineItems;
+        }
+
+        return $request;
+
     }
 
     /**
