@@ -36,14 +36,14 @@ class Payment
      *
      * @var array
      */
-    private static $openInvoicePaymentMethods = [
+    private static $openInvoicePaymentMethods = array(
         self::AFTERPAY_PAYMENT_METHOD,
         self::RATEPAY_PAYMENT_METHOD,
         self::KLARNA_PAYMENT_METHOD,
         self::KLARNA_B2B_PAYMENT_METHOD,
         self::KLARNA_ACCOUNT_PAYMENT_METHOD,
         self::KLARNA_PAYNOW_PAYMENT_METHOD
-    ];
+    );
 
     /**
      * Returns true if the parameter is a valid open invoice payment method
