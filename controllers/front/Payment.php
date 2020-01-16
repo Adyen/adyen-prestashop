@@ -48,9 +48,24 @@ class AdyenPaymentModuleFrontController extends FrontController
     private $openInvoiceBuilder;
 
     /**
+     * @var Adyen\PrestaShop\service\builder\Address
+     */
+    private $addressBuilder;
+
+    /**
      * @var Adyen\PrestaShop\service\adapter\classes\Language
      */
     private $languageAdapter;
+
+    /**
+     * @var Adyen\PrestaShop\service\adapter\classes\State
+     */
+    private $stateAdapter;
+
+    /**
+     * @var Adyen\Util\Currency
+     */
+    private $utilCurrency;
 
     /**
      * AdyenPaymentModuleFrontController constructor.
@@ -62,7 +77,10 @@ class AdyenPaymentModuleFrontController extends FrontController
         $this->paymentService = ServiceLocator::get('Adyen\PrestaShop\service\Payment');
         $this->customerBuilder = ServiceLocator::get('Adyen\PrestaShop\service\builder\Customer');
         $this->openInvoiceBuilder = ServiceLocator::get('Adyen\PrestaShop\service\builder\OpenInvoice');
+        $this->addressBuilder = ServiceLocator::get('Adyen\PrestaShop\service\builder\Address');
         $this->languageAdapter = ServiceLocator::get('Adyen\PrestaShop\service\adapter\classes\Language');
+        $this->stateAdapter = ServiceLocator::get('Adyen\PrestaShop\service\adapter\classes\State');
+        $this->utilCurrency = ServiceLocator::get('Adyen\Util\Currency');
 
         $this->helperData->startSession();
     }
@@ -471,8 +489,8 @@ class AdyenPaymentModuleFrontController extends FrontController
      */
     private function processLocalPaymentMethod(\Cart $cart, $paymentMethod, $paymentIssuer, $isAjax)
     {
-
         $isOpenInvoice = $this->paymentService->isOpenInvoicePaymentMethod($paymentMethod);
+        //$currency = CurrencyCore::getCurrencyInstance($cart->id_currency);
 
         $request = array();
         $request = $this->buildBrowserData($request);
@@ -481,19 +499,47 @@ class AdyenPaymentModuleFrontController extends FrontController
         $request = $this->buildMerchantAccountData($request);
         $request = $this->buildReturnURL($request);
 
+
         // Invoicing address is equal to delivery address if no invoicing address is defined during checkout
         $invoicingAddress = new Address($cart->id_address_invoice);
-        $customer = new \Customer($cart->id_customer);
 
-        $countryCode = \CountryCore::getIsoById($invoicingAddress->id_country);
+        $invoicingAddressCountryCode = \CountryCore::getIsoById($invoicingAddress->id_country);
+
+        if (0 != $invoicingAddress->id_state) {
+            $invoicingAddressStateIsoCode = $this->stateAdapter->getIsoById($invoicingAddress->id_state);
+        } else {
+            $invoicingAddressStateIsoCode = '';
+        }
+
+        $request = $this->addressBuilder->buildBillingAddress($invoicingAddress->address1, $invoicingAddress->address2, $invoicingAddress->postcode, $invoicingAddress->city, $invoicingAddressStateIsoCode, $invoicingAddressCountryCode, $request);
+
+
+        $deliveryAddress = new Address($cart->id_address_delivery);
+
+        $deliveryAddressCountryCode = \CountryCore::getIsoById($deliveryAddress->id_country);
+
+        if (0 != $invoicingAddress->id_state) {
+            $deliveryAddressStateIsoCode = $this->stateAdapter->getIsoById($invoicingAddress->id_state);
+        } else {
+            $deliveryAddressStateIsoCode = '';
+        }
+
+        $request = $this->addressBuilder->buildDeliveryAddress($invoicingAddress->address1, $invoicingAddress->address2, $invoicingAddress->postcode, $invoicingAddress->city, $deliveryAddressStateIsoCode, $deliveryAddressCountryCode, $request);
+
+        $customer = new \Customer($cart->id_customer);
         $language = new \Language($cart->id_lang);
         $localeCode = $this->languageAdapter->getLocaleCode($language);
 
-        $request = $this->customerBuilder->buildCustomerData($isOpenInvoice, $customer->email, $invoicingAddress->phone, $invoicingAddress->firstname, $invoicingAddress->lastname, $countryCode, $localeCode, $customer->id, $request);
+        $request = $this->customerBuilder->buildCustomerData($isOpenInvoice, $customer->email, $invoicingAddress->phone, $invoicingAddress->firstname, $invoicingAddress->lastname, $invoicingAddressCountryCode, $localeCode, $customer->id, $request);
 
         if ($isOpenInvoice) {
-            $request = $this-> buildOpenInvoiceLinesForCart($cart, $request);
+            $request = $this-> buildOpenInvoiceLines($paymentMethod, $cart, $request);
         }
+
+        echo '<pre>';
+        var_dump($request);
+        echo '<pre>';
+        exit;
 
         // call adyen library
         /** @var Adyen\PrestaShop\service\Checkout $service */
@@ -588,34 +634,64 @@ class AdyenPaymentModuleFrontController extends FrontController
     }
 
     /**
+     * @param $paymentMethod
      * @param Cart $cart
+     * @param $request
+     * @return mixed
      */
-    private function buildOpenInvoiceLinesForCart(\Cart $cart, $request)
+    private function buildOpenInvoiceLines($paymentMethod, \Cart $cart, $request)
     {
-        $products = $cart->getProducts();
+        $products = $cart->getProducts(true);
         $lineItems = array();
-
         $count = 0;
 
-        $currency =  \CurrencyCore::getCurrency($cart->id_currency);
-
+        // Build open invoice lines for products in the cart
         foreach ($products as $product) {
-            $count++;
-            $productPrice = $product->getPrice(false);
-            $productPriceWithoutTax = $product->getPrice(true);
-            $tax = $productPrice - $productPriceWithoutTax;
+            $productPrice = $this->utilCurrency->sanitize($product['price'], $this->context->currency->iso_code);
+            $productPriceWithTax = $this->utilCurrency->sanitize($product['price_wt'], $this->context->currency->iso_code);
+            $tax = $productPriceWithTax - $productPrice;
 
-            echo '<pre>';
-            print_r($product);
-            echo '</pre>';
-            exit;
+            $productDescription = trim(strip_tags($product['name']));
 
-            //$lineItems[] = $this->openInvoiceBuilder->buildOpenInvoiceLineItem($count, $currency->iso_code, $product->description_short, $productPriceWithoutTax, $tax, 1, $product->, getVatCategory);
+            $lineItems[] = $this->openInvoiceBuilder->buildOpenInvoiceLineItem($productDescription, $productPrice, $tax, $product['rate'], $product['quantity'], $this->openInvoiceBuilder->getVatCategory($paymentMethod), $product['id_product']);
         }
+
+        // Array of the discount items with the applied value in the cart
+        $discounts = $cart->getCartRules();
+
+        echo '<pre>';
+        var_dump($discounts);
+        echo '</pre>';
+        exit;
+
+        // Build open invoice lines for discounts
+        foreach ($discounts as $discount) {
+            $discountValue = -$this->utilCurrency->sanitize($discount['value_real'], $this->context->currency->iso_code);
+            $lineItems[] = $this->openInvoiceBuilder->buildOpenInvoiceLineItem($discount['name'], $discountValue, 0, 0, 1, 'None', $discount['id_discount']);
+        }
+
+        /*formFields['lineItems'][] = [
+            'itemId' => 'totalDiscount',
+            'amountExcludingTax' => $itemAmount,
+            'taxAmount' => $itemVatAmount,
+            'description' => $description,
+            'quantity' => $numberOfItems,
+            'taxCategory' => 'None',
+            'taxPercentage' => $itemVatPercentage
+        ];*/
+
+        // Build open invoice lines for shipping
+
 
         if (!empty($lineItems)) {
             $request['lineItems'] = $lineItems;
         }
+
+        /*echo '<pre>';
+        var_dump($request);
+        echo '</pre>';
+        exit;*/
+
 
         return $request;
 

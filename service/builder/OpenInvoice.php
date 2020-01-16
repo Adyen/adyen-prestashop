@@ -27,8 +27,6 @@ class OpenInvoice extends Builder
     /**
      * Build invoice line items for open invoice payment methods
      *
-     * @param int $count
-     * @param string $currencyCode
      * @param string $description
      * @param float $itemAmount
      * @param float $itemVatAmount
@@ -39,8 +37,6 @@ class OpenInvoice extends Builder
      * @return mixed
      */
     public function buildOpenInvoiceLineItem(
-        $count,
-        $currencyCode,
         $description,
         $itemAmount,
         $itemVatAmount,
@@ -49,20 +45,18 @@ class OpenInvoice extends Builder
         $vatCategory,
         $itemId = 0
     ) {
-        $lineName = "line" . $count;
-
         // item id is optional
         if (0 !== $itemId) {
-            $lineItem['openinvoicedata.' . $lineName . '.itemId'] = $itemId;
+            $lineItem['id'] = $itemId;
+            $lineItem['itemId'] = $itemId;
         }
 
-        $lineItem['openinvoicedata.' . $lineName . '.currencyCode'] = $currencyCode;
-        $lineItem['openinvoicedata.' . $lineName . '.description'] = $description;
-        $lineItem['openinvoicedata.' . $lineName . '.itemAmount'] = $itemAmount;
-        $lineItem['openinvoicedata.' . $lineName . '.itemVatAmount'] = $itemVatAmount;
-        $lineItem['openinvoicedata.' . $lineName . '.itemVatPercentage'] = $itemVatPercentage;
-        $lineItem['openinvoicedata.' . $lineName . '.numberOfItems'] = $numberOfItems;
-        $lineItem['openinvoicedata.' . $lineName . '.vatCategory'] = $vatCategory;
+        $lineItem['description'] = $description;
+        $lineItem['amountExcludingTax'] = $itemAmount;
+        $lineItem['taxAmount'] = $itemVatAmount;
+        $lineItem['taxPercentage'] = $itemVatPercentage;
+        $lineItem['quantity'] = $numberOfItems;
+        $lineItem['taxCategory'] = $vatCategory;
 
         return $lineItem;
     }
@@ -73,7 +67,7 @@ class OpenInvoice extends Builder
      * @param $paymentMethod
      * @return string 'High'/'None'
      */
-    private function getVatCategory($paymentMethod)
+    public function getVatCategory($paymentMethod)
     {
         if ($paymentMethod == "klarna" ||
             strlen($paymentMethod) >= 9 && substr($paymentMethod, 0, 9) == 'afterpay_'
