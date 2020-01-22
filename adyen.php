@@ -665,10 +665,6 @@ class Adyen extends PaymentModule
         if (!empty($paymentMethods['paymentMethods'])) {
             foreach ($paymentMethods['paymentMethods'] as $paymentMethod) {
 
-                if (!$this->isSimplePaymentMethod($paymentMethod)) {
-                    continue;
-                }
-
                 // Skip unsupported payment methods
                 if ($this->isUnsupportedPaymentMethod($paymentMethod['type'])) {
                     continue;
@@ -1065,10 +1061,6 @@ class Adyen extends PaymentModule
         $payments = '';
         foreach ($paymentMethods['paymentMethods'] as $paymentMethod) {
 
-            if (!$this->isSimplePaymentMethod($paymentMethod)) {
-                continue;
-            }
-
             // Skip unsupported payment methods
             if ($this->isUnsupportedPaymentMethod($paymentMethod['type'])) {
                 continue;
@@ -1127,6 +1119,7 @@ class Adyen extends PaymentModule
      * @param array $paymentMethod
      *
      * @return bool
+     * @deprecated don't use this to filter the supported methods anymore
      */
     private function isSimplePaymentMethod($paymentMethod)
     {
