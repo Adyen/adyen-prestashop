@@ -30,22 +30,28 @@ class Customer extends Builder
      * @param $isOpenInvoicePaymentMethod
      * @param string $email
      * @param string $phoneNumber
+     * @param string $gender
+     * @param string $dateOfBirth
      * @param string $firstName
      * @param string $lastName
      * @param string $countryCode
      * @param string $localeCode
+     * @param string $shopperIp
      * @param int $customerId
      * @param array $request
-     * @return array|mixed
+     * @return array
      */
     public function buildCustomerData(
         $isOpenInvoicePaymentMethod,
         $email = '',
         $phoneNumber = '',
+        $gender = '',
+        $dateOfBirth = '',
         $firstName = '',
         $lastName = '',
         $countryCode = '',
         $localeCode = '',
+        $shopperIp = '',
         $customerId = 0,
         $request = array()
     ) {
@@ -56,11 +62,11 @@ class Customer extends Builder
 
         // Open invoice methods requires different request format
         if ($isOpenInvoicePaymentMethod) {
-            $request = $this->buildCustomerDataForOpenInvoicePaymentMethod($email, $phoneNumber, $firstName, $lastName,
-                $request);
+            $request = $this->buildCustomerDataForOpenInvoicePaymentMethod($email, $phoneNumber, $gender, $dateOfBirth,
+                $firstName, $lastName, $request);
         } else {
-            $request = $this->buildCustomerDataForNonOpenInvoicePaymentMethod($email, $phoneNumber, $firstName,
-                $lastName, $request);
+            $request = $this->buildCustomerDataForNonOpenInvoicePaymentMethod($email, $phoneNumber, $gender,
+                $dateOfBirth, $firstName, $lastName, $request);
         }
 
         if (!empty($countryCode)) {
@@ -71,22 +77,30 @@ class Customer extends Builder
             $request['shopperLocale'] = $localeCode;
         }
 
+        if (!empty($shopperIp)) {
+            $request['shopperIP'] = $shopperIp;
+        }
+
         return $request;
     }
 
     /**
      * Builds customer related data listed in the parameter list for open invoice payment methods
      *
-     * @param string $email
-     * @param string $phoneNumber
-     * @param string $firstName
-     * @param string $lastName
+     * @param $email
+     * @param $telephoneNumber
+     * @param $gender
+     * @param $dateOfBirth
+     * @param $firstName
+     * @param $lastName
      * @param array $request
      * @return array
      */
     private function buildCustomerDataForOpenInvoicePaymentMethod(
         $email,
-        $phoneNumber,
+        $telephoneNumber,
+        $gender,
+        $dateOfBirth,
         $firstName,
         $lastName,
         $request = array()
@@ -95,8 +109,16 @@ class Customer extends Builder
             $request['paymentMethod']['personalDetails']['shopperEmail'] = $email;
         }
 
-        if (!empty($phoneNumber)) {
-            $request['paymentMethod']['personalDetails']['telephoneNumber'] = $phoneNumber;
+        if (!empty($telephoneNumber)) {
+            $request['paymentMethod']['personalDetails']['telephoneNumber'] = $telephoneNumber;
+        }
+
+        if (!empty($gender)) {
+            $request['paymentMethod']['personalDetails']['gender'] = $gender;
+        }
+
+        if (!empty($dateOfBirth)) {
+            $request['paymentMethod']['personalDetails']['dateOfBirth'] = $dateOfBirth;
         }
 
         if (!empty($firstName)) {
@@ -112,16 +134,20 @@ class Customer extends Builder
     /**
      * Builds customer related data listed in the parameter list for not open invoice payment methods
      *
-     * @param string $email
-     * @param string $phoneNumber
-     * @param string $firstName
-     * @param string $lastName
+     * @param $email
+     * @param $telephoneNumber
+     * @param $gender
+     * @param $dateOfBirth
+     * @param $firstName
+     * @param $lastName
      * @param array $request
      * @return array
      */
     private function buildCustomerDataForNonOpenInvoicePaymentMethod(
         $email,
-        $phoneNumber,
+        $telephoneNumber,
+        $gender,
+        $dateOfBirth,
         $firstName,
         $lastName,
         $request = array()
@@ -130,8 +156,16 @@ class Customer extends Builder
             $request['shopperEmail'] = $email;
         }
 
-        if (!empty($phoneNumber)) {
-            $request['telephoneNumber'] = $phoneNumber;
+        if (!empty($telephoneNumber)) {
+            $request['telephoneNumber'] = $telephoneNumber;
+        }
+
+        if (!empty($gender)) {
+            $request['shopperName']['gender'] = $gender;
+        }
+
+        if (!empty($dateOfBirth)) {
+            $request['dateOfBirth'] = $dateOfBirth;
         }
 
         if (!empty($firstName)) {
