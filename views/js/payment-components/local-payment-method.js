@@ -95,10 +95,15 @@ jQuery(function ($) {
             }
         });
 
-        adyenCheckout
-            .create(paymentMethod.type, configuration)
-            .mount(paymentMethodContainer.find('[data-adyen-payment-container]').get(0));
-
+        try {
+            adyenCheckout
+                .create(paymentMethod.type, configuration)
+                .mount(paymentMethodContainer.find('[data-adyen-payment-container]').get(0));
+        } catch (err) {
+           // The component does not exist yet
+        }
     });
+
+
 });
 
