@@ -126,35 +126,35 @@ class Address extends Builder
         $country,
         $request
     ) {
-        if ('' !== $street) {
+        if (!empty($street)) {
             $address["street"] = $street;
         } else {
             $address["street"] = self::$defaultStreet;
         }
 
-        if ('' !== $houseNumberOrName) {
+        if (!empty($houseNumberOrName)) {
             $address["houseNumberOrName"] = $houseNumberOrName;
         } else {
             $address["houseNumberOrName"] = self::$defaultHouseNumberOrName;
         }
 
-        if ('' !== $postalCode) {
+        if (!empty($postalCode)) {
             $address["postalCode"] = $postalCode;
         } else {
             $address["postalCode"] = self::$defaultPostalCode;
         }
 
-        if ('' !== $city) {
+        if (!empty($city)) {
             $address["city"] = $city;
         } else {
             $address["city"] = self::$defaultCity;
         }
 
-        if ('' !== $stateOrProvince) {
+        if (!empty($stateOrProvince)) {
             $address["stateOrProvince"] = $stateOrProvince;
         }
 
-        if ('' !== $country) {
+        if (!empty($country)) {
             $address["country"] = $country;
         } else {
             $address["country"] = self::$defaultCountry;
