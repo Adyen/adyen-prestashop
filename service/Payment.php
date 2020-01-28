@@ -25,11 +25,19 @@ namespace Adyen\PrestaShop\service;
 class Payment
 {
     const AFTERPAY_PAYMENT_METHOD = 'afterpay';
+    const AFTERPAY_B2B_PAYMENT_METHOD = 'afterpay_b2b';
+    const AFTERPAY_DEFAULT_PAYMENT_METHOD = 'afterpay_default';
+    const AFTERPAY_DIRECTDEBIT_PAYMENT_METHOD = 'afterpay_directdebit';
+
+    const AFTERPAYTOUCH_PAYMENT_METHOD = 'afterpaytouch';
+
     const RATEPAY_PAYMENT_METHOD = 'ratepay';
+    const RATEPAY_DIRECTDEBIT_PAYMENT_METHOD = 'ratepay_directdebit';
+
     const KLARNA_PAYMENT_METHOD = 'klarna';
     const KLARNA_B2B_PAYMENT_METHOD = 'klarna_b2b';
-    const KLARNA_ACCOUNT_PAYMENT_METHOD = 'klarna_account';
     const KLARNA_PAYNOW_PAYMENT_METHOD = 'klarna_paynow';
+    const KLARNA_ACCOUNT_PAYMENT_METHOD = 'klarna_account';
 
     /**
      * List of open invoice payment methods
@@ -38,11 +46,16 @@ class Payment
      */
     private static $openInvoicePaymentMethods = array(
         self::AFTERPAY_PAYMENT_METHOD,
+        self::AFTERPAY_B2B_PAYMENT_METHOD,
+        self::AFTERPAY_DEFAULT_PAYMENT_METHOD,
+        self::AFTERPAY_DIRECTDEBIT_PAYMENT_METHOD,
+        self::AFTERPAYTOUCH_PAYMENT_METHOD,
         self::RATEPAY_PAYMENT_METHOD,
+        self::RATEPAY_DIRECTDEBIT_PAYMENT_METHOD,
         self::KLARNA_PAYMENT_METHOD,
         self::KLARNA_B2B_PAYMENT_METHOD,
+        self::KLARNA_PAYNOW_PAYMENT_METHOD,
         self::KLARNA_ACCOUNT_PAYMENT_METHOD,
-        self::KLARNA_PAYNOW_PAYMENT_METHOD
     );
 
     /**
@@ -54,6 +67,21 @@ class Payment
     public function isOpenInvoicePaymentMethod($paymentMethod)
     {
         if (in_array(strtolower($paymentMethod), self::$openInvoicePaymentMethods)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns true if $paymentMethod is 'afterpaytouch'
+     *
+     * @param $paymentMethod
+     * @return bool
+     */
+    public function isAfterPayTouchPaymentMethod($paymentMethod)
+    {
+        if (self::AFTERPAYTOUCH_PAYMENT_METHOD === $paymentMethod) {
             return true;
         }
 
