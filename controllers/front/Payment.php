@@ -438,11 +438,17 @@ class AdyenPaymentModuleFrontController extends FrontController
      */
     private function is3DS1Process()
     {
-        if (!empty(Tools::getValue(self::PA_REQUEST)) &&
-            !empty(Tools::getValue(self::MD)) &&
-            !empty(Tools::getValue(self::ISSUER_URL)) &&
-            !empty(Tools::getValue(self::PAYMENT_DATA)) &&
-            !empty(Tools::getValue(self::REDIRECT_METHOD))
+        $paRequest = Tools::getValue(self::PA_REQUEST);
+        $md = Tools::getValue(self::MD);
+        $issuerUrl = Tools::getValue(self::ISSUER_URL);
+        $paymentData = Tools::getValue(self::PAYMENT_DATA);
+        $redirectMethod = Tools::getValue(self::REDIRECT_METHOD);
+
+        if (!empty($paRequest) &&
+            !empty($md) &&
+            !empty($issuerUrl) &&
+            !empty($paymentData) &&
+            !empty($redirectMethod)
         ) {
             return true;
         }
