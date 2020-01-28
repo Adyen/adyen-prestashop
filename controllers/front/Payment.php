@@ -409,7 +409,8 @@ class AdyenPaymentModuleFrontController extends FrontController
                 $this->context->currency->iso_code)
         );
 
-        $request["reference"] = $cart->id;
+        $formattedValue = $this->utilCurrency->sanitize($cart->getOrderTotal(true, \Cart::BOTH),
+            $this->context->currency->iso_code);
 
         return $request;
     }

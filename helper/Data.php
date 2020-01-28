@@ -307,6 +307,7 @@ class Data
      * @param $amount
      * @param $currency
      * @return string
+     * @deprecated Use Adyen\Util\Currency sanitize() from Adyen php api library
      */
     public function formatAmount($amount, $currency)
     {
