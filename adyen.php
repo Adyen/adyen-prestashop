@@ -868,9 +868,21 @@ class Adyen extends PaymentModule
             );
             return;
         }
+
+        try {
+            $notificationRetriever = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
+                'Adyen\PrestaShop\infra\NotificationRetriever'
+            );
+        } catch (\PrestaShop\PrestaShop\Adapter\CoreException $e) {
+            $this->addMessageToOrderForOrderSlipAndLogErrorMessage(
+                'Error initializing the Notification Retriever service in actionOrderSlipAdd hook:'
+                . PHP_EOL . $e->getMessage()
+            );
+            return;
+        }
         $refundService = new Adyen\PrestaShop\service\modification\Refund(
             $modificationService,
-            Db::getInstance(),
+            $notificationRetriever,
             \Configuration::get('ADYEN_MERCHANT_ACCOUNT'),
             $this->helper_data->adyenLogger()
         );
