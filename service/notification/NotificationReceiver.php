@@ -353,14 +353,7 @@ class NotificationReceiver
         $data['created_at'] = $date->format('Y-m-d H:i:s');
         $data['updated_at'] = $date->format('Y-m-d H:i:s');
 
-        $this->dbInstance->insert(
-            _DB_PREFIX_ . 'adyen_notification',
-            $data,
-            false,
-            false,
-            Db::INSERT,
-            false
-        );
+        $this->dbInstance->insert('adyen_notification', $data);
     }
 
     /**
