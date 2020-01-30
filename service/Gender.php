@@ -26,8 +26,9 @@ class Gender
 {
     const MALE_ID = 1;
     const FEMALE_ID = 2;
-    const MALE_VALUE = 'M';
-    const FEMALE_VALUE = 'F';
+    const MALE_VALUE = 'MALE';
+    const FEMALE_VALUE = 'FEMALE';
+    const UNKNOWN_VALUE = 'UNKNOWN';
 
     /**
      * @var array
@@ -38,11 +39,10 @@ class Gender
     );
 
     /**
-     * Returns 'M' or 'F' by PrestaShop gender id
+     * Returns 'MALE' or 'FEMALE' by PrestaShop gender id
      *
-     * @param int $genderId
-     * @return mixed
-     * @throws \Exception
+     * @param $genderId
+     * @return mixed|string
      */
     public function getAdyenGenderValueById($genderId)
     {
@@ -50,6 +50,7 @@ class Gender
             return self::$genderMap[$genderId];
         }
 
-        throw new \Exception('Adyen gender value not found by id: ' . (int)$genderId);
+        // If gender is not available in the map, fall back to self::UNKNOWN_VALUE
+        return self::UNKNOWN_VALUE;
     }
 }

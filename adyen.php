@@ -1114,30 +1114,7 @@ class Adyen extends PaymentModule
         $payments .= $this->display(__FILE__, '/views/templates/front/payment.tpl');
         return $payments;
     }
-
-    /**
-     * @param array $paymentMethod
-     *
-     * @return bool
-     * @deprecated don't use this to filter the supported methods anymore
-     */
-    private function isSimplePaymentMethod($paymentMethod)
-    {
-        if (!empty($paymentMethod['details'])) {
-            $details = $paymentMethod['details'];
-        }
-        return !empty($paymentMethod['type'])
-            && $paymentMethod['type'] != 'scheme'
-            && (
-                empty($details) || (
-                    is_array($details)
-                    && count($details) == 1
-                    && $details[0]['key'] == 'issuer'
-                    && $details[0]['type'] == 'select'
-                )
-            );
-    }
-
+    
     /**
      * Returns true if payment method is unsupported
      *

@@ -25,14 +25,14 @@ namespace Adyen\PrestaShop\service\builder;
 class Address extends Builder
 {
     /**
-     * @var int
+     * @var string
      */
-    private static $addressTypeBilling = 1;
+    private static $addressTypeBilling = 'billingAddress';
 
     /**
-     * @var int
+     * @var string
      */
-    private static $addressTypeDelivery = 2;
+    private static $addressTypeDelivery = 'deliveryAddress';
 
     /**
      * @var string
@@ -106,7 +106,7 @@ class Address extends Builder
     }
 
     /**
-     * @param int self::$addressTypeBilling|self::$addressTypeDelivery
+     * @param string self::$addressTypeBilling|self::$addressTypeDelivery
      * @param string $street
      * @param string $houseNumberOrName
      * @param string $postalCode
@@ -161,11 +161,7 @@ class Address extends Builder
         }
 
         // Assigns the address to billing or delivery address depends on the $addressType parameter
-        if (self::$addressTypeDelivery == $addressType) {
-            $request['deliveryAddress'] = $address;
-        } elseif (self::$addressTypeBilling == $addressType) {
-            $request['billingAddress'] = $address;
-        }
+        $request[$addressType] = $address;
 
         return $request;
     }

@@ -59,6 +59,9 @@ Configure the Adyen plugin in your PrestaShop admin panel: 
 
 (\*) You noted this down when you Set up Adyen Customer Area.
 
+## Deprecation strategy
+Whenever a not private function or property is tagged deprecated, please be aware that in the next major release it will be permanently removed.
+
 ## Support
 You can create issues on our PrestaShop Repository. In case of specific problems with your account, please contact  <a href="mailto:support@adyen.com">support@adyen.com</a>.
 

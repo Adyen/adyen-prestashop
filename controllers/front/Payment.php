@@ -218,9 +218,9 @@ class AdyenPaymentModuleFrontController extends FrontController
     {
         $resultCode = $response['resultCode'];
 
-        $extra_vars = array();
+        $extraVars = array();
         if (!empty($response['pspReference'])) {
-            $extra_vars['transaction_id'] = $response['pspReference'];
+            $extraVars['transaction_id'] = $response['pspReference'];
         }
 
         $total = (float)$cart->getOrderTotal(true, \Cart::BOTH);
@@ -228,12 +228,12 @@ class AdyenPaymentModuleFrontController extends FrontController
         // Based on the result code start different payment flows
         switch ($resultCode) {
             case 'Authorised':
-                $this->module->validateOrder($cart->id, 2, $total, $this->module->displayName, null, $extra_vars,
+                $this->module->validateOrder($cart->id, 2, $total, $this->module->displayName, null, $extraVars,
                     (int)$cart->id_currency, false, $customer->secure_key);
-                $new_order = new \Order((int)$this->module->currentOrder);
+                $newOrder = new \Order((int)$this->module->currentOrder);
 
-                if (\Validate::isLoadedObject($new_order)) {
-                    $paymentCollection = $new_order->getOrderPaymentCollection();
+                if (\Validate::isLoadedObject($newOrder)) {
+                    $paymentCollection = $newOrder->getOrderPaymentCollection();
                     foreach ($paymentCollection as $payment) {
                         if (!empty($response['additionalData']['cardBin']) &&
                             !empty($response['additionalData']['cardSummary'])) {
@@ -353,10 +353,10 @@ class AdyenPaymentModuleFrontController extends FrontController
                 if (\Validate::isLoadedObject($customer)) {
 
                     $total = (float)$cart->getOrderTotal(true, \Cart::BOTH);
-                    $extra_vars = array();
+                    $extraVars = array();
 
                     $this->module->validateOrder($cart->id, \Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT'), $total,
-                        $this->module->displayName, null, $extra_vars,
+                        $this->module->displayName, null, $extraVars,
                         $cart->id_currency, false, $customer->secure_key);
 
                     $this->redirectUserToPageLink($this->context->link->getPageLink('order-confirmation', $this->ssl,
@@ -368,7 +368,7 @@ class AdyenPaymentModuleFrontController extends FrontController
                 break;
             default:
                 //8_PS_OS_ERROR_ : payment error
-                $this->module->validateOrder($cart->id, 8, $total, $this->module->displayName, null, $extra_vars,
+                $this->module->validateOrder($cart->id, 8, $total, $this->module->displayName, null, $extraVars,
                     (int)$cart->id_currency, false, $customer->secure_key);
                 $this->helperData->adyenLogger()->logError("There was an error with the payment method. id:  " . $cart->id . ' Unsupported result code in response: ' . print_r($response,
                         true));
@@ -556,8 +556,13 @@ class AdyenPaymentModuleFrontController extends FrontController
             $this->ssl
         );
 
-        $request = $this->paymentBuilder->buildPaymentData($this->context->currency->iso_code,
-            $formattedValue, $cart->id, $merchantAccount, $returnUrl, $request);
+        $request = $this->paymentBuilder->buildPaymentData(
+            $this->context->currency->iso_code,
+            $formattedValue,
+            $cart->id,
+            $merchantAccount,
+            $returnUrl,
+            $request);
 
         if ($this->isCardPayment()) {
             $request = $this->buildCardData($request);
@@ -613,8 +618,17 @@ class AdyenPaymentModuleFrontController extends FrontController
             }
         }
 
-        return $this->browserBuilder->buildBrowserData($userAgent, $acceptHeader, $screenWidth, $screenHeight,
-            $colorDepth, $timeZoneOffset, $language, $javaEnabled, $request);
+        return $this->browserBuilder->buildBrowserData(
+            $userAgent,
+            $acceptHeader,
+            $screenWidth,
+            $screenHeight,
+            $colorDepth,
+            $timeZoneOffset,
+            $language,
+            $javaEnabled,
+            $request
+        );
     }
 
     /**
@@ -669,9 +683,15 @@ class AdyenPaymentModuleFrontController extends FrontController
             $invoicingAddressStateIsoCode = '';
         }
 
-        $request = $this->addressBuilder->buildBillingAddress($invoicingAddress->address1, $invoicingAddress->address2,
-            $invoicingAddress->postcode, $invoicingAddress->city, $invoicingAddressStateIsoCode,
-            $invoicingAddressCountryCode, $request);
+        $request = $this->addressBuilder->buildBillingAddress(
+            $invoicingAddress->address1,
+            $invoicingAddress->address2,
+            $invoicingAddress->postcode,
+            $invoicingAddress->city,
+            $invoicingAddressStateIsoCode,
+            $invoicingAddressCountryCode,
+            $request
+        );
 
         // Delivery address
         $deliveryAddressCountryCode = $this->countryAdapter->getIsoById($deliveryAddress->id_country);
@@ -682,9 +702,15 @@ class AdyenPaymentModuleFrontController extends FrontController
             $deliveryAddressStateIsoCode = '';
         }
 
-        $request = $this->addressBuilder->buildDeliveryAddress($deliveryAddress->address1, $deliveryAddress->address2,
-            $deliveryAddress->postcode, $deliveryAddress->city, $deliveryAddressStateIsoCode,
-            $deliveryAddressCountryCode, $request);
+        $request = $this->addressBuilder->buildDeliveryAddress(
+            $deliveryAddress->address1,
+            $deliveryAddress->address2,
+            $deliveryAddress->postcode,
+            $deliveryAddress->city,
+            $deliveryAddressStateIsoCode,
+            $deliveryAddressCountryCode,
+            $request
+        );
 
         return $request;
     }
@@ -752,9 +778,20 @@ class AdyenPaymentModuleFrontController extends FrontController
             $shopperIp = '';
         }
 
-        return $this->customerBuilder->buildCustomerData($isOpenInvoice, $customer->email, $telephoneNumber,
-            $gender, $dateOfBirth, $invoicingAddress->firstname, $invoicingAddress->lastname,
-            $invoicingAddressCountryCode, $localeCode, $shopperIp, $customer->id, $request);
+        return $this->customerBuilder->buildCustomerData(
+            $isOpenInvoice,
+            $customer->email,
+            $telephoneNumber,
+            $gender,
+            $dateOfBirth,
+            $invoicingAddress->firstname,
+            $invoicingAddress->lastname,
+            $invoicingAddressCountryCode,
+            $localeCode,
+            $shopperIp,
+            $customer->id,
+            $request
+        );
     }
 
     /**
@@ -785,8 +822,13 @@ class AdyenPaymentModuleFrontController extends FrontController
 
         $origin = $this->configuration->httpHost;
 
-        return $this->paymentBuilder->buildStoredPaymentData($paymentMethodType, $storedPaymentMethodId, $origin,
-            $encryptedSecurityCode, $request);
+        return $this->paymentBuilder->buildStoredPaymentData(
+            $paymentMethodType,
+            $storedPaymentMethodId,
+            $origin,
+            $encryptedSecurityCode,
+            $request
+        );
     }
 
     /**
@@ -809,9 +851,15 @@ class AdyenPaymentModuleFrontController extends FrontController
 
             $productDescription = trim(strip_tags($product['name']));
 
-            $lineItems[] = $this->openInvoiceBuilder->buildOpenInvoiceLineItem($productDescription, $productPrice, $tax,
-                $product['rate'] * 100, $product['quantity'], $this->openInvoiceBuilder->getVatCategory($paymentMethod),
-                $product['id_product']);
+            $lineItems[] = $this->openInvoiceBuilder->buildOpenInvoiceLineItem(
+                $productDescription,
+                $productPrice,
+                $tax,
+                $product['rate'] * 100,
+                $product['quantity'],
+                $this->openInvoiceBuilder->getVatCategory($paymentMethod),
+                $product['id_product']
+            );
         }
 
         // Array of the discount items with the applied value in the cart
@@ -823,8 +871,15 @@ class AdyenPaymentModuleFrontController extends FrontController
         foreach ($discounts as $discount) {
             $discountValue = -$this->utilCurrency->sanitize($discount['value_real'],
                 $this->context->currency->iso_code);
-            $lineItems[] = $this->openInvoiceBuilder->buildOpenInvoiceLineItem($discount['name'], $discountValue, 0, 0,
-                1, 'None', $discount['id_discount']);
+            $lineItems[] = $this->openInvoiceBuilder->buildOpenInvoiceLineItem(
+                $discount['name'],
+                $discountValue,
+                0,
+                0,
+                1,
+                'None',
+                $discount['id_discount']
+            );
         }
 
         // Build open invoice lines for shipping
@@ -841,8 +896,15 @@ class AdyenPaymentModuleFrontController extends FrontController
         }
 
         if ($deliveryCost) {
-            $lineItems[] = $this->openInvoiceBuilder->buildOpenInvoiceLineItem($carrier->name,
-                $cartSummary['total_shipping'], $shippingTax, $shippingTaxRate, 1, 'None', $carrier->id_reference);
+            $lineItems[] = $this->openInvoiceBuilder->buildOpenInvoiceLineItem(
+                $carrier->name,
+                $cartSummary['total_shipping'],
+                $shippingTax,
+                $shippingTaxRate,
+                1,
+                'None',
+                $carrier->id_reference
+            );
         }
 
         if (!empty($lineItems)) {
