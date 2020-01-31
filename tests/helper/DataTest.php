@@ -57,10 +57,15 @@ class DataTest extends \PHPUnit_Framework_TestCase
                                      ->disableOriginalConstructor()
                                      ->getMock();
 
+        $logger = $this->getMockBuilder(\Adyen\PrestaShop\service\logger\Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $this->adyenHelper = new Data(
             $configuration,
             $adyenCheckoutUtilityService,
-            $adyenCheckoutService
+            $adyenCheckoutService,
+            $logger
         );
     }
 

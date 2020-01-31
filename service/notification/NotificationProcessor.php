@@ -29,7 +29,7 @@ use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
 use Db;
 use PrestaShopDatabaseException;
 use PrestaShopException;
-use Psr\Log\AbstractLogger;
+use Psr\Log\LoggerInterface;
 
 class NotificationProcessor
 {
@@ -44,7 +44,7 @@ class NotificationProcessor
     private $dbInstance;
 
     /**
-     * @var AbstractLogger
+     * @var LoggerInterface
      */
     private $logger;
 
@@ -55,14 +55,14 @@ class NotificationProcessor
      * @param Db $dbInstance
      * @param OrderAdapter $orderAdapter
      * @param CustomerThreadAdapter $customerThreadAdapter
-     * @param AbstractLogger $logger
+     * @param LoggerInterface $logger
      */
     public function __construct(
         AdyenHelper $helperData,
         Db $dbInstance,
         OrderAdapter $orderAdapter,
         CustomerThreadAdapter $customerThreadAdapter,
-        AbstractLogger $logger
+        LoggerInterface $logger
     ) {
         $this->helperData = $helperData;
         $this->dbInstance = $dbInstance;

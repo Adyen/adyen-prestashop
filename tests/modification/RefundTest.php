@@ -97,7 +97,11 @@ class RefundTest extends TestCase
                            ->with($this->matchesRegularExpression("/$pattern/si"))
                            ->willReturn(array(array('pspReference' => $pspReference)));
 
-        $refund = new Refund($modificationClient, $databaseConnection, $merchantAccount);
+        $logger = $this->getMockBuilder(\Adyen\PrestaShop\service\logger\Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $refund = new Refund($modificationClient, $databaseConnection, $merchantAccount, $logger);
         $this->assertEquals(true, $refund->request($orderSlip, $currency));
     }
 }

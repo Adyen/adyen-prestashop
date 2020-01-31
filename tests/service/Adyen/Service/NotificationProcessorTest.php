@@ -36,7 +36,7 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
     public static $functions;
 
     /**
-     * @var \FileLogger|\PHPUnit_Framework_MockObject_MockObject $logger
+     * @var Adyen\PrestaShop\service\logger\Logger|\PHPUnit_Framework_MockObject_MockObject $logger
      */
     private $logger;
 
@@ -62,16 +62,14 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
     {
         self::$functions = m::mock();
 
-        $this->logger = $this->getMockBuilder(\FileLogger::class)
+        $this->logger = $this->getMockBuilder(\Adyen\PrestaShop\service\logger\Logger::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $this->logger->method('logError');
+        //$this->logger->method('error');
 
         $this->adyenHelper = $this->getMockBuilder(\Adyen\PrestaShop\helper\Data::class)
             ->disableOriginalConstructor()
             ->getMock();
-
-        $this->adyenHelper->method('adyenLogger')->willReturn($this->logger);
 
         $this->dbInstance = $this->getMockBuilder(Db::class)->disableOriginalConstructor()->getMock();
 
@@ -124,7 +122,8 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
             $this->adyenHelper,
             $this->dbInstance,
             $orderAdapter,
-            $this->customerThreadAdapter
+            $this->customerThreadAdapter,
+            $this->logger
         );
 
         $this->assertTrue($notificationProcessor->addMessage($notification));
@@ -143,11 +142,12 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
             $this->adyenHelper,
             $this->dbInstance,
             $orderAdapter,
-            $this->customerThreadAdapter
+            $this->customerThreadAdapter,
+            $this->logger
         );
 
         $this->logger->expects($this->once())
-            ->method('logError')
+            ->method('error')
             ->with('Order with id: "0" cannot be found while notification with id: "1" was processed.');
 
         $this->assertFalse($notificationProcessor->addMessage($notification));
@@ -174,11 +174,12 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
             $this->adyenHelper,
             $this->dbInstance,
             $orderAdapter,
-            $this->customerThreadAdapter
+            $this->customerThreadAdapter,
+            $this->logger
         );
 
         $this->logger->expects($this->once())
-            ->method('logError')
+            ->method('error')
             ->with('Customer with id: "" cannot be found for order with id: "" while notification with id: "1" was processed.');
 
         $this->assertFalse($notificationProcessor->addMessage($notification));

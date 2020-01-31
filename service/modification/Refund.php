@@ -22,7 +22,7 @@
 
 namespace Adyen\PrestaShop\service\modification;
 
-use AbstractLogger;
+use \Psr\Log\LoggerInterface;
 use Adyen\AdyenException;
 use Adyen\PrestaShop\service\modification\exception\NotificationNotFoundException;
 use Adyen\Service\Modification;
@@ -47,7 +47,7 @@ class Refund
      */
     private $db;
     /**
-     * @var AbstractLogger
+     * @var LoggerInterface
      */
     private $logger;
 
@@ -56,13 +56,13 @@ class Refund
      * @param Modification $modificationClient
      * @param Db $db
      * @param $merchantAccount
-     * @param AbstractLogger $logger
+     * @param LoggerInterface $logger
      */
     public function __construct(
         Modification $modificationClient,
         Db $db,
         $merchantAccount,
-        AbstractLogger $logger = null
+        LoggerInterface $logger = null
     ) {
         $this->modificationClient = $modificationClient;
         $this->db = $db;

@@ -27,7 +27,7 @@ use Adyen\PrestaShop\helper\Data as AdyenHelper;
 use Adyen\Util\HmacSignature;
 use DateTime;
 use Db;
-use Psr\Log\AbstractLogger;
+use \Psr\Log\LoggerInterface;
 
 class NotificationReceiver
 {
@@ -67,7 +67,7 @@ class NotificationReceiver
     private $dbInstance;
 
     /**
-     * @var AbstractLogger
+     * @var LoggerInterface
      */
     private $logger;
 
@@ -81,7 +81,7 @@ class NotificationReceiver
      * @param $notificationUsername
      * @param $notificationPassword
      * @param Db $dbInstance
-     * @param AbstractLogger $logger
+     * @param LoggerInterface $logger
      */
     public function __construct(
         AdyenHelper $helperData,
@@ -91,7 +91,7 @@ class NotificationReceiver
         $notificationUsername,
         $notificationPassword,
         Db $dbInstance,
-        AbstractLogger $logger
+        LoggerInterface $logger
     ) {
         $this->helperData = $helperData;
         $this->hmacSignature = $hmacSignature;
