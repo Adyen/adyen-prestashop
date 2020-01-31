@@ -27,6 +27,7 @@ matrix:
     # aliased to a recent 7.1 version
     - php: 7.1
       env:
+        - COMPOSER_INSTALL=1
         - SNIFF=1
         - TEST=1
     # aliased to a recent 5.3 version
@@ -34,6 +35,7 @@ matrix:
       php: 5.3
 
 before_install:
+  - if [[ "$COMPOSER_INSTALL" == "1" ]]; then composer install; fi
   - if [[ "$SNIFF" == "1" ]]; then export PHPCS_DIR=/tmp/phpcs; fi
   - if [[ "$SNIFF" == "1" ]]; then export PHPCOMPAT_DIR=/tmp/PHPCompatibility; fi
   # Install PHP CodeSniffer.
