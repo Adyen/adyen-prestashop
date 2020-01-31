@@ -86,7 +86,6 @@ class NotificationProcessor
         $this->dbInstance = $dbInstance;
         $this->orderAdapter = $orderAdapter;
         $this->customerThreadAdapter = $customerThreadAdapter;
-        $this->context = \Context::getContext();
         $this->logger = $logger;
         $this->context = $context;
     }
