@@ -18,10 +18,10 @@
   ~ This file is open source and available under the MIT license.
   ~ See the LICENSE file for more info.
   -->
-<phpunit bootstrap="bootstrap.php">
+<phpunit bootstrap="tests/bootstrap.php">
     <testsuites>
         <testsuite name="Unit">
-            <directory>.</directory>
+            <directory>tests</directory>
         </testsuite>
     </testsuites>
 </phpunit>

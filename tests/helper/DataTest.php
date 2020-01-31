@@ -23,6 +23,7 @@
 namespace Adyen\PrestaShop\helper;
 
 use Adyen\PrestaShop\service\adapter\classes\Configuration;
+use Adyen\PrestaShop\service\adapter\classes\Language;
 use Adyen\PrestaShop\service\Checkout;
 use Adyen\PrestaShop\service\CheckoutUtility;
 
@@ -57,10 +58,16 @@ class DataTest extends \PHPUnit_Framework_TestCase
                                      ->disableOriginalConstructor()
                                      ->getMock();
 
+        /** @var Language|\PHPUnit_Framework_MockObject_MockObject $languageAdapter */
+        $languageAdapter = $this->getMockBuilder('Adyen\PrestaShop\service\adapter\classes\Language')
+                                ->disableOriginalConstructor()
+                                ->getMock();
+
         $this->adyenHelper = new Data(
             $configuration,
             $adyenCheckoutUtilityService,
-            $adyenCheckoutService
+            $adyenCheckoutService,
+            $languageAdapter
         );
     }
 

@@ -22,6 +22,7 @@
 
 namespace Adyen\PrestaShop\service\modification;
 
+use Adyen\PrestaShop\infra\NotificationRetriever;
 use Adyen\Service\Modification;
 use OrderSlip;
 use PHPUnit\Framework\TestCase;
@@ -58,20 +59,20 @@ class RefundTest extends TestCase
     ) {
         /** @var PHPUnit_Framework_MockObject_MockObject|Modification $modificationClient */
         $modificationClient = $this->getMockBuilder('Adyen\Service\Modification')
-            ->disableOriginalConstructor()
-            ->getMock();
+                                   ->disableOriginalConstructor()
+                                   ->getMock();
         $modificationClient->expects($this->once())
                            ->method('refund')
                            ->with(
                                $this->equalTo(
                                    array(
-                'originalReference' => $pspReference,
+                                       'originalReference' => $pspReference,
                                        'modificationAmount' => array(
-                    'value' => $amount * 100,
-                    'currency' => $currency
+                                           'value' => $amount * 100,
+                                           'currency' => $currency
                                        ),
-                'reference' => (string)$merchantReference,
-                'merchantAccount' => $merchantAccount
+                                       'reference' => (string)$merchantReference,
+                                       'merchantAccount' => $merchantAccount
                                    )
                                )
                            )
@@ -85,19 +86,16 @@ class RefundTest extends TestCase
         $orderSlip->amount = $amount;
         $orderSlip->id = 1;
 
-        $pattern = 'select * from ps_adyen_notification a inner join ps_orders o on a.merchant_reference = o.id_cart';
-        $pattern = str_replace('*', '.+', $pattern);
-        $pattern = str_replace(' ', '\\s+', $pattern);
-        /** @var PHPUnit_Framework_MockObject_MockObject|\Db $databaseConnection */
-        $databaseConnection = $this->getMockBuilder('Db')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $databaseConnection->expects($this->once())
-                           ->method('executeS')
-                           ->with($this->matchesRegularExpression("/$pattern/si"))
-                           ->willReturn(array(array('pspReference' => $pspReference)));
+        /** @var PHPUnit_Framework_MockObject_MockObject|NotificationRetriever $notificationRetriever */
+        $notificationRetriever = $this->getMockBuilder('Adyen\PrestaShop\infra\NotificationRetriever')
+                                      ->disableOriginalConstructor()
+                                      ->getMock();
+        $notificationRetriever->expects($this->once())
+                              ->method('getPSPReferenceByOrderId')
+                              ->with($orderId)
+                              ->willReturn($pspReference);
 
-        $refund = new Refund($modificationClient, $databaseConnection, $merchantAccount);
+        $refund = new Refund($modificationClient, $notificationRetriever, $merchantAccount);
         $this->assertEquals(true, $refund->request($orderSlip, $currency));
     }
 }
