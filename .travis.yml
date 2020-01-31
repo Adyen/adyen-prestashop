@@ -57,4 +57,4 @@ script:
   - find -L . -path ./vendor -prune -o -path ./tests -prune -o -name '*.php' -print0 | xargs -0 -n 1 -P 4 php -l
   # Run PHPCS.
   - if [[ "$SNIFF" == "1" ]]; then $PHPCS_DIR/bin/phpcs; fi
-  - if [[ "$TEST" == "1" ]]; then php phpunit-4.8.36.phar --configuration tests/phpunit.xml; fi
+  - if [[ "$TEST" == "1" ]]; then php phpunit-4.8.36.phar; fi
