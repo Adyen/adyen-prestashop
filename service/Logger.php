@@ -34,44 +34,44 @@ final class Logger extends \Monolog\Logger
     const ADYEN_NOTIFICATION = 203;
     const ADYEN_CRONJOB = 204;
 
-    private static $adyenHandlers = [
-        self::DEBUG => [
+    private static $adyenHandlers = array(
+        self::DEBUG => array(
             'level' => self::DEBUG,
             'fileName' => 'debug.log'
-        ],
-        self::INFO => [
+        ),
+        self::INFO => array(
             'level' => self::INFO,
             'fileName' => 'info.log'
-        ],
-        self::ADYEN_API => [
+        ),
+        self::ADYEN_API => array(
             'level' => self::ADYEN_API,
             'fileName' => 'adyen_api.log'
-        ],
-        self::ADYEN_RESULT => [
+        ),
+        self::ADYEN_RESULT => array(
             'level' => self::ADYEN_RESULT,
             'fileName' => 'adyen_result.log'
-        ],
-        self::ADYEN_NOTIFICATION => [
+        ),
+        self::ADYEN_NOTIFICATION => array(
             'level' => self::ADYEN_NOTIFICATION,
             'fileName' => 'adyen_notification.log'
-        ],
-        self::ADYEN_CRONJOB => [
+        ),
+        self::ADYEN_CRONJOB => array(
             'level' => self::ADYEN_CRONJOB,
             'fileName' => 'adyen_cronjob.log'
-        ],
-        self::NOTICE => [
+        ),
+        self::NOTICE => array(
             'level' => self::NOTICE,
             'fileName' => 'notice.log'
-        ],
-        self::WARNING => [
+        ),
+        self::WARNING => array(
             'level' => self::WARNING,
             'fileName' => 'warning.log'
-        ],
-        self::ERROR => [
+        ),
+        self::ERROR => array(
             'level' => self::ERROR,
             'fileName' => 'error.log'
-        ],
-    ];
+        ),
+    );
 
     /**
      * Logging levels from syslog protocol defined in RFC 5424
@@ -79,20 +79,20 @@ final class Logger extends \Monolog\Logger
      *
      * @var array $levels Logging levels
      */
-    protected static $levels = [
-        self::DEBUG     => 'DEBUG',
-        self::INFO      => 'INFO',
+    protected static $levels = array(
+        self::DEBUG => 'DEBUG',
+        self::INFO => 'INFO',
         self::ADYEN_API => 'ADYEN_API',
         self::ADYEN_RESULT => 'ADYEN_RESULT',
         self::ADYEN_NOTIFICATION => 'ADYEN_NOTIFICATION',
         self::ADYEN_CRONJOB => 'ADYEN_CRONJOB',
-        self::NOTICE    => 'NOTICE',
-        self::WARNING   => 'WARNING',
-        self::ERROR     => 'ERROR',
-        self::CRITICAL  => 'CRITICAL',
-        self::ALERT     => 'ALERT',
+        self::NOTICE => 'NOTICE',
+        self::WARNING => 'WARNING',
+        self::ERROR => 'ERROR',
+        self::CRITICAL => 'CRITICAL',
+        self::ALERT => 'ALERT',
         self::EMERGENCY => 'EMERGENCY',
-    ];
+    );
 
     /**
      * @var VersionChecker
@@ -107,8 +107,7 @@ final class Logger extends \Monolog\Logger
      */
     public function __construct(
         VersionChecker $versionChecker
-    )
-    {
+    ) {
         parent::__construct(self::NAME);
         $this->versionChecker = $versionChecker;
         $this->registerAdyenLogHandlers();
@@ -155,7 +154,7 @@ final class Logger extends \Monolog\Logger
      * @param array $context
      * @return bool
      */
-    public function addAdyenAPI($message, array $context = [])
+    public function addAdyenAPI($message, array $context = array())
     {
         return $this->addRecord(static::ADYEN_API, $message, $context);
     }
@@ -165,7 +164,7 @@ final class Logger extends \Monolog\Logger
      * @param array $context
      * @return bool
      */
-    public function addAdyenResult($message, array $context = [])
+    public function addAdyenResult($message, array $context = array())
     {
         return $this->addRecord(static::ADYEN_RESULT, $message, $context);
     }
@@ -175,7 +174,7 @@ final class Logger extends \Monolog\Logger
      * @param array $context
      * @return bool
      */
-    public function addAdyenNotification($message, array $context = [])
+    public function addAdyenNotification($message, array $context = array())
     {
         return $this->addRecord(static::ADYEN_NOTIFICATION, $message, $context);
     }
@@ -185,7 +184,7 @@ final class Logger extends \Monolog\Logger
      * @param array $context
      * @return bool
      */
-    public function addAdyenCronjob($message, array $context = [])
+    public function addAdyenCronjob($message, array $context = array())
     {
         return $this->addRecord(static::ADYEN_CRONJOB, $message, $context);
     }
@@ -193,12 +192,12 @@ final class Logger extends \Monolog\Logger
     /**
      * Adds a log record.
      *
-     * @param  integer $level   The logging level
-     * @param  string  $message The log message
-     * @param  array   $context The log context
+     * @param integer $level The logging level
+     * @param string $message The log message
+     * @param array $context The log context
      * @return Boolean Whether the record has been processed
      */
-    public function addRecord($level, $message, array $context = [])
+    public function addRecord($level, $message, array $context = array())
     {
         $context['is_exception'] = $message instanceof \Exception;
         return parent::addRecord($level, $message, $context);
