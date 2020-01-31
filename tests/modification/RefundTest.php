@@ -97,7 +97,7 @@ class RefundTest extends TestCase
                            ->with($this->matchesRegularExpression("/$pattern/si"))
                            ->willReturn(array(array('pspReference' => $pspReference)));
 
-        $logger = $this->getMockBuilder(\Adyen\PrestaShop\service\logger\Logger::class)
+        $logger = $this->getMockBuilder(\Adyen\PrestaShop\service\Logger::class)
             ->disableOriginalConstructor()
             ->getMock();
 

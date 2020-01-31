@@ -37,7 +37,7 @@ abstract class FrontController extends \ModuleFrontController
     protected  $versionChecker;
 
     /**
-     * @var \Adyen\PrestaShop\service\logger\Logger
+     * @var \Adyen\PrestaShop\service\Logger
      */
     protected $logger;
 
@@ -49,7 +49,7 @@ abstract class FrontController extends \ModuleFrontController
         parent::__construct();
         $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
         $this->versionChecker = ServiceLocator::get('Adyen\PrestaShop\application\VersionChecker');
-        $this->logger = ServiceLocator::get('Adyen\PrestaShop\service\logger\Logger');
+        $this->logger = ServiceLocator::get('Adyen\PrestaShop\service\Logger');
         $this->helperData->startSession();
     }
 

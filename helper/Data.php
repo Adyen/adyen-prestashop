@@ -28,7 +28,7 @@ use Adyen\AdyenException;
 use Adyen\PrestaShop\service\adapter\classes\Configuration;
 use Adyen\PrestaShop\service\Checkout;
 use Adyen\PrestaShop\service\CheckoutUtility;
-use Adyen\PrestaShop\service\logger\Logger;
+use Adyen\PrestaShop\service\Logger;
 use Country;
 use Currency;
 

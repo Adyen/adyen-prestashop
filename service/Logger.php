@@ -20,25 +20,21 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\service\logger;
+namespace Adyen\PrestaShop\service;
 
 use Adyen\PrestaShop\application\VersionChecker;
 use Monolog\Handler\StreamHandler;
 use Adyen\PrestaShop\exception\CommandException;
 
-class Logger extends \Monolog\Logger
+final class Logger extends \Monolog\Logger
 {
     const NAME = 'ADYEN';
-
-    /**
-     * Detailed debug information
-     */
     const ADYEN_API = 201;
     const ADYEN_RESULT = 202;
     const ADYEN_NOTIFICATION = 203;
     const ADYEN_CRONJOB = 204;
 
-    const ADYEN_HANDLERS = [
+    private static $adyenHandlers = [
         self::DEBUG => [
             'level' => self::DEBUG,
             'fileName' => 'debug.log'
@@ -115,23 +111,17 @@ class Logger extends \Monolog\Logger
     {
         parent::__construct(self::NAME);
         $this->versionChecker = $versionChecker;
-
-        $adyenLogPath = $this->getAdyenLogPath($this->getLogPath($this->versionChecker->isPrestaShop16()));
-
-        foreach (self::ADYEN_HANDLERS as $adyenHandler) {
-            $this->pushHandler(new StreamHandler($adyenLogPath . '/' . $adyenHandler['fileName'], $adyenHandler['level'], false));
-        }
+        $this->registerAdyenLogHandlers();
     }
 
     /**
      * Retrieve default log path depending on the PrestaShop version
      *
-     * @param bool $isPrestaShop16
      * @return string
      */
-    private function getLogPath($isPrestaShop16)
+    private function getLogPath()
     {
-        if ($isPrestaShop16) {
+        if ($this->versionChecker->isPrestaShop16()) {
             $path = _PS_ROOT_DIR_ . '/log';
         } else {
             $path = _PS_ROOT_DIR_ . '/var/logs';
@@ -144,13 +134,12 @@ class Logger extends \Monolog\Logger
      * Retrieve Adyen log path
      * If it doesn't exist yet then also creates it
      *
-     * @param string $defaultLogPath
      * @return string
      * @throws CommandException
      */
-    private function getAdyenLogPath($defaultLogPath)
+    private function getAdyenLogPath()
     {
-        $path = $defaultLogPath . '/adyen';
+        $path = $this->getLogPath() . '/adyen';
 
         if (!file_exists($path)) {
             if (!mkdir($path, 0755, true)) {
@@ -161,21 +150,41 @@ class Logger extends \Monolog\Logger
         return $path;
     }
 
+    /**
+     * @param string $message
+     * @param array $context
+     * @return bool
+     */
     public function addAdyenAPI($message, array $context = [])
     {
         return $this->addRecord(static::ADYEN_API, $message, $context);
     }
 
+    /**
+     * @param string $message
+     * @param array $context
+     * @return bool
+     */
     public function addAdyenResult($message, array $context = [])
     {
         return $this->addRecord(static::ADYEN_RESULT, $message, $context);
     }
 
+    /**
+     * @param string $message
+     * @param array $context
+     * @return bool
+     */
     public function addAdyenNotification($message, array $context = [])
     {
         return $this->addRecord(static::ADYEN_NOTIFICATION, $message, $context);
     }
 
+    /**
+     * @param string $message
+     * @param array $context
+     * @return bool
+     */
     public function addAdyenCronjob($message, array $context = [])
     {
         return $this->addRecord(static::ADYEN_CRONJOB, $message, $context);
@@ -193,5 +202,18 @@ class Logger extends \Monolog\Logger
     {
         $context['is_exception'] = $message instanceof \Exception;
         return parent::addRecord($level, $message, $context);
+    }
+
+    /**
+     * @throws CommandException
+     */
+    private function registerAdyenLogHandlers()
+    {
+        $adyenLogPath = $this->getAdyenLogPath();
+
+        foreach (self::$adyenHandlers as $adyenHandler) {
+            $this->pushHandler(new StreamHandler($adyenLogPath . '/' . $adyenHandler['fileName'],
+                $adyenHandler['level'], false));
+        }
     }
 }

@@ -42,7 +42,7 @@ class NotificationReceiverTest extends TestCase
     public static $functions;
 
     /**
-     * @var Adyen\PrestaShop\service\logger\Logger|\PHPUnit_Framework_MockObject_MockObject $logger
+     * @var Adyen\PrestaShop\service\Logger|\PHPUnit_Framework_MockObject_MockObject $logger
      */
     private $logger;
 
@@ -65,7 +65,7 @@ class NotificationReceiverTest extends TestCase
     {
         self::$functions = m::mock();
 
-        $this->logger = $this->getMockBuilder('Adyen\PrestaShop\service\logger\Logger')
+        $this->logger = $this->getMockBuilder('Adyen\PrestaShop\service\Logger')
                              ->disableOriginalConstructor()
                              ->getMock();
         $this->logger->method('error');

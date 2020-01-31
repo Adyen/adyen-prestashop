@@ -38,7 +38,7 @@ class Client extends \Adyen\Client
      */
     public function __construct(
         \Adyen\PrestaShop\service\adapter\classes\Configuration $configuration,
-        \Adyen\PrestaShop\service\logger\Logger $logger
+        \Adyen\PrestaShop\service\Logger $logger
     )
     {
         parent::__construct();

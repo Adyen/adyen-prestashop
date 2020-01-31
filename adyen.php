@@ -67,7 +67,7 @@ class Adyen extends PaymentModule
     private $versionChecker;
 
     /**
-     * @var \Adyen\PrestaShop\service\logger\Logger
+     * @var \Adyen\PrestaShop\service\Logger
      */
     private $logger;
 
@@ -100,7 +100,7 @@ class Adyen extends PaymentModule
         );
 
         $this->logger = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
-            'Adyen\PrestaShop\service\logger\Logger'
+            'Adyen\PrestaShop\service\Logger'
         );
 
         // start for 1.6

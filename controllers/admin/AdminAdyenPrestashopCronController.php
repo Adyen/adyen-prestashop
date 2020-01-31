@@ -41,7 +41,7 @@ class AdminAdyenPrestashopCronController extends \ModuleAdminController
     public function __construct()
     {
         $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
-        $this->logger = ServiceLocator::get('Adyen\PrestaShop\service\logger\Logger');
+        $this->logger = ServiceLocator::get('Adyen\PrestaShop\service\Logger');
 
         if (\Tools::getValue('token') != $this->helperData->decrypt(\Configuration::get('ADYEN_CRONJOB_TOKEN'))) {
             die('Invalid token');

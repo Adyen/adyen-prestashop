@@ -57,7 +57,7 @@ class DataTest extends \PHPUnit_Framework_TestCase
                                      ->disableOriginalConstructor()
                                      ->getMock();
 
-        $logger = $this->getMockBuilder(\Adyen\PrestaShop\service\logger\Logger::class)
+        $logger = $this->getMockBuilder(\Adyen\PrestaShop\service\Logger::class)
             ->disableOriginalConstructor()
             ->getMock();
 

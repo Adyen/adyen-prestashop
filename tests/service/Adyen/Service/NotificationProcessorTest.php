@@ -36,7 +36,7 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
     public static $functions;
 
     /**
-     * @var Adyen\PrestaShop\service\logger\Logger|\PHPUnit_Framework_MockObject_MockObject $logger
+     * @var Adyen\PrestaShop\service\Logger|\PHPUnit_Framework_MockObject_MockObject $logger
      */
     private $logger;
 
@@ -62,7 +62,7 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
     {
         self::$functions = m::mock();
 
-        $this->logger = $this->getMockBuilder(\Adyen\PrestaShop\service\logger\Logger::class)
+        $this->logger = $this->getMockBuilder(\Adyen\PrestaShop\service\Logger::class)
             ->disableOriginalConstructor()
             ->getMock();
         //$this->logger->method('error');
