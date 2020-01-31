@@ -47,6 +47,10 @@ class Client extends \Adyen\Client
             \Adyen\PrestaShop\service\Configuration::MODULE_NAME,
             \Adyen\PrestaShop\service\Configuration::VERSION
         );
+        $this->setMerchantApplication(
+            \Adyen\PrestaShop\service\Configuration::MODULE_NAME,
+            \Adyen\PrestaShop\service\Configuration::VERSION
+        );
         $this->setExternalPlatform("PrestaShop", _PS_VERSION_);
         $this->setEnvironment($configuration->adyenMode, $configuration->liveEndpointPrefix);
 
