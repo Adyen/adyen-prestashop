@@ -853,7 +853,7 @@ class Adyen extends PaymentModule
 
         try {
             $modificationService = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
-                'Adyen\Service\ResourceModel\Modification'
+                'Adyen\PrestaShop\service\Modification'
             );
         } catch (Adyen\AdyenException $e) {
             $this->addMessageToOrderForOrderSlipAndLogErrorMessage(

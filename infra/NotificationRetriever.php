@@ -22,6 +22,7 @@
 
 namespace Adyen\PrestaShop\infra;
 
+use Adyen\PrestaShop\service\adapter\classes\DbAdapter;
 use Adyen\PrestaShop\service\modification\exception\NotificationNotFoundException;
 use Db;
 use PrestaShopDatabaseException;
@@ -33,9 +34,9 @@ class NotificationRetriever
      */
     private $db;
 
-    public function __construct(Db $db)
+    public function __construct()
     {
-        $this->db = $db;
+        $this->db = Db::getInstance();
     }
 
     /**
