@@ -26,18 +26,24 @@ matrix:
     - php: 7.0
     # aliased to a recent 7.1 version
     - php: 7.1
-      env: SNIFF=1
+      env:
+        - COMPOSER_INSTALL=1
+        - SNIFF=1
+        - TEST=1
     # aliased to a recent 5.3 version
     - dist: precise
       php: 5.3
 
 before_install:
+  - if [[ "$COMPOSER_INSTALL" == "1" ]]; then composer install; fi
   - if [[ "$SNIFF" == "1" ]]; then export PHPCS_DIR=/tmp/phpcs; fi
   - if [[ "$SNIFF" == "1" ]]; then export PHPCOMPAT_DIR=/tmp/PHPCompatibility; fi
   # Install PHP CodeSniffer.
   - if [[ "$SNIFF" == "1" ]]; then git clone -b master --depth 1 https://github.com/squizlabs/PHP_CodeSniffer.git $PHPCS_DIR; fi
   # Install PHP Compatibility Standard.
   - if [[ "$SNIFF" == "1" ]]; then git clone -b master --depth 1 https://github.com/wimg/PHPCompatibility.git $PHPCOMPAT_DIR; fi
+  # Install PHPUnit
+  - if [[ "$TEST" == "1" ]]; then wget https://phar.phpunit.de/phpunit-4.8.36.phar; fi
   # Set install path for PHP Compatibility Standard.
   # @link https://github.com/squizlabs/PHP_CodeSniffer/wiki/Configuration-Options#setting-the-installed-standard-paths
   - if [[ "$SNIFF" == "1" ]]; then $PHPCS_DIR/bin/phpcs --config-set installed_paths $PHPCOMPAT_DIR; fi
@@ -53,3 +59,4 @@ script:
   - find -L . -path ./vendor -prune -o -path ./tests -prune -o -name '*.php' -print0 | xargs -0 -n 1 -P 4 php -l
   # Run PHPCS.
   - if [[ "$SNIFF" == "1" ]]; then $PHPCS_DIR/bin/phpcs; fi
+  - if [[ "$TEST" == "1" ]]; then php phpunit-4.8.36.phar; fi

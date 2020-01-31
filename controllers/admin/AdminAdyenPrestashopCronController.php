@@ -64,7 +64,8 @@ class AdminAdyenPrestashopCronController extends \ModuleAdminController
             Db::getInstance(),
             new \Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter(),
             new \Adyen\PrestaShop\service\adapter\classes\CustomerThreadAdapter(),
-            $this->logger
+            $this->logger,
+            Context::getContext()
         );
 
         $unprocessedNotifications = $notificationProcessor->getUnprocessedNotifications();

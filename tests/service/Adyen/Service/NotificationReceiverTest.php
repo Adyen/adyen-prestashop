@@ -24,7 +24,6 @@ namespace Adyen\PrestaShop\service\notification;
 
 use Adyen\PrestaShop\helper\Data as AdyenHelper;
 use Adyen\Util\HmacSignature;
-use Db;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
 
@@ -76,7 +75,10 @@ class NotificationReceiverTest extends TestCase
 
         $this->hmacSignature = $this->getMock('Adyen\Util\HmacSignature');
 
-        $this->dbInstance = $this->getMockBuilder('Db')->disableOriginalConstructor()->getMock();
+        $this->dbInstance = $this->getMockBuilder('Db')
+                                 ->setMethods(array('getValue', 'insert'))
+                                 ->disableOriginalConstructor()
+                                 ->getMock();
     }
 
     public function tearDown()
@@ -191,6 +193,7 @@ class NotificationReceiverTest extends TestCase
     {
         $notificationItems = json_decode(file_get_contents(__DIR__ . '/regular-notification.json'), true);
         $notificationRequestItem = $notificationItems['notificationItems'][0]['NotificationRequestItem'];
+        define('_DB_PREFIX_', 'ps_');
 
         self::$functions->shouldReceive('pSQL')->andReturnUsing(function ($string) {
             $search = array('\\', "\0", "\n", "\r", "\x1a", "'", '"');
@@ -203,7 +206,7 @@ class NotificationReceiverTest extends TestCase
         $this->hmacSignature->method('isValidNotificationHMAC')->willReturn(true);
 
         $this->dbInstance->method('insert')->with(
-            _DB_PREFIX_ . 'adyen_notification',
+            'adyen_notification',
             $this->callback(function ($subject) use ($notificationRequestItem) {
                 $arr = array(
                     'pspreference' => $notificationRequestItem['pspReference'],
@@ -219,11 +222,7 @@ class NotificationReceiverTest extends TestCase
                     'updated_at' => $subject['updated_at']
                 );
                 return $arr == $subject;
-            }),
-            false,
-            false,
-            Db::INSERT,
-            false
+            })
         );
 
         $_SERVER['PHP_AUTH_USER'] = 'username';

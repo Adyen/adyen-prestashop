@@ -26,6 +26,7 @@ namespace Adyen\PrestaShop\service\notification;
 use Adyen\PrestaShop\helper\Data as AdyenHelper;
 use Adyen\PrestaShop\service\adapter\classes\CustomerThreadAdapter;
 use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
+use Context;
 use Db;
 use PrestaShopDatabaseException;
 use PrestaShopException;
@@ -49,6 +50,21 @@ class NotificationProcessor
     private $logger;
 
     /**
+     * @var OrderAdapter
+     */
+    private $orderAdapter;
+
+    /**
+     * @var CustomerThreadAdapter
+     */
+    private $customerThreadAdapter;
+
+    /**
+     * @var Context
+     */
+    private $context;
+
+    /**
      * NotificationProcessor constructor.
      *
      * @param AdyenHelper $helperData
@@ -56,13 +72,15 @@ class NotificationProcessor
      * @param OrderAdapter $orderAdapter
      * @param CustomerThreadAdapter $customerThreadAdapter
      * @param LoggerInterface $logger
+     * @param Context $context
      */
     public function __construct(
         AdyenHelper $helperData,
         Db $dbInstance,
         OrderAdapter $orderAdapter,
         CustomerThreadAdapter $customerThreadAdapter,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        Context $context
     ) {
         $this->helperData = $helperData;
         $this->dbInstance = $dbInstance;
@@ -70,6 +88,7 @@ class NotificationProcessor
         $this->customerThreadAdapter = $customerThreadAdapter;
         $this->context = \Context::getContext();
         $this->logger = $logger;
+        $this->context = $context;
     }
 
     /**
