@@ -58,16 +58,23 @@ class Data
      */
     private $configuration;
 
+    /**
+     * @var Adyen\PrestaShop\service\adapter\classes\Language
+     */
+    private $languageAdapter;
+
     public function __construct(
         Configuration $configuration,
         CheckoutUtility $adyenCheckoutUtilityService,
-        Checkout $adyenCheckoutService
+        Checkout $adyenCheckoutService,
+        Adyen\PrestaShop\service\adapter\classes\Language $languageAdapter
     ) {
         $this->httpHost = $configuration->httpHost;
         $this->sslEncryptionKey = $configuration->sslEncryptionKey;
         $this->adyenCheckoutUtilityService = $adyenCheckoutUtilityService;
         $this->adyenCheckoutService = $adyenCheckoutService;
         $this->configuration = $configuration;
+        $this->languageAdapter = $languageAdapter;
     }
 
     /**
@@ -120,7 +127,7 @@ class Data
         $address = new Address($cart->id_address_invoice);
         $countryCode = Country::getIsoById($address->id_country);
         $shopperReference = $cart->id_customer;
-        $shopperLocale = $this->getLocale($language);
+        $shopperLocale = $this->languageAdapter->getLocaleCode($language);
 
         $adyenFields = array(
             "channel" => "Web",
@@ -300,6 +307,7 @@ class Data
      * @param $amount
      * @param $currency
      * @return string
+     * @deprecated Use Adyen\Util\Currency sanitize() from Adyen php api library
      */
     public function formatAmount($amount, $currency)
     {
@@ -394,6 +402,7 @@ class Data
     /**
      * Get locale for 1.6/1.7
      * @return mixed
+     * @deprecated use Adyen\PrestaShop\service\adapter\classes\Language
      */
     public function getLocale($language)
     {

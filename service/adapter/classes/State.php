@@ -1,4 +1,5 @@
 <?php
+
 /**
  *                       ######
  *                       ######
@@ -20,30 +21,34 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\service;
+namespace Adyen\PrestaShop\service\adapter\classes;
 
-class Client extends \Adyen\Client
+class State
 {
     /**
-     * @var adapter\classes\Configuration
+     * Retrieves Iso code for a state by id
+     *
+     * @param $id_state
+     * @return bool
      */
-    private $configuration;
-
-    public function __construct(\Adyen\PrestaShop\service\adapter\classes\Configuration $configuration)
+    public function getIsoById($id_state)
     {
-        parent::__construct();
-        $this->setXApiKey($configuration->apiKey);
-        $this->setAdyenPaymentSource(
-            \Adyen\PrestaShop\service\Configuration::MODULE_NAME,
-            \Adyen\PrestaShop\service\Configuration::VERSION
-        );
-        $this->setMerchantApplication(
-            \Adyen\PrestaShop\service\Configuration::MODULE_NAME,
-            \Adyen\PrestaShop\service\Configuration::VERSION
-        );
-        $this->setExternalPlatform("PrestaShop", _PS_VERSION_);
-        $this->setEnvironment($configuration->adyenMode, $configuration->liveEndpointPrefix);
+        if (!$id_state) {
+            return false;
+        }
 
-        $this->configuration = $configuration;
+        $cache_id = 'State::getIsoById_' . (int)$id_state;
+        if (!\Cache::isStored($cache_id)) {
+            $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue('
+				SELECT `iso_code`
+				FROM `' . _DB_PREFIX_ . 'state`
+				WHERE `id_state` = ' . (int)$id_state
+            );
+
+            \Cache::store($cache_id, $result);
+            return $result;
+        }
+
+        return \Cache::retrieve($cache_id);
     }
 }
