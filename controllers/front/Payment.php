@@ -119,11 +119,6 @@ class AdyenPaymentModuleFrontController extends FrontController
     private $configuration;
 
     /**
-     * @var Adyen\PrestaShop\service\Logger
-     */
-    private $logger;
-
-    /**
      * AdyenPaymentModuleFrontController constructor.
      */
     public function __construct()
