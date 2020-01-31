@@ -25,12 +25,11 @@ jQuery(function ($) {
         return;
     }
 
-    var encryptedSecurityCode;
     var allValidcard;
 
-    var browserInfo;
+    var data;
 
-    var placeOrderAllowed;
+    var placeOrderAllowed = false;
     var popupModal;
 
     var threeDSProcessUrl;
@@ -55,8 +54,6 @@ jQuery(function ($) {
 
         renderStoredPaymentComponent(storedPaymentMethod);
 
-        placeOrderAllowed = false;
-
         /* Subscribes to the adyen payment method form submission */
         var paymentForm = $("#payment-form.adyen-payment-form-" + storedPaymentMethod.id);
         paymentForm.on('submit', function (e) {
@@ -72,9 +69,8 @@ jQuery(function ($) {
 
             processPayment({
                 'isAjax': true,
-                'encryptedSecurityCode': encryptedSecurityCode,
-                'storedPaymentMethodId': storedPaymentMethod.storedPaymentMethodId,
-                'browserInfo': browserInfo
+                'browserInfo': data.browserInfo,
+                'paymentMethod': data.paymentMethod
             }, storedPaymentMethod, paymentForm);
         });
     });
@@ -88,11 +84,7 @@ jQuery(function ($) {
         var configuration = Object.assign(storedPaymentMethod, {
             onChange: function (state, component) {
                 if (state.isValid && !component.state.errors.encryptedSecurityCode) {
-                    if (state.data.paymentMethod.encryptedSecurityCode) {
-                        encryptedSecurityCode = state.data.paymentMethod.encryptedSecurityCode;
-                    }
-
-                    browserInfo = state.data.browserInfo;
+                    data = state.data;
                     allValidcard = true;
                 } else {
                     resetFields();
@@ -132,12 +124,11 @@ jQuery(function ($) {
         });
     }
 
-
     /**
      * Reset card details
      */
     function resetFields() {
-        encryptedSecurityCode = "";
+        data = "";
         allValidcard = false;
     }
 
@@ -272,5 +263,3 @@ jQuery(function ($) {
         }
     }
 });
-
-
