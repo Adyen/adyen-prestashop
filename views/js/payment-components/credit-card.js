@@ -24,19 +24,10 @@ jQuery(function ($) {
         return;
     }
 
-    var holderName;
-    var encryptedCardNumber;
-    var encryptedExpiryMonth;
-    var encryptedExpiryYear;
-    var encryptedSecurityCode;
     var allValidCard;
-
-    var browserInfo;
-
     var placeOrderAllowed;
     var popupModal;
-
-    var storeCc;
+    var data;
 
     /* Create adyen checkout with default settings */
     placeOrderAllowed = false;
@@ -54,13 +45,9 @@ jQuery(function ($) {
 
             processPayment({
                 'isAjax': true,
-                'holderName': holderName,
-                'encryptedCardNumber': encryptedCardNumber,
-                'encryptedExpiryMonth': encryptedExpiryMonth,
-                'encryptedExpiryYear': encryptedExpiryYear,
-                'encryptedSecurityCode': encryptedSecurityCode,
-                'storeCc': storeCc,
-                'browserInfo': browserInfo
+                'browserInfo': data.browserInfo,
+                'paymentMethod': data.paymentMethod,
+                'storeDetails': data.storeDetails
             });
 
             return false;
@@ -84,16 +71,7 @@ jQuery(function ($) {
 
             onChange: function (state, component) {
                 if (state.isValid && !component.state.errors.encryptedSecurityCode) {
-                    storeCc = !!state.data.storePaymentMethod;
-                    holderName = state.data.paymentMethod.holderName;
-                    encryptedCardNumber = state.data.paymentMethod.encryptedCardNumber;
-                    encryptedExpiryMonth = state.data.paymentMethod.encryptedExpiryMonth;
-                    encryptedExpiryYear = state.data.paymentMethod.encryptedExpiryYear;
-                    if (state.data.paymentMethod.encryptedSecurityCode) {
-                        encryptedSecurityCode = state.data.paymentMethod.encryptedSecurityCode;
-                    }
-
-                    browserInfo = state.data.browserInfo;
+                    data = state.data;
                     allValidCard = true;
                 } else {
                     resetFields();
@@ -270,11 +248,7 @@ jQuery(function ($) {
      * Reset card details
      */
     function resetFields() {
-        holderName = "";
-        encryptedCardNumber = "";
-        encryptedExpiryMonth = "";
-        encryptedExpiryYear = "";
-        encryptedSecurityCode = "";
+        data = '';
         allValidCard = false;
     }
 });

@@ -1,4 +1,5 @@
 <?php
+
 /**
  *                       ######
  *                       ######
@@ -20,30 +21,40 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\service;
+namespace Adyen\PrestaShop\service\adapter\classes;
 
-class Client extends \Adyen\Client
+use Adyen\PrestaShop\application\VersionChecker;
+
+class Language
 {
     /**
-     * @var adapter\classes\Configuration
+     * @var VersionChecker
      */
-    private $configuration;
+    private $versionChecker;
 
-    public function __construct(\Adyen\PrestaShop\service\adapter\classes\Configuration $configuration)
+    /**
+     * Language constructor.
+     *
+     * @param VersionChecker $versionChecker
+     */
+    public function __construct(VersionChecker $versionChecker)
     {
-        parent::__construct();
-        $this->setXApiKey($configuration->apiKey);
-        $this->setAdyenPaymentSource(
-            \Adyen\PrestaShop\service\Configuration::MODULE_NAME,
-            \Adyen\PrestaShop\service\Configuration::VERSION
-        );
-        $this->setMerchantApplication(
-            \Adyen\PrestaShop\service\Configuration::MODULE_NAME,
-            \Adyen\PrestaShop\service\Configuration::VERSION
-        );
-        $this->setExternalPlatform("PrestaShop", _PS_VERSION_);
-        $this->setEnvironment($configuration->adyenMode, $configuration->liveEndpointPrefix);
+        $this->versionChecker = $versionChecker;
+    }
 
-        $this->configuration = $configuration;
+    /**
+     * Returns the locale code for 1.6 and 1.7
+     *
+     * @param \LanguageCore $language
+     * @return string
+     */
+    public function getLocaleCode(\LanguageCore $language)
+    {
+        // no locale in PrestaShop1.6 only languageCode that is en-en but we need en_EN
+        if ($this->versionChecker->isPrestaShop16()) {
+            return $language->iso_code;
+        } else {
+            return $language->locale;
+        }
     }
 }

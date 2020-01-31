@@ -67,6 +67,11 @@ class Adyen extends PaymentModule
     private $versionChecker;
 
     /**
+     * @var Adyen\PrestaShop\service\adapter\classes\Language
+     */
+    private $languageAdapter;
+
+    /**
      * Adyen constructor.
      *
      * @throws \PrestaShop\PrestaShop\Adapter\CoreException
@@ -92,6 +97,10 @@ class Adyen extends PaymentModule
 
         $this->versionChecker = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
             'Adyen\PrestaShop\application\VersionChecker'
+        );
+
+        $this->languageAdapter = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
+            'Adyen\PrestaShop\service\adapter\classes\Language'
         );
 
         // start for 1.6
@@ -656,10 +665,6 @@ class Adyen extends PaymentModule
         if (!empty($paymentMethods['paymentMethods'])) {
             foreach ($paymentMethods['paymentMethods'] as $paymentMethod) {
 
-                if (!$this->isSimplePaymentMethod($paymentMethod)) {
-                    continue;
-                }
-
                 // Skip unsupported payment methods
                 if ($this->isUnsupportedPaymentMethod($paymentMethod['type'])) {
                     continue;
@@ -776,7 +781,7 @@ class Adyen extends PaymentModule
     private function getCheckoutComponentInitData()
     {
         return array(
-            'locale' => $this->helper_data->getLocale($this->context->language),
+            'locale' => $this->languageAdapter->getLocaleCode($this->context->language),
             'originKey' => $this->helper_data->getOriginKeyForOrigin(),
             'environment' => Configuration::get('ADYEN_MODE')
         );
@@ -1068,10 +1073,6 @@ class Adyen extends PaymentModule
         $payments = '';
         foreach ($paymentMethods['paymentMethods'] as $paymentMethod) {
 
-            if (!$this->isSimplePaymentMethod($paymentMethod)) {
-                continue;
-            }
-
             // Skip unsupported payment methods
             if ($this->isUnsupportedPaymentMethod($paymentMethod['type'])) {
                 continue;
@@ -1125,29 +1126,7 @@ class Adyen extends PaymentModule
         $payments .= $this->display(__FILE__, '/views/templates/front/payment.tpl');
         return $payments;
     }
-
-    /**
-     * @param array $paymentMethod
-     *
-     * @return bool
-     */
-    private function isSimplePaymentMethod($paymentMethod)
-    {
-        if (!empty($paymentMethod['details'])) {
-            $details = $paymentMethod['details'];
-        }
-        return !empty($paymentMethod['type'])
-            && $paymentMethod['type'] != 'scheme'
-            && (
-                empty($details) || (
-                    is_array($details)
-                    && count($details) == 1
-                    && $details[0]['key'] == 'issuer'
-                    && $details[0]['type'] == 'select'
-                )
-            );
-    }
-
+    
     /**
      * Returns true if payment method is unsupported
      *
@@ -1161,11 +1140,7 @@ class Adyen extends PaymentModule
             'wechatpay',
             'wechatpay_pos',
             'wechatpaySdk',
-            'wechatpayQr',
-            'klarna',
-            'klarna_b2b',
-            'klarna_account',
-            'klarna_paynow'
+            'wechatpayQr'
         );
 
         if (in_array($paymentMethodType, $unsupportedPaymentMethods)) {

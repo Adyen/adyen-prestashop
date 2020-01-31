@@ -1,4 +1,5 @@
 <?php
+
 /**
  *                       ######
  *                       ######
@@ -20,30 +21,16 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\service;
+namespace Adyen\PrestaShop\service\adapter\classes;
 
-class Client extends \Adyen\Client
+class Country
 {
     /**
-     * @var adapter\classes\Configuration
+     * @param $countryId
+     * @return string
      */
-    private $configuration;
-
-    public function __construct(\Adyen\PrestaShop\service\adapter\classes\Configuration $configuration)
+    public function getIsoById($countryId)
     {
-        parent::__construct();
-        $this->setXApiKey($configuration->apiKey);
-        $this->setAdyenPaymentSource(
-            \Adyen\PrestaShop\service\Configuration::MODULE_NAME,
-            \Adyen\PrestaShop\service\Configuration::VERSION
-        );
-        $this->setMerchantApplication(
-            \Adyen\PrestaShop\service\Configuration::MODULE_NAME,
-            \Adyen\PrestaShop\service\Configuration::VERSION
-        );
-        $this->setExternalPlatform("PrestaShop", _PS_VERSION_);
-        $this->setEnvironment($configuration->adyenMode, $configuration->liveEndpointPrefix);
-
-        $this->configuration = $configuration;
+        return \CountryCore::getIsoById($countryId);
     }
 }
