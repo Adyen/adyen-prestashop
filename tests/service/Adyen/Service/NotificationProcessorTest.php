@@ -221,8 +221,6 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
             ->method('error')
             ->with('Customer with id: "" cannot be found for order with id: "" while notification with id: "1" was processed.');
 
-        $this->assertFalse($notificationProcessor->addMessage($notification));
-
         try {
             $this->assertFalse($notificationProcessor->addMessage($notification));
         } catch (PrestaShopDatabaseException $e) {
