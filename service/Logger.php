@@ -26,7 +26,7 @@ use Adyen\PrestaShop\application\VersionChecker;
 use Monolog\Handler\StreamHandler;
 use Adyen\PrestaShop\exception\CommandException;
 
-final class Logger extends \Monolog\Logger
+class Logger extends \Monolog\Logger
 {
     const NAME = 'ADYEN';
     const ADYEN_API = 201;
