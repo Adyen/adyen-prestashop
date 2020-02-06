@@ -34,6 +34,16 @@ class AdminAdyenPrestashopCronController extends \ModuleAdminController
     public $ssl = true;
 
     /**
+     * @var Adyen\PrestaShop\helper\Data
+     */
+    private $helperData;
+
+    /**
+     * @var Adyen\PrestaShop\service\Logger
+     */
+    private $logger;
+
+    /**
      * AdminAdyenPrestashopCronController constructor.
      *
      * @throws \Adyen\AdyenException
