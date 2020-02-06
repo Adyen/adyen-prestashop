@@ -180,7 +180,7 @@ class Data
     }
 
     /**
-     * @deprecated Use \Adyen\PrestaShop\service\logger instead
+     * @deprecated Use \Adyen\PrestaShop\service\logger instead. This method will be removed in version 2.
      * @return \FileLogger
      */
     public function adyenLogger()
