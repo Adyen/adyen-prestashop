@@ -22,7 +22,7 @@
 
 namespace Adyen\PrestaShop\service\modification;
 
-use AbstractLogger;
+use \Psr\Log\LoggerInterface;
 use Adyen\AdyenException;
 use Adyen\PrestaShop\infra\NotificationRetriever;
 use Adyen\PrestaShop\service\modification\exception\NotificationNotFoundException;
@@ -49,7 +49,7 @@ class Refund
     private $notificationRetriever;
 
     /**
-     * @var AbstractLogger
+     * @var LoggerInterface
      */
     private $logger;
 
@@ -59,13 +59,13 @@ class Refund
      * @param Modification $modificationClient
      * @param NotificationRetriever $notificationRetriever
      * @param $merchantAccount
-     * @param AbstractLogger $logger
+     * @param LoggerInterface $logger
      */
     public function __construct(
         Modification $modificationClient,
         NotificationRetriever $notificationRetriever,
         $merchantAccount,
-        AbstractLogger $logger = null
+        LoggerInterface $logger = null
     ) {
         $this->modificationClient = $modificationClient;
         $this->notificationRetriever = $notificationRetriever;
@@ -87,10 +87,10 @@ class Refund
         try {
             $pspReference = $this->notificationRetriever->getPSPReferenceByOrderId($orderSlip->id_order);
         } catch (NotificationNotFoundException $e) {
-            $this->logger->logError($e->getMessage());
+            $this->logger->error($e->getMessage());
             return false;
         } catch (PrestaShopDatabaseException $e) {
-            $this->logger->logError($e->getMessage());
+            $this->logger->error($e->getMessage());
             return false;
         }
         try {
@@ -106,7 +106,7 @@ class Refund
                 )
             );
         } catch (AdyenException $e) {
-            $this->logger->logError($e->getMessage());
+            $this->logger->error($e->getMessage());
             return false;
         }
         return true;

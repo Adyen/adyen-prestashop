@@ -74,7 +74,7 @@ class AdyenResultModuleFrontController extends \Adyen\PrestaShop\controllers\Fro
             // create new cart from the current cart
             $this->helperData->cloneCurrentCart($this->context, $cart);
 
-            $this->helperData->adyenLogger()->logError("The payment was refused, id:  " . $cart->id);
+            $this->logger->error("The payment was refused, id:  " . $cart->id);
             $this->setTemplate($this->helperData->getTemplateFromModulePath('views/templates/front/error.tpl'));
         }
     }

@@ -41,7 +41,7 @@ class NotificationReceiverTest extends TestCase
     public static $functions;
 
     /**
-     * @var \FileLogger|\PHPUnit_Framework_MockObject_MockObject $logger
+     * @var Adyen\PrestaShop\service\Logger|\PHPUnit_Framework_MockObject_MockObject $logger
      */
     private $logger;
 
@@ -64,16 +64,14 @@ class NotificationReceiverTest extends TestCase
     {
         self::$functions = m::mock();
 
-        $this->logger = $this->getMockBuilder('FileLogger')
-                             ->setMethods(array('logDebug', 'logError'))
+        $this->logger = $this->getMockBuilder('Adyen\PrestaShop\service\Logger')
                              ->disableOriginalConstructor()
                              ->getMock();
-        $this->logger->method('logError');
+        $this->logger->method('error');
 
         $this->adyenHelper = $this->getMockBuilder('Adyen\PrestaShop\helper\Data')
                                   ->disableOriginalConstructor()
                                   ->getMock();
-        $this->adyenHelper->method('adyenLogger')->willReturn($this->logger);
 
         $this->hmacSignature = $this->getMock('Adyen\Util\HmacSignature');
 
@@ -104,7 +102,8 @@ class NotificationReceiverTest extends TestCase
             'Merchant',
             'username',
             'password',
-            $this->dbInstance
+            $this->dbInstance,
+            $this->logger
         );
 
         $this->setExpectedException('Adyen\PrestaShop\service\notification\HMACKeyValidationException');
@@ -126,7 +125,8 @@ class NotificationReceiverTest extends TestCase
             'Merchant',
             'username',
             'password',
-            $this->dbInstance
+            $this->dbInstance,
+            $this->logger
         );
 
         $this->setExpectedException('Adyen\PrestaShop\service\notification\AuthenticationException');
@@ -148,7 +148,8 @@ class NotificationReceiverTest extends TestCase
             '',
             'username',
             'password',
-            $this->dbInstance
+            $this->dbInstance,
+            $this->logger
         );
 
         $_SERVER['PHP_AUTH_USER'] = 'username';
@@ -173,7 +174,8 @@ class NotificationReceiverTest extends TestCase
             '',
             'username',
             'password',
-            $this->dbInstance
+            $this->dbInstance,
+            $this->logger
         );
 
         $_SERVER['PHP_AUTH_USER'] = 'username';
@@ -233,7 +235,8 @@ class NotificationReceiverTest extends TestCase
             'Merchant',
             'username',
             'password',
-            $this->dbInstance
+            $this->dbInstance,
+            $this->logger
         );
 
         /** @noinspection PhpUnhandledExceptionInspection */

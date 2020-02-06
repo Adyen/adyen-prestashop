@@ -27,6 +27,7 @@
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use Adyen\PrestaShop\controllers\FrontController;
 use \Adyen\AdyenException;
+use \Adyen\PrestaShop\exception\MissingDataException;
 
 class AdyenPaymentModuleFrontController extends FrontController
 {
@@ -136,6 +137,7 @@ class AdyenPaymentModuleFrontController extends FrontController
         $this->paymentBuilder = ServiceLocator::get('Adyen\PrestaShop\service\builder\Payment');
         $this->genderService = ServiceLocator::get('Adyen\PrestaShop\service\Gender');
         $this->configuration = ServiceLocator::get('Adyen\PrestaShop\service\adapter\classes\Configuration');
+        $this->logger = ServiceLocator::get('Adyen\PrestaShop\service\Logger');
 
         $this->helperData->startSession();
     }
@@ -165,8 +167,8 @@ class AdyenPaymentModuleFrontController extends FrontController
                 $request = $this->buildAddresses($request);
                 $request = $this->buildPaymentData($request);
                 $request = $this->buildCustomerData($request);
-            } catch (\Adyen\PrestaShop\exception\MissingDataException $exception) {
-                $this->helperData->adyenLogger()->logError("There was an error with the payment method. id:  " . $cart->id . " Missing data: " . $exception->getMessage());
+            } catch (MissingDataException $exception) {
+                $this->logger->error("There was an error with the payment method. id:  " . $cart->id . " Missing data: " . $exception->getMessage());
 
                 $this->ajaxRender(
                     $this->helperData->buildControllerResponseJson(
@@ -185,7 +187,10 @@ class AdyenPaymentModuleFrontController extends FrontController
             try {
                 $response = $service->payments($request);
             } catch (AdyenException $e) {
-                $this->helperData->adyenLogger()->logError("There was an error with the payment method. id:  " . $cart->id . " Response: " . $e->getMessage());
+                $this->logger->error(
+                    "There was an error with the payment method. id:  " . $cart->id .
+                    " Response: " . $e->getMessage()
+                );
 
                 $this->ajaxRender(
                     $this->helperData->buildControllerResponseJson(
@@ -214,6 +219,13 @@ class AdyenPaymentModuleFrontController extends FrontController
         return $response;
     }
 
+    /**
+     * @param $response
+     * @param $cart
+     * @param $customer
+     * @param $isAjax
+     * @throws AdyenException
+     */
     private function handlePaymentsResponse($response, $cart, $customer, $isAjax)
     {
         $resultCode = $response['resultCode'];
@@ -253,15 +265,22 @@ class AdyenPaymentModuleFrontController extends FrontController
                     }
                 }
 
-                $this->redirectUserToPageLink($this->context->link->getPageLink('order-confirmation', $this->ssl, null,
-                    'id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key),
-                    $isAjax);
+                $this->redirectUserToPageLink(
+                    $this->context->link->getPageLink(
+                        'order-confirmation',
+                        $this->ssl,
+                        null,
+                        'id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' .
+                        $this->module->currentOrder . '&key=' . $customer->secure_key
+                    ),
+                    $isAjax
+                );
 
                 break;
             case 'Refused':
                 // In case of refused payment there is no order created and the cart needs to be cloned and reinitiated
                 $this->helperData->cloneCurrentCart($this->context, $cart);
-                $this->helperData->adyenLogger()->logError("The payment was refused, id:  " . $cart->id);
+                $this->logger->error("The payment was refused, id:  " . $cart->id);
 
                 $this->ajaxRender(
                     $this->helperData->buildControllerResponseJson(
@@ -305,7 +324,10 @@ class AdyenPaymentModuleFrontController extends FrontController
                 $this->context->cookie->__set("id_cart_temp", $cartId);
 
                 // Check if redirect shopper response data is valid
-                if (empty($response['redirect']['url']) || empty($response['redirect']['method']) || empty($response['paymentData'])) {
+                if (empty($response['redirect']['url']) ||
+                    empty($response['redirect']['method']) ||
+                    empty($response['paymentData'])
+                ) {
                     $this->ajaxRender(
                         $this->helperData->buildControllerResponseJson(
                             'error',
@@ -368,10 +390,21 @@ class AdyenPaymentModuleFrontController extends FrontController
                 break;
             default:
                 //8_PS_OS_ERROR_ : payment error
-                $this->module->validateOrder($cart->id, 8, $total, $this->module->displayName, null, $extraVars,
-                    (int)$cart->id_currency, false, $customer->secure_key);
-                $this->helperData->adyenLogger()->logError("There was an error with the payment method. id:  " . $cart->id . ' Unsupported result code in response: ' . print_r($response,
-                        true));
+                $this->module->validateOrder(
+                    $cart->id,
+                    8,
+                    $total,
+                    $this->module->displayName,
+                    null,
+                    $extraVars,
+                    (int)$cart->id_currency,
+                    false,
+                    $customer->secure_key
+                );
+                $this->logger->error(
+                    "There was an error with the payment method. id:  " . $cart->id .
+                    ' Unsupported result code in response: ' . print_r($response, true)
+                );
 
                 $this->ajaxRender(
                     $this->helperData->buildControllerResponseJson(
@@ -430,7 +463,9 @@ class AdyenPaymentModuleFrontController extends FrontController
             'termUrl' => $termUrl
         ));
 
-        return $this->setTemplate($this->helperData->getTemplateFromModulePath('views/templates/front/redirect.tpl'));
+        return $this->setTemplate(
+            $this->helperData->getTemplateFromModulePath('views/templates/front/redirect.tpl')
+        );
     }
 
     /**
@@ -537,7 +572,7 @@ class AdyenPaymentModuleFrontController extends FrontController
     /**
      * @param array $request
      * @return array|mixed
-     * @throws \Adyen\PrestaShop\exception\MissingDataException
+     * @throws MissingDataException
      */
     public function buildPaymentData($request = array())
     {
@@ -634,7 +669,7 @@ class AdyenPaymentModuleFrontController extends FrontController
     /**
      * @param array $request
      * @return array|mixed
-     * @throws \Adyen\PrestaShop\exception\MissingDataException
+     * @throws MissingDataException
      */
     private function buildLocalPaymentMethodData($request = array())
     {
@@ -645,7 +680,7 @@ class AdyenPaymentModuleFrontController extends FrontController
         if (!empty($paymentMethod[self::TYPE])) {
             $paymentMethodType = $paymentMethod[self::TYPE];
         } else {
-            throw new \Adyen\PrestaShop\exception\MissingDataException('Payment method type is not sent for local payment method');
+            throw new MissingDataException('Payment method type is not sent for local payment method');
         }
 
         if (!empty($paymentMethod[self::ISSUER])) {
@@ -722,10 +757,11 @@ class AdyenPaymentModuleFrontController extends FrontController
     private function buildCustomerData($request = array())
     {
         $cart = $this->context->cart;
-        $customer = new \Customer($cart->id_customer);
-        $language = new \Language($cart->id_lang);
-        $invoicingAddress = new \Address($cart->id_address_invoice);
+        $customer = new \CustomerCore($cart->id_customer);
+        $language = new \LanguageCore($cart->id_lang);
+        $invoicingAddress = new \AddressCore($cart->id_address_invoice);
         $paymentMethod = Tools::getValue(self::PAYMENT_METHOD);
+
 
         if (!empty($paymentMethod[self::PERSONAL_DETAILS])) {
             $personalDetails = $paymentMethod[self::PERSONAL_DETAILS];
@@ -740,15 +776,7 @@ class AdyenPaymentModuleFrontController extends FrontController
         if (!empty($personalDetails[self::GENDER])) {
             $gender = $personalDetails[self::GENDER];
         } else {
-            try {
-                $gender = $this->genderService->getAdyenGenderValueById($customer->id_gender);
-            } catch (\Exception $e) {
-                // gender id does not exist in Adyen gender service
-            }
-        }
-
-        if (empty($gender)) {
-            $gender = '';
+            $gender = $this->genderService->getAdyenGenderValueById($customer->id_gender);
         }
 
         $localeCode = $this->languageAdapter->getLocaleCode($language);
@@ -822,6 +850,7 @@ class AdyenPaymentModuleFrontController extends FrontController
 
         $origin = $this->configuration->httpHost;
 
+
         return $this->paymentBuilder->buildStoredPaymentData(
             $paymentMethodType,
             $storedPaymentMethodId,
@@ -883,7 +912,6 @@ class AdyenPaymentModuleFrontController extends FrontController
         }
 
         // Build open invoice lines for shipping
-
         $deliveryCost = $cart->getPackageShippingCost();
         $cartSummary = $cart->getSummaryDetails();
         $carrier = $cartSummary['carrier'];

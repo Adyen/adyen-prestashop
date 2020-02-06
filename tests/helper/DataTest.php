@@ -58,6 +58,11 @@ class DataTest extends \PHPUnit_Framework_TestCase
                                      ->disableOriginalConstructor()
                                      ->getMock();
 
+
+        $logger = $this->getMockBuilder(\Adyen\PrestaShop\service\Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
         /** @var Language|\PHPUnit_Framework_MockObject_MockObject $languageAdapter */
         $languageAdapter = $this->getMockBuilder('Adyen\PrestaShop\service\adapter\classes\Language')
                                 ->disableOriginalConstructor()
@@ -67,6 +72,7 @@ class DataTest extends \PHPUnit_Framework_TestCase
             $configuration,
             $adyenCheckoutUtilityService,
             $adyenCheckoutService,
+            $logger,
             $languageAdapter
         );
     }

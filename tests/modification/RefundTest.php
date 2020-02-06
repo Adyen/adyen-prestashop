@@ -95,7 +95,13 @@ class RefundTest extends TestCase
                               ->with($orderId)
                               ->willReturn($pspReference);
 
-        $refund = new Refund($modificationClient, $notificationRetriever, $merchantAccount);
+
+        $logger = $this->getMockBuilder(\Adyen\PrestaShop\service\Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $refund = new Refund($modificationClient, $notificationRetriever, $merchantAccount, $logger);
+
         $this->assertEquals(true, $refund->request($orderSlip, $currency));
     }
 }

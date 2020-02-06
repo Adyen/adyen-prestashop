@@ -30,6 +30,7 @@ use Context;
 use Db;
 use PrestaShopDatabaseException;
 use PrestaShopException;
+use Psr\Log\LoggerInterface;
 
 class NotificationProcessor
 {
@@ -42,6 +43,11 @@ class NotificationProcessor
      * @var Db
      */
     private $dbInstance;
+
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
 
     /**
      * @var OrderAdapter
@@ -65,6 +71,7 @@ class NotificationProcessor
      * @param Db $dbInstance
      * @param OrderAdapter $orderAdapter
      * @param CustomerThreadAdapter $customerThreadAdapter
+     * @param LoggerInterface $logger
      * @param Context $context
      */
     public function __construct(
@@ -72,12 +79,14 @@ class NotificationProcessor
         Db $dbInstance,
         OrderAdapter $orderAdapter,
         CustomerThreadAdapter $customerThreadAdapter,
+        LoggerInterface $logger,
         Context $context
     ) {
         $this->helperData = $helperData;
         $this->dbInstance = $dbInstance;
         $this->orderAdapter = $orderAdapter;
         $this->customerThreadAdapter = $customerThreadAdapter;
+        $this->logger = $logger;
         $this->context = $context;
     }
 
@@ -180,14 +189,14 @@ class NotificationProcessor
         }
 
         if (empty($order)) {
-            $this->helperData->adyenLogger()->logError('Order with id: "' . $notification['merchant_reference'] . '" cannot be found while notification with id: "' . $notification['entity_id'] . '" was processed.');
+            $this->logger->error('Order with id: "' . $notification['merchant_reference'] . '" cannot be found while notification with id: "' . $notification['entity_id'] . '" was processed.');
             return false;
         }
 
         // Find customer by order id
         $customer = $order->getCustomer();
         if (empty($customer)) {
-            $this->helperData->adyenLogger()->logError('Customer with id: "' . $order->id_customer . '" cannot be found for order with id: "' . $order->id . '" while notification with id: "' . $notification['entity_id'] . '" was processed.');
+            $this->logger->error('Customer with id: "' . $order->id_customer . '" cannot be found for order with id: "' . $order->id . '" while notification with id: "' . $notification['entity_id'] . '" was processed.');
             return false;
         }
 
@@ -216,7 +225,7 @@ class NotificationProcessor
         $customerMessage->private = 1;
 
         if (!$customerMessage->add()) {
-            $this->helperData->adyenLogger()->logError('An error occurred while saving the message.');
+            $this->logger->error('An error occurred while saving the message.');
             return false;
         }
 

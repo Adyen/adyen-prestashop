@@ -49,9 +49,9 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
         $requestMD = $_REQUEST['MD'];
         $requestPaRes = $_REQUEST['PaRes'];
         $paymentData = $_REQUEST['paymentData'];
-        $this->helperData->adyenLogger()->logDebug("md: " . $requestMD);
-        $this->helperData->adyenLogger()->logDebug("PaRes: " . $requestPaRes);
-        $this->helperData->adyenLogger()->logDebug("request" . json_encode($_REQUEST));
+        $this->logger->debug("md: " . $requestMD);
+        $this->logger->debug("PaRes: " . $requestPaRes);
+        $this->logger->debug("request" . json_encode($_REQUEST));
         $request = array(
             "paymentData" => $paymentData,
             "details" => array(
@@ -65,14 +65,14 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
             $service = ServiceLocator::get('Adyen\PrestaShop\service\Checkout');
             $response = $service->paymentsDetails($request);
         } catch (\Adyen\AdyenException $e) {
-            $this->helperData->adyenLogger()->logError("Error during validate3d paymentsDetails call: exception: " . $e->getMessage());
+            $this->logger->error("Error during validate3d paymentsDetails call: exception: " . $e->getMessage());
             $this->ajaxRender(
                 $this->helperData->buildControllerResponseJson(
                     'error', array('message' => "Something went wrong. Please choose another payment method.")
                 )
             );
         }
-        $this->helperData->adyenLogger()->logDebug("result: " . json_encode($response));
+        $this->logger->debug("result: " . json_encode($response));
         $currency = $this->context->currency;
         $customer = new \Customer($cart->id_customer);
         $total = (float)$cart->getOrderTotal(true, \Cart::BOTH);
@@ -116,7 +116,7 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
                 // create new cart from the current cart
                 $this->helperData->cloneCurrentCart($this->context, $cart);
 
-                $this->helperData->adyenLogger()->logError("The payment was refused, id:  " . $cart->id);
+                $this->logger->error("The payment was refused, id:  " . $cart->id);
                 return $this->setTemplate($this->helperData->getTemplateFromModulePath('views/templates/front/error.tpl'));
                 break;
             default:
@@ -125,7 +125,7 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
                 //6_PS_OS_CANCELED_ : order canceled
                 $this->module->validateOrder($cart->id, 6, $total, $this->module->displayName, null, $extra_vars,
                     (int)$currency->id, false, $customer->secure_key);
-                $this->helperData->adyenLogger()->logError("The payment was cancelled, id:  " . $cart->id);
+                $this->logger->error("The payment was cancelled, id:  " . $cart->id);
                 return $this->setTemplate($this->helperData->getTemplateFromModulePath('views/templates/front/error.tpl'));
                 break;
         }
