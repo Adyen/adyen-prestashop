@@ -27,7 +27,8 @@ use Adyen\PrestaShop\helper\Data as AdyenHelper;
 use Adyen\Util\HmacSignature;
 use DateTime;
 use Db;
-use \Psr\Log\LoggerInterface;
+use Psr\Log\LoggerInterface;
+use Tools;
 
 class NotificationReceiver
 {
@@ -286,8 +287,8 @@ class NotificationReceiver
      */
     protected function isTestNotification($pspReference)
     {
-        if (strpos(strtolower($pspReference), 'test_') !== false
-            || strpos(strtolower($pspReference), 'testnotification_') !== false
+        if (strpos(Tools::strtolower($pspReference), 'test_') !== false
+            || strpos(Tools::strtolower($pspReference), 'testnotification_') !== false
         ) {
             return true;
         }
@@ -395,7 +396,6 @@ class NotificationReceiver
 
     protected function getUnprocessedNotifications()
     {
-        /** @noinspection SqlDialectInspection */
         $sql = 'SELECT COUNT(*) FROM ' . _DB_PREFIX_ . 'adyen_notification '
             . 'WHERE `done` = "' . (int)0 . '"'
             . ' AND `processing` = "' . (int)0 . '"';

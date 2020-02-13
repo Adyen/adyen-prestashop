@@ -22,3 +22,11 @@
 
 chdir(__DIR__);
 require '..' . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+
+class Tools
+{
+    public static function strtolower($string)
+    {
+        return strtolower($string);
+    }
+}
