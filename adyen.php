@@ -84,7 +84,7 @@ class Adyen extends PaymentModule
     {
         $this->name = 'adyen';
         $this->tab = 'payments_gateways';
-        $this->version = \Adyen\PrestaShop\service\Configuration::VERSION;
+        $this->version = '1.2.0';
         $this->author = 'Adyen';
         $this->bootstrap = true;
         $this->display = 'view';

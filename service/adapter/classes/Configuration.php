@@ -22,6 +22,9 @@
 
 namespace Adyen\PrestaShop\service\adapter\classes;
 
+use Adyen\Environment;
+use Tools;
+
 class Configuration
 {
     /**
@@ -50,16 +53,22 @@ class Configuration
     public $liveEndpointPrefix;
 
     /**
+     * @var string
+     */
+    public $moduleVersion;
+
+    /**
      * Configuration constructor.
      */
     public function __construct()
     {
-        $this->httpHost = \Tools::getHttpHost(true, true);
+        $this->httpHost = Tools::getHttpHost(true, true);
         $adyenModeConfiguration = \Configuration::get('ADYEN_MODE');
-        $this->adyenMode = !empty($adyenModeConfiguration) ? $adyenModeConfiguration : \Adyen\Environment::TEST;;
+        $this->adyenMode = !empty($adyenModeConfiguration) ? $adyenModeConfiguration : Environment::TEST;;
         $this->sslEncryptionKey = _COOKIE_KEY_;
         $this->apiKey = $this->getAPIKey($this->adyenMode, $this->sslEncryptionKey);
         $this->liveEndpointPrefix = \Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
+        $this->moduleVersion = '1.2.0';
     }
 
     /**
@@ -89,7 +98,7 @@ class Configuration
      */
     private function isTestMode($adyenRunningMode)
     {
-        if (strpos($adyenRunningMode, \Adyen\Environment::TEST) !== false) {
+        if (strpos($adyenRunningMode, Environment::TEST) !== false) {
             return true;
         } else {
             return false;
