@@ -746,7 +746,7 @@ class Adyen extends PaymentModule
             return null;
         }
 
-        $this->context->controller->addCSS($this->_path . 'css/adyen.css', 'all');
+        $this->context->controller->addCSS($this->_path . 'views/css/adyen.css', 'all');
 
         $payments = "";
         $paymentMethods = $this->helper_data->fetchPaymentMethods($this->context->cart, $this->context->language);
@@ -1227,7 +1227,7 @@ class Adyen extends PaymentModule
 
         $controllerAdapter->registerStylesheet(
             'adyen-adyencss',
-            $this->_path . '/css/adyen.css'
+            $this->_path . 'views/css/adyen.css'
         );
 
         // Only for Order controller
