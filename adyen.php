@@ -156,7 +156,7 @@ class Adyen extends PaymentModule
             ) {
                 return true;
             } else {
-                $this->logger->debug('Adyen module: installation failed!', 4);
+                $this->logger->debug('Adyen module: installation failed!');
                 return false;
             }
         }
@@ -174,7 +174,7 @@ class Adyen extends PaymentModule
             $this->createWaitingForPaymentOrderStatus()) {
             return true;
         } else {
-            $this->logger->debug('Adyen module: installation failed!', 4);
+            $this->logger->debug('Adyen module: installation failed!');
             return false;
         }
     }
@@ -209,7 +209,7 @@ class Adyen extends PaymentModule
             $this->updateCronJobToken()) {
             return true;
         } else {
-            $this->logger->debug('Adyen module: reset failed!', 4);
+            $this->logger->debug('Adyen module: reset failed!');
             return false;
         }
     }
@@ -264,13 +264,17 @@ class Adyen extends PaymentModule
 
     /**
      * Create a new order status: "waiting for payment"
+     *
      * @return mixed
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     public function createWaitingForPaymentOrderStatus()
     {
-        if (!\Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT')) {
-            $order_state = new \OrderState(); $order_state->name = array();
-            foreach (\Language::getLanguages() as $language) {
+        if (!Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT')) {
+            $order_state = new OrderState();
+            $order_state->name = array();
+            foreach (Language::getLanguages() as $language) {
                 $order_state->name[$language['id_lang']] = 'Waiting for payment';
             }
 
@@ -283,12 +287,12 @@ class Adyen extends PaymentModule
             $order_state->shipped = false;
             $order_state->paid = false;
             if ($order_state->add()) {
-                $source = _PS_ROOT_DIR_ . '/img/os/' . \Configuration::get('PS_OS_BANKWIRE') . '.gif';
+                $source = _PS_ROOT_DIR_ . '/img/os/' . Configuration::get('PS_OS_BANKWIRE') . '.gif';
                 $destination = _PS_ROOT_DIR_ . '/img/os/' . (int)$order_state->id . '.gif';
                 copy($source, $destination);
             }
 
-            return \Configuration::updateValue('ADYEN_OS_WAITING_FOR_PAYMENT', (int)$order_state->id);
+            return Configuration::updateValue('ADYEN_OS_WAITING_FOR_PAYMENT', (int)$order_state->id);
         }
 
         return true;
@@ -300,7 +304,6 @@ class Adyen extends PaymentModule
     private function removeAdyenDatabaseTables()
     {
         $db = Db::getInstance();
-        /** @noinspection SqlWithoutWhere SqlResolve */
         return $db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'adyen_notification`');
     }
 
@@ -453,6 +456,7 @@ class Adyen extends PaymentModule
         $default_lang = (int)Configuration::get('PS_LANG_DEFAULT');
 
         // Init Fields form array
+        $fields_form = array(array());
         $fields_form[0]['form'] = array(
             'legend' => array(
                 'title' => $this->l('General Settings'),
@@ -657,7 +661,7 @@ class Adyen extends PaymentModule
                                    )
                                )
                                ->setLogo(
-                                   \Media::getMediaPath(
+                                   Media::getMediaPath(
                                        _PS_MODULE_DIR_ . $this->name . '/views/img/' . $storedPaymentMethod['type'] . '.png'
                                    )
                                )
@@ -725,8 +729,8 @@ class Adyen extends PaymentModule
         $this->context->smarty->assign($smartyVariables);
 
         $embeddedOption->setCallToActionText($this->l('Pay by card'))
-            ->setForm($this->context->smarty->fetch(_PS_MODULE_DIR_ . $this->name . '/views/templates/front/payment.tpl'))
-            ->setLogo(\Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $cc_img))
+                       ->setForm($this->context->smarty->fetch(_PS_MODULE_DIR_ . $this->name . '/views/templates/front/payment.tpl'))
+                       ->setLogo(Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $cc_img))
             ->setAction($this->context->link->getModuleLink($this->name, 'Payment', array(), true));
         $payment_options[] = $embeddedOption;
 
@@ -865,12 +869,6 @@ class Adyen extends PaymentModule
             $modificationService = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
                 'Adyen\PrestaShop\service\Modification'
             );
-        } catch (Adyen\AdyenException $e) {
-            $this->addMessageToOrderForOrderSlipAndLogErrorMessage(
-                'Error initializing Adyen Modification Service in actionOrderSlipAdd hook:'
-                . PHP_EOL . $e->getMessage()
-            );
-            return;
         } catch (\PrestaShop\PrestaShop\Adapter\CoreException $e) {
             $this->addMessageToOrderForOrderSlipAndLogErrorMessage(
                 'Error initializing Adyen Modification Service in actionOrderSlipAdd hook:'
@@ -893,7 +891,7 @@ class Adyen extends PaymentModule
         $refundService = new Adyen\PrestaShop\service\modification\Refund(
             $modificationService,
             $notificationRetriever,
-            \Configuration::get('ADYEN_MERCHANT_ACCOUNT'),
+            Configuration::get('ADYEN_MERCHANT_ACCOUNT'),
             $this->logger
         );
 
@@ -1159,6 +1157,8 @@ class Adyen extends PaymentModule
      * @param $params
      *
      * @throws \PrestaShop\PrestaShop\Adapter\CoreException
+     * @noinspection PhpUnusedParameterInspection This method accepts a parameter and, even we don't use it,
+     * it's better to make sure this is cataloged in the code base
      */
     public function hookActionFrontControllerSetMedia($params)
     {
