@@ -211,7 +211,8 @@ class Data
         $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-ctr'));
         // Encrypt the data using AES 256 encryption in CBC mode using our encryption key and initialization vector.
         $encrypted = openssl_encrypt($data, 'aes-256-ctr', $this->sslEncryptionKey, 0, $iv);
-        // The $iv is just as important as the key for decrypting, so save it with our encrypted data using a unique separator (::)
+        // The $iv is just as important as the key for decrypting, so save it with our encrypted data using a unique
+        // separator (::)
         return base64_encode($encrypted . '::' . $iv);
     }
 
@@ -257,7 +258,6 @@ class Data
     {
         switch ($action) {
             case 'error':
-
                 if (empty($details['message'])) {
                     throw new AdyenException('No message is included in the error response');
                 }
@@ -269,7 +269,6 @@ class Data
 
                 break;
             case 'threeDS2':
-
                 $response = array(
                     'action' => 'threeDS2'
                 );
@@ -281,7 +280,6 @@ class Data
 
                 break;
             case 'redirect':
-
                 if (empty($details['redirectUrl'])) {
                     throw new AdyenException('No redirect url is included in the redirect response');
                 }
@@ -293,7 +291,6 @@ class Data
 
                 break;
             case 'threeDS1':
-
                 if (!empty($details['paRequest']) &&
                     !empty($details['md']) &&
                     !empty($details['issuerUrl']) &&
@@ -312,8 +309,7 @@ class Data
                 }
                 break;
             default:
-            case 'error': // this case is never executed
-
+            case 'error':
                 $response = array(
                     'action' => 'error',
                     'message' => 'Something went wrong'
@@ -395,8 +391,11 @@ class Data
         $context->cart->add();
         // to update the new cart
         foreach ($cart_products as $product) {
-            $context->cart->updateQty((int)$product['quantity'], (int)$product['id_product'],
-                (int)$product['id_product_attribute']);
+            $context->cart->updateQty(
+                (int)$product['quantity'],
+                (int)$product['id_product'],
+                (int)$product['id_product_attribute']
+            );
         }
         if ($context->cookie->id_guest) {
             $guest = new \Guest($context->cookie->id_guest);

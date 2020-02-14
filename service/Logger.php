@@ -213,8 +213,11 @@ class Logger extends \Monolog\Logger
         $adyenLogPath = $this->getAdyenLogPath();
 
         foreach (self::$adyenHandlers as $adyenHandler) {
-            $this->pushHandler(new StreamHandler($adyenLogPath . '/' . $adyenHandler['fileName'],
-                $adyenHandler['level'], false));
+            $this->pushHandler(new StreamHandler(
+                $adyenLogPath . '/' . $adyenHandler['fileName'],
+                $adyenHandler['level'],
+                false
+            ));
         }
     }
 }

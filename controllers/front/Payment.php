@@ -170,7 +170,11 @@ class AdyenPaymentModuleFrontController extends FrontController
                 $request = $this->buildPaymentData($request);
                 $request = $this->buildCustomerData($request);
             } catch (MissingDataException $exception) {
-                $this->logger->error("There was an error with the payment method. id:  " . $cart->id . " Missing data: " . $exception->getMessage());
+                $this->logger->error(sprintf(
+                    "There was an error with the payment method. id:  %s Missing data: %s",
+                    $cart->id,
+                    $exception->getMessage()
+                ));
 
                 $this->ajaxRender(
                     $this->helperData->buildControllerResponseJson(
@@ -212,8 +216,10 @@ class AdyenPaymentModuleFrontController extends FrontController
         $customer = new \Customer($cart->id_customer);
 
         if (!\Validate::isLoadedObject($customer)) {
-            $this->redirectUserToPageLink($this->context->link->getPageLink('order', $this->ssl, null, 'step=1'),
-                $isAjax);
+            $this->redirectUserToPageLink(
+                $this->context->link->getPageLink('order', $this->ssl, null, 'step=1'),
+                $isAjax
+            );
         }
 
         $this->handlePaymentsResponse($response, $cart, $customer, $isAjax);
@@ -242,8 +248,17 @@ class AdyenPaymentModuleFrontController extends FrontController
         // Based on the result code start different payment flows
         switch ($resultCode) {
             case 'Authorised':
-                $this->module->validateOrder($cart->id, 2, $total, $this->module->displayName, null, $extraVars,
-                    (int)$cart->id_currency, false, $customer->secure_key);
+                $this->module->validateOrder(
+                    $cart->id,
+                    2,
+                    $total,
+                    $this->module->displayName,
+                    null,
+                    $extraVars,
+                    (int)$cart->id_currency,
+                    false,
+                    $customer->secure_key
+                );
                 $newOrder = new \Order((int)$this->module->currentOrder);
 
                 if (\Validate::isLoadedObject($newOrder)) {
@@ -251,14 +266,17 @@ class AdyenPaymentModuleFrontController extends FrontController
                     foreach ($paymentCollection as $payment) {
                         if (!empty($response['additionalData']['cardBin']) &&
                             !empty($response['additionalData']['cardSummary'])) {
-                            $payment->card_number = pSQL($response['additionalData']['cardBin'] . " *** " . $response['additionalData']['cardSummary']);
+                            $payment->card_number = pSQL(sprintf(
+                                "%s *** %s",
+                                $response['additionalData']['cardBin'],
+                                $response['additionalData']['cardSummary']
+                            ));
                         }
                         if (!empty($response['additionalData']['paymentMethod'])) {
                             $payment->card_brand = pSQL($response['additionalData']['paymentMethod']);
                         }
                         if (!empty($response['additionalData']['expiryDate'])) {
                             $payment->card_expiration = pSQL($response['additionalData']['expiryDate']);
-
                         }
                         if (!empty($response['additionalData']['cardHolderName'])) {
                             $payment->card_holder = pSQL($response['additionalData']['cardHolderName']);
@@ -295,7 +313,6 @@ class AdyenPaymentModuleFrontController extends FrontController
 
                 break;
             case 'IdentifyShopper':
-
                 $_SESSION['paymentData'] = $response['paymentData'];
 
                 $this->ajaxRender($this->helperData->buildControllerResponseJson(
@@ -308,7 +325,6 @@ class AdyenPaymentModuleFrontController extends FrontController
 
                 break;
             case 'ChallengeShopper':
-
                 $_SESSION['paymentData'] = $response['paymentData'];
 
                 $this->ajaxRender($this->helperData->buildControllerResponseJson(
@@ -371,22 +387,39 @@ class AdyenPaymentModuleFrontController extends FrontController
 
                 break;
             case 'PresentToShopper':
-
                 $_SESSION['paymentAction'] = $response['action'];
 
                 if (\Validate::isLoadedObject($customer)) {
-
                     $total = (float)$cart->getOrderTotal(true, \Cart::BOTH);
                     $extraVars = array();
 
-                    $this->module->validateOrder($cart->id, \Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT'), $total,
-                        $this->module->displayName, null, $extraVars,
-                        $cart->id_currency, false, $customer->secure_key);
-
-                    $this->redirectUserToPageLink($this->context->link->getPageLink('order-confirmation', $this->ssl,
+                    $this->module->validateOrder(
+                        $cart->id,
+                        \Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT'),
+                        $total,
+                        $this->module->displayName,
                         null,
-                        'id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key),
-                        $isAjax);
+                        $extraVars,
+                        $cart->id_currency,
+                        false,
+                        $customer->secure_key
+                    );
+
+                    $this->redirectUserToPageLink(
+                        $this->context->link->getPageLink(
+                            'order-confirmation',
+                            $this->ssl,
+                            null,
+                            sprintf(
+                                "id_cart=%s&id_module=%s&id_order=%s&key=%s",
+                                $cart->id,
+                                $this->module->id,
+                                $this->module->currentOrder,
+                                $customer->secure_key
+                            )
+                        ),
+                        $isAjax
+                    );
                 }
 
                 break;
@@ -433,7 +466,8 @@ class AdyenPaymentModuleFrontController extends FrontController
         } else {
             $this->ajaxRender(
                 $this->helperData->buildControllerResponseJson(
-                    'redirect', array(
+                    'redirect',
+                    array(
                         'redirectUrl' => $pageLink
                     )
                 )
@@ -452,9 +486,12 @@ class AdyenPaymentModuleFrontController extends FrontController
         $issuerUrl = Tools::getValue(self::ISSUER_URL);
         $redirectMethod = Tools::getValue(self::REDIRECT_METHOD);
 
-        $termUrl = $this->context->link->getModuleLink("adyen", 'Validate3d',
+        $termUrl = $this->context->link->getModuleLink(
+            "adyen",
+            'Validate3d',
             array('paymentData' => $paymentData),
-            true);
+            true
+        );
 
         $this->context->smarty->assign(array(
             'paRequest' => $paRequest,
@@ -580,8 +617,10 @@ class AdyenPaymentModuleFrontController extends FrontController
     {
         $cart = $this->context->cart;
 
-        $formattedValue = $this->utilCurrency->sanitize($cart->getOrderTotal(true, \Cart::BOTH),
-            $this->context->currency->iso_code);
+        $formattedValue = $this->utilCurrency->sanitize(
+            $cart->getOrderTotal(true, \Cart::BOTH),
+            $this->context->currency->iso_code
+        );
 
         // Retrieve merchant account
         $merchantAccount = \Configuration::get('ADYEN_MERCHANT_ACCOUNT');
@@ -599,7 +638,8 @@ class AdyenPaymentModuleFrontController extends FrontController
             $cart->id,
             $merchantAccount,
             $returnUrl,
-            $request);
+            $request
+        );
 
         if ($this->isCardPayment()) {
             $request = $this->buildCardData($request);
@@ -876,8 +916,10 @@ class AdyenPaymentModuleFrontController extends FrontController
         // Build open invoice lines for products in the cart
         foreach ($products as $product) {
             $productPrice = $this->utilCurrency->sanitize($product['price'], $this->context->currency->iso_code);
-            $productPriceWithTax = $this->utilCurrency->sanitize($product['price_wt'],
-                $this->context->currency->iso_code);
+            $productPriceWithTax = $this->utilCurrency->sanitize(
+                $product['price_wt'],
+                $this->context->currency->iso_code
+            );
             $tax = $productPriceWithTax - $productPrice;
 
             $productDescription = trim(strip_tags($product['name']));
@@ -900,8 +942,10 @@ class AdyenPaymentModuleFrontController extends FrontController
 
         // Build open invoice lines for discounts
         foreach ($discounts as $discount) {
-            $discountValue = -$this->utilCurrency->sanitize($discount['value_real'],
-                $this->context->currency->iso_code);
+            $discountValue = -$this->utilCurrency->sanitize(
+                $discount['value_real'],
+                $this->context->currency->iso_code
+            );
             $lineItems[] = $this->openInvoiceBuilder->buildOpenInvoiceLineItem(
                 $discount['name'],
                 $discountValue,

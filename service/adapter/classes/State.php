@@ -47,8 +47,7 @@ class State
             $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue('
 				SELECT `iso_code`
 				FROM `' . _DB_PREFIX_ . 'state`
-				WHERE `id_state` = ' . (int)$id_state
-            );
+				WHERE `id_state` = ' . (int)$id_state);
 
             Cache::store($cache_id, $result);
             return $result;

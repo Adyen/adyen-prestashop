@@ -129,7 +129,6 @@ class NotificationReceiver
         }
 
         if (!empty($notificationItems['live']) && $this->validateNotificationMode($notificationItems['live'])) {
-
             $acceptedMessage = '[accepted]';
 
             foreach ($notificationItems['notificationItems'] as $notificationItem) {
@@ -213,7 +212,8 @@ class NotificationReceiver
         // If notification is test check if fields are correct if not return error
         if ($isTestNotification) {
             if ($usernameCmp != 0 || $passwordCmp != 0) {
-                $message = 'username (PHP_AUTH_USER) and\or password (PHP_AUTH_PW) are not the same as PrestaShop settings';
+                $message = 'username (PHP_AUTH_USER) and\or password (PHP_AUTH_PW) are not the same as PrestaShop' .
+                    ' settings';
                 $this->logger->error($message);
                 throw new AuthenticationException($message);
             }
@@ -231,8 +231,7 @@ class NotificationReceiver
         $mode = $this->helperData->isDemoMode();
 
         // Notification mode can be a string or a boolean
-        if (
-            ($mode == '1' && ($notificationMode == 'false' || $notificationMode == false)) ||
+        if (($mode == '1' && ($notificationMode == 'false' || $notificationMode == false)) ||
             ($mode == '0' && ($notificationMode == 'true' || $notificationMode == true))
         ) {
             return true;
@@ -255,7 +254,6 @@ class NotificationReceiver
     {
         // validate the notification
         if ($this->authorised($response)) {
-
             // log the notification
             $this->logger->debug(
                 'The content of the notification item is: ' . print_r($response, 1)

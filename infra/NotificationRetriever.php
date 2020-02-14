@@ -59,7 +59,8 @@ inner join %sorders o on a.merchant_reference = o.id_cart
 where o.id_order = $orderId
 SQL
                 ,
-                _DB_PREFIX_, _DB_PREFIX_
+                _DB_PREFIX_,
+                _DB_PREFIX_
             )
         );
         if (empty($results)) {

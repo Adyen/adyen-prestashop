@@ -80,8 +80,16 @@ class Address extends Builder
         $country = '',
         $request = array()
     ) {
-        return $this->buildAddress(self::$addressTypeBilling, $street, $houseNumberOrName, $postalCode, $city,
-            $stateOrProvince, $country, $request);
+        return $this->buildAddress(
+            self::$addressTypeBilling,
+            $street,
+            $houseNumberOrName,
+            $postalCode,
+            $city,
+            $stateOrProvince,
+            $country,
+            $request
+        );
     }
 
     /**
@@ -102,9 +110,18 @@ class Address extends Builder
         $stateOrProvince = '',
         $country = '',
         $request = array()
-    ) {
-        return $this->buildAddress(self::$addressTypeDelivery, $street, $houseNumberOrName, $postalCode, $city,
-            $stateOrProvince, $country, $request);
+    )
+    {
+        return $this->buildAddress(
+            self::$addressTypeDelivery,
+            $street,
+            $houseNumberOrName,
+            $postalCode,
+            $city,
+            $stateOrProvince,
+            $country,
+            $request
+        );
     }
 
     /**

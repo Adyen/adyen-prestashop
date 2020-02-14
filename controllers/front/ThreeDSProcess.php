@@ -93,8 +93,7 @@ class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\control
                 array(
                     'message' => '3D secure 2.0 failed'
                 )
-            )
-            );
+            ));
         } catch (\PrestaShop\PrestaShop\Adapter\CoreException $e) {
             $this->ajaxRender(
                 $this->helperData->buildControllerResponseJson(

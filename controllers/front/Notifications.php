@@ -65,8 +65,8 @@ class AdyenNotificationsModuleFrontController extends FrontController
         );
         try {
             die($notificationReceiver->doPostProcess(
-                json_decode(Tools::file_get_contents('php://input'), true))
-            );
+                json_decode(Tools::file_get_contents('php://input'), true)
+            ));
         } catch (AuthenticationException $e) {
             $this->logger->error($e->getMessage());
             die(json_encode(array('success' => false, 'message' => $e->getMessage())));

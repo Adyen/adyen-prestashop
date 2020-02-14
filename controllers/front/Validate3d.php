@@ -77,7 +77,8 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
             );
             $this->ajaxRender(
                 $this->helperData->buildControllerResponseJson(
-                    'error', array('message' => "Something went wrong. Please choose another payment method.")
+                    'error',
+                    array('message' => "Something went wrong. Please choose another payment method.")
                 )
             );
         }

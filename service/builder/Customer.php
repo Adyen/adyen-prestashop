@@ -64,11 +64,25 @@ class Customer extends Builder
 
         // Open invoice methods requires different request format
         if ($isOpenInvoicePaymentMethod) {
-            $request = $this->buildCustomerDataForOpenInvoicePaymentMethod($email, $phoneNumber, $gender, $dateOfBirth,
-                $firstName, $lastName, $request);
+            $request = $this->buildCustomerDataForOpenInvoicePaymentMethod(
+                $email,
+                $phoneNumber,
+                $gender,
+                $dateOfBirth,
+                $firstName,
+                $lastName,
+                $request
+            );
         } else {
-            $request = $this->buildCustomerDataForNonOpenInvoicePaymentMethod($email, $phoneNumber, $gender,
-                $dateOfBirth, $firstName, $lastName, $request);
+            $request = $this->buildCustomerDataForNonOpenInvoicePaymentMethod(
+                $email,
+                $phoneNumber,
+                $gender,
+                $dateOfBirth,
+                $firstName,
+                $lastName,
+                $request
+            );
         }
 
         if (!empty($countryCode)) {

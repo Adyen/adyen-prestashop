@@ -92,8 +92,7 @@ jQuery(function ($) {
                     resetFields();
                 }
             }
-            }
-         );
+        });
 
         var card = window.adyenCheckout.create('card', configuration).mount("#cardContainer-" + storedPaymentMethod.id);
     }

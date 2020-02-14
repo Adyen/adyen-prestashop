@@ -36,7 +36,7 @@ abstract class FrontController extends \ModuleFrontController
     /**
      * @var \Adyen\PrestaShop\application\VersionChecker
      */
-    protected  $versionChecker;
+    protected $versionChecker;
 
     /**
      * @var \Adyen\PrestaShop\service\Logger

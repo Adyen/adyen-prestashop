@@ -113,7 +113,8 @@ class Adyen extends PaymentModule
 
         // start for 1.6
         $this->is_eu_compatible = 1;
-        // The need_instance flag indicates whether to load the module's class when displaying the "Modules" page in the back-office
+        // The need_instance flag indicates whether to load the module's class
+        // when displaying the "Modules" page in the back-office
         $this->need_instance = 1;
         // end for 1.6
 
@@ -254,7 +255,8 @@ class Adyen extends PaymentModule
             `done` tinyint(1) NOT NULL DEFAULT \'0\' COMMENT \'done\',
             `processing` tinyint(1) DEFAULT \'0\' COMMENT \'Adyen Notification Cron Processing\',
             `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT \'Created At\',
-            `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT \'Updated At\',
+            `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                        COMMENT \'Updated At\',
             PRIMARY KEY (`entity_id`),
             KEY `ADYEN_NOTIFICATION_PSPREFERENCE` (`pspreference`),
             KEY `ADYEN_NOTIFICATION_EVENT_CODE` (`event_code`),
@@ -418,7 +420,6 @@ class Adyen extends PaymentModule
             }
 
             if ($output == null) {
-
                 Configuration::updateValue('ADYEN_MERCHANT_ACCOUNT', $merchant_account);
                 Configuration::updateValue('ADYEN_MODE', $mode);
                 Configuration::updateValue('ADYEN_NOTI_USERNAME', $notification_username);
@@ -473,7 +474,10 @@ class Adyen extends PaymentModule
                     'size' => 20,
                     'required' => true,
                     'lang' => false,
-                    'hint' => $this->l('In Adyen backoffice you have a company account with one or more merchantaccounts. Fill in the merchantaccount you want to use for this webshop.')
+                    'hint' => $this->l(
+                        'In Adyen backoffice you have a company account with one or more merchantaccounts.' .
+                        ' Fill in the merchantaccount you want to use for this webshop.'
+                    )
                 ),
                 array(
                     'type' => 'radio',
@@ -500,7 +504,10 @@ class Adyen extends PaymentModule
                     'name' => 'ADYEN_NOTI_USERNAME',
                     'size' => 20,
                     'required' => false,
-                    'hint' => $this->l('Must correspond to the notification username in the Adyen Backoffice under Settings => Notifications')
+                    'hint' => $this->l(
+                        'Must correspond to the notification username in the Adyen Backoffice under' .
+                        ' Settings => Notifications'
+                    )
                 ),
                 array(
                     'type' => 'text',
@@ -508,7 +515,10 @@ class Adyen extends PaymentModule
                     'name' => 'ADYEN_NOTI_PASSWORD',
                     'size' => 20,
                     'required' => false,
-                    'hint' => $this->l('Must correspond to the notification password in the Adyen Backoffice under Settings => Notifications')
+                    'hint' => $this->l(
+                        'Must correspond to the notification password in the Adyen Backoffice under' .
+                        ' Settings => Notifications'
+                    )
                 ),
                 array(
                     'type' => 'password',
@@ -516,11 +526,22 @@ class Adyen extends PaymentModule
                     'name' => 'ADYEN_NOTI_HMAC',
                     'size' => 20,
                     'required' => false,
-                    'hint' => $this->l('Must correspond to the notification HMAC Key in the Adyen Backoffice under Settings => Notifications => Additional Settings => HMAC Key (HEX Encoded)')
+                    'hint' => $this->l(
+                        'Must correspond to the notification HMAC Key in the Adyen Backoffice under' .
+                        ' Settings => Notifications => Additional Settings => HMAC Key (HEX Encoded)'
+                    )
                 ),
                 array(
                     'type' => 'text',
-                    'desc' => $this->l('Your adyen cron job processor\'s url includes this secure token . Your URL looks like: ' . Tools::getShopDomainSsl() . '/' . basename(_PS_ADMIN_DIR_) . '/index.php?fc=module&controller=AdminAdyenPrestashopCron&token=' . $this->helper_data->decrypt(Configuration::get('ADYEN_CRONJOB_TOKEN'))),
+                    'desc' => $this->l(
+                        sprintf(
+                            "Your adyen cron job processor's url includes this secure token . Your URL looks" .
+                            " like: %s/%s/index.php?fc=module&controller=AdminAdyenPrestashopCron&token=%s",
+                            Tools::getShopDomainSsl(),
+                            basename(_PS_ADMIN_DIR_),
+                            $this->helper_data->decrypt(Configuration::get('ADYEN_CRONJOB_TOKEN'))
+                        )
+                    ),
                     'label' => $this->l('Secure token for cron job'),
                     'name' => 'ADYEN_CRONJOB_TOKEN',
                     'size' => 20,
@@ -532,7 +553,11 @@ class Adyen extends PaymentModule
                     'name' => 'ADYEN_APIKEY_TEST',
                     'size' => 20,
                     'required' => false,
-                    'hint' => $this->l('If you don\'t know your Api-Key, log in to your Test Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Checkout token is your API Key.')
+                    'hint' => $this->l(
+                        'If you don\'t know your Api-Key, log in to your Test Customer Area. Navigate to' .
+                        ' Settings > Users > System, and click on your webservice user, normally this will be' .
+                        ' ws@Company.YourCompanyAccount. Under Checkout token is your API Key.'
+                    )
                 ),
                 array(
                     'type' => 'password',
@@ -540,7 +565,11 @@ class Adyen extends PaymentModule
                     'name' => 'ADYEN_APIKEY_LIVE',
                     'size' => 20,
                     'required' => false,
-                    'hint' => $this->l('If you don\'t know your Api-Key, log in to your Live Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Checkout token is your API Key.')
+                    'hint' => $this->l(
+                        'If you don\'t know your Api-Key, log in to your Live Customer Area. Navigate to' .
+                        ' Settings > Users > System, and click on your webservice user, normally this will be' .
+                        ' ws@Company.YourCompanyAccount. Under Checkout token is your API Key.'
+                    )
                 ),
                 array(
                     'type' => 'text',
@@ -548,7 +577,9 @@ class Adyen extends PaymentModule
                     'name' => 'ADYEN_LIVE_ENDPOINT_URL_PREFIX',
                     'size' => 20,
                     'required' => false,
-                    'hint' => $this->l('The URL prefix [random]-[company name] from your Adyen live > Account > API URLs.')
+                    'hint' => $this->l(
+                        'The URL prefix [random]-[company name] from your Adyen live > Account > API URLs.'
+                    )
                 )
             ),
             'submit' => array(
@@ -577,7 +608,13 @@ class Adyen extends PaymentModule
         $helper->toolbar_btn = array(
             'save' => array(
                 'desc' => $this->l('Save'),
-                'href' => AdminController::$currentIndex . '&configure=' . $this->name . '&save' . $this->name . '&token=' . Tools::getAdminTokenLite('AdminModules')
+                'href' => sprintf(
+                    "%s&configure=%s&save%s&token=%s",
+                    AdminController::$currentIndex,
+                    $this->name,
+                    $this->name,
+                    Tools::getAdminTokenLite('AdminModules')
+                )
             ),
             'back' => array(
                 'href' => AdminController::$currentIndex . '&token=' . Tools::getAdminTokenLite('AdminModules'),
@@ -637,10 +674,16 @@ class Adyen extends PaymentModule
                     }
                     $smartyVariables = array(
                         'paymentProcessUrl' => $this->context->link->getModuleLink(
-                            $this->name, 'Payment', array(), true
+                            $this->name,
+                            'Payment',
+                            array(),
+                            true
                         ),
                         'threeDSProcessUrl' => $this->context->link->getModuleLink(
-                            $this->name, 'ThreeDSProcess', array(), true
+                            $this->name,
+                            'ThreeDSProcess',
+                            array(),
+                            true
                         ),
                         'prestashop16' => false,
                         'storedPaymentApiId' => $storedPaymentMethod['id']
@@ -660,12 +703,14 @@ class Adyen extends PaymentModule
                 )
                                ->setForm(
                                    $this->context->smarty->fetch(
-                                       _PS_MODULE_DIR_ . $this->name . '/views/templates/front/stored-payment-method.tpl'
+                                       _PS_MODULE_DIR_ . $this->name .
+                                       '/views/templates/front/stored-payment-method.tpl'
                                    )
                                )
                                ->setLogo(
                                    Media::getMediaPath(
-                                       _PS_MODULE_DIR_ . $this->name . '/views/img/' . $storedPaymentMethod['type'] . '.png'
+                                       _PS_MODULE_DIR_ . $this->name .
+                                       '/views/img/' . $storedPaymentMethod['type'] . '.png'
                                    )
                                )
                                ->setAction($this->context->link->getModuleLink($this->name, 'Payment', array(), true));
@@ -676,7 +721,6 @@ class Adyen extends PaymentModule
 
         if (!empty($paymentMethods['paymentMethods'])) {
             foreach ($paymentMethods['paymentMethods'] as $paymentMethod) {
-
                 // Skip unsupported payment methods
                 if ($this->isUnsupportedPaymentMethod($paymentMethod['type'])) {
                     continue;
@@ -704,7 +748,8 @@ class Adyen extends PaymentModule
                 $localPaymentMethod->setCallToActionText($this->l('Pay by ' . $paymentMethod['name']))
                                    ->setForm(
                                        $this->context->smarty->fetch(
-                                           _PS_MODULE_DIR_ . $this->name . '/views/templates/front/local-payment-method.tpl'
+                                           _PS_MODULE_DIR_ . $this->name .
+                                           '/views/templates/front/local-payment-method.tpl'
                                        )
                                    )
                                    ->setAction(
@@ -732,7 +777,9 @@ class Adyen extends PaymentModule
         $this->context->smarty->assign($smartyVariables);
 
         $embeddedOption->setCallToActionText($this->l('Pay by card'))
-                       ->setForm($this->context->smarty->fetch(_PS_MODULE_DIR_ . $this->name . '/views/templates/front/payment.tpl'))
+                       ->setForm($this->context->smarty->fetch(
+                           _PS_MODULE_DIR_ . $this->name . '/views/templates/front/payment.tpl'
+                       ))
                        ->setLogo(Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $cc_img))
             ->setAction($this->context->link->getModuleLink($this->name, 'Payment', array(), true));
         $payment_options[] = $embeddedOption;
@@ -1014,7 +1061,8 @@ class Adyen extends PaymentModule
 
             if (!$customerMessage->add()) {
                 throw new Adyen\PrestaShop\exception\GenericLoggedException(
-                    'An error occurred while saving the message.');
+                    'An error occurred while saving the message.'
+                );
             }
         } catch (PrestaShopDatabaseException $e) {
             throw new Adyen\PrestaShop\exception\GenericLoggedException(
@@ -1045,12 +1093,16 @@ class Adyen extends PaymentModule
 
                 $smartyVariables = array(
                     'paymentProcessUrl' => $this->context->link->getModuleLink(
-                        $this->name, 'Payment', array(),
+                        $this->name,
+                        'Payment',
+                        array(),
                         true
                     ),
                     'threeDSProcessUrl' => $this->context->link->getModuleLink(
-                        $this->name, 'ThreeDSProcess',
-                        array(), true
+                        $this->name,
+                        'ThreeDSProcess',
+                        array(),
+                        true
                     ),
                     'prestashop16' => true,
                     'storedPaymentApiId' => $storedPayment['id'],
@@ -1078,7 +1130,6 @@ class Adyen extends PaymentModule
     {
         $payments = '';
         foreach ($paymentMethods['paymentMethods'] as $paymentMethod) {
-
             // Skip unsupported payment methods
             if ($this->isUnsupportedPaymentMethod($paymentMethod['type'])) {
                 continue;
@@ -1117,7 +1168,10 @@ class Adyen extends PaymentModule
         $smartyVariables = array(
             'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
             'threeDSProcessUrl' => $this->context->link->getModuleLink(
-                $this->name, 'ThreeDSProcess', array(), true
+                $this->name,
+                'ThreeDSProcess',
+                array(),
+                true
             ),
             'prestashop16' => true,
             'loggedInUser' => !$this->context->customer->is_guest
@@ -1201,7 +1255,7 @@ class Adyen extends PaymentModule
             );
         } else {
             $controllerAdapter->registerJavascript(
-               'adyen-checkout-component', // Unique ID
+                'adyen-checkout-component', // Unique ID
                 \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_JS_LIVE, // JS path
                 array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
             );

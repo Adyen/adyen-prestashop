@@ -29,9 +29,10 @@
     <file>.</file>
 
     <arg name="basepath" value="."/>
+    <arg name="ignore" value="./tests"/>
     <arg name="colors"/>
     <arg name="parallel" value="75"/>
     <arg value="p"/>
 
-    <rule ref="PSR1"/>
+    <rule ref="PSR2"/>
 </ruleset>

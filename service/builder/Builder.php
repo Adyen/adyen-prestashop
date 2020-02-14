@@ -24,7 +24,7 @@
 
 namespace Adyen\PrestaShop\service\builder;
 
-Abstract class Builder
+abstract class Builder
 {
 
 }
