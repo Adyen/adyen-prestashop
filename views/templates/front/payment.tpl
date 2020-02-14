@@ -1,15 +1,35 @@
+{*
+ *                       ######
+ *                       ######
+ * ############    ####( ######  #####. ######  ############   ############
+ * #############  #####( ######  #####. ######  #############  #############
+ *        ######  #####( ######  #####. ######  #####  ######  #####  ######
+ * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
+ * ###### ######  #####( ######  #####. ######  #####          #####  ######
+ * #############  #############  #############  #############  #####  ######
+ *  ############   ############  #############   ############  #####  ######
+ *                                      ######
+ *                               #############
+ *                               ############
+ *
+ * Adyen PrestaShop plugin
+ *
+ * Copyright (c) 2020 Adyen B.V.
+ * This file is open source and available under the MIT license.
+ * See the LICENSE file for more info.
+ *}
+
 {if !$originKey}
-<form id="payment-form" method="post">
-    <h5>There is an error with retrieving the originKey,
-        please check your API key in the Adyen Module configuration</h5>
-</form>
+    <form id="payment-form" method="post">
+        <h5>There is an error with retrieving the originKey,
+            please check your API key in the Adyen Module configuration</h5>
+    </form>
 {else}
     {if $prestashop16}
         <p></p>
         <div class="adyen-payment-method-label">
             {l s='Pay with Credit Card' mod='adyen'}
         </div>
-
     {/if}
     <div class="row adyen-payment">
         <div class="col-xs-12 col-md-6">
@@ -34,7 +54,6 @@
                             <div id="threeDS2Container"></div>
                         </div>
                     </div>
-
                 {else}
                     <div id="threeDS2Modal" class="modal fade" tabindex="-1" role="dialog">
                         <div class="modal-dialog" role="document">
