@@ -20,8 +20,7 @@
  * See the LICENSE file for more info.
  */
 
-chdir(__DIR__);
-require '..' . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+require 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
 
 class Tools
 {

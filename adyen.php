@@ -25,9 +25,6 @@
 // Also, the main class is not in a namespace, which breaks another element.
 // phpcs:disable PSR1.Files.SideEffects,PSR1.Classes.ClassDeclaration
 
-// init composer autoload
-require __DIR__ . '/vendor/autoload.php';
-
 if (!defined('_PS_VERSION_')) {
     exit;
 }
