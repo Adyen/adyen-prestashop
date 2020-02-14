@@ -47,6 +47,7 @@ class OpenInvoice extends Builder
         $vatCategory,
         $itemId = 0
     ) {
+        $lineItem = array();
         // item id is optional
         if (0 !== $itemId) {
             $lineItem['id'] = $itemId;
