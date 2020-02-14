@@ -24,7 +24,10 @@
 // Controllers, which breaks a PSR1 element.
 // phpcs:disable PSR1.Classes.ClassDeclaration
 
+use Adyen\AdyenException;
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
+use Adyen\PrestaShop\service\Checkout;
+use PrestaShop\PrestaShop\Adapter\CoreException;
 
 class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers\FrontController
 {
@@ -34,12 +37,14 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
     public function __construct()
     {
         parent::__construct();
-        $this->context = \Context::getContext();
+        $this->context = Context::getContext();
     }
 
     /**
-     * @return mixed
-     * @throws \Adyen\AdyenException
+     * @throws AdyenException
+     * @throws CoreException
+     * @throws PrestaShopException
+     * @throws Exception When calling getOrderTotal with an invalid type
      */
     public function postProcess()
     {
@@ -61,10 +66,10 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
         );
 
         try {
-            /** @var \Adyen\PrestaShop\service\Checkout $service */
+            /** @var Checkout $service */
             $service = ServiceLocator::get('Adyen\PrestaShop\service\Checkout');
             $response = $service->paymentsDetails($request);
-        } catch (\Adyen\AdyenException $e) {
+        } catch (AdyenException $e) {
             $this->logger->error("Error during validate3d paymentsDetails call: exception: " . $e->getMessage());
             $this->ajaxRender(
                 $this->helperData->buildControllerResponseJson(
@@ -74,8 +79,8 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
         }
         $this->logger->debug("result: " . json_encode($response));
         $currency = $this->context->currency;
-        $customer = new \Customer($cart->id_customer);
-        $total = (float)$cart->getOrderTotal(true, \Cart::BOTH);
+        $customer = new Customer($cart->id_customer);
+        $total = (float)$cart->getOrderTotal(true, Cart::BOTH);
         $resultCode = $response['resultCode'];
         $extra_vars = array();
         if (!empty($response['pspReference'])) {
@@ -85,8 +90,8 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
             case 'Authorised':
                 $this->module->validateOrder($cart->id, 2, $total, $this->module->displayName, null, $extra_vars,
                     (int)$currency->id, false, $customer->secure_key);
-                $new_order = new \Order((int)$this->module->currentOrder);
-                if (\Validate::isLoadedObject($new_order)) {
+                $new_order = new Order((int)$this->module->currentOrder);
+                if (Validate::isLoadedObject($new_order)) {
                     $payment = $new_order->getOrderPaymentCollection();
                     if (isset($payment[0])) {
                         $cardSummary = !empty($response['additionalData']['cardSummary'])
@@ -110,14 +115,15 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
                         $payment[0]->save();
                     }
                 }
-                \Tools::redirect($this->context->link->getPageLink('order-confirmation', $this->ssl, null, 'id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key));
+                Tools::redirect($this->context->link->getPageLink('order-confirmation', $this->ssl, null,
+                    'id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key));
                 break;
             case 'Refused':
                 // create new cart from the current cart
                 $this->helperData->cloneCurrentCart($this->context, $cart);
 
                 $this->logger->error("The payment was refused, id:  " . $cart->id);
-                return $this->setTemplate($this->helperData->getTemplateFromModulePath('views/templates/front/error.tpl'));
+                $this->setTemplate($this->helperData->getTemplateFromModulePath('views/templates/front/error.tpl'));
                 break;
             default:
                 // create new cart from the current cart
@@ -126,7 +132,7 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
                 $this->module->validateOrder($cart->id, 6, $total, $this->module->displayName, null, $extra_vars,
                     (int)$currency->id, false, $customer->secure_key);
                 $this->logger->error("The payment was cancelled, id:  " . $cart->id);
-                return $this->setTemplate($this->helperData->getTemplateFromModulePath('views/templates/front/error.tpl'));
+                $this->setTemplate($this->helperData->getTemplateFromModulePath('views/templates/front/error.tpl'));
                 break;
         }
     }
