@@ -28,6 +28,7 @@
 
 use Adyen\AdyenException;
 use Adyen\PrestaShop\controllers\FrontController;
+use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use Adyen\PrestaShop\service\notification\AuthenticationException;
 use Adyen\PrestaShop\service\notification\AuthorizationException;
 use Adyen\PrestaShop\service\notification\HMACKeyValidationException;
@@ -48,6 +49,7 @@ class AdyenNotificationsModuleFrontController extends FrontController
 
     /**
      * @throws PrestaShopException
+     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
      */
     public function postProcess()
     {
