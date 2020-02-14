@@ -92,20 +92,20 @@ class Hashing
         $this->hashMethods = array(
             'bcrypt' => array(
                 'option' => array(),
-                'hash' => function ($passwd, $staticSalt, $option) {
-                    return password_hash($passwd, PASSWORD_BCRYPT);
+                'hash' => function ($password) {
+                    return password_hash($password, PASSWORD_BCRYPT);
                 },
-                'verify' => function ($passwd, $hash, $staticSalt) {
-                    return password_verify($passwd, $hash);
+                'verify' => function ($password, $hash) {
+                    return password_verify($password, $hash);
                 },
             ),
             'md5' => array(
                 'option' => array(),
-                'hash' => function ($passwd, $staticSalt, $option) {
-                    return md5($staticSalt . $passwd);
+                'hash' => function ($password, $staticSalt) {
+                    return md5($staticSalt . $password);
                 },
-                'verify' => function ($passwd, $hash, $staticSalt) {
-                    return md5($staticSalt . $passwd) === $hash;
+                'verify' => function ($password, $hash, $staticSalt) {
+                    return md5($staticSalt . $password) === $hash;
                 },
             ),
         );
