@@ -66,7 +66,7 @@ class Configuration
     {
         $this->httpHost = Tools::getHttpHost(true, true);
         $adyenModeConfiguration = \Configuration::get('ADYEN_MODE');
-        $this->adyenMode = !empty($adyenModeConfiguration) ? $adyenModeConfiguration : Environment::TEST;;
+        $this->adyenMode = !empty($adyenModeConfiguration) ? $adyenModeConfiguration : Environment::TEST;
         $this->sslEncryptionKey = _COOKIE_KEY_;
         $this->apiKey = $this->getAPIKey($this->adyenMode, $this->sslEncryptionKey);
         $this->liveEndpointPrefix = \Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX');

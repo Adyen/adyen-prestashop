@@ -110,8 +110,7 @@ class Address extends Builder
         $stateOrProvince = '',
         $country = '',
         $request = array()
-    )
-    {
+    ) {
         return $this->buildAddress(
             self::$addressTypeDelivery,
             $street,

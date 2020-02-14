@@ -88,8 +88,11 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
         $customerThreadMock->id = 1;
 
         // Mock customerThreadAdapter
-        $this->customerThreadAdapter = $this->getMockBuilder(CustomerThreadAdapter::class)->disableOriginalConstructor()->getMock();
-        $this->customerThreadAdapter->method('getCustomerThreadByEmailAndOrderId')->willReturn($customerThreadMock);
+        $this->customerThreadAdapter = $this->getMockBuilder(CustomerThreadAdapter::class)
+                                            ->disableOriginalConstructor()
+                                            ->getMock();
+        $this->customerThreadAdapter->method('getCustomerThreadByEmailAndOrderId')
+                                    ->willReturn($customerThreadMock);
     }
 
     protected function tearDown()
