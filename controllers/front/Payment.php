@@ -15,7 +15,9 @@
  *
  * Adyen PrestaShop plugin
  *
- * Copyright (c) 2019 Adyen B.V.
+ * @author Adyen BV <support@adyen.com>
+ *
+ * Copyright (c) 2020 Adyen B.V.
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
@@ -24,10 +26,10 @@
 // Controllers, which breaks a PSR1 element.
 // phpcs:disable PSR1.Classes.ClassDeclaration
 
-use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
+use Adyen\AdyenException;
 use Adyen\PrestaShop\controllers\FrontController;
-use \Adyen\AdyenException;
-use \Adyen\PrestaShop\exception\MissingDataException;
+use Adyen\PrestaShop\exception\MissingDataException;
+use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 
 class AdyenPaymentModuleFrontController extends FrontController
 {
