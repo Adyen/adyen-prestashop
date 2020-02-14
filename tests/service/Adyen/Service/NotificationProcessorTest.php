@@ -225,8 +225,8 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
         $this->logger->expects($this->once())
                      ->method('error')
                      ->with(
-                         'Customer with id: "" cannot be found for order with id: "" while notification with id: "1" was' .
-                         ' processed.'
+                         'Customer with id: "" cannot be found for order with id: "" while notification with' .
+                         ' id: "1" was processed.'
                      );
 
         try {
