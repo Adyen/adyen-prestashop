@@ -25,6 +25,7 @@
 namespace Adyen\PrestaShop\service\adapter\classes;
 
 use Adyen\Environment;
+use Adyen\PrestaShop\service\Logger;
 use Tools;
 
 class Configuration
@@ -60,9 +61,14 @@ class Configuration
     public $moduleVersion;
 
     /**
+     * @var Logger
+     */
+    private $logger;
+
+    /**
      * Configuration constructor.
      */
-    public function __construct()
+    public function __construct(Logger $logger)
     {
         $this->httpHost = Tools::getHttpHost(true, true);
         $adyenModeConfiguration = \Configuration::get('ADYEN_MODE');
@@ -71,6 +77,7 @@ class Configuration
         $this->apiKey = $this->getAPIKey($this->adyenMode, $this->sslEncryptionKey);
         $this->liveEndpointPrefix = \Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
         $this->moduleVersion = '1.2.0';
+        $this->logger = $logger;
     }
 
     /**
@@ -118,6 +125,7 @@ class Configuration
     private function decrypt($data, $password)
     {
         if (!$data) {
+            $this->logger->debug("decrypt got empty parameter");
             return '';
         }
         // To decrypt, split the encrypted data from our IV - our unique separator used was "::"
