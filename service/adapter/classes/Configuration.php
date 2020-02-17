@@ -67,9 +67,12 @@ class Configuration
 
     /**
      * Configuration constructor.
+     *
+     * @param Logger $logger
      */
     public function __construct(Logger $logger)
     {
+        $this->logger = $logger;
         $this->httpHost = Tools::getHttpHost(true, true);
         $adyenModeConfiguration = \Configuration::get('ADYEN_MODE');
         $this->adyenMode = !empty($adyenModeConfiguration) ? $adyenModeConfiguration : Environment::TEST;
@@ -77,7 +80,6 @@ class Configuration
         $this->apiKey = $this->getAPIKey($this->adyenMode, $this->sslEncryptionKey);
         $this->liveEndpointPrefix = \Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
         $this->moduleVersion = '1.2.0';
-        $this->logger = $logger;
     }
 
     /**
@@ -125,11 +127,13 @@ class Configuration
     private function decrypt($data, $password)
     {
         if (!$data) {
-            $this->logger->debug("decrypt got empty parameter");
+            $this->logger->debug('decrypt got empty parameter');
             return '';
         }
-        // To decrypt, split the encrypted data from our IV - our unique separator used was "::"
-        list($data, $iv) = explode('::', base64_decode($data), 2);
-        return openssl_decrypt($data, 'aes-256-ctr', $password, 0, $iv);
+
+        $data = hex2bin($data);
+        $ivLength = openssl_cipher_iv_length('aes-256-ctr');
+        $iv = substr($data, 0, $ivLength);
+        return openssl_decrypt(substr($data, $ivLength), 'aes-256-ctr', $password, 0, $iv);
     }
 }
