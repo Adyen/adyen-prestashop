@@ -235,8 +235,8 @@ class Data
 
         $data = hex2bin($data);
         $ivLength = openssl_cipher_iv_length('aes-256-ctr');
-        $iv = substr($data, 0, $ivLength);
-        return openssl_decrypt(substr($data, $ivLength), 'aes-256-ctr', $this->sslEncryptionKey, 0, $iv);
+        $iv = Tools::substr($data, 0, $ivLength);
+        return openssl_decrypt(Tools::substr($data, $ivLength), 'aes-256-ctr', $this->sslEncryptionKey, 0, $iv);
     }
 
     /**
