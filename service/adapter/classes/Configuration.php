@@ -93,9 +93,9 @@ class Configuration
     private function getAPIKey($adyenRunningMode, $password)
     {
         if ($this->isTestMode($adyenRunningMode)) {
-            $apiKey = $this->decrypt(\Configuration::get('ADYEN_APIKEY_TEST'), $password);
+            $apiKey = \Configuration::get('ADYEN_APIKEY_TEST');
         } else {
-            $apiKey = $this->decrypt(\Configuration::get('ADYEN_APIKEY_LIVE'), $password);
+            $apiKey = \Configuration::get('ADYEN_APIKEY_LIVE');
         }
         return $apiKey;
     }
@@ -114,26 +114,5 @@ class Configuration
         } else {
             return false;
         }
-    }
-
-    /**
-     * Decrypts data
-     *
-     * @param $data
-     * @param $password
-     *
-     * @return string
-     */
-    private function decrypt($data, $password)
-    {
-        if (!$data) {
-            $this->logger->debug('decrypt got empty parameter');
-            return '';
-        }
-
-        $data = hex2bin($data);
-        $ivLength = openssl_cipher_iv_length('aes-256-ctr');
-        $iv = Tools::substr($data, 0, $ivLength);
-        return openssl_decrypt(Tools::substr($data, $ivLength), 'aes-256-ctr', $password, 0, $iv);
     }
 }

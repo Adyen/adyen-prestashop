@@ -71,10 +71,16 @@ class Adyen extends PaymentModule
      * @var \Adyen\PrestaShop\service\Logger
      */
     private $logger;
+
     /**
      * @var Adyen\PrestaShop\service\adapter\classes\Language
      */
     private $languageAdapter;
+
+    /**
+     * @var object
+     */
+    private $crypto;
 
     /**
      * Adyen constructor.
@@ -110,6 +116,10 @@ class Adyen extends PaymentModule
 
         $this->languageAdapter = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
             'Adyen\PrestaShop\service\adapter\classes\Language'
+        );
+
+        $this->crypto = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
+            'Adyen\PrestaShop\infra\Crypto'
         );
 
         // start for 1.6
@@ -228,10 +238,10 @@ class Adyen extends PaymentModule
     public function updateCronJobToken($token = '')
     {
         if (empty($token)) {
-            $token = $this->helper_data->encrypt(Tools::getShopDomainSsl() . time());
+            $token = $this->crypto->encrypt(Tools::getShopDomainSsl() . time());
         }
 
-        return Configuration::updateValue('ADYEN_CRONJOB_TOKEN', $this->helper_data->encrypt($token));
+        return Configuration::updateValue('ADYEN_CRONJOB_TOKEN', $this->crypto->encrypt($token));
     }
 
     /**
@@ -431,13 +441,13 @@ class Adyen extends PaymentModule
                     Configuration::updateValue('ADYEN_NOTI_HMAC', $notification_hmac);
                 }
                 if (!empty($cron_job_token)) {
-                    Configuration::updateValue('ADYEN_CRONJOB_TOKEN', $this->helper_data->encrypt($cron_job_token));
+                    Configuration::updateValue('ADYEN_CRONJOB_TOKEN', $this->crypto->encrypt($cron_job_token));
                 }
                 if (!empty($api_key_test)) {
-                    Configuration::updateValue('ADYEN_APIKEY_TEST', $this->helper_data->encrypt($api_key_test));
+                    Configuration::updateValue('ADYEN_APIKEY_TEST', $this->crypto->encrypt($api_key_test));
                 }
                 if (!empty($api_key_live)) {
-                    Configuration::updateValue('ADYEN_APIKEY_LIVE', $this->helper_data->encrypt($api_key_live));
+                    Configuration::updateValue('ADYEN_APIKEY_LIVE', $this->crypto->encrypt($api_key_live));
                 }
                 $output .= $this->displayConfirmation($this->l('Settings updated'));
             }
@@ -540,7 +550,7 @@ class Adyen extends PaymentModule
                             " like: %s/%s/index.php?fc=module&controller=AdminAdyenPrestashopCron&token=%s",
                             Tools::getShopDomainSsl(),
                             basename(_PS_ADMIN_DIR_),
-                            $this->helper_data->decrypt(Configuration::get('ADYEN_CRONJOB_TOKEN'))
+                            $this->crypto->decrypt(Configuration::get('ADYEN_CRONJOB_TOKEN'))
                         )
                     ),
                     'label' => $this->l('Secure token for cron job'),
@@ -636,7 +646,7 @@ class Adyen extends PaymentModule
             $mode = Configuration::get('ADYEN_MODE');
             $notification_username = Configuration::get('ADYEN_NOTI_USERNAME');
             $notification_password = Configuration::get('ADYEN_NOTI_PASSWORD');
-            $cron_job_token = $this->helper_data->decrypt(Configuration::get('ADYEN_CRONJOB_TOKEN'));
+            $cron_job_token = $this->crypto->decrypt(Configuration::get('ADYEN_CRONJOB_TOKEN'));
             $live_endpoint_url_prefix = Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
         }
 

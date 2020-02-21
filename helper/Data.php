@@ -28,7 +28,9 @@ use Address;
 use Adyen;
 use Adyen\AdyenException;
 use Adyen\Environment;
+use Adyen\PrestaShop\infra\Crypto;
 use Adyen\PrestaShop\service\adapter\classes\Configuration;
+use Adyen\PrestaShop\service\adapter\classes\Language;
 use Adyen\PrestaShop\service\Checkout;
 use Adyen\PrestaShop\service\CheckoutUtility;
 use Adyen\PrestaShop\service\Logger;
@@ -75,9 +77,14 @@ class Data
     private $logger;
 
     /**
-     * @var Adyen\PrestaShop\service\adapter\classes\Language
+     * @var Language
      */
     private $languageAdapter;
+
+    /**
+     * @var Crypto
+     */
+    private $crypto;
 
     /**
      * Data constructor.
@@ -86,14 +93,16 @@ class Data
      * @param CheckoutUtility $adyenCheckoutUtilityService
      * @param Checkout $adyenCheckoutService
      * @param Logger $logger
-     * @param Adyen\PrestaShop\service\adapter\classes\Language $languageAdapter
+     * @param Language $languageAdapter
+     * @param Crypto $crypto
      */
     public function __construct(
         Configuration $configuration,
         CheckoutUtility $adyenCheckoutUtilityService,
         Checkout $adyenCheckoutService,
         Logger $logger,
-        Adyen\PrestaShop\service\adapter\classes\Language $languageAdapter
+        Language $languageAdapter,
+        Crypto $crypto
     ) {
         $this->httpHost = $configuration->httpHost;
         $this->sslEncryptionKey = $configuration->sslEncryptionKey;
@@ -102,6 +111,7 @@ class Data
         $this->configuration = $configuration;
         $this->logger = $logger;
         $this->languageAdapter = $languageAdapter;
+        $this->crypto = $crypto;
     }
 
     /**
@@ -212,31 +222,6 @@ class Data
         $logger->setFilename($dirPath . '/debug.log');
 
         return $logger;
-    }
-
-    public function encrypt($data)
-    {
-        // Generate an initialization vector
-        $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-ctr'));
-        // Encrypt the data using AES 256 encryption in CBC mode using our encryption key and initialization vector.
-        return bin2hex($iv . openssl_encrypt($data, 'aes-256-ctr', $this->sslEncryptionKey, 0, $iv));
-    }
-
-    /**
-     * @param $data
-     * @return false|string
-     */
-    public function decrypt($data)
-    {
-        if (!$data) {
-            $this->logger->debug('decrypt got empty parameter');
-            return '';
-        }
-
-        $data = hex2bin($data);
-        $ivLength = openssl_cipher_iv_length('aes-256-ctr');
-        $iv = Tools::substr($data, 0, $ivLength);
-        return openssl_decrypt(Tools::substr($data, $ivLength), 'aes-256-ctr', $this->sslEncryptionKey, 0, $iv);
     }
 
     /**
