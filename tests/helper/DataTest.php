@@ -70,12 +70,18 @@ class DataTest extends \PHPUnit_Framework_TestCase
                                 ->disableOriginalConstructor()
                                 ->getMock();
 
+        /** @var Language|\PHPUnit_Framework_MockObject_MockObject $crypto */
+        $crypto = $this->getMockBuilder('Adyen\PrestaShop\infra\Crypto')
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $this->adyenHelper = new Data(
             $configuration,
             $adyenCheckoutUtilityService,
             $adyenCheckoutService,
             $logger,
-            $languageAdapter
+            $languageAdapter,
+            $crypto
         );
     }
 
