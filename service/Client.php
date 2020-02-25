@@ -24,6 +24,8 @@
 
 namespace Adyen\PrestaShop\service;
 
+use Adyen\PrestaShop\exception\GenericLoggedException;
+use Adyen\PrestaShop\exception\MissingDataException;
 use Adyen\PrestaShop\infra\Crypto;
 
 class Client extends \Adyen\Client
@@ -39,7 +41,6 @@ class Client extends \Adyen\Client
      * @param adapter\classes\Configuration $configuration
      * @param Logger $logger
      * @param Crypto $crypto
-     *
      * @throws \Adyen\AdyenException
      */
     public function __construct(
@@ -48,7 +49,18 @@ class Client extends \Adyen\Client
         Crypto $crypto
     ) {
         parent::__construct();
-        $this->setXApiKey($crypto->decrypt($configuration->apiKey));
+
+        $apiKey = '';
+
+        try {
+            $apiKey = $crypto->decrypt($configuration->apiKey);
+        } catch (GenericLoggedException $e) {
+            $logger->error('For configuration "ADYEN_CRONJOB_TOKEN" an exception was thrown: ' . $e->getMessage());
+        } catch (MissingDataException $e) {
+            $logger->debug('The API key configuration value is missing');
+        }
+
+        $this->setXApiKey($apiKey);
         $this->setAdyenPaymentSource(Configuration::MODULE_NAME, $configuration->moduleVersion);
         $this->setMerchantApplication(Configuration::MODULE_NAME, $configuration->moduleVersion);
         $this->setExternalPlatform("PrestaShop", _PS_VERSION_);
