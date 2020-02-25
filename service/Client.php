@@ -53,7 +53,7 @@ class Client extends \Adyen\Client
         $apiKey = '';
 
         try {
-            $apiKey = $crypto->decrypt($configuration->apiKey);
+            $apiKey = $crypto->decrypt($configuration->encryptedApiKey);
         } catch (GenericLoggedException $e) {
             $logger->error('For configuration "ADYEN_CRONJOB_TOKEN" an exception was thrown: ' . $e->getMessage());
         } catch (MissingDataException $e) {
