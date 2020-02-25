@@ -24,7 +24,7 @@
 
 namespace Adyen\PrestaShop\service\builder;
 
-class Customer extends Builder
+class Customer
 {
     /**
      * Builds the customer related data

@@ -24,7 +24,7 @@
 
 namespace Adyen\PrestaShop\service\builder;
 
-class Browser extends Builder
+class Browser
 {
     /**
      * @param string $userAgent

@@ -26,7 +26,7 @@ namespace Adyen\PrestaShop\service\builder;
 
 use Tools;
 
-class OpenInvoice extends Builder
+class OpenInvoice
 {
     /**
      * Build invoice line items for open invoice payment methods

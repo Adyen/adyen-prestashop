@@ -24,7 +24,7 @@
 
 namespace Adyen\PrestaShop\service\builder;
 
-class Address extends Builder
+class Address
 {
     /**
      * @var string

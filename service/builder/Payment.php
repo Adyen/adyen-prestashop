@@ -24,7 +24,7 @@
 
 namespace Adyen\PrestaShop\service\builder;
 
-class Payment extends Builder
+class Payment
 {
     /**
      * @param $encryptedCardNumber
