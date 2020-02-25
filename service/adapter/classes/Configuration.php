@@ -61,6 +61,11 @@ class Configuration
     public $moduleVersion;
 
     /**
+     * @var string
+     */
+    public $moduleName;
+
+    /**
      * @var Logger
      */
     private $logger;
@@ -80,6 +85,7 @@ class Configuration
         $this->apiKey = $this->getAPIKey($this->adyenMode, $this->sslEncryptionKey);
         $this->liveEndpointPrefix = \Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
         $this->moduleVersion = '1.2.0';
+        $this->moduleName = 'adyen-prestashop';
     }
 
     /**
