@@ -24,6 +24,8 @@
 
 namespace Adyen\PrestaShop\infra;
 
+use Adyen\PrestaShop\exception\GenericLoggedException;
+use Adyen\PrestaShop\exception\MissingDataException;
 use Adyen\PrestaShop\service\adapter\classes\Configuration;
 use Adyen\PrestaShop\service\Logger;
 use Tools;
@@ -68,18 +70,24 @@ class Crypto
 
     /**
      * @param $data
-     *
      * @return false|string
+     * @throws GenericLoggedException
+     * @throws MissingDataException
      */
     public function decrypt($data)
     {
-        if (!$data) {
-            $this->logger->debug('decrypt got empty parameter');
-            return '';
+        if (empty($data)) {
+            throw new MissingDataException();
         }
 
         $ivLength = openssl_cipher_iv_length($this->method);
-        $iv = hex2bin(Tools::substr($data, 0, $ivLength * 2));
+        $hex = Tools::substr($data, 0, $ivLength * 2);
+
+        if (!ctype_xdigit($hex)) {
+            throw new GenericLoggedException('Crypto decrypt() $data parameter is not hex encoded');
+        }
+
+        $iv = hex2bin($hex);
         return openssl_decrypt(
             Tools::substr($data, $ivLength * 2),
             $this->method,
