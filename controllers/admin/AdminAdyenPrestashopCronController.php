@@ -46,6 +46,11 @@ class AdminAdyenPrestashopCronController extends \ModuleAdminController
     private $logger;
 
     /**
+     * @var Adyen\PrestaShop\infra\Crypto
+     */
+    private $crypto;
+
+    /**
      * AdminAdyenPrestashopCronController constructor.
      *
      * @throws \Adyen\AdyenException
@@ -54,8 +59,9 @@ class AdminAdyenPrestashopCronController extends \ModuleAdminController
     {
         $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
         $this->logger = ServiceLocator::get('Adyen\PrestaShop\service\Logger');
+        $this->crypto = ServiceLocator::get('Adyen\PrestaShop\infra\Crypto');
 
-        if (\Tools::getValue('token') != $this->helperData->decrypt(\Configuration::get('ADYEN_CRONJOB_TOKEN'))) {
+        if (\Tools::getValue('token') != $this->crypto->decrypt(\Configuration::get('ADYEN_CRONJOB_TOKEN'))) {
             die('Invalid token');
         }
 
