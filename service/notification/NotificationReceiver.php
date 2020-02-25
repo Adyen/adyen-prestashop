@@ -25,6 +25,7 @@
 namespace Adyen\PrestaShop\service\notification;
 
 use Adyen\PrestaShop\helper\Data as AdyenHelper;
+use Adyen\PrestaShop\service\adapter\classes\Configuration;
 use Adyen\Util\HmacSignature;
 use DateTime;
 use Db;
@@ -74,6 +75,11 @@ class NotificationReceiver
     private $logger;
 
     /**
+     * @var
+     */
+    private $configuration;
+
+    /**
      * NotificationReceiver constructor.
      *
      * @param AdyenHelper $helperData
@@ -84,6 +90,7 @@ class NotificationReceiver
      * @param $notificationPassword
      * @param Db $dbInstance
      * @param LoggerInterface $logger
+     * @param Configuration $configuration
      */
     public function __construct(
         AdyenHelper $helperData,
@@ -93,7 +100,8 @@ class NotificationReceiver
         $notificationUsername,
         $notificationPassword,
         Db $dbInstance,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        Configuration $configuration
     ) {
         $this->helperData = $helperData;
         $this->hmacSignature = $hmacSignature;
@@ -103,6 +111,8 @@ class NotificationReceiver
         $this->notificationPassword = $notificationPassword;
         $this->dbInstance = $dbInstance;
         $this->logger = $logger;
+        $this->configuration = $configuration;
+
     }
 
     /**
@@ -223,16 +233,18 @@ class NotificationReceiver
 
 
     /**
+     * Checks if notification mode and the store mode configuration matches
+     *
      * @param $notificationMode
      * @return bool
      */
     protected function validateNotificationMode($notificationMode)
     {
-        $mode = $this->helperData->isDemoMode();
+        $testMode = $this->configuration->isTestMode();
 
         // Notification mode can be a string or a boolean
-        if (($mode == '1' && ($notificationMode == 'false' || $notificationMode == false)) ||
-            ($mode == '0' && ($notificationMode == 'true' || $notificationMode == true))
+        if (($testMode && ($notificationMode == 'false' || $notificationMode == false)) ||
+            (!$testMode && ($notificationMode == 'true' || $notificationMode == true))
         ) {
             return true;
         }

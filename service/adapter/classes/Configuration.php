@@ -107,13 +107,11 @@ class Configuration
     /**
      * Checks if plug-in is running in test mode or not
      *
-     * @param $adyenRunningMode
-     *
      * @return bool
      */
-    private function isTestMode($adyenRunningMode)
+    public function isTestMode()
     {
-        if (strpos($adyenRunningMode, Environment::TEST) !== false) {
+        if (strpos($this->adyenMode, Environment::TEST) !== false) {
             return true;
         } else {
             return false;

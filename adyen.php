@@ -83,6 +83,11 @@ class Adyen extends PaymentModule
     private $crypto;
 
     /**
+     * @var Adyen\PrestaShop\service\adapter\classes\Configuration
+     */
+    private $configuration;
+
+    /**
      * Adyen constructor.
      *
      * @throws \PrestaShop\PrestaShop\Adapter\CoreException
@@ -120,6 +125,10 @@ class Adyen extends PaymentModule
 
         $this->crypto = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
             'Adyen\PrestaShop\infra\Crypto'
+        );
+
+        $this->configuration = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
+            'Adyen\PrestaShop\service\adapter\classes\Configuration'
         );
 
         // start for 1.6
@@ -1327,7 +1336,7 @@ class Adyen extends PaymentModule
         $controllerAdapter->setController($controller);
 
         // needs to be rendered for each controller
-        if ($this->helper_data->isDemoMode()) {
+        if ($this->configuration->isTestMode()) {
             $controllerAdapter->registerJavascript(
                 'adyen-checkout-component', // Unique ID
                 \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_JS_TEST, // JS path

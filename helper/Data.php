@@ -191,6 +191,11 @@ class Data
         return $responseData;
     }
 
+    /**
+     * @return bool
+     * @deprecated Use Adyen\PrestaShop\service\adapter\classes\Configuration isTestMode() instead.
+     * This method will be removed in version 2.
+     */
     public function isDemoMode()
     {
         if (strpos($this->configuration->adyenMode, Environment::TEST) !== false) {
