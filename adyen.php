@@ -426,29 +426,32 @@ class Adyen extends PaymentModule
                 $output .= $this->displayError($this->l('Invalid Configuration value for Notification Username'));
             }
 
-            if (empty($notification_password) || !Validate::isGenericName($notification_password)) {
-                $output .= $this->displayError($this->l('Invalid Configuration value for Notification Password'));
-            }
-
             if ($output == null) {
                 Configuration::updateValue('ADYEN_MERCHANT_ACCOUNT', $merchant_account);
                 Configuration::updateValue('ADYEN_MODE', $mode);
                 Configuration::updateValue('ADYEN_NOTI_USERNAME', $notification_username);
-                Configuration::updateValue('ADYEN_NOTI_PASSWORD', $notification_password);
                 Configuration::updateValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX', $live_endpoint_url_prefix);
 
-                if (!empty($notification_hmac)) {
-                    Configuration::updateValue('ADYEN_NOTI_HMAC', $notification_hmac);
+                if (!empty($notification_password)) {
+                    Configuration::updateValue('ADYEN_NOTI_PASSWORD', $this->crypto->encrypt($notification_password));
                 }
+
+                if (!empty($notification_hmac)) {
+                    Configuration::updateValue('ADYEN_NOTI_HMAC', $this->crypto->encrypt($notification_hmac));
+                }
+
                 if (!empty($cron_job_token)) {
                     Configuration::updateValue('ADYEN_CRONJOB_TOKEN', $this->crypto->encrypt($cron_job_token));
                 }
+
                 if (!empty($api_key_test)) {
                     Configuration::updateValue('ADYEN_APIKEY_TEST', $this->crypto->encrypt($api_key_test));
                 }
+
                 if (!empty($api_key_live)) {
                     Configuration::updateValue('ADYEN_APIKEY_LIVE', $this->crypto->encrypt($api_key_live));
                 }
+
                 $output .= $this->displayConfirmation($this->l('Settings updated'));
             }
         }
@@ -467,6 +470,8 @@ class Adyen extends PaymentModule
      */
     public function displayForm()
     {
+        $this->context->controller->addCSS($this->_path . 'views/css/adyen_admin.css', 'all');
+
         // Get default Language
         $default_lang = (int)Configuration::get('PS_LANG_DEFAULT');
 
@@ -504,7 +509,6 @@ class Adyen extends PaymentModule
             'type' => 'radio',
             'label' => $this->l('Test/Production Mode'),
             'name' => 'ADYEN_MODE',
-            'class' => 't',
             'values' => array(
                 array(
                     'id' => 'prod',
@@ -525,7 +529,7 @@ class Adyen extends PaymentModule
             'label' => $this->l('Notification Username'),
             'name' => 'ADYEN_NOTI_USERNAME',
             'size' => 20,
-            'required' => false,
+            'required' => true,
             'hint' => $this->l(
                 'Must correspond to the notification username in the Adyen Backoffice under' .
                 ' Settings => Notifications'
@@ -547,6 +551,7 @@ class Adyen extends PaymentModule
             'label' => $this->l('Notification Password'),
             'name' => 'ADYEN_NOTI_PASSWORD',
             'desc' => $notificationPassword ? '' : $this->l('Please fill your notification password'),
+            'class' => $notificationPassword ? 'adyen-input-green' : '',
             'size' => 20,
             'required' => false,
             'hint' => $this->l(
@@ -570,6 +575,7 @@ class Adyen extends PaymentModule
             'label' => $this->l('HMAC key for notifications'),
             'name' => 'ADYEN_NOTI_HMAC',
             'desc' => $notificationHmacKey ? '' : $this->l('Please fill your notification HMAC key'),
+            'class' => $notificationHmacKey ? 'adyen-input-green' : '',
             'size' => 20,
             'required' => false,
             'hint' => $this->l(
@@ -593,12 +599,13 @@ class Adyen extends PaymentModule
             'desc' => $cronjobToken ?
                 $this->l("Your adyen cron job processor's url includes this secure token . Your URL looks like: ") .
                 sprintf(
-                     "%s/%s/index.php?fc=module&controller=AdminAdyenPrestashopCron&token=%s",
+                    "%s/%s/index.php?fc=module&controller=AdminAdyenPrestashopCron&token=%s",
                     Tools::getShopDomainSsl(),
                     basename(_PS_ADMIN_DIR_),
                     $cronjobToken
                 ) :
                 $this->l('Please fill your notification token'),
+            'class' => $cronjobToken ? 'adyen-input-green' : '',
             'label' => $this->l('Secure token for cron job'),
             'name' => 'ADYEN_CRONJOB_TOKEN',
             'size' => 20,
@@ -622,6 +629,7 @@ class Adyen extends PaymentModule
             'label' => $this->l('API key for Test'),
             'name' => 'ADYEN_APIKEY_TEST',
             'desc' => $apiKeyTestLastDigits ? $this->l('Key stored ending in: ') . $apiKeyTestLastDigits : $this->l('Please fill your API key for Test'),
+            'class' => $apiKeyTestLastDigits ? 'adyen-input-green' : '',
             'size' => 20,
             'required' => false,
             'hint' => $this->l(
@@ -648,6 +656,7 @@ class Adyen extends PaymentModule
             'label' => $this->l('API key for Live'),
             'name' => 'ADYEN_APIKEY_LIVE',
             'desc' => $apiKeyLiveLastDigits ? $this->l('Key stored ending in: ') . $apiKeyLiveLastDigits : $this->l('Please fill your API key for Live'),
+            'class' => $apiKeyLiveLastDigits ? 'adyen-input-green' : '',
             'size' => 20,
             'required' => false,
             'hint' => $this->l(
