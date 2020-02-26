@@ -96,7 +96,6 @@ class Adyen extends PaymentModule
     {
         $this->name = 'adyen';
         $this->tab = 'payments_gateways';
-        $this->version = '1.2.0';
         $this->author = 'Adyen';
         $this->bootstrap = true;
         $this->display = 'view';
@@ -130,6 +129,8 @@ class Adyen extends PaymentModule
         $this->configuration = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
             'Adyen\PrestaShop\service\adapter\classes\Configuration'
         );
+
+        $this->version = $this->configuration->moduleVersion;
 
         // start for 1.6
         $this->is_eu_compatible = 1;
