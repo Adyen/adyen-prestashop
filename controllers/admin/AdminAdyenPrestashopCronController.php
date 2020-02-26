@@ -66,9 +66,13 @@ class AdminAdyenPrestashopCronController extends \ModuleAdminController
         try {
             $cronjobToken = $this->crypto->decrypt(Configuration::get('ADYEN_CRONJOB_TOKEN'));
         } catch (\Adyen\PrestaShop\exception\GenericLoggedException $e) {
-            $this->logger->error('For configuration "ADYEN_CRONJOB_TOKEN" an exception was thrown: ' . $e->getMessage());
+            $this->logger->error(
+                'For configuration "ADYEN_CRONJOB_TOKEN" an exception was thrown: ' . $e->getMessage()
+            );
         } catch (\Adyen\PrestaShop\exception\MissingDataException $e) {
-            $this->logger->debug('The configuration "ADYEN_CRONJOB_TOKEN" has no value set, please add a secure token!');
+            $this->logger->debug(
+                'The configuration "ADYEN_CRONJOB_TOKEN" has no value set, please add a secure token!'
+            );
         }
 
         if (\Tools::getValue('token') != $cronjobToken) {
