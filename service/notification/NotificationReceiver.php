@@ -112,7 +112,6 @@ class NotificationReceiver
         $this->dbInstance = $dbInstance;
         $this->logger = $logger;
         $this->configuration = $configuration;
-
     }
 
     /**

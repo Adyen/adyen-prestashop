@@ -551,9 +551,13 @@ class Adyen extends PaymentModule
         try {
             $notificationPassword = $this->crypto->decrypt(Configuration::get('ADYEN_NOTI_PASSWORD'));
         } catch (\Adyen\PrestaShop\exception\GenericLoggedException $e) {
-            $this->logger->error('For configuration "ADYEN_NOTI_PASSWORD" an exception was thrown: ' . $e->getMessage());
+            $this->logger->error(
+                'For configuration "ADYEN_NOTI_PASSWORD" an exception was thrown: ' . $e->getMessage()
+            );
         } catch (\Adyen\PrestaShop\exception\MissingDataException $e) {
-            $this->logger->debug('The configuration "ADYEN_NOTI_PASSWORD" has no value set, please add the notification password!');
+            $this->logger->debug(
+                'The configuration "ADYEN_NOTI_PASSWORD" has no value set, please add the notification password!'
+            );
         }
 
         $fields_form[0]['form']['input'][] = array(
@@ -599,9 +603,13 @@ class Adyen extends PaymentModule
         try {
             $cronjobToken = $this->crypto->decrypt(Configuration::get('ADYEN_CRONJOB_TOKEN'));
         } catch (\Adyen\PrestaShop\exception\GenericLoggedException $e) {
-            $this->logger->error('For configuration "ADYEN_CRONJOB_TOKEN" an exception was thrown: ' . $e->getMessage());
+            $this->logger->error(
+                'For configuration "ADYEN_CRONJOB_TOKEN" an exception was thrown: ' . $e->getMessage()
+            );
         } catch (\Adyen\PrestaShop\exception\MissingDataException $e) {
-            $this->logger->debug('The configuration "ADYEN_CRONJOB_TOKEN" has no value set, please add a secure token!');
+            $this->logger->debug(
+                'The configuration "ADYEN_CRONJOB_TOKEN" has no value set, please add a secure token!'
+            );
         }
 
         $fields_form[0]['form']['input'][] = array(
@@ -627,7 +635,9 @@ class Adyen extends PaymentModule
         try {
             $apiKeyTest = $this->crypto->decrypt(Configuration::get('ADYEN_APIKEY_TEST'));
         } catch (\Adyen\PrestaShop\exception\GenericLoggedException $e) {
-            $this->logger->error('For configuration "ADYEN_APIKEY_TEST" an exception was thrown: ' . $e->getMessage());
+            $this->logger->error(
+                'For configuration "ADYEN_APIKEY_TEST" an exception was thrown: ' . $e->getMessage()
+            );
         } catch (\Adyen\PrestaShop\exception\MissingDataException $e) {
             $this->logger->debug('The configuration "ADYEN_APIKEY_TEST" has no value set.');
         }
@@ -638,7 +648,9 @@ class Adyen extends PaymentModule
             'type' => 'password',
             'label' => $this->l('API key for Test'),
             'name' => 'ADYEN_APIKEY_TEST',
-            'desc' => $apiKeyTestLastDigits ? $this->l('Key stored ending in: ') . $apiKeyTestLastDigits : $this->l('Please fill your API key for Test'),
+            'desc' => $apiKeyTestLastDigits ? $this->l('Key stored ending in: ') . $apiKeyTestLastDigits : $this->l(
+                'Please fill your API key for Test'
+            ),
             'class' => $apiKeyTestLastDigits ? 'adyen-input-green' : '',
             'size' => 20,
             'required' => false,
@@ -654,7 +666,9 @@ class Adyen extends PaymentModule
         try {
             $apiKeyLive = $this->crypto->decrypt(Configuration::get('ADYEN_APIKEY_LIVE'));
         } catch (\Adyen\PrestaShop\exception\GenericLoggedException $e) {
-            $this->logger->error('For configuration "ADYEN_APIKEY_LIVE" an exception was thrown: ' . $e->getMessage());
+            $this->logger->error(
+                'For configuration "ADYEN_APIKEY_LIVE" an exception was thrown: ' . $e->getMessage()
+            );
         } catch (\Adyen\PrestaShop\exception\MissingDataException $e) {
             $this->logger->debug('The configuration "ADYEN_APIKEY_LIVE" has no value set.');
         }
@@ -665,7 +679,9 @@ class Adyen extends PaymentModule
             'type' => 'password',
             'label' => $this->l('API key for Live'),
             'name' => 'ADYEN_APIKEY_LIVE',
-            'desc' => $apiKeyLiveLastDigits ? $this->l('Key stored ending in: ') . $apiKeyLiveLastDigits : $this->l('Please fill your API key for Live'),
+            'desc' => $apiKeyLiveLastDigits ? $this->l('Key stored ending in: ') . $apiKeyLiveLastDigits : $this->l(
+                'Please fill your API key for Live'
+            ),
             'class' => $apiKeyLiveLastDigits ? 'adyen-input-green' : '',
             'size' => 20,
             'required' => false,
@@ -873,9 +889,11 @@ class Adyen extends PaymentModule
         $this->context->smarty->assign($smartyVariables);
 
         $embeddedOption->setCallToActionText($this->l('Pay by card'))
-            ->setForm($this->context->smarty->fetch(
-                _PS_MODULE_DIR_ . $this->name . '/views/templates/front/payment.tpl'
-            ))
+            ->setForm(
+                $this->context->smarty->fetch(
+                    _PS_MODULE_DIR_ . $this->name . '/views/templates/front/payment.tpl'
+                )
+            )
             ->setLogo(Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $cc_img))
             ->setAction($this->context->link->getModuleLink($this->name, 'Payment', array(), true));
         $payment_options[] = $embeddedOption;

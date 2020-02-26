@@ -28,6 +28,7 @@ use Adyen\PrestaShop\service\adapter\classes\Configuration;
 use Adyen\PrestaShop\service\adapter\classes\Language;
 use Adyen\PrestaShop\service\Checkout;
 use Adyen\PrestaShop\service\CheckoutUtility;
+use Adyen\PrestaShop\infra\Crypto;
 
 class DataTest extends \PHPUnit_Framework_TestCase
 {
@@ -70,7 +71,7 @@ class DataTest extends \PHPUnit_Framework_TestCase
                                 ->disableOriginalConstructor()
                                 ->getMock();
 
-        /** @var Language|\PHPUnit_Framework_MockObject_MockObject $crypto */
+        /** @var Crypto|\PHPUnit_Framework_MockObject_MockObject $crypto */
         $crypto = $this->getMockBuilder('Adyen\PrestaShop\infra\Crypto')
             ->disableOriginalConstructor()
             ->getMock();
