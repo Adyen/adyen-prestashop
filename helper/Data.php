@@ -126,7 +126,7 @@ class Data
         try {
             $response = $this->adyenCheckoutUtilityService->originKeys($params);
         } catch (AdyenException $e) {
-            $this->logger->error("getOriginKeyForOrigin failed. ", ['exception' => $e]);
+            $this->logger->error("getOriginKeyForOrigin failed. ", array('exception' => $e));
         }
 
         $originKey = "";
