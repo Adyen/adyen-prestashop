@@ -95,6 +95,7 @@ class Adyen extends PaymentModule
     public function __construct()
     {
         $this->name = 'adyen';
+        $this->version = '1.2.0';
         $this->tab = 'payments_gateways';
         $this->author = 'Adyen';
         $this->bootstrap = true;
@@ -129,8 +130,6 @@ class Adyen extends PaymentModule
         $this->configuration = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
             'Adyen\PrestaShop\service\adapter\classes\Configuration'
         );
-
-        $this->version = $this->configuration->moduleVersion;
 
         // start for 1.6
         $this->is_eu_compatible = 1;
@@ -642,7 +641,7 @@ class Adyen extends PaymentModule
             $this->logger->debug('The configuration "ADYEN_APIKEY_TEST" has no value set.');
         }
 
-        $apiKeyTestLastDigits = substr($apiKeyTest, -4);
+        $apiKeyTestLastDigits = Tools::substr($apiKeyTest, -4);
 
         $fields_form[0]['form']['input'][] = array(
             'type' => 'password',
@@ -673,7 +672,7 @@ class Adyen extends PaymentModule
             $this->logger->debug('The configuration "ADYEN_APIKEY_LIVE" has no value set.');
         }
 
-        $apiKeyLiveLastDigits = substr($apiKeyLive, -4);
+        $apiKeyLiveLastDigits = Tools::substr($apiKeyLive, -4);
 
         $fields_form[0]['form']['input'][] = array(
             'type' => 'password',
