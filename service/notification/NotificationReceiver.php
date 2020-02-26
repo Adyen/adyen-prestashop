@@ -75,7 +75,7 @@ class NotificationReceiver
     private $logger;
 
     /**
-     * @var
+     * @var Configuration
      */
     private $configuration;
 
