@@ -41,7 +41,7 @@
             originKey: adyenCheckoutConfiguration.originKey,
             environment: adyenCheckoutConfiguration.environment,
             showPayButton: false,
-            paymentMethodsResponse: adyenCheckoutConfiguration.paymentMethodsResponse
+            paymentMethodsResponse: JSON.parse(adyenCheckoutConfiguration.paymentMethodsResponse)
         };
     </script>
 {/if}
