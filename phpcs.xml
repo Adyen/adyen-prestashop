@@ -33,6 +33,8 @@
     <arg name="colors"/>
     <arg name="parallel" value="75"/>
     <arg value="p"/>
-
-    <rule ref="PSR2"/>
+    
+    <rule ref="PSR2">
+        <exclude-pattern>*.js</exclude-pattern>
+    </rule>
 </ruleset>
