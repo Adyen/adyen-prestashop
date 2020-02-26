@@ -30,7 +30,7 @@
          data-locale="{$locale}"
          data-origin-key="{$originKey}"
          data-environment="{$environment}"
-         data-payment-methods-response="{$paymentMethodsResponse}"
+         data-payment-methods-response='{$paymentMethodsResponse}'
     ></div>
     <script>
         var adyenCheckoutConfiguration = document.querySelector('#adyen-checkout-configuration').dataset;
