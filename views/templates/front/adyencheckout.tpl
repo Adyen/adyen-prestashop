@@ -26,7 +26,7 @@
         please check your API key in the Adyen Module configuration</h5>
 {else}
     <div id="adyen-checkout-configuration"
-         data-is-presta-shop-16="{$isPrestaShop16}"
+         data-is-presta-shop16="{$isPrestaShop16}"
          data-locale="{$locale}"
          data-origin-key="{$originKey}"
          data-environment="{$environment}"
