@@ -170,11 +170,13 @@ class AdyenPaymentModuleFrontController extends FrontController
                 $request = $this->buildPaymentData($request);
                 $request = $this->buildCustomerData($request);
             } catch (MissingDataException $exception) {
-                $this->logger->error(sprintf(
-                    "There was an error with the payment method. id:  %s Missing data: %s",
-                    $cart->id,
-                    $exception->getMessage()
-                ));
+                $this->logger->error(
+                    sprintf(
+                        "There was an error with the payment method. id:  %s Missing data: %s",
+                        $cart->id,
+                        $exception->getMessage()
+                    )
+                );
 
                 $this->ajaxRender(
                     $this->helperData->buildControllerResponseJson(
@@ -266,11 +268,13 @@ class AdyenPaymentModuleFrontController extends FrontController
                     foreach ($paymentCollection as $payment) {
                         if (!empty($response['additionalData']['cardBin']) &&
                             !empty($response['additionalData']['cardSummary'])) {
-                            $payment->card_number = pSQL(sprintf(
-                                "%s *** %s",
-                                $response['additionalData']['cardBin'],
-                                $response['additionalData']['cardSummary']
-                            ));
+                            $payment->card_number = pSQL(
+                                sprintf(
+                                    "%s *** %s",
+                                    $response['additionalData']['cardBin'],
+                                    $response['additionalData']['cardSummary']
+                                )
+                            );
                         }
                         if (!empty($response['additionalData']['paymentMethod'])) {
                             $payment->card_brand = pSQL($response['additionalData']['paymentMethod']);
@@ -315,25 +319,29 @@ class AdyenPaymentModuleFrontController extends FrontController
             case 'IdentifyShopper':
                 $_SESSION['paymentData'] = $response['paymentData'];
 
-                $this->ajaxRender($this->helperData->buildControllerResponseJson(
-                    'threeDS2',
-                    array(
-                        'type' => 'IdentifyShopper',
-                        'token' => $response['authentication']['threeds2.fingerprintToken']
+                $this->ajaxRender(
+                    $this->helperData->buildControllerResponseJson(
+                        'threeDS2',
+                        array(
+                            'type' => 'IdentifyShopper',
+                            'token' => $response['authentication']['threeds2.fingerprintToken']
+                        )
                     )
-                ));
+                );
 
                 break;
             case 'ChallengeShopper':
                 $_SESSION['paymentData'] = $response['paymentData'];
 
-                $this->ajaxRender($this->helperData->buildControllerResponseJson(
-                    'threeDS2',
-                    array(
-                        'type' => 'ChallengeShopper',
-                        'token' => $response['authentication']['threeds2.challengeToken']
+                $this->ajaxRender(
+                    $this->helperData->buildControllerResponseJson(
+                        'threeDS2',
+                        array(
+                            'type' => 'ChallengeShopper',
+                            'token' => $response['authentication']['threeds2.challengeToken']
+                        )
                     )
-                ));
+                );
                 break;
             case 'RedirectShopper':
                 // store cart in tempory value and remove the cart from session
@@ -349,7 +357,11 @@ class AdyenPaymentModuleFrontController extends FrontController
                     $this->ajaxRender(
                         $this->helperData->buildControllerResponseJson(
                             'error',
-                            array('message' => $this->l("There was an error with the payment method, please choose another one."))
+                            array(
+                                'message' => $this->l(
+                                    "There was an error with the payment method, please choose another one."
+                                )
+                            )
                         )
                     );
                 }
@@ -363,16 +375,18 @@ class AdyenPaymentModuleFrontController extends FrontController
                     $paRequest = $response['redirect']['data']['PaReq'];
                     $md = $response['redirect']['data']['MD'];
 
-                    $this->ajaxRender($this->helperData->buildControllerResponseJson(
-                        'threeDS1',
-                        array(
-                            'paRequest' => $paRequest,
-                            'md' => $md,
-                            'issuerUrl' => $redirectUrl,
-                            'paymentData' => $paymentData,
-                            'redirectMethod' => $redirectMethod
+                    $this->ajaxRender(
+                        $this->helperData->buildControllerResponseJson(
+                            'threeDS1',
+                            array(
+                                'paRequest' => $paRequest,
+                                'md' => $md,
+                                'issuerUrl' => $redirectUrl,
+                                'paymentData' => $paymentData,
+                                'redirectMethod' => $redirectMethod
+                            )
                         )
-                    ));
+                    );
                 } else {
                     $_SESSION['redirectUrl'] = $redirectUrl;
                     $_SESSION['redirectMethod'] = $redirectMethod;
@@ -443,11 +457,15 @@ class AdyenPaymentModuleFrontController extends FrontController
                 $this->ajaxRender(
                     $this->helperData->buildControllerResponseJson(
                         'error',
-                        array('message' => $this->l("There was an error with the payment method, please choose another one."))
+                        array(
+                            'message' => $this->l(
+                                "There was an error with the payment method, please choose another one."
+                            )
+                        )
                     )
                 );
                 break;
-            break;
+                break;
             default:
                 //8_PS_OS_ERROR_ : payment error
                 $this->module->validateOrder(
@@ -469,8 +487,10 @@ class AdyenPaymentModuleFrontController extends FrontController
                 $this->ajaxRender(
                     $this->helperData->buildControllerResponseJson(
                         'error',
-                        array('message' => $this->l("Unsupported result code: {$response['resultCode']}")
-                    ))
+                        array(
+                            'message' => $this->l("Unsupported result code:") . "{" . $response['resultCode'] . "}"
+                        )
+                    )
                 );
                 break;
         }
@@ -518,14 +538,16 @@ class AdyenPaymentModuleFrontController extends FrontController
             true
         );
 
-        $this->context->smarty->assign(array(
-            'paRequest' => $paRequest,
-            'md' => $md,
-            'issuerUrl' => $issuerUrl,
-            'paymentData' => $paymentData,
-            'redirectMethod' => $redirectMethod,
-            'termUrl' => $termUrl
-        ));
+        $this->context->smarty->assign(
+            array(
+                'paRequest' => $paRequest,
+                'md' => $md,
+                'issuerUrl' => $issuerUrl,
+                'paymentData' => $paymentData,
+                'redirectMethod' => $redirectMethod,
+                'termUrl' => $termUrl
+            )
+        );
 
         return $this->setTemplate(
             $this->helperData->getTemplateFromModulePath('views/templates/front/redirect.tpl')
