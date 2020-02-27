@@ -349,7 +349,7 @@ class AdyenPaymentModuleFrontController extends FrontController
                     $this->ajaxRender(
                         $this->helperData->buildControllerResponseJson(
                             'error',
-                            array('message' => "There was an error with the payment method, please choose another one.")
+                            array('message' => $this->l("There was an error with the payment method, please choose another one."))
                         )
                     );
                 }
@@ -423,6 +423,31 @@ class AdyenPaymentModuleFrontController extends FrontController
                 }
 
                 break;
+            case 'Error':
+                $this->module->validateOrder(
+                    $cart->id,
+                    8,
+                    $total,
+                    $this->module->displayName,
+                    null,
+                    $extraVars,
+                    (int)$cart->id_currency,
+                    false,
+                    $customer->secure_key
+                );
+                $this->logger->error(
+                    "There was an error with the payment method. id:  " . $cart->id .
+                    ' Unsupported result code in response: ' . print_r($response, true)
+                );
+
+                $this->ajaxRender(
+                    $this->helperData->buildControllerResponseJson(
+                        'error',
+                        array('message' => $this->l("There was an error with the payment method, please choose another one."))
+                    )
+                );
+                break;
+            break;
             default:
                 //8_PS_OS_ERROR_ : payment error
                 $this->module->validateOrder(
@@ -444,8 +469,8 @@ class AdyenPaymentModuleFrontController extends FrontController
                 $this->ajaxRender(
                     $this->helperData->buildControllerResponseJson(
                         'error',
-                        array('message' => "Unsupported result code: {$response['resultCode']}")
-                    )
+                        array('message' => $this->l("Unsupported result code: {$response['resultCode']}")
+                    ))
                 );
                 break;
         }

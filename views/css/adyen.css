@@ -79,7 +79,7 @@ ul.adyen-hpp-options li ul.payment_form_ideal input {
     margin-top: 25px;
 }
 
-div.adyen-payment #errors {
+div.adyen-payment .error-container {
     display: none;
 }
 

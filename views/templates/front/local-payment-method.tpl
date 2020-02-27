@@ -22,16 +22,18 @@
  *}
 
 {if !$originKey}
-    <form id="payment-form" method="post">
+    <form method="post">
         <h5>There is an error with retrieving the originKey,
             please check your API key in the Adyen Module configuration</h5>
     </form>
 {else}
-    <div class="row {$paymentMethodType|escape:'html'}"
+    <div class="row adyen-payment {$paymentMethodType|escape:'html'}"
          data-local-payment-method="{$paymentMethodType|escape:'html'}"
     >
         <div class="adyen-payment-method-label">{l s='Pay with ' mod='adyen'}{$paymentMethodName}</div>
-        <form id="payment-form" action="{$paymentProcessUrl}" class="adyen-payment-form-{$paymentMethodType|escape:'html'}" method="post">
+        <form action="{$paymentProcessUrl}" class="adyen-payment-form-{$paymentMethodType|escape:'html'}" method="post">
+            <!-- Display payment errors -->
+            <div class="alert alert-danger error-container" role="alert"></div>
             <div data-adyen-payment-container></div>
             <div data-adyen-payment-error-container role="alert"></div>
             {if $renderPayButton}

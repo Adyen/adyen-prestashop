@@ -57,7 +57,7 @@ jQuery(function ($) {
         renderStoredPaymentComponent(storedPaymentMethod);
 
         /* Subscribes to the adyen payment method form submission */
-        var paymentForm = $("#payment-form.adyen-payment-form-" + storedPaymentMethod.id);
+        var paymentForm = $(".adyen-payment-form-" + storedPaymentMethod.id);
         paymentForm.on('submit', function (e) {
             if (placeOrderAllowed) {
                 return;

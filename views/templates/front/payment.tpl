@@ -22,7 +22,7 @@
  *}
 
 {if !$originKey}
-    <form id="payment-form" method="post">
+    <form method="post">
         <h5>There is an error with retrieving the originKey,
             please check your API key in the Adyen Module configuration</h5>
     </form>
@@ -35,13 +35,13 @@
     {/if}
     <div class="row adyen-payment">
         <div class="col-xs-12 col-md-6">
-            <form id="payment-form" action="{$paymentProcessUrl}" class="adyen-payment-form" method="post"
+            <form action="{$paymentProcessUrl}" class="adyen-payment-form" method="post"
                   data-is-logged-in-user="{$loggedInUser}"
                   data-three-ds-process-url="{$threeDSProcessUrl|escape:'html'}"
             >
 
                 <!-- Display payment errors -->
-                <div id="errors" class="alert alert-danger" role="alert"></div>
+                <div class="alert alert-danger error-container" role="alert"></div>
 
                 <div class="checkout-container" id="cardContainer"></div>
                 <input type="hidden" name="paymentData"/>

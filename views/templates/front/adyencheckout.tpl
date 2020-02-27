@@ -34,7 +34,7 @@
     ></div>
     <script>
         var adyenCheckoutConfiguration = document.querySelector('#adyen-checkout-configuration').dataset;
-        var IS_PRESTA_SHOP_16 = adyenCheckoutConfiguration.isPrestaShop16;
+        var IS_PRESTA_SHOP_16 = ('true' === adyenCheckoutConfiguration.isPrestaShop16.toLowerCase());
 
         var ADYEN_CHECKOUT_CONFIG = {
             locale: adyenCheckoutConfiguration.locale,

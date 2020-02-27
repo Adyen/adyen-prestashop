@@ -22,7 +22,7 @@
  *}
 
 {if !$originKey}
-    <form id="payment-form" method="post">
+    <form method="post">
         <h5>There is an error with retrieving the originKey,
             please check your API key in the Adyen Module configuration</h5>
     </form>
@@ -32,10 +32,10 @@
          data-stored-payment-api-id="{$storedPaymentApiId}"
     >
         <div class="col-xs-12 col-md-6">
-            <form id="payment-form" action="{$paymentProcessUrl}" class="adyen-payment-form-{$storedPaymentApiId}" method="post">
+            <form action="{$paymentProcessUrl}" class="adyen-payment-form-{$storedPaymentApiId}" method="post">
 
                 <!-- Display payment errors -->
-                <div id="errors" role="alert"></div>
+                <div class="alert alert-danger error-container" role="alert"></div>
 
                 {if $prestashop16}
                     <p></p>
