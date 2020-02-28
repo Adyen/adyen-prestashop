@@ -1,5 +1,4 @@
 <?php
-
 /**
  *                       ######
  *                       ######
@@ -16,7 +15,9 @@
  *
  * Adyen PrestaShop plugin
  *
- * Copyright (c) 2019 Adyen B.V.
+ * @author Adyen BV <support@adyen.com>
+ * @copyright (c) 2020 Adyen B.V.
+ * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
@@ -24,10 +25,12 @@
 namespace Adyen\PrestaShop\service\notification;
 
 use Adyen\PrestaShop\helper\Data as AdyenHelper;
+use Adyen\PrestaShop\service\adapter\classes\Configuration;
 use Adyen\Util\HmacSignature;
 use DateTime;
 use Db;
-use \Psr\Log\LoggerInterface;
+use Psr\Log\LoggerInterface;
+use Tools;
 
 class NotificationReceiver
 {
@@ -72,6 +75,11 @@ class NotificationReceiver
     private $logger;
 
     /**
+     * @var Configuration
+     */
+    private $configuration;
+
+    /**
      * NotificationReceiver constructor.
      *
      * @param AdyenHelper $helperData
@@ -82,6 +90,7 @@ class NotificationReceiver
      * @param $notificationPassword
      * @param Db $dbInstance
      * @param LoggerInterface $logger
+     * @param Configuration $configuration
      */
     public function __construct(
         AdyenHelper $helperData,
@@ -91,7 +100,8 @@ class NotificationReceiver
         $notificationUsername,
         $notificationPassword,
         Db $dbInstance,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        Configuration $configuration
     ) {
         $this->helperData = $helperData;
         $this->hmacSignature = $hmacSignature;
@@ -101,6 +111,7 @@ class NotificationReceiver
         $this->notificationPassword = $notificationPassword;
         $this->dbInstance = $dbInstance;
         $this->logger = $logger;
+        $this->configuration = $configuration;
     }
 
     /**
@@ -127,7 +138,6 @@ class NotificationReceiver
         }
 
         if (!empty($notificationItems['live']) && $this->validateNotificationMode($notificationItems['live'])) {
-
             $acceptedMessage = '[accepted]';
 
             foreach ($notificationItems['notificationItems'] as $notificationItem) {
@@ -211,7 +221,8 @@ class NotificationReceiver
         // If notification is test check if fields are correct if not return error
         if ($isTestNotification) {
             if ($usernameCmp != 0 || $passwordCmp != 0) {
-                $message = 'username (PHP_AUTH_USER) and\or password (PHP_AUTH_PW) are not the same as PrestaShop settings';
+                $message = 'username (PHP_AUTH_USER) and\or password (PHP_AUTH_PW) are not the same as PrestaShop' .
+                    ' settings';
                 $this->logger->error($message);
                 throw new AuthenticationException($message);
             }
@@ -221,17 +232,18 @@ class NotificationReceiver
 
 
     /**
+     * Checks if notification mode and the store mode configuration matches
+     *
      * @param $notificationMode
      * @return bool
      */
     protected function validateNotificationMode($notificationMode)
     {
-        $mode = $this->helperData->isDemoMode();
+        $testMode = $this->configuration->isTestMode();
 
         // Notification mode can be a string or a boolean
-        if (
-            ($mode == '1' && ($notificationMode == 'false' || $notificationMode == false)) ||
-            ($mode == '0' && ($notificationMode == 'true' || $notificationMode == true))
+        if (($testMode && ($notificationMode == 'false' || $notificationMode == false)) ||
+            (!$testMode && ($notificationMode == 'true' || $notificationMode == true))
         ) {
             return true;
         }
@@ -253,7 +265,6 @@ class NotificationReceiver
     {
         // validate the notification
         if ($this->authorised($response)) {
-
             // log the notification
             $this->logger->debug(
                 'The content of the notification item is: ' . print_r($response, 1)
@@ -286,8 +297,8 @@ class NotificationReceiver
      */
     protected function isTestNotification($pspReference)
     {
-        if (strpos(strtolower($pspReference), 'test_') !== false
-            || strpos(strtolower($pspReference), 'testnotification_') !== false
+        if (strpos(Tools::strtolower($pspReference), 'test_') !== false
+            || strpos(Tools::strtolower($pspReference), 'testnotification_') !== false
         ) {
             return true;
         }
@@ -395,7 +406,6 @@ class NotificationReceiver
 
     protected function getUnprocessedNotifications()
     {
-        /** @noinspection SqlDialectInspection */
         $sql = 'SELECT COUNT(*) FROM ' . _DB_PREFIX_ . 'adyen_notification '
             . 'WHERE `done` = "' . (int)0 . '"'
             . ' AND `processing` = "' . (int)0 . '"';

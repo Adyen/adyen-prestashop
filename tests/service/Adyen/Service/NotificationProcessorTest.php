@@ -15,7 +15,9 @@
  *
  * Adyen PrestaShop plugin
  *
- * Copyright (c) 2019 Adyen B.V.
+ * @author Adyen BV <support@adyen.com>
+ * @copyright (c) 2020 Adyen B.V.
+ * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
@@ -86,8 +88,11 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
         $customerThreadMock->id = 1;
 
         // Mock customerThreadAdapter
-        $this->customerThreadAdapter = $this->getMockBuilder(CustomerThreadAdapter::class)->disableOriginalConstructor()->getMock();
-        $this->customerThreadAdapter->method('getCustomerThreadByEmailAndOrderId')->willReturn($customerThreadMock);
+        $this->customerThreadAdapter = $this->getMockBuilder(CustomerThreadAdapter::class)
+                                            ->disableOriginalConstructor()
+                                            ->getMock();
+        $this->customerThreadAdapter->method('getCustomerThreadByEmailAndOrderId')
+                                    ->willReturn($customerThreadMock);
     }
 
     protected function tearDown()
@@ -218,8 +223,11 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->logger->expects($this->once())
-            ->method('error')
-            ->with('Customer with id: "" cannot be found for order with id: "" while notification with id: "1" was processed.');
+                     ->method('error')
+                     ->with(
+                         'Customer with id: "" cannot be found for order with id: "" while notification with' .
+                         ' id: "1" was processed.'
+                     );
 
         try {
             $this->assertFalse($notificationProcessor->addMessage($notification));

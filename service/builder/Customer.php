@@ -15,14 +15,16 @@
  *
  * Adyen PrestaShop plugin
  *
- * Copyright (c) 2020 Adyen B.V.
+ * @author Adyen BV <support@adyen.com>
+ * @copyright (c) 2020 Adyen B.V.
+ * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
 
 namespace Adyen\PrestaShop\service\builder;
 
-class Customer extends Builder
+class Customer
 {
     /**
      * Builds the customer related data
@@ -62,11 +64,25 @@ class Customer extends Builder
 
         // Open invoice methods requires different request format
         if ($isOpenInvoicePaymentMethod) {
-            $request = $this->buildCustomerDataForOpenInvoicePaymentMethod($email, $phoneNumber, $gender, $dateOfBirth,
-                $firstName, $lastName, $request);
+            $request = $this->buildCustomerDataForOpenInvoicePaymentMethod(
+                $email,
+                $phoneNumber,
+                $gender,
+                $dateOfBirth,
+                $firstName,
+                $lastName,
+                $request
+            );
         } else {
-            $request = $this->buildCustomerDataForNonOpenInvoicePaymentMethod($email, $phoneNumber, $gender,
-                $dateOfBirth, $firstName, $lastName, $request);
+            $request = $this->buildCustomerDataForNonOpenInvoicePaymentMethod(
+                $email,
+                $phoneNumber,
+                $gender,
+                $dateOfBirth,
+                $firstName,
+                $lastName,
+                $request
+            );
         }
 
         if (!empty($countryCode)) {

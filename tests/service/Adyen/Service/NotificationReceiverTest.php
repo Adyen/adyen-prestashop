@@ -15,7 +15,9 @@
  *
  * Adyen PrestaShop plugin
  *
- * Copyright (c) 2019 Adyen B.V.
+ * @author Adyen BV <support@adyen.com>
+ * @copyright (c) 2020 Adyen B.V.
+ * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
@@ -23,6 +25,7 @@
 namespace Adyen\PrestaShop\service\notification;
 
 use Adyen\PrestaShop\helper\Data as AdyenHelper;
+use Adyen\PrestaShop\service\adapter\classes\Configuration;
 use Adyen\Util\HmacSignature;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
@@ -60,25 +63,35 @@ class NotificationReceiverTest extends TestCase
      */
     private $dbInstance;
 
+    /**
+     * @var Configuration|\PHPUnit_Framework_MockObject_MockObject $configuration
+     */
+    private $configuration;
+
     protected function setUp()
     {
         self::$functions = m::mock();
 
         $this->logger = $this->getMockBuilder('Adyen\PrestaShop\service\Logger')
-                             ->disableOriginalConstructor()
-                             ->getMock();
+            ->disableOriginalConstructor()
+            ->getMock();
         $this->logger->method('error');
 
         $this->adyenHelper = $this->getMockBuilder('Adyen\PrestaShop\helper\Data')
-                                  ->disableOriginalConstructor()
-                                  ->getMock();
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $this->hmacSignature = $this->getMock('Adyen\Util\HmacSignature');
 
         $this->dbInstance = $this->getMockBuilder('Db')
-                                 ->setMethods(array('getValue', 'insert'))
-                                 ->disableOriginalConstructor()
-                                 ->getMock();
+            ->setMethods(array('getValue', 'insert'))
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        /** @var Configuration|\PHPUnit_Framework_MockObject_MockObject $crypto */
+        $this->configuration = $this->getMockBuilder('Adyen\PrestaShop\service\adapter\classes\Configuration')
+            ->disableOriginalConstructor()
+            ->getMock();
     }
 
     public function tearDown()
@@ -103,7 +116,8 @@ class NotificationReceiverTest extends TestCase
             'username',
             'password',
             $this->dbInstance,
-            $this->logger
+            $this->logger,
+            $this->configuration
         );
 
         $this->setExpectedException('Adyen\PrestaShop\service\notification\HMACKeyValidationException');
@@ -126,7 +140,8 @@ class NotificationReceiverTest extends TestCase
             'username',
             'password',
             $this->dbInstance,
-            $this->logger
+            $this->logger,
+            $this->configuration
         );
 
         $this->setExpectedException('Adyen\PrestaShop\service\notification\AuthenticationException');
@@ -149,7 +164,8 @@ class NotificationReceiverTest extends TestCase
             'username',
             'password',
             $this->dbInstance,
-            $this->logger
+            $this->logger,
+            $this->configuration
         );
 
         $_SERVER['PHP_AUTH_USER'] = 'username';
@@ -175,7 +191,8 @@ class NotificationReceiverTest extends TestCase
             'username',
             'password',
             $this->dbInstance,
-            $this->logger
+            $this->logger,
+            $this->configuration
         );
 
         $_SERVER['PHP_AUTH_USER'] = 'username';
@@ -195,34 +212,38 @@ class NotificationReceiverTest extends TestCase
         $notificationRequestItem = $notificationItems['notificationItems'][0]['NotificationRequestItem'];
         define('_DB_PREFIX_', 'ps_');
 
-        self::$functions->shouldReceive('pSQL')->andReturnUsing(function ($string) {
-            $search = array('\\', "\0", "\n", "\r", "\x1a", "'", '"');
-            $replace = array('\\\\', '\\0', '\\n', '\\r', "\Z", "\'", '\"');
+        self::$functions->shouldReceive('pSQL')->andReturnUsing(
+            function ($string) {
+                $search = array('\\', "\0", "\n", "\r", "\x1a", "'", '"');
+                $replace = array('\\\\', '\\0', '\\n', '\\r', "\Z", "\'", '\"');
 
-            return str_replace($search, $replace, $string);
-        });
+                return str_replace($search, $replace, $string);
+            }
+        );
 
         $this->adyenHelper->method('isDemoMode')->willReturn(true);
         $this->hmacSignature->method('isValidNotificationHMAC')->willReturn(true);
 
         $this->dbInstance->method('insert')->with(
             'adyen_notification',
-            $this->callback(function ($subject) use ($notificationRequestItem) {
-                $arr = array(
-                    'pspreference' => $notificationRequestItem['pspReference'],
-                    'merchant_reference' => $notificationRequestItem['merchantReference'],
-                    'event_code' => $notificationRequestItem['eventCode'],
-                    'success' => $notificationRequestItem['success'],
-                    'payment_method' => $notificationRequestItem['paymentMethod'],
-                    'amount_value' => $notificationRequestItem['amount']['value'],
-                    'amount_currency' => $notificationRequestItem['amount']['currency'],
-                    'reason' => $notificationRequestItem['reason'],
-                    'additional_data' => pSQL(serialize($notificationRequestItem['additionalData'])),
-                    'created_at' => $subject['created_at'],
-                    'updated_at' => $subject['updated_at']
-                );
-                return $arr == $subject;
-            })
+            $this->callback(
+                function ($subject) use ($notificationRequestItem) {
+                    $arr = array(
+                        'pspreference' => $notificationRequestItem['pspReference'],
+                        'merchant_reference' => $notificationRequestItem['merchantReference'],
+                        'event_code' => $notificationRequestItem['eventCode'],
+                        'success' => $notificationRequestItem['success'],
+                        'payment_method' => $notificationRequestItem['paymentMethod'],
+                        'amount_value' => $notificationRequestItem['amount']['value'],
+                        'amount_currency' => $notificationRequestItem['amount']['currency'],
+                        'reason' => $notificationRequestItem['reason'],
+                        'additional_data' => pSQL(serialize($notificationRequestItem['additionalData'])),
+                        'created_at' => $subject['created_at'],
+                        'updated_at' => $subject['updated_at']
+                    );
+                    return $arr == $subject;
+                }
+            )
         );
 
         $_SERVER['PHP_AUTH_USER'] = 'username';
@@ -236,7 +257,8 @@ class NotificationReceiverTest extends TestCase
             'username',
             'password',
             $this->dbInstance,
-            $this->logger
+            $this->logger,
+            $this->configuration
         );
 
         /** @noinspection PhpUnhandledExceptionInspection */

@@ -14,7 +14,9 @@
  *
  * Adyen PrestaShop plugin
  *
- * Copyright (c) 2019 Adyen B.V.
+ * @author Adyen BV <support@adyen.com>
+ * @copyright (c) 2020 Adyen B.V.
+ * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
@@ -22,7 +24,8 @@
 if (typeof Object.assign !== 'function') {
     // Must be writable: true, enumerable: false, configurable: true
     Object.defineProperty(Object, "assign", {
-        value: function assign(target, varArgs) { // .length of function is 2
+        value: function assign(target, varArgs) {
+            // .length of function is 2
             'use strict';
             if (target === null || target === undefined) {
                 throw new TypeError('Cannot convert undefined or null to object');

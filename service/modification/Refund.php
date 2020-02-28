@@ -15,14 +15,15 @@
  *
  * Adyen PrestaShop plugin
  *
- * Copyright (c) 2019 Adyen B.V.
+ * @author Adyen BV <support@adyen.com>
+ * @copyright (c) 2020 Adyen B.V.
+ * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
 
 namespace Adyen\PrestaShop\service\modification;
 
-use \Psr\Log\LoggerInterface;
 use Adyen\AdyenException;
 use Adyen\PrestaShop\infra\NotificationRetriever;
 use Adyen\PrestaShop\service\modification\exception\NotificationNotFoundException;
@@ -30,6 +31,7 @@ use Adyen\Service\Modification;
 use Adyen\Util\Currency;
 use OrderSlip;
 use PrestaShopDatabaseException;
+use Psr\Log\LoggerInterface;
 
 class Refund
 {

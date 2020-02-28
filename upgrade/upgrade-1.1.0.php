@@ -15,7 +15,9 @@
  *
  * Adyen PrestaShop plugin
  *
- * Copyright (c) 2019 Adyen B.V.
+ * @author Adyen BV <support@adyen.com>
+ * @copyright (c) 2020 Adyen B.V.
+ * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
@@ -38,7 +40,7 @@ if (!defined('_PS_VERSION_')) {
  */
 function upgrade_module_1_1_0(Adyen $module)
 {
-   $module->registerHook('actionOrderSlipAdd');
-   $module->registerHook('displayPaymentTop');
-   return true;
+    $module->registerHook('actionOrderSlipAdd');
+    $module->registerHook('displayPaymentTop');
+    return true;
 }

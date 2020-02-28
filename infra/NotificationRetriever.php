@@ -15,7 +15,9 @@
  *
  * Adyen PrestaShop plugin
  *
- * Copyright (c) 2019 Adyen B.V.
+ * @author Adyen BV <support@adyen.com>
+ * @copyright (c) 2020 Adyen B.V.
+ * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
@@ -57,7 +59,8 @@ inner join %sorders o on a.merchant_reference = o.id_cart
 where o.id_order = $orderId
 SQL
                 ,
-                _DB_PREFIX_, _DB_PREFIX_
+                _DB_PREFIX_,
+                _DB_PREFIX_
             )
         );
         if (empty($results)) {
