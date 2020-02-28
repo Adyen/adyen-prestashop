@@ -8,7 +8,7 @@
     "prepend-autoloader": false
   },
   "require": {
-    "adyen/php-api-library": "~5",
+    "adyen/php-api-library": "~6",
     "ext-json": "*",
     "ext-openssl": "*",
     "monolog/monolog": "1.24.*",
