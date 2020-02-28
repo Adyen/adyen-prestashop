@@ -15,7 +15,9 @@
  *
  * Adyen PrestaShop plugin
  *
- * Copyright (c) 2019 Adyen B.V.
+ * @author Adyen BV <support@adyen.com>
+ * @copyright (c) 2020 Adyen B.V.
+ * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
@@ -44,6 +46,11 @@ class AdminAdyenPrestashopCronController extends \ModuleAdminController
     private $logger;
 
     /**
+     * @var Adyen\PrestaShop\infra\Crypto
+     */
+    private $crypto;
+
+    /**
      * AdminAdyenPrestashopCronController constructor.
      *
      * @throws \Adyen\AdyenException
@@ -52,8 +59,23 @@ class AdminAdyenPrestashopCronController extends \ModuleAdminController
     {
         $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
         $this->logger = ServiceLocator::get('Adyen\PrestaShop\service\Logger');
+        $this->crypto = ServiceLocator::get('Adyen\PrestaShop\infra\Crypto');
 
-        if (\Tools::getValue('token') != $this->helperData->decrypt(\Configuration::get('ADYEN_CRONJOB_TOKEN'))) {
+        $cronjobToken = '';
+
+        try {
+            $cronjobToken = $this->crypto->decrypt(Configuration::get('ADYEN_CRONJOB_TOKEN'));
+        } catch (\Adyen\PrestaShop\exception\GenericLoggedException $e) {
+            $this->logger->error(
+                'For configuration "ADYEN_CRONJOB_TOKEN" an exception was thrown: ' . $e->getMessage()
+            );
+        } catch (\Adyen\PrestaShop\exception\MissingDataException $e) {
+            $this->logger->debug(
+                'The configuration "ADYEN_CRONJOB_TOKEN" has no value set, please add a secure token!'
+            );
+        }
+
+        if (\Tools::getValue('token') != $cronjobToken) {
             die('Invalid token');
         }
 

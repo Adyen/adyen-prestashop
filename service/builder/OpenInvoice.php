@@ -15,14 +15,18 @@
  *
  * Adyen PrestaShop plugin
  *
- * Copyright (c) 2020 Adyen B.V.
+ * @author Adyen BV <support@adyen.com>
+ * @copyright (c) 2020 Adyen B.V.
+ * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
 
 namespace Adyen\PrestaShop\service\builder;
 
-class OpenInvoice extends Builder
+use Tools;
+
+class OpenInvoice
 {
     /**
      * Build invoice line items for open invoice payment methods
@@ -45,6 +49,7 @@ class OpenInvoice extends Builder
         $vatCategory,
         $itemId = 0
     ) {
+        $lineItem = array();
         // item id is optional
         if (0 !== $itemId) {
             $lineItem['id'] = $itemId;
@@ -70,7 +75,8 @@ class OpenInvoice extends Builder
     public function getVatCategory($paymentMethod)
     {
         if ($paymentMethod == "klarna" ||
-            strlen($paymentMethod) >= 9 && substr($paymentMethod, 0, 9) == 'afterpay_'
+            Tools::strlen($paymentMethod) >= 9 &&
+            Tools::substr($paymentMethod, 0, 9) == 'afterpay_'
         ) {
             return 'High';
         }

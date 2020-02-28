@@ -15,14 +15,16 @@
  *
  * Adyen PrestaShop plugin
  *
- * Copyright (c) 2020 Adyen B.V.
+ * @author Adyen BV <support@adyen.com>
+ * @copyright (c) 2020 Adyen B.V.
+ * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
 
 namespace Adyen\PrestaShop\service\builder;
 
-class Address extends Builder
+class Address
 {
     /**
      * @var string
@@ -78,8 +80,16 @@ class Address extends Builder
         $country = '',
         $request = array()
     ) {
-        return $this->buildAddress(self::$addressTypeBilling, $street, $houseNumberOrName, $postalCode, $city,
-            $stateOrProvince, $country, $request);
+        return $this->buildAddress(
+            self::$addressTypeBilling,
+            $street,
+            $houseNumberOrName,
+            $postalCode,
+            $city,
+            $stateOrProvince,
+            $country,
+            $request
+        );
     }
 
     /**
@@ -101,8 +111,16 @@ class Address extends Builder
         $country = '',
         $request = array()
     ) {
-        return $this->buildAddress(self::$addressTypeDelivery, $street, $houseNumberOrName, $postalCode, $city,
-            $stateOrProvince, $country, $request);
+        return $this->buildAddress(
+            self::$addressTypeDelivery,
+            $street,
+            $houseNumberOrName,
+            $postalCode,
+            $city,
+            $stateOrProvince,
+            $country,
+            $request
+        );
     }
 
     /**
@@ -126,6 +144,7 @@ class Address extends Builder
         $country,
         $request
     ) {
+        $address = array();
         if (!empty($street)) {
             $address["street"] = $street;
         } else {

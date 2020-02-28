@@ -1,5 +1,4 @@
 <?php
-
 /**
  *                       ######
  *                       ######
@@ -16,7 +15,9 @@
  *
  * Adyen PrestaShop plugin
  *
- * Copyright (c) 2019 Adyen B.V.
+ * @author Adyen BV <support@adyen.com>
+ * @copyright (c) 2020 Adyen B.V.
+ * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
@@ -169,12 +170,16 @@ class NotificationProcessor
     {
         $successResult = (strcmp($notification['success'], 'true') == 0 ||
             strcmp($notification['success'], '1') == 0) ? 'true' : 'false';
-        $success = (!empty($notification['reason'])) ? "$successResult" . PHP_EOL . "reason:" . $notification['reason'] . PHP_EOL : $successResult . PHP_EOL;
+        if ((!empty($notification['reason']))) {
+            $success = $successResult . PHP_EOL . "reason:" . $notification['reason'] . PHP_EOL;
+        } else {
+            $success = $successResult . PHP_EOL;
+        }
 
         $type = 'Adyen HTTP Notification(s):';
         $comment = sprintf(
-            '%s ' . PHP_EOL . 'eventCode: %s ' . PHP_EOL . ' pspReference: %s ' . PHP_EOL . ' paymentMethod: %s ' . PHP_EOL .
-            ' success: %s',
+            '%s ' . PHP_EOL . 'eventCode: %s ' . PHP_EOL . ' pspReference: %s ' . PHP_EOL .
+            ' paymentMethod: %s ' . PHP_EOL . ' success: %s',
             $type,
             $notification['event_code'],
             $notification['pspreference'],
@@ -189,27 +194,40 @@ class NotificationProcessor
         }
 
         if (empty($order)) {
-            $this->logger->error('Order with id: "' . $notification['merchant_reference'] . '" cannot be found while notification with id: "' . $notification['entity_id'] . '" was processed.');
+            $this->logger->error(sprintf(
+                "Order with id: \"%s\" cannot be found while notification with id: \"%s\" was processed.",
+                $notification['merchant_reference'],
+                $notification['entity_id']
+            ));
             return false;
         }
 
         // Find customer by order id
         $customer = $order->getCustomer();
         if (empty($customer)) {
-            $this->logger->error('Customer with id: "' . $order->id_customer . '" cannot be found for order with id: "' . $order->id . '" while notification with id: "' . $notification['entity_id'] . '" was processed.');
+            $this->logger->error(sprintf(
+                "Customer with id: \"%s\" cannot be found for order with id: \"%s\" while notification with id:" .
+                " \"%s\" was processed.",
+                $order->id_customer,
+                $order->id,
+                $notification['entity_id']
+            ));
             return false;
         }
 
         // Find customer thread by order id and customer email
-        $customerThread = $this->customerThreadAdapter->getCustomerThreadByEmailAndOrderId($customer->email, $order->id);
+        $customerThread = $this->customerThreadAdapter->getCustomerThreadByEmailAndOrderId(
+            $customer->email,
+            $order->id
+        );
 
         if (empty($customerThread->id)) {
             $customerThread = new \CustomerThread();
             $customerThread->id_contact = 0;
-            $customerThread->id_customer = (int) $customer->id;
-            $customerThread->id_shop = (int) $this->context->shop->id;
-            $customerThread->id_order = (int) $order->id;
-            $customerThread->id_lang = (int) $this->context->language->id;
+            $customerThread->id_customer = (int)$customer->id;
+            $customerThread->id_shop = (int)$this->context->shop->id;
+            $customerThread->id_order = (int)$order->id;
+            $customerThread->id_lang = (int)$this->context->language->id;
             $customerThread->email = $customer->email;
             $customerThread->status = 'open';
             $customerThread->token = \Tools::passwdGen(12);

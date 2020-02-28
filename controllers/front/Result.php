@@ -15,7 +15,9 @@
  *
  * Adyen PrestaShop plugin
  *
- * Copyright (c) 2019 Adyen B.V.
+ * @author Adyen BV <support@adyen.com>
+ * @copyright (c) 2020 Adyen B.V.
+ * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
@@ -61,13 +63,28 @@ class AdyenResultModuleFrontController extends \Adyen\PrestaShop\controllers\Fro
             $currencyId = $cart->id_currency;
             $customer = new \Customer($cart->id_customer);
             $this->module->validateOrder(
-                $cart->id, 2, $total, $this->module->displayName, null, $extra_vars,
-                (int)$currencyId, false, $customer->secure_key
+                $cart->id,
+                2,
+                $total,
+                $this->module->displayName,
+                null,
+                $extra_vars,
+                (int)$currencyId,
+                false,
+                $customer->secure_key
             );
             \Tools::redirect(
                 $this->context->link->getPageLink(
-                    'order-confirmation', $this->ssl, null,
-                    'id_cart=' . $cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key
+                    'order-confirmation',
+                    $this->ssl,
+                    null,
+                    sprintf(
+                        "id_cart=%s&id_module=%s&id_order=%s&key=%s",
+                        $cart->id,
+                        $this->module->id,
+                        $this->module->currentOrder,
+                        $customer->secure_key
+                    )
                 )
             );
         } else {

@@ -14,7 +14,9 @@
  *
  * Adyen PrestaShop plugin
  *
- * Copyright (c) 2019 Adyen B.V.
+ * @author Adyen BV <support@adyen.com>
+ * @copyright (c) 2020 Adyen B.V.
+ * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
@@ -33,7 +35,7 @@ jQuery(function ($) {
     placeOrderAllowed = false;
 
     /* Subscribes to the adyen payment method form submission */
-    var paymentForm = $("#payment-form.adyen-payment-form");
+    var paymentForm = $(".adyen-payment-form");
     paymentForm.on('submit', function (e) {
         if (!placeOrderAllowed) {
             e.preventDefault();
@@ -163,7 +165,7 @@ jQuery(function ($) {
      * Does the initial payments call with the encrypted data from the card component
      */
     function processPayment(data) {
-        var paymentProcessUrl = $('#payment-form.adyen-payment-form').attr('action');
+        var paymentProcessUrl = $('.adyen-payment-form').attr('action');
 
         $.ajax({
             type: "POST",
@@ -174,7 +176,7 @@ jQuery(function ($) {
                 processControllerResponse(response);
             },
             error: function (response) {
-                $('#payment-form.adyen-payment-form').find('#errors').text(response.message).fadeIn(1000);
+                $('.adyen-payment-form').find('.error-container').text(response.message).fadeIn(1000);
             }
         });
     }
@@ -186,7 +188,7 @@ jQuery(function ($) {
         switch (response.action) {
             case 'error':
                 // show error message
-                $('#payment-form.adyen-payment-form').find('#errors').text(response.message).fadeIn(1000);
+                $('.adyen-payment-form').find('.error-container').text(response.message).fadeIn(1000);
                 break;
             case 'redirect':
                 window.location.replace(response.redirectUrl);

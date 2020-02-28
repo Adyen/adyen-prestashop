@@ -15,10 +15,19 @@
  *
  * Adyen PrestaShop plugin
  *
- * Copyright (c) 2019 Adyen B.V.
+ * @author Adyen BV <support@adyen.com>
+ * @copyright (c) 2020 Adyen B.V.
+ * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
 
-chdir(__DIR__);
-require '..' . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+require 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+
+class Tools
+{
+    public static function strtolower($string)
+    {
+        return strtolower($string);
+    }
+}

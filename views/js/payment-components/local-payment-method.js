@@ -14,7 +14,9 @@
  *
  * Adyen PrestaShop plugin
  *
- * Copyright (c) 2019 Adyen B.V.
+ * @author Adyen BV <support@adyen.com>
+ * @copyright (c) 2020 Adyen B.V.
+ * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
@@ -41,7 +43,7 @@ jQuery(function ($) {
         }
 
         /* Subscribes to the adyen payment method form submission */
-        var paymentForm = $("#payment-form.adyen-payment-form-" + paymentMethod.type);
+        var paymentForm = $(".adyen-payment-form-" + paymentMethod.type);
 
         // Use data to reteive the payment method data
         paymentForm.on('submit', function (e) {
@@ -112,7 +114,7 @@ jQuery(function ($) {
                 processControllerResponse(response, paymentForm);
             },
             error: function (response) {
-                paymentForm.find('#errors').text(response.message).fadeIn(1000);
+                paymentForm.find('.error-container').text(response.message).fadeIn(1000);
             }
         });
     }
@@ -131,7 +133,7 @@ jQuery(function ($) {
         switch (response.action) {
             case 'error':
                 // show error message
-                paymentForm.find('#errors').text(response.message).fadeIn(1000);
+                paymentForm.find('.error-container').text(response.message).fadeIn(1000);
                 break;
             case 'redirect':
                 window.location.replace(response.redirectUrl);
