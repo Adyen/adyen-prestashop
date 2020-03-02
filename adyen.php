@@ -890,7 +890,7 @@ class Adyen extends PaymentModule
         $embeddedOption->setCallToActionText($this->l('Pay by card'))
             ->setForm(
                 $this->context->smarty->fetch(
-                    _PS_MODULE_DIR_ . $this->name . '/views/templates/front/payment.tpl'
+                    _PS_MODULE_DIR_ . $this->name . '/views/templates/front/card-payment-method.tpl'
                 )
             )
             ->setLogo(Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $cc_img))
@@ -1296,7 +1296,7 @@ class Adyen extends PaymentModule
         // Assign variables to frontend
         $this->context->smarty->assign($smartyVariables);
 
-        $payments .= $this->display(__FILE__, '/views/templates/front/payment.tpl');
+        $payments .= $this->display(__FILE__, '/views/templates/front/card-payment-method.tpl');
         return $payments;
     }
 
@@ -1401,8 +1401,8 @@ class Adyen extends PaymentModule
         // Only for Order controller
         if ($controller->php_self == 'order') {
             $controllerAdapter->registerJavascript(
-                'adyen-credit-card-validator',
-                $this->_path . 'views/js/payment-components/credit-card.js',
+                'adyen-card-payment-method',
+                $this->_path . 'views/js/payment-components/card-payment-method.js',
                 array('position' => 'bottom', 'priority' => 170)
             );
             $controllerAdapter->registerJavascript(
