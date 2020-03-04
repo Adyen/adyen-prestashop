@@ -128,7 +128,7 @@ class NotificationReceiver
     {
         if (empty($notificationItems)) {
             $message = 'Notification is not formatted correctly';
-            $this->logger->error($message);
+            $this->logger->addAdyenNotification($message);
             return json_encode(
                 array(
                     'success' => false,
@@ -156,11 +156,11 @@ class NotificationReceiver
                 }
             }
 
-            $this->logger->debug('The result is accepted');
+            $this->logger->addAdyenNotification('The result is accepted');
             return $this->returnAccepted($acceptedMessage);
         } else {
             $message = 'Mismatch between Live/Test modes of PrestaShop store and the Adyen platform';
-            $this->logger->error($message);
+            $this->logger->addAdyenNotification($message);
             return json_encode(
                 array(
                     'success' => false,
@@ -266,13 +266,13 @@ class NotificationReceiver
         // validate the notification
         if ($this->authorised($response)) {
             // log the notification
-            $this->logger->debug(
-                'The content of the notification item is: ' . print_r($response, 1)
+            $this->logger->addAdyenNotification(
+                'The content of the notification item is: ' . json_encode($response)
             );
 
             // skip report notifications
             if ($this->isReportNotification($response['eventCode'])) {
-                $this->logger->debug('Notification is a REPORT notification from Adyen Customer Area');
+                $this->logger->addAdyenNotification('Notification is a REPORT notification from Adyen Customer Area');
                 return true;
             }
 
@@ -282,7 +282,7 @@ class NotificationReceiver
                 return true;
             } else {
                 // duplicated so do nothing but return accepted to Adyen
-                $this->logger->debug('Notification is a TEST notification from Adyen Customer Area');
+                $this->logger->addAdyenNotification('Notification is a TEST notification from Adyen Customer Area');
                 return true;
             }
         }
