@@ -1009,12 +1009,16 @@ class Adyen extends PaymentModule
         }
 
         $paymentAction = false;
-
-        if (empty($params['order'])) {
-            // something went wrong
+        
+        if ($this->versionChecker->isPrestaShop16()) {
+            $order = $params['objOrder'];
+        } else {
+            $order = $params['order'];
         }
 
-        $order = $params['order'];
+        if (empty($order)) {
+            // something went wrong
+        }
 
         $paymentResponse = $this->adyenPaymentResponseModel->getPaymentResponseByCartId($order->id_cart);
 
