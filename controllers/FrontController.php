@@ -424,8 +424,6 @@ abstract class FrontController extends \ModuleFrontController
      */
     protected function handle3DS1()
     {
-        $cart = $this->getCurrentCart();
-
         $paRequest = \Tools::getValue(\AdyenPaymentModuleFrontController::PA_REQUEST);
         $md = \Tools::getValue(\AdyenPaymentModuleFrontController::MD);
         $issuerUrl = \Tools::getValue(\AdyenPaymentModuleFrontController::ISSUER_URL);
