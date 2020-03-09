@@ -294,7 +294,7 @@ class Adyen extends PaymentModule
             `processing` tinyint(1) DEFAULT \'0\' COMMENT \'Adyen Notification Cron Processing\',
             `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT \'Created At\',
             `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-                        COMMENT \'Updated At\',
+            COMMENT \'Updated At\',
             PRIMARY KEY (`entity_id`),
             KEY `ADYEN_NOTIFICATION_PSPREFERENCE` (`pspreference`),
             KEY `ADYEN_NOTIFICATION_EVENT_CODE` (`event_code`),
@@ -317,7 +317,8 @@ class Adyen extends PaymentModule
             `result_code` varchar(255) DEFAULT NULL COMMENT \'Result code\',
             `response` text COMMENT \'Response\',
             `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT \'Created At\',
-            `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT \'Updated At\',
+            `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP 
+            COMMENT \'Updated At\',
             PRIMARY KEY (`entity_id`),
             KEY `ADYEN_PAYMENT_RESPONSE_ID_CART` (`id_cart`)
             ) ENGINE=' . _MYSQL_ENGINE_ . ' AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT=\'Adyen Payment Action\'';
@@ -1009,7 +1010,7 @@ class Adyen extends PaymentModule
         }
 
         $paymentAction = false;
-        
+
         if ($this->versionChecker->isPrestaShop16()) {
             $order = $params['objOrder'];
         } else {

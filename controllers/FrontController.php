@@ -74,7 +74,9 @@ abstract class FrontController extends \ModuleFrontController
         $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
         $this->versionChecker = ServiceLocator::get('Adyen\PrestaShop\application\VersionChecker');
         $this->logger = ServiceLocator::get('Adyen\PrestaShop\service\Logger');
-        $this->orderPaymentAdapter = ServiceLocator::get('Adyen\PrestaShop\service\adapter\classes\order\OrderPaymentAdapter');
+        $this->orderPaymentAdapter = ServiceLocator::get(
+            'Adyen\PrestaShop\service\adapter\classes\order\OrderPaymentAdapter'
+        );
         $this->cartService = ServiceLocator::get('Adyen\PrestaShop\service\Cart');
         $this->adyenPaymentResponseModel = ServiceLocator::get('Adyen\PrestaShop\model\AdyenPaymentResponse');
     }

@@ -283,8 +283,8 @@ class NotificationReceiver
 
             // check if notification already exists
             if (!$this->isTestNotification($notification['pspReference']) && !$this->adyenNotification->isDuplicate(
-                    $notification
-                )) {
+                $notification
+            )) {
                 $this->adyenNotification->insertNotification($notification);
                 return true;
             } else {

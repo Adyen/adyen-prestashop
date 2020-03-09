@@ -36,6 +36,6 @@ abstract class AbstractModel
      */
     public function __construct()
     {
-        $this->dbInstance = \Db::getInstance();;
+        $this->dbInstance = \Db::getInstance();
     }
 }

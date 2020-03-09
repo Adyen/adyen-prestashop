@@ -118,8 +118,6 @@ class NotificationProcessor
                 $this->adyenPaymentResponse->deletePaymentResponseByCartId($unprocessedNotification);
                 break;
         }
-
-
     }
 
     /**
