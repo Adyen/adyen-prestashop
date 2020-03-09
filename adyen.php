@@ -650,7 +650,7 @@ class Adyen extends PaymentModule
                     basename(_PS_ADMIN_DIR_),
                     $cronjobToken
                 ) :
-                $this->l('Please fill your notification token'),
+                $this->l('Please fill your cron job token'),
             'class' => $cronjobToken ? 'adyen-input-green' : '',
             'label' => $this->l('Secure token for cron job'),
             'name' => 'ADYEN_CRONJOB_TOKEN',
@@ -676,7 +676,7 @@ class Adyen extends PaymentModule
             'type' => 'password',
             'label' => $this->l('API key for Test'),
             'name' => 'ADYEN_APIKEY_TEST',
-            'desc' => $apiKeyTestLastDigits ? $this->l('Key stored ending in: ') . $apiKeyTestLastDigits : $this->l(
+            'desc' => $apiKeyTestLastDigits ? $this->l('Saved key ends in: ') . $apiKeyTestLastDigits : $this->l(
                 'Please fill your API key for Test'
             ),
             'class' => $apiKeyTestLastDigits ? 'adyen-input-green' : '',
@@ -707,7 +707,7 @@ class Adyen extends PaymentModule
             'type' => 'password',
             'label' => $this->l('API key for Live'),
             'name' => 'ADYEN_APIKEY_LIVE',
-            'desc' => $apiKeyLiveLastDigits ? $this->l('Key stored ending in: ') . $apiKeyLiveLastDigits : $this->l(
+            'desc' => $apiKeyLiveLastDigits ? $this->l('Saved key ends in: ') . $apiKeyLiveLastDigits : $this->l(
                 'Please fill your API key for Live'
             ),
             'class' => $apiKeyLiveLastDigits ? 'adyen-input-green' : '',
