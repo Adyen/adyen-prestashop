@@ -27,8 +27,10 @@
 // phpcs:disable PSR1.Classes.ClassDeclaration
 
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
+use Adyen\PrestaShop\controllers\FrontController;
+use Adyen\AdyenException;
 
-class AdyenResultModuleFrontController extends \Adyen\PrestaShop\controllers\FrontController
+class AdyenResultModuleFrontController extends FrontController
 {
     /**
      * @var bool
@@ -36,7 +38,8 @@ class AdyenResultModuleFrontController extends \Adyen\PrestaShop\controllers\Fro
     public $ssl = true;
 
     /**
-     * @throws \Adyen\AdyenException
+     * @throws Adapter_Exception
+     * @throws AdyenException
      */
     public function postProcess()
     {
@@ -73,6 +76,7 @@ class AdyenResultModuleFrontController extends \Adyen\PrestaShop\controllers\Fro
                 false,
                 $customer->secure_key
             );
+
             \Tools::redirect(
                 $this->context->link->getPageLink(
                     'order-confirmation',
@@ -89,7 +93,7 @@ class AdyenResultModuleFrontController extends \Adyen\PrestaShop\controllers\Fro
             );
         } else {
             // create new cart from the current cart
-            $this->helperData->cloneCurrentCart($this->context, $cart);
+            $this->cartService->cloneCurrentCart($this->context, $cart);
 
             $this->logger->error("The payment was refused, id:  " . $cart->id);
             $this->setTemplate($this->helperData->getTemplateFromModulePath('views/templates/front/error.tpl'));

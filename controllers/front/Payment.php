@@ -30,6 +30,7 @@ use Adyen\AdyenException;
 use Adyen\PrestaShop\controllers\FrontController;
 use Adyen\PrestaShop\exception\MissingDataException;
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
+use Adyen\PrestaShop\service\Checkout;
 
 class AdyenPaymentModuleFrontController extends FrontController
 {
@@ -145,7 +146,8 @@ class AdyenPaymentModuleFrontController extends FrontController
     }
 
     /**
-     * @return mixed|null
+     * @return mixed
+     * @throws Adapter_Exception
      * @throws AdyenException
      */
     public function postProcess()
@@ -188,9 +190,9 @@ class AdyenPaymentModuleFrontController extends FrontController
                 );
             }
 
-            // call adyen library
-            /** @var Adyen\PrestaShop\service\Checkout $service */
-            $service = ServiceLocator::get('Adyen\PrestaShop\service\Checkout');
+        // call adyen library
+        /** @var Checkout $service */
+        $service = ServiceLocator::get('Adyen\PrestaShop\service\Checkout');
 
             try {
                 $response = $service->payments($request);
@@ -582,7 +584,7 @@ class AdyenPaymentModuleFrontController extends FrontController
      */
     private function isCardPayment()
     {
-        $paymentMethod = Tools::getValue(self::PAYMENT_METHOD);
+        $paymentMethod = \Tools::getValue(self::PAYMENT_METHOD);
 
         if (!empty($paymentMethod[self::CARDHOLDER_NAME]) &&
             !empty($paymentMethod[self::ENCRYPTED_CARD_NUMBER]) &&
@@ -600,7 +602,7 @@ class AdyenPaymentModuleFrontController extends FrontController
      */
     private function isStoredPaymentMethod()
     {
-        $paymentMethod = Tools::getValue(self::PAYMENT_METHOD);
+        $paymentMethod = \Tools::getValue(self::PAYMENT_METHOD);
 
         if (!empty($paymentMethod[self::STORED_PAYMENT_METHOD_ID])) {
             return true;
@@ -615,7 +617,7 @@ class AdyenPaymentModuleFrontController extends FrontController
      */
     public function buildCardData($request = array())
     {
-        $paymentMethod = Tools::getValue(self::PAYMENT_METHOD);
+        $paymentMethod = \Tools::getValue(self::PAYMENT_METHOD);
 
         $encryptedCardNumber = $paymentMethod[self::ENCRYPTED_CARD_NUMBER];
         $encryptedExpiryMonth = $paymentMethod[self::ENCRYPTED_EXPIRY_MONTH];
@@ -764,7 +766,7 @@ class AdyenPaymentModuleFrontController extends FrontController
     {
         $cart = $this->context->cart;
 
-        $paymentMethod = Tools::getValue(self::PAYMENT_METHOD);
+        $paymentMethod = \Tools::getValue(self::PAYMENT_METHOD);
 
         if (!empty($paymentMethod[self::TYPE])) {
             $paymentMethodType = $paymentMethod[self::TYPE];
@@ -849,7 +851,7 @@ class AdyenPaymentModuleFrontController extends FrontController
         $customer = new \CustomerCore($cart->id_customer);
         $language = new \LanguageCore($cart->id_lang);
         $invoicingAddress = new \AddressCore($cart->id_address_invoice);
-        $paymentMethod = Tools::getValue(self::PAYMENT_METHOD);
+        $paymentMethod = \Tools::getValue(self::PAYMENT_METHOD);
 
 
         if (!empty($paymentMethod[self::PERSONAL_DETAILS])) {
@@ -890,7 +892,7 @@ class AdyenPaymentModuleFrontController extends FrontController
             $invoicingAddressCountryCode = '';
         }
 
-        $shopperIp = Tools::getRemoteAddr();
+        $shopperIp = \Tools::getRemoteAddr();
         if (empty($shopperIp)) {
             $shopperIp = '';
         }
@@ -917,7 +919,7 @@ class AdyenPaymentModuleFrontController extends FrontController
      */
     private function buildStoredPaymentData($request = array())
     {
-        $paymentMethod = Tools::getValue(self::PAYMENT_METHOD);
+        $paymentMethod = \Tools::getValue(self::PAYMENT_METHOD);
 
         if (!empty($paymentMethod[self::TYPE])) {
             $paymentMethodType = $paymentMethod[self::TYPE];

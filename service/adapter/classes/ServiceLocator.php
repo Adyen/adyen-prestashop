@@ -29,10 +29,9 @@ use PrestaShop\PrestaShop\Adapter\CoreException;
 class ServiceLocator
 {
     /**
-     * @param string $serviceName
-     *
+     * @param $serviceName
      * @return mixed|object
-     * @throws CoreException
+     * @throws \Adapter_Exception
      */
     public static function get($serviceName)
     {

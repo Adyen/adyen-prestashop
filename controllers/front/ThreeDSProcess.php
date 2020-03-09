@@ -27,8 +27,12 @@
 // phpcs:disable PSR1.Classes.ClassDeclaration
 
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
+use PrestaShop\PrestaShop\Adapter\CoreException;
+use Adyen\PrestaShop\service\Checkout;
+use Adyen\AdyenException;
+use Adyen\PrestaShop\controllers\FrontController;
 
-class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\controllers\FrontController
+class AdyenThreeDSProcessModuleFrontController extends FrontController
 {
     /**
      * @var bool
@@ -36,18 +40,8 @@ class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\control
     public $ssl = true;
 
     /**
-     * ThreeDSProcess constructor.
-     */
-    public function __construct()
-    {
-        parent::__construct();
-        $this->context = \Context::getContext();
-        $this->helperData->startSession();
-    }
-
-    /**
-     * @return mixed
-     * @throws \Adyen\AdyenException
+     * @throws Adapter_Exception
+     * @throws AdyenException
      */
     public function postProcess()
     {
@@ -83,18 +77,20 @@ class AdyenThreeDSProcessModuleFrontController extends \Adyen\PrestaShop\control
 
         // Send the payments details request
         try {
-            /** @var \Adyen\PrestaShop\service\Checkout $service */
+            /** @var Checkout $service */
             $service = ServiceLocator::get('Adyen\PrestaShop\service\Checkout');
 
             $result = $service->paymentsDetails($request);
-        } catch (\Adyen\AdyenException $e) {
-            $this->ajaxRender($this->helperData->buildControllerResponseJson(
-                'error',
-                array(
-                    'message' => '3D secure 2.0 failed'
+        } catch (AdyenException $e) {
+            $this->ajaxRender(
+                $this->helperData->buildControllerResponseJson(
+                    'error',
+                    array(
+                        'message' => '3D secure 2.0 failed'
+                    )
                 )
-            ));
-        } catch (\PrestaShop\PrestaShop\Adapter\CoreException $e) {
+            );
+        } catch (CoreException $e) {
             $this->ajaxRender(
                 $this->helperData->buildControllerResponseJson(
                     'error',

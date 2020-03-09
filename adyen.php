@@ -90,7 +90,7 @@ class Adyen extends PaymentModule
     /**
      * Adyen constructor.
      *
-     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
+     * @throws Adapter_Exception
      */
     public function __construct()
     {
@@ -990,9 +990,10 @@ class Adyen extends PaymentModule
     }
 
     /**
-     *
+     * @param $params
+     * @return |null
      */
-    public function hookPaymentReturn()
+    public function hookPaymentReturn($params)
     {
         if (!$this->active) {
             return null;
@@ -1023,8 +1024,8 @@ class Adyen extends PaymentModule
     }
 
     /**
-     *
-     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
+     * @return |null
+     * @throws Exception
      */
     public function hookDisplayPaymentTop()
     {
@@ -1301,6 +1302,8 @@ class Adyen extends PaymentModule
     }
 
     /**
+     * PrestaShop 1.6
+     *
      * @return string
      */
     private function getStandardPaymentMethod()
@@ -1355,8 +1358,7 @@ class Adyen extends PaymentModule
 
     /**
      * @param $params
-     *
-     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
+     * @throws Adapter_Exception
      * @noinspection PhpUnusedParameterInspection This method accepts a parameter and, even we don't use it,
      * it's better to make sure this is cataloged in the code base
      */
@@ -1373,9 +1375,8 @@ class Adyen extends PaymentModule
     }
 
     /**
-     * @param FrontController $controller
-     *
-     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
+     * @param $controller
+     * @throws Adapter_Exception
      */
     private function registerAdyenAssets($controller)
     {
@@ -1462,9 +1463,8 @@ class Adyen extends PaymentModule
 
     /**
      * @param $serviceName
-     *
      * @return mixed|object
-     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
+     * @throws Adapter_Exception
      */
     private function getService($serviceName)
     {

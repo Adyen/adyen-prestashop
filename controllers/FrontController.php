@@ -25,21 +25,28 @@
 namespace Adyen\PrestaShop\controllers;
 
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
+use Adyen\PrestaShop\service\Logger;
+use Adyen\PrestaShop\application\VersionChecker;
+use Adyen\PrestaShop\helper\Data as AdyenHelper;
+use Adyen\AdyenException;
+use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
+use Adyen\PrestaShop\service\Cart as CartService;
+use Adyen\PrestaShop\model\AdyenPaymentResponse;
 
 abstract class FrontController extends \ModuleFrontController
 {
     /**
-     * @var \Adyen\PrestaShop\helper\Data
+     * @var AdyenHelper
      */
     protected $helperData;
 
     /**
-     * @var \Adyen\PrestaShop\application\VersionChecker
+     * @var VersionChecker
      */
     protected $versionChecker;
 
     /**
-     * @var \Adyen\PrestaShop\service\Logger
+     * @var Logger
      */
     protected $logger;
 

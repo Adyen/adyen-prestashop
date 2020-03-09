@@ -29,24 +29,13 @@
 use Adyen\AdyenException;
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use Adyen\PrestaShop\service\Checkout;
-use PrestaShop\PrestaShop\Adapter\CoreException;
+use Adyen\PrestaShop\controllers\FrontController;
 
-class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers\FrontController
+class AdyenValidate3dModuleFrontController extends FrontController
 {
     /**
-     * AdyenValidate3dModuleFrontController constructor.
-     */
-    public function __construct()
-    {
-        parent::__construct();
-        $this->context = Context::getContext();
-    }
-
-    /**
+     * @throws Adapter_Exception
      * @throws AdyenException
-     * @throws CoreException
-     * @throws PrestaShopException
-     * @throws Exception When calling getOrderTotal with an invalid type
      */
     public function postProcess()
     {
