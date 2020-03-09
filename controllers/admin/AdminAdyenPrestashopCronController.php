@@ -53,7 +53,7 @@ class AdminAdyenPrestashopCronController extends \ModuleAdminController
     /**
      * AdminAdyenPrestashopCronController constructor.
      *
-     * @throws \Adyen\AdyenException
+     * @throws Adapter_Exception
      */
     public function __construct()
     {
@@ -100,19 +100,20 @@ class AdminAdyenPrestashopCronController extends \ModuleAdminController
             Context::getContext()
         );
 
+        $notificationModel = new \Adyen\PrestaShop\model\AdyenNotification();
+
         $unprocessedNotifications = $notificationProcessor->getUnprocessedNotifications();
 
         foreach ($unprocessedNotifications as $unprocessedNotification) {
             // update as processing
-            $notificationProcessor->updateNotificationAsProcessing($unprocessedNotification['entity_id']);
+            $notificationModel->updateNotificationAsProcessing($unprocessedNotification['entity_id']);
 
-            // Add cron message to order
-            if ($notificationProcessor->addMessage($unprocessedNotification)) {
+            if ($notificationProcessor->processNotification($unprocessedNotification)) {
                 // processing is done
-                $notificationProcessor->updateNotificationAsDone($unprocessedNotification['entity_id']);
+                $notificationModel->updateNotificationAsDone($unprocessedNotification['entity_id']);
             } else {
                 // processing had some error
-                $notificationProcessor->updateNotificationAsNew($unprocessedNotification['entity_id']);
+                $notificationModel->updateNotificationAsNew($unprocessedNotification['entity_id']);
             }
         }
     }
