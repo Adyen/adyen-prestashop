@@ -88,6 +88,11 @@ class Adyen extends PaymentModule
     private $configuration;
 
     /**
+     * @var Adyen\PrestaShop\model\AdyenPaymentResponse
+     */
+    private $adyenPaymentResponseModel;
+
+    /**
      * Adyen constructor.
      *
      * @throws Adapter_Exception
@@ -129,6 +134,10 @@ class Adyen extends PaymentModule
 
         $this->configuration = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
             'Adyen\PrestaShop\service\adapter\classes\Configuration'
+        );
+
+        $this->adyenPaymentResponseModel = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
+            'Adyen\PrestaShop\model\AdyenPaymentResponse'
         );
 
         // start for 1.6
@@ -999,13 +1008,18 @@ class Adyen extends PaymentModule
             return null;
         }
 
-        // Start session to retrieve stored action
-        $this->helper_data->startSession();
-
         $paymentAction = false;
 
-        if (!empty($_SESSION['paymentAction'])) {
-            $paymentAction = $_SESSION['paymentAction'];
+        if (empty($params['order'])) {
+            // something went wrong
+        }
+
+        $order = $params['order'];
+
+        $paymentResponse = $this->adyenPaymentResponseModel->getPaymentResponseByCartId($order->id_cart);
+
+        if (!empty($paymentResponse) && !empty($paymentResponse['action'])) {
+            $paymentAction = $paymentResponse['action'];
         }
 
         $smartyVariables = array(

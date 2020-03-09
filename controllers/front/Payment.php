@@ -42,7 +42,6 @@ class AdyenPaymentModuleFrontController extends FrontController
     const PA_REQUEST = 'paRequest';
     const MD = 'md';
     const ISSUER_URL = 'issuerUrl';
-    const PAYMENT_DATA = 'paymentData';
     const REDIRECT_METHOD = 'redirectMethod';
     const STORE_DETAILS = 'storeDetails';
     const METHOD = 'method';
@@ -55,6 +54,7 @@ class AdyenPaymentModuleFrontController extends FrontController
     const TYPE = 'type';
     const STORED_PAYMENT_METHOD_ID = 'storedPaymentMethodId';
     const PERSONAL_DETAILS = 'personalDetails';
+    const REFERENCE = 'reference';
 
     /**
      * @var bool
@@ -122,12 +122,16 @@ class AdyenPaymentModuleFrontController extends FrontController
     private $configuration;
 
     /**
+     * @var Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter
+     */
+    private $orderAdapter;
+
+    /**
      * AdyenPaymentModuleFrontController constructor.
      */
     public function __construct()
     {
         parent::__construct();
-
         $this->paymentService = ServiceLocator::get('Adyen\PrestaShop\service\Payment');
         $this->customerBuilder = ServiceLocator::get('Adyen\PrestaShop\service\builder\Customer');
         $this->openInvoiceBuilder = ServiceLocator::get('Adyen\PrestaShop\service\builder\OpenInvoice');
@@ -141,8 +145,7 @@ class AdyenPaymentModuleFrontController extends FrontController
         $this->genderService = ServiceLocator::get('Adyen\PrestaShop\service\Gender');
         $this->configuration = ServiceLocator::get('Adyen\PrestaShop\service\adapter\classes\Configuration');
         $this->logger = ServiceLocator::get('Adyen\PrestaShop\service\Logger');
-
-        $this->helperData->startSession();
+        $this->orderAdapter = ServiceLocator::get('Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter');
     }
 
     /**
@@ -152,69 +155,60 @@ class AdyenPaymentModuleFrontController extends FrontController
      */
     public function postProcess()
     {
-        unset($_SESSION['paymentAction']);
-        $cart = $this->context->cart;
-        $isAjax = Tools::getValue(self::IS_AJAX);
-
         // Handle 3DS1 flow, when the payments call is already done and the details are submitted from the frontend,
         // by the place order button
         if ($this->is3DS1Process()) {
             return $this->handle3DS1();
         }
 
-        // Handle payments call in case there is no payments response saved into the session
-        if (empty($_SESSION['paymentsResponse'])) {
-            $request = array();
+        $cart = $this->getCurrentCart();
+        $isAjax = \Tools::getValue(self::IS_AJAX);
+        $request = array();
 
-            try {
-                $request = $this->buildBrowserData($request);
-                $request = $this->buildAddresses($request);
-                $request = $this->buildPaymentData($request);
-                $request = $this->buildCustomerData($request);
-            } catch (MissingDataException $exception) {
-                $this->logger->error(
-                    sprintf(
-                        "There was an error with the payment method. id:  %s Missing data: %s",
-                        $cart->id,
-                        $exception->getMessage()
-                    )
-                );
+        try {
+            $request = $this->buildBrowserData($request);
+            $request = $this->buildAddresses($request);
+            $request = $this->buildPaymentData($request);
+            $request = $this->buildCustomerData($request);
+        } catch (MissingDataException $exception) {
+            $this->logger->error(
+                sprintf(
+                    "There was an error with the payment method. id:  %s Missing data: %s",
+                    $cart->id,
+                    $exception->getMessage()
+                )
+            );
 
-                $this->ajaxRender(
-                    $this->helperData->buildControllerResponseJson(
-                        'error',
-                        array(
-                            'message' => "There was an error with the payment method, please choose another one."
-                        )
+            $this->ajaxRender(
+                $this->helperData->buildControllerResponseJson(
+                    'error',
+                    array(
+                        'message' => "There was an error with the payment method, please choose another one."
                     )
-                );
-            }
+                )
+            );
+        }
 
         // call adyen library
         /** @var Checkout $service */
         $service = ServiceLocator::get('Adyen\PrestaShop\service\Checkout');
 
-            try {
-                $response = $service->payments($request);
-            } catch (AdyenException $e) {
-                $this->logger->error(
-                    "There was an error with the payment method. id:  " . $cart->id .
-                    " Response: " . $e->getMessage()
-                );
+        try {
+            $response = $service->payments($request);
+        } catch (AdyenException $e) {
+            $this->logger->error(
+                "There was an error with the payment method. id:  " . $cart->id .
+                " Response: " . $e->getMessage()
+            );
 
-                $this->ajaxRender(
-                    $this->helperData->buildControllerResponseJson(
-                        'error',
-                        array(
-                            'message' => "There was an error with the payment method, please choose another one."
-                        )
+            $this->ajaxRender(
+                $this->helperData->buildControllerResponseJson(
+                    'error',
+                    array(
+                        'message' => "There was an error with the payment method, please choose another one."
                     )
-                );
-            }
-        } else {
-            // in case the payments response is already present use it from the session then unset it
-            $response = $_SESSION['paymentsResponse'];
-            unset($_SESSION['paymentsResponse']);
+                )
+            );
         }
 
         $customer = new \Customer($cart->id_customer);
@@ -327,7 +321,9 @@ class AdyenPaymentModuleFrontController extends FrontController
         $returnUrl = $this->context->link->getModuleLink(
             $this->module->name,
             'Result',
-            array(),
+            array(
+                'reference' => $cart->id
+            ),
             $this->ssl
         );
 

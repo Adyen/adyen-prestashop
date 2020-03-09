@@ -46,20 +46,27 @@ class AdyenThreeDSProcessModuleFrontController extends FrontController
     public function postProcess()
     {
         $payload = $_REQUEST;
-        if (!empty($_SESSION['paymentData'])) {
-            // Add payment data into the request object
-            $request = array(
-                "paymentData" => $_SESSION['paymentData']
-            );
-        } else {
-            $this->ajaxRender($this->helperData->buildControllerResponseJson(
-                'error',
-                array(
-                    'message' => "3D secure 2.0 failed, payment data not found"
+
+        $cart = $this->getCurrentCart();
+        $paymentResponse = $this->adyenPaymentResponseModel->getPaymentResponseByCartId($cart->id);
+
+        if (empty($paymentResponse) ||
+            empty($paymentResponse['paymentData'])
+        ) {
+            $this->ajaxRender(
+                $this->helperData->buildControllerResponseJson(
+                    'error',
+                    array(
+                        'message' => "3D secure 2.0 failed, payment data not found"
+                    )
                 )
-            ));
-            return;
+            );
         }
+
+        // Add payment data into the request object
+        $request = array(
+            "paymentData" => $paymentResponse['paymentData']
+        );
 
         // Depends on the component's response we send a fingerprint or the challenge result
         if (!empty($payload['details']['threeds2.fingerprint'])) {
@@ -67,12 +74,14 @@ class AdyenThreeDSProcessModuleFrontController extends FrontController
         } elseif (!empty($payload['details']['threeds2.challengeResult'])) {
             $request['details']['threeds2.challengeResult'] = $payload['details']['threeds2.challengeResult'];
         } else {
-            $this->ajaxRender($this->helperData->buildControllerResponseJson(
-                'error',
-                array(
-                    'message' => "3D secure 2.0 failed, payload details are not found"
+            $this->ajaxRender(
+                $this->helperData->buildControllerResponseJson(
+                    'error',
+                    array(
+                        'message' => "3D secure 2.0 failed, payload details are not found"
+                    )
                 )
-            ));
+            );
         }
 
         // Send the payments details request
@@ -101,34 +110,35 @@ class AdyenThreeDSProcessModuleFrontController extends FrontController
             );
         }
 
+        // Update saved response for cart
+        $this->adyenPaymentResponseModel->updatePaymentResponseByCartId($cart->id, $result['resultCode'], $result);
+
         // Check if result is challenge shopper, if yes return the token
         if (!empty($result['resultCode']) &&
             $result['resultCode'] === 'ChallengeShopper' &&
             !empty($result['authentication']['threeds2.challengeToken'])
         ) {
-            $this->ajaxRender($this->helperData->buildControllerResponseJson(
-                'threeDS2',
-                array(
-                    'type' => $result['resultCode'],
-                    'token' => $result['authentication']['threeds2.challengeToken']
-                )
-            ));
-        }
-
-        if (!empty($result['resultCode']) && $result['resultCode'] == 'Refused') {
             $this->ajaxRender(
                 $this->helperData->buildControllerResponseJson(
-                    'error',
-                    array('message' => 'The payment was refused')
+                    'threeDS2',
+                    array(
+                        'type' => $result['resultCode'],
+                        'token' => $result['authentication']['threeds2.challengeToken']
+                    )
                 )
             );
         }
 
         // Payment can get back to the original flow
-        // Save the payments response because we are going to need it during the place order flow
-        $_SESSION["paymentsResponse"] = $result;
-        if (!empty($_SESSION['paymentData'])) {
-            unset($_SESSION['paymentData']);
+        $this->adyenPaymentResponseModel->deletePaymentResponseByCartId($cart->id);
+
+        $customer = new \Customer($cart->id_customer);
+
+        if (!\Validate::isLoadedObject($customer)) {
+            $this->redirectUserToPageLink(
+                $this->context->link->getPageLink('order', $this->ssl, null, 'step=1'),
+                true
+            );
         }
 
         $this->handlePaymentsResponse($result, $cart, $customer, true);

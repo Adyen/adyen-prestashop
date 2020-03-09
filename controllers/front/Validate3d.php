@@ -40,16 +40,28 @@ class AdyenValidate3dModuleFrontController extends FrontController
     public function postProcess()
     {
         // retrieve cart from temp value and restore the cart to approve payment
-        $cart = new Cart((int)$this->context->cookie->__get("id_cart_temp"));
+        $cart = new \Cart((int)\Tools::getValue('reference'));
 
-        $requestMD = $_REQUEST['MD'];
-        $requestPaRes = $_REQUEST['PaRes'];
-        $paymentData = $_REQUEST['paymentData'];
-        $this->logger->debug("md: " . $requestMD);
-        $this->logger->debug("PaRes: " . $requestPaRes);
-        $this->logger->debug("request" . json_encode($_REQUEST));
+        $paymentResponse = $this->adyenPaymentResponseModel->getPaymentResponseByCartId($cart->id);
+
+        if (empty($paymentResponse) ||
+            empty($paymentResponse['paymentData'])
+        ) {
+            // create new cart from the current cart
+            $this->cartService->cloneCurrentCart($this->context, $cart);
+
+            $this->logger->error("The payment was cancelled, id:  " . $cart->id);
+            $this->setTemplate(
+                $this->helperData->getTemplateFromModulePath('views/templates/front/error.tpl')
+            );
+            return;
+        }
+
+        $requestMD = \Tools::getValue('MD');
+        $requestPaRes = \Tools::getValue('PaRes');
+
         $request = array(
-            "paymentData" => $paymentData,
+            "paymentData" => $paymentResponse['paymentData'],
             "details" => array(
                 "MD" => $requestMD,
                 "PaRes" => $requestPaRes

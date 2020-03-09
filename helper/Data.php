@@ -291,14 +291,14 @@ class Data
                 if (!empty($details['paRequest']) &&
                     !empty($details['md']) &&
                     !empty($details['issuerUrl']) &&
-                    !empty($details['paymentData']) &&
+                    !empty($details['reference']) &&
                     !empty($details['redirectMethod'])) {
                     $response = array(
                         'action' => 'threeDS1',
                         'paRequest' => $details['paRequest'],
                         'md' => $details['md'],
                         'issuerUrl' => $details['issuerUrl'],
-                        'paymentData' => $details['paymentData'],
+                        'reference' => $details['reference'],
                         'redirectMethod' => $details['redirectMethod']
                     );
                 } else {

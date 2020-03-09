@@ -43,20 +43,34 @@ class AdyenResultModuleFrontController extends FrontController
      */
     public function postProcess()
     {
-        if (!isset($_SESSION['paymentData'])) {
+        // Retrieve cart based on the reference parameter
+        $cart = new \Cart(\Tools::getValue('reference'));
+
+        // Validate if cart exists - if not redirect back to order page
+        if (!\Validate::isLoadedObject($cart)) {
             \Tools::redirect($this->context->link->getPageLink('order', $this->ssl));
-            return;
         }
+
+        // Retrieve previous payment response to validate the payment via the paymentDetails request
+        $paymentResponse = $this->adyenPaymentResponseModel->getPaymentResponseByCartId($cart->id);
+
+        // Validate if we have the necessary objects stored
+        if (empty($paymentResponse) || empty($paymentResponse['paymentData'])) {
+            \Tools::redirect($this->context->link->getPageLink('order', $this->ssl));
+        }
+
         /** @var \Adyen\PrestaShop\service\Checkout $checkout */
         $checkout = ServiceLocator::get('Adyen\PrestaShop\service\Checkout');
         $response = $checkout->paymentsDetails(
             array(
-                'paymentData' => $_SESSION['paymentData'],
-                'details' => Tools::getAllValues()
+                'paymentData' => $paymentResponse['paymentData'],
+                'details' => \Tools::getAllValues()
             )
         );
-        unset($_SESSION['paymentData']);
-        $cart = new Cart($this->context->cookie->id_cart_temp);
+
+        // Remove stored response since the paymentDetails call is done
+        $this->adyenPaymentResponseModel->deletePaymentResponseByCartId($cart->id);
+
         if ($response['resultCode'] == 'Authorised') {
             $total = (float)$cart->getOrderTotal(true, \Cart::BOTH);
             $extra_vars = array();
