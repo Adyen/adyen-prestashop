@@ -242,15 +242,15 @@ jQuery(function ($) {
                 if (!!response.paRequest &&
                     !!response.md &&
                     !!response.issuerUrl &&
-                    !!response.paymentData &&
-                    !!response.redirectMethod
+                    !!response.redirectMethod &&
+                    !!response.reference
                 ) {
                     //populate hidden form inputs
-                    $('input[name=paymentData]').attr('value', response.paymentData);
                     $('input[name=redirectMethod]').attr('value', response.redirectMethod);
                     $('input[name=issuerUrl]').attr('value', response.issuerUrl);
                     $('input[name=paRequest]').attr('value', response.paRequest);
                     $('input[name=md]').attr('value', response.md);
+                    $('input[name=reference]').attr('value', response.reference);
 
                     placeOrder(paymentForm);
                 } else {

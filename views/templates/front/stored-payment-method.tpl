@@ -46,11 +46,11 @@
                 {/if}
 
                 <div class="checkout-container" id="cardContainer-{$storedPaymentApiId}"></div>
-                <input type="hidden" name="paymentData"/>
                 <input type="hidden" name="redirectMethod"/>
                 <input type="hidden" name="issuerUrl"/>
                 <input type="hidden" name="paRequest"/>
                 <input type="hidden" name="md"/>
+                <input type="hidden" name="reference">
 
                 {if $prestashop16}
                     <div style="display:none">
