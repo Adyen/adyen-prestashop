@@ -24,22 +24,9 @@
 
 namespace Adyen\PrestaShop\model;
 
-class AdyenPaymentResponse
+class AdyenPaymentResponse extends AbstractModel
 {
     private static $tableName = 'adyen_payment_response';
-
-    /**
-     * @var \Db
-     */
-    private $dbInstance;
-
-    /**
-     * AdyenPaymentAction constructor.
-     */
-    public function __construct()
-    {
-        $this->dbInstance = \Db::getInstance();;
-    }
 
     /**
      * @param $cartId
