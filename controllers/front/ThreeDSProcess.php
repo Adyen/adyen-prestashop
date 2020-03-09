@@ -131,7 +131,6 @@ class AdyenThreeDSProcessModuleFrontController extends FrontController
             unset($_SESSION['paymentData']);
         }
 
-        // 3DS2 flow is done, original place order flow can continue from frontend
-        $this->ajaxRender($this->helperData->buildControllerResponseJson('threeDS2'));
+        $this->handlePaymentsResponse($result, $cart, $customer, true);
     }
 }
