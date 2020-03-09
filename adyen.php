@@ -173,10 +173,10 @@ class Adyen extends PaymentModule
                 $this->registerHook('paymentReturn') &&
                 $this->registerHook('actionOrderSlipAdd') &&
                 $this->registerHook('actionFrontControllerSetMedia') &&
-                $this->createAdyenNotificationTable() &&
                 $this->installTab() &&
                 $this->updateCronJobToken() &&
-                $this->createWaitingForPaymentOrderStatus()
+                $this->createWaitingForPaymentOrderStatus() &&
+                $this->createAdyenDatabaseTables()
             ) {
                 return true;
             } else {
@@ -193,14 +193,23 @@ class Adyen extends PaymentModule
             $this->registerHook('paymentOptions') &&
             $this->registerHook('paymentReturn') &&
             $this->registerHook('actionOrderSlipAdd') &&
-            $this->createAdyenNotificationTable() &&
             $this->updateCronJobToken() &&
-            $this->createWaitingForPaymentOrderStatus()) {
+            $this->createWaitingForPaymentOrderStatus() &&
+            $this->createAdyenDatabaseTables()
+        ) {
             return true;
         } else {
             $this->logger->debug('Adyen module: installation failed!');
             return false;
         }
+    }
+
+    /**
+     * @return bool
+     */
+    private function createAdyenDatabaseTables()
+    {
+        return $this->createAdyenPaymentResponseTable() && $this->createAdyenNotificationTable();
     }
 
     /**
@@ -283,6 +292,26 @@ class Adyen extends PaymentModule
             KEY `ADYEN_NOTIFICATION_PSPREFERENCE_EVENT_CODE` (`pspreference`,`event_code`),
             KEY `ADYEN_NOTIFICATION_MERCHANT_REFERENCE_EVENT_CODE` (`merchant_reference`,`event_code`)
             ) ENGINE=' . _MYSQL_ENGINE_ . ' AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT=\'Adyen Notifications\'';
+
+        return $db->execute($query);
+    }
+
+    /**
+     * @return bool
+     */
+    public function createAdyenPaymentResponseTable()
+    {
+        $db = Db::getInstance();
+        $query = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'adyen_payment_response` (
+            `entity_id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT \'Adyen Payment Entity ID\',
+            `id_cart` int(11) DEFAULT NULL COMMENT \'Prestashop cart id\',
+            `result_code` varchar(255) DEFAULT NULL COMMENT \'Result code\',
+            `response` text COMMENT \'Response\',
+            `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT \'Created At\',
+            `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT \'Updated At\',
+            PRIMARY KEY (`entity_id`),
+            KEY `ADYEN_PAYMENT_RESPONSE_ID_CART` (`id_cart`)
+            ) ENGINE=' . _MYSQL_ENGINE_ . ' AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT=\'Adyen Payment Action\'';
 
         return $db->execute($query);
     }
