@@ -154,7 +154,7 @@ abstract class FrontController extends \ModuleFrontController
             case 'Authorised':
                 $this->module->validateOrder(
                     $cart->id,
-                    2,
+                    \Configuration::get('PS_OS_PAYMENT'),
                     $total,
                     $this->module->displayName,
                     null,
@@ -348,7 +348,7 @@ abstract class FrontController extends \ModuleFrontController
             case 'Error':
                 $this->module->validateOrder(
                     $cart->id,
-                    8,
+                    \Configuration::get('PS_OS_ERROR'),
                     $total,
                     $this->module->displayName,
                     null,
@@ -385,7 +385,7 @@ abstract class FrontController extends \ModuleFrontController
                 // Unsupported result code
                 $this->module->validateOrder(
                     $cart->id,
-                    8,
+                    \Configuration::get('PS_OS_ERROR'),
                     $total,
                     $this->module->displayName,
                     null,

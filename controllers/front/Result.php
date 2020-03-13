@@ -83,7 +83,7 @@ class AdyenResultModuleFrontController extends FrontController
             $customer = new \Customer($cart->id_customer);
             $this->module->validateOrder(
                 $cart->id,
-                2,
+                \Configuration::get('PS_OS_PAYMENT'),
                 $total,
                 $this->module->displayName,
                 null,
