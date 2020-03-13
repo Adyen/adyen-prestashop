@@ -25,6 +25,7 @@
 namespace Adyen\PrestaShop\service\notification;
 
 use Adyen\PrestaShop\helper\Data as AdyenHelper;
+use Adyen\PrestaShop\model\AdyenNotification;
 use Adyen\PrestaShop\service\adapter\classes\Configuration;
 use Adyen\Util\HmacSignature;
 use Mockery as m;
@@ -68,6 +69,11 @@ class NotificationReceiverTest extends TestCase
      */
     private $configuration;
 
+    /**
+     * @var AdyenNotification|PHPUnit_Framework_MockObject_MockObject $adyenNotificationMock
+     */
+    private $adyenNotificationMock;
+
     protected function setUp()
     {
         self::$functions = m::mock();
@@ -90,6 +96,12 @@ class NotificationReceiverTest extends TestCase
 
         /** @var Configuration|\PHPUnit_Framework_MockObject_MockObject $crypto */
         $this->configuration = $this->getMockBuilder('Adyen\PrestaShop\service\adapter\classes\Configuration')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        // Mock AdyenNotification
+        /** @var PHPUnit_Framework_MockObject_MockObject|AdyenNotification $customerMock */
+        $this->adyenNotificationMock = $this->getMockBuilder(AdyenNotification::class)
             ->disableOriginalConstructor()
             ->getMock();
     }
@@ -117,7 +129,8 @@ class NotificationReceiverTest extends TestCase
             'password',
             $this->dbInstance,
             $this->logger,
-            $this->configuration
+            $this->configuration,
+            $this->adyenNotificationMock
         );
 
         $this->setExpectedException('Adyen\PrestaShop\service\notification\HMACKeyValidationException');
@@ -141,7 +154,8 @@ class NotificationReceiverTest extends TestCase
             'password',
             $this->dbInstance,
             $this->logger,
-            $this->configuration
+            $this->configuration,
+            $this->adyenNotificationMock
         );
 
         $this->setExpectedException('Adyen\PrestaShop\service\notification\AuthenticationException');
@@ -165,7 +179,8 @@ class NotificationReceiverTest extends TestCase
             'password',
             $this->dbInstance,
             $this->logger,
-            $this->configuration
+            $this->configuration,
+            $this->adyenNotificationMock
         );
 
         $_SERVER['PHP_AUTH_USER'] = 'username';
@@ -192,7 +207,8 @@ class NotificationReceiverTest extends TestCase
             'password',
             $this->dbInstance,
             $this->logger,
-            $this->configuration
+            $this->configuration,
+            $this->adyenNotificationMock
         );
 
         $_SERVER['PHP_AUTH_USER'] = 'username';
@@ -258,7 +274,8 @@ class NotificationReceiverTest extends TestCase
             'password',
             $this->dbInstance,
             $this->logger,
-            $this->configuration
+            $this->configuration,
+            $this->adyenNotificationMock
         );
 
         /** @noinspection PhpUnhandledExceptionInspection */

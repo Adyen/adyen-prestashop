@@ -25,6 +25,7 @@
 namespace Adyen\PrestaShop\service;
 
 use Adyen\PrestaShop\helper\Data as AdyenHelper;
+use Adyen\PrestaShop\model\AdyenPaymentResponse;
 use Adyen\PrestaShop\service\adapter\classes\CustomerThreadAdapter;
 use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
 use Adyen\PrestaShop\service\notification\NotificationProcessor;
@@ -64,6 +65,11 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
     private $customerThreadAdapter;
 
     /**
+     * @var AdyenPaymentResponse|PHPUnit_Framework_MockObject_MockObject $adyenPaymentResponseMock
+     */
+    private $adyenPaymentResponseMock;
+
+    /**
      *
      */
     protected function setUp()
@@ -93,6 +99,12 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
                                             ->getMock();
         $this->customerThreadAdapter->method('getCustomerThreadByEmailAndOrderId')
                                     ->willReturn($customerThreadMock);
+
+        // Mock AdyenNotification
+        /** @var PHPUnit_Framework_MockObject_MockObject|AdyenPaymentResponse $customerMock */
+        $this->adyenPaymentResponseMock = $this->getMockBuilder(AdyenPaymentResponse::class)
+            ->disableOriginalConstructor()
+            ->getMock();
     }
 
     protected function tearDown()
@@ -149,7 +161,8 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
             $orderAdapter,
             $this->customerThreadAdapter,
             $this->logger,
-            $context
+            $context,
+            $this->adyenPaymentResponseMock
         );
 
         $this->assertTrue($notificationProcessor->addMessage($notification));
@@ -179,7 +192,8 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
             $orderAdapter,
             $this->customerThreadAdapter,
             $this->logger,
-            $context
+            $context,
+            $this->adyenPaymentResponseMock
         );
 
         $this->logger->expects($this->once())
@@ -219,7 +233,8 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
             $orderAdapter,
             $this->customerThreadAdapter,
             $this->logger,
-            $context
+            $context,
+            $this->adyenPaymentResponseMock
         );
 
         $this->logger->expects($this->once())

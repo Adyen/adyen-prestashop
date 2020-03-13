@@ -22,23 +22,22 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\service\adapter\classes;
+// This file declares a function and checks if PrestaShop is loaded to follow
+// PrestaShop's good practices, which breaks a PSR1 element.
+//phpcs:disable PSR1.Files.SideEffects
 
-use PrestaShop\PrestaShop\Adapter\CoreException;
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
 
-class ServiceLocator
+/**
+ * This function is automatically called on version upgrades.
+ *
+ * @param Adyen $module
+ *
+ * @return bool
+ */
+function upgrade_module_2_0_0(Adyen $module)
 {
-    /**
-     * @param $serviceName
-     * @return mixed|object
-     * @throws CoreException
-     */
-    public static function get($serviceName)
-    {
-        if (class_exists('Adapter_ServiceLocator')) {
-            return \Adapter_ServiceLocator::get($serviceName);
-        } else {
-            return \PrestaShop\PrestaShop\Adapter\ServiceLocator::get($serviceName);
-        }
-    }
+    return $module->createAdyenPaymentResponseTable();
 }

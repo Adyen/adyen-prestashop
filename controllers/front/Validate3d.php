@@ -29,38 +29,40 @@
 use Adyen\AdyenException;
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use Adyen\PrestaShop\service\Checkout;
+use Adyen\PrestaShop\controllers\FrontController;
 use PrestaShop\PrestaShop\Adapter\CoreException;
 
-class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers\FrontController
+class AdyenValidate3dModuleFrontController extends FrontController
 {
     /**
-     * AdyenValidate3dModuleFrontController constructor.
-     */
-    public function __construct()
-    {
-        parent::__construct();
-        $this->context = Context::getContext();
-    }
-
-    /**
-     * @throws AdyenException
      * @throws CoreException
-     * @throws PrestaShopException
-     * @throws Exception When calling getOrderTotal with an invalid type
+     * @throws AdyenException
      */
     public function postProcess()
     {
         // retrieve cart from temp value and restore the cart to approve payment
-        $cart = new Cart((int)$this->context->cookie->__get("id_cart_temp"));
+        $cart = new \Cart((int)\Tools::getValue(self::ADYEN_MERCHANT_REFERENCE));
 
-        $requestMD = $_REQUEST['MD'];
-        $requestPaRes = $_REQUEST['PaRes'];
-        $paymentData = $_REQUEST['paymentData'];
-        $this->logger->debug("md: " . $requestMD);
-        $this->logger->debug("PaRes: " . $requestPaRes);
-        $this->logger->debug("request" . json_encode($_REQUEST));
+        $paymentResponse = $this->adyenPaymentResponseModel->getPaymentResponseByCartId($cart->id);
+
+        if (empty($paymentResponse) ||
+            empty($paymentResponse['paymentData'])
+        ) {
+            // create new cart from the current cart
+            $this->cartService->cloneCurrentCart($this->context, $cart);
+
+            $this->logger->error("The payment was cancelled, id:  " . $cart->id);
+            $this->setTemplate(
+                $this->helperData->getTemplateFromModulePath('views/templates/front/error.tpl')
+            );
+            return;
+        }
+
+        $requestMD = \Tools::getValue('MD');
+        $requestPaRes = \Tools::getValue('PaRes');
+
         $request = array(
-            "paymentData" => $paymentData,
+            "paymentData" => $paymentResponse['paymentData'],
             "details" => array(
                 "MD" => $requestMD,
                 "PaRes" => $requestPaRes
@@ -75,102 +77,24 @@ class AdyenValidate3dModuleFrontController extends \Adyen\PrestaShop\controllers
             $this->logger->error(
                 "Error during validate3d paymentsDetails call: exception: " . $e->getMessage()
             );
-            $this->ajaxRender(
-                $this->helperData->buildControllerResponseJson(
-                    'error',
-                    array('message' => "Something went wrong. Please choose another payment method.")
-                )
+            $this->setTemplate(
+                $this->helperData->getTemplateFromModulePath('views/templates/front/error.tpl')
+            );
+            return;
+        }
+
+        // Remove payment response for
+        $this->adyenPaymentResponseModel->deletePaymentResponseByCartId($cart->id);
+
+        $customer = new \Customer($cart->id_customer);
+
+        if (!\Validate::isLoadedObject($customer)) {
+            $this->redirectUserToPageLink(
+                $this->context->link->getPageLink('order', $this->ssl, null, 'step=1'),
+                false
             );
         }
-        $this->logger->debug("result: " . json_encode($response));
-        $currency = $this->context->currency;
-        $customer = new Customer($cart->id_customer);
-        $total = (float)$cart->getOrderTotal(true, Cart::BOTH);
-        $resultCode = $response['resultCode'];
-        $extra_vars = array();
-        if (!empty($response['pspReference'])) {
-            $extra_vars['transaction_id'] = $response['pspReference'];
-        }
-        switch ($resultCode) {
-            case 'Authorised':
-                $this->module->validateOrder(
-                    $cart->id,
-                    2,
-                    $total,
-                    $this->module->displayName,
-                    null,
-                    $extra_vars,
-                    (int)$currency->id,
-                    false,
-                    $customer->secure_key
-                );
-                $new_order = new Order((int)$this->module->currentOrder);
-                if (Validate::isLoadedObject($new_order)) {
-                    $payment = $new_order->getOrderPaymentCollection();
-                    if (isset($payment[0])) {
-                        $cardSummary = !empty($response['additionalData']['cardSummary'])
-                            ? pSQL($response['additionalData']['cardSummary'])
-                            : '****';
-                        $cardBin = !empty($response['additionalData']['cardBin'])
-                            ? pSQL($response['additionalData']['cardBin'])
-                            : '******';
-                        $paymentMethod = !empty($response['additionalData']['paymentMethod'])
-                            ? pSQL($response['additionalData']['paymentMethod'])
-                            : 'Adyen';
-                        $expiryDate = !empty($response['additionalData']['expiryDate'])
-                            ? pSQL($response['additionalData']['expiryDate'])
-                            : '';
-                        $cardHolderName = !empty($response['additionalData']['cardHolderName'])
-                            ? pSQL($response['additionalData']['cardHolderName']) : '';
-                        $payment[0]->card_number = $cardBin . ' *** ' . $cardSummary;
-                        $payment[0]->card_brand = $paymentMethod;
-                        $payment[0]->card_expiration = $expiryDate;
-                        $payment[0]->card_holder = $cardHolderName;
-                        $payment[0]->save();
-                    }
-                }
-                Tools::redirect($this->context->link->getPageLink(
-                    'order-confirmation',
-                    $this->ssl,
-                    null,
-                    sprintf(
-                        "id_cart=%s&id_module=%s&id_order=%s&key=%s",
-                        $cart->id,
-                        $this->module->id,
-                        $this->module->currentOrder,
-                        $customer->secure_key
-                    )
-                ));
-                break;
-            case 'Refused':
-                // create new cart from the current cart
-                $this->helperData->cloneCurrentCart($this->context, $cart);
 
-                $this->logger->error("The payment was refused, id:  " . $cart->id);
-                $this->setTemplate(
-                    $this->helperData->getTemplateFromModulePath('views/templates/front/error.tpl')
-                );
-                break;
-            default:
-                // create new cart from the current cart
-                $this->helperData->cloneCurrentCart($this->context, $cart);
-                //6_PS_OS_CANCELED_ : order canceled
-                $this->module->validateOrder(
-                    $cart->id,
-                    6,
-                    $total,
-                    $this->module->displayName,
-                    null,
-                    $extra_vars,
-                    (int)$currency->id,
-                    false,
-                    $customer->secure_key
-                );
-                $this->logger->error("The payment was cancelled, id:  " . $cart->id);
-                $this->setTemplate(
-                    $this->helperData->getTemplateFromModulePath('views/templates/front/error.tpl')
-                );
-                break;
-        }
+        $this->handlePaymentsResponse($response, $cart, $customer, false);
     }
 }

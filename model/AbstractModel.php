@@ -22,23 +22,20 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\service\adapter\classes;
+namespace Adyen\PrestaShop\model;
 
-use PrestaShop\PrestaShop\Adapter\CoreException;
-
-class ServiceLocator
+abstract class AbstractModel
 {
     /**
-     * @param $serviceName
-     * @return mixed|object
-     * @throws CoreException
+     * @var \Db
      */
-    public static function get($serviceName)
+    protected $dbInstance;
+
+    /**
+     * AdyenPaymentAction constructor.
+     */
+    public function __construct()
     {
-        if (class_exists('Adapter_ServiceLocator')) {
-            return \Adapter_ServiceLocator::get($serviceName);
-        } else {
-            return \PrestaShop\PrestaShop\Adapter\ServiceLocator::get($serviceName);
-        }
+        $this->dbInstance = \Db::getInstance();
     }
 }

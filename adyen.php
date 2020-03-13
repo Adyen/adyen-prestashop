@@ -88,6 +88,11 @@ class Adyen extends PaymentModule
     private $configuration;
 
     /**
+     * @var Adyen\PrestaShop\model\AdyenPaymentResponse
+     */
+    private $adyenPaymentResponseModel;
+
+    /**
      * Adyen constructor.
      *
      * @throws \PrestaShop\PrestaShop\Adapter\CoreException
@@ -95,7 +100,7 @@ class Adyen extends PaymentModule
     public function __construct()
     {
         $this->name = 'adyen';
-        $this->version = '1.2.0';
+        $this->version = '2.0.0';
         $this->tab = 'payments_gateways';
         $this->author = 'Adyen';
         $this->bootstrap = true;
@@ -129,6 +134,10 @@ class Adyen extends PaymentModule
 
         $this->configuration = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
             'Adyen\PrestaShop\service\adapter\classes\Configuration'
+        );
+
+        $this->adyenPaymentResponseModel = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
+            'Adyen\PrestaShop\model\AdyenPaymentResponse'
         );
 
         // start for 1.6
@@ -173,10 +182,10 @@ class Adyen extends PaymentModule
                 $this->registerHook('paymentReturn') &&
                 $this->registerHook('actionOrderSlipAdd') &&
                 $this->registerHook('actionFrontControllerSetMedia') &&
-                $this->createAdyenNotificationTable() &&
                 $this->installTab() &&
                 $this->updateCronJobToken() &&
-                $this->createWaitingForPaymentOrderStatus()
+                $this->createWaitingForPaymentOrderStatus() &&
+                $this->createAdyenDatabaseTables()
             ) {
                 return true;
             } else {
@@ -193,14 +202,24 @@ class Adyen extends PaymentModule
             $this->registerHook('paymentOptions') &&
             $this->registerHook('paymentReturn') &&
             $this->registerHook('actionOrderSlipAdd') &&
-            $this->createAdyenNotificationTable() &&
             $this->updateCronJobToken() &&
-            $this->createWaitingForPaymentOrderStatus()) {
+            $this->createWaitingForPaymentOrderStatus() &&
+            $this->createAdyenDatabaseTables()
+        ) {
             return true;
         } else {
             $this->logger->debug('Adyen module: installation failed!');
             return false;
         }
+    }
+
+    /**
+     * @return bool
+     */
+    private function createAdyenDatabaseTables()
+    {
+        return $this->createAdyenPaymentResponseTable() &&
+            $this->createAdyenNotificationTable();
     }
 
     /**
@@ -276,13 +295,34 @@ class Adyen extends PaymentModule
             `processing` tinyint(1) DEFAULT \'0\' COMMENT \'Adyen Notification Cron Processing\',
             `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT \'Created At\',
             `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-                        COMMENT \'Updated At\',
+            COMMENT \'Updated At\',
             PRIMARY KEY (`entity_id`),
             KEY `ADYEN_NOTIFICATION_PSPREFERENCE` (`pspreference`),
             KEY `ADYEN_NOTIFICATION_EVENT_CODE` (`event_code`),
             KEY `ADYEN_NOTIFICATION_PSPREFERENCE_EVENT_CODE` (`pspreference`,`event_code`),
             KEY `ADYEN_NOTIFICATION_MERCHANT_REFERENCE_EVENT_CODE` (`merchant_reference`,`event_code`)
             ) ENGINE=' . _MYSQL_ENGINE_ . ' AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT=\'Adyen Notifications\'';
+
+        return $db->execute($query);
+    }
+
+    /**
+     * @return bool
+     */
+    public function createAdyenPaymentResponseTable()
+    {
+        $db = Db::getInstance();
+        $query = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'adyen_payment_response` (
+            `entity_id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT \'Adyen Payment Entity ID\',
+            `id_cart` int(11) DEFAULT NULL COMMENT \'Prestashop cart id\',
+            `result_code` varchar(255) DEFAULT NULL COMMENT \'Result code\',
+            `response` text COMMENT \'Response\',
+            `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT \'Created At\',
+            `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            COMMENT \'Updated At\',
+            PRIMARY KEY (`entity_id`),
+            KEY `ADYEN_PAYMENT_RESPONSE_ID_CART` (`id_cart`)
+            ) ENGINE=' . _MYSQL_ENGINE_ . ' AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT=\'Adyen Payment Action\'';
 
         return $db->execute($query);
     }
@@ -324,12 +364,15 @@ class Adyen extends PaymentModule
     }
 
     /**
+     * Drop all Adyen related database tables
      *
+     * @return bool
      */
     private function removeAdyenDatabaseTables()
     {
         $db = Db::getInstance();
-        return $db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'adyen_notification`');
+        return $db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'adyen_notification`') &&
+            $db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'adyen_payment_response`');
     }
 
     /**
@@ -621,7 +664,7 @@ class Adyen extends PaymentModule
                     basename(_PS_ADMIN_DIR_),
                     $cronjobToken
                 ) :
-                $this->l('Please fill your notification token'),
+                $this->l('Please fill your cron job token'),
             'class' => $cronjobToken ? 'adyen-input-green' : '',
             'label' => $this->l('Secure token for cron job'),
             'name' => 'ADYEN_CRONJOB_TOKEN',
@@ -647,7 +690,7 @@ class Adyen extends PaymentModule
             'type' => 'password',
             'label' => $this->l('API key for Test'),
             'name' => 'ADYEN_APIKEY_TEST',
-            'desc' => $apiKeyTestLastDigits ? $this->l('Key stored ending in: ') . $apiKeyTestLastDigits : $this->l(
+            'desc' => $apiKeyTestLastDigits ? $this->l('Saved key ends in: ') . $apiKeyTestLastDigits : $this->l(
                 'Please fill your API key for Test'
             ),
             'class' => $apiKeyTestLastDigits ? 'adyen-input-green' : '',
@@ -678,7 +721,7 @@ class Adyen extends PaymentModule
             'type' => 'password',
             'label' => $this->l('API key for Live'),
             'name' => 'ADYEN_APIKEY_LIVE',
-            'desc' => $apiKeyLiveLastDigits ? $this->l('Key stored ending in: ') . $apiKeyLiveLastDigits : $this->l(
+            'desc' => $apiKeyLiveLastDigits ? $this->l('Saved key ends in: ') . $apiKeyLiveLastDigits : $this->l(
                 'Please fill your API key for Live'
             ),
             'class' => $apiKeyLiveLastDigits ? 'adyen-input-green' : '',
@@ -765,8 +808,7 @@ class Adyen extends PaymentModule
      * Hook payment options PrestaShop > 1.7
      *
      * @return array
-     * @throws SmartyException
-     * @throws Adyen\AdyenException
+     * @throws Exception
      */
     public function hookPaymentOptions()
     {
@@ -890,7 +932,7 @@ class Adyen extends PaymentModule
         $embeddedOption->setCallToActionText($this->l('Pay by card'))
             ->setForm(
                 $this->context->smarty->fetch(
-                    _PS_MODULE_DIR_ . $this->name . '/views/templates/front/payment.tpl'
+                    _PS_MODULE_DIR_ . $this->name . '/views/templates/front/card-payment-method.tpl'
                 )
             )
             ->setLogo(Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $cc_img))
@@ -903,7 +945,8 @@ class Adyen extends PaymentModule
     /**
      * Hook payment options PrestaShop <= 1.6
      *
-     * @return string|void
+     * @return string|null
+     * @throws Exception
      */
     public function hookPayment()
     {
@@ -929,7 +972,8 @@ class Adyen extends PaymentModule
     }
 
     /**
-     * @return array|void
+     * @return array|null
+     * @throws Exception
      */
     public function hookDisplayPaymentEU()
     {
@@ -961,21 +1005,31 @@ class Adyen extends PaymentModule
     }
 
     /**
-     *
+     * @param $params
+     * @return |null
      */
-    public function hookPaymentReturn()
+    public function hookPaymentReturn($params)
     {
         if (!$this->active) {
             return null;
         }
 
-        // Start session to retrieve stored action
-        $this->helper_data->startSession();
-
         $paymentAction = false;
 
-        if (!empty($_SESSION['paymentAction'])) {
-            $paymentAction = $_SESSION['paymentAction'];
+        if ($this->versionChecker->isPrestaShop16()) {
+            $order = $params['objOrder'];
+        } else {
+            $order = $params['order'];
+        }
+
+        if (empty($order)) {
+            // something went wrong
+        }
+
+        $paymentResponse = $this->adyenPaymentResponseModel->getPaymentResponseByCartId($order->id_cart);
+
+        if (!empty($paymentResponse) && !empty($paymentResponse['action'])) {
+            $paymentAction = $paymentResponse['action'];
         }
 
         $smartyVariables = array(
@@ -994,8 +1048,8 @@ class Adyen extends PaymentModule
     }
 
     /**
-     *
-     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
+     * @return |null
+     * @throws Exception
      */
     public function hookDisplayPaymentTop()
     {
@@ -1021,7 +1075,10 @@ class Adyen extends PaymentModule
         return $this->display(__FILE__, '/views/templates/front/adyencheckout.tpl');
     }
 
-
+    /**
+     * @param array $params
+     * @return void|null
+     */
     public function hookActionOrderSlipAdd(array $params)
     {
         if (!$this->active) {
@@ -1076,6 +1133,11 @@ class Adyen extends PaymentModule
         $refundService->request($orderSlip, $currency['iso_code']);
     }
 
+    /**
+     * @param $message
+     * @param Order|null $order
+     * @param OrderSlip|null $orderSlip
+     */
     private function addMessageToOrderForOrderSlipAndLogErrorMessage(
         $message,
         Order $order = null,
@@ -1190,7 +1252,6 @@ class Adyen extends PaymentModule
 
     /**
      * @param array $paymentMethods
-     *
      * @return string
      */
     private function getOneClickPaymentMethods(array $paymentMethods)
@@ -1236,7 +1297,6 @@ class Adyen extends PaymentModule
 
     /**
      * @param array $paymentMethods
-     *
      * @return string
      */
     private function getLocalPaymentMethods(array $paymentMethods)
@@ -1272,6 +1332,8 @@ class Adyen extends PaymentModule
     }
 
     /**
+     * PrestaShop 1.6
+     *
      * @return string
      */
     private function getStandardPaymentMethod()
@@ -1296,7 +1358,7 @@ class Adyen extends PaymentModule
         // Assign variables to frontend
         $this->context->smarty->assign($smartyVariables);
 
-        $payments .= $this->display(__FILE__, '/views/templates/front/payment.tpl');
+        $payments .= $this->display(__FILE__, '/views/templates/front/card-payment-method.tpl');
         return $payments;
     }
 
@@ -1326,7 +1388,6 @@ class Adyen extends PaymentModule
 
     /**
      * @param $params
-     *
      * @throws \PrestaShop\PrestaShop\Adapter\CoreException
      * @noinspection PhpUnusedParameterInspection This method accepts a parameter and, even we don't use it,
      * it's better to make sure this is cataloged in the code base
@@ -1344,8 +1405,7 @@ class Adyen extends PaymentModule
     }
 
     /**
-     * @param FrontController $controller
-     *
+     * @param $controller
      * @throws \PrestaShop\PrestaShop\Adapter\CoreException
      */
     private function registerAdyenAssets($controller)
@@ -1401,8 +1461,8 @@ class Adyen extends PaymentModule
         // Only for Order controller
         if ($controller->php_self == 'order') {
             $controllerAdapter->registerJavascript(
-                'adyen-credit-card-validator',
-                $this->_path . 'views/js/payment-components/credit-card.js',
+                'adyen-card-payment-method',
+                $this->_path . 'views/js/payment-components/card-payment-method.js',
                 array('position' => 'bottom', 'priority' => 170)
             );
             $controllerAdapter->registerJavascript(
@@ -1433,7 +1493,6 @@ class Adyen extends PaymentModule
 
     /**
      * @param $serviceName
-     *
      * @return mixed|object
      * @throws \PrestaShop\PrestaShop\Adapter\CoreException
      */
