@@ -34,7 +34,7 @@ use Adyen\PrestaShop\controllers\FrontController;
 class AdyenValidate3dModuleFrontController extends FrontController
 {
     /**
-     * @throws Adapter_Exception
+     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
      * @throws AdyenException
      */
     public function postProcess()

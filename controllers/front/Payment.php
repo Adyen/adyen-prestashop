@@ -150,7 +150,7 @@ class AdyenPaymentModuleFrontController extends FrontController
 
     /**
      * @return mixed
-     * @throws Adapter_Exception
+     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
      * @throws AdyenException
      */
     public function postProcess()

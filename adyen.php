@@ -95,7 +95,7 @@ class Adyen extends PaymentModule
     /**
      * Adyen constructor.
      *
-     * @throws Adapter_Exception
+     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
      */
     public function __construct()
     {
@@ -1377,7 +1377,7 @@ class Adyen extends PaymentModule
 
     /**
      * @param $params
-     * @throws Adapter_Exception
+     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
      * @noinspection PhpUnusedParameterInspection This method accepts a parameter and, even we don't use it,
      * it's better to make sure this is cataloged in the code base
      */
@@ -1395,7 +1395,7 @@ class Adyen extends PaymentModule
 
     /**
      * @param $controller
-     * @throws Adapter_Exception
+     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
      */
     private function registerAdyenAssets($controller)
     {
@@ -1483,7 +1483,7 @@ class Adyen extends PaymentModule
     /**
      * @param $serviceName
      * @return mixed|object
-     * @throws Adapter_Exception
+     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
      */
     private function getService($serviceName)
     {

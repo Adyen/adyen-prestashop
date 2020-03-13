@@ -53,7 +53,7 @@ class AdminAdyenPrestashopCronController extends \ModuleAdminController
     /**
      * AdminAdyenPrestashopCronController constructor.
      *
-     * @throws Adapter_Exception
+     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
      */
     public function __construct()
     {
