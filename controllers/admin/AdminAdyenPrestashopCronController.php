@@ -27,6 +27,9 @@
 // phpcs:disable PSR1.Classes.ClassDeclaration
 
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
+use PrestaShop\PrestaShop\Adapter\CoreException;
+use Adyen\PrestaShop\exception\GenericLoggedException;
+use Adyen\PrestaShop\exception\MissingDataException;
 
 class AdminAdyenPrestashopCronController extends \ModuleAdminController
 {
@@ -53,7 +56,7 @@ class AdminAdyenPrestashopCronController extends \ModuleAdminController
     /**
      * AdminAdyenPrestashopCronController constructor.
      *
-     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
+     * @throws CoreException
      */
     public function __construct()
     {
@@ -64,12 +67,12 @@ class AdminAdyenPrestashopCronController extends \ModuleAdminController
         $cronjobToken = '';
 
         try {
-            $cronjobToken = $this->crypto->decrypt(Configuration::get('ADYEN_CRONJOB_TOKEN'));
-        } catch (\Adyen\PrestaShop\exception\GenericLoggedException $e) {
+            $cronjobToken = $this->crypto->decrypt(\Configuration::get('ADYEN_CRONJOB_TOKEN'));
+        } catch (GenericLoggedException $e) {
             $this->logger->error(
                 'For configuration "ADYEN_CRONJOB_TOKEN" an exception was thrown: ' . $e->getMessage()
             );
-        } catch (\Adyen\PrestaShop\exception\MissingDataException $e) {
+        } catch (MissingDataException $e) {
             $this->logger->debug(
                 'The configuration "ADYEN_CRONJOB_TOKEN" has no value set, please add a secure token!'
             );
@@ -93,11 +96,11 @@ class AdminAdyenPrestashopCronController extends \ModuleAdminController
     {
         $notificationProcessor = new \Adyen\PrestaShop\service\notification\NotificationProcessor(
             $this->helperData,
-            Db::getInstance(),
+            \Db::getInstance(),
             new \Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter(),
             new \Adyen\PrestaShop\service\adapter\classes\CustomerThreadAdapter(),
             $this->logger,
-            Context::getContext()
+            \Context::getContext()
         );
 
         $notificationModel = new \Adyen\PrestaShop\model\AdyenNotification();

@@ -31,7 +31,7 @@ class ServiceLocator
     /**
      * @param $serviceName
      * @return mixed|object
-     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
+     * @throws CoreException
      */
     public static function get($serviceName)
     {

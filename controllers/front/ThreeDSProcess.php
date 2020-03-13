@@ -40,7 +40,6 @@ class AdyenThreeDSProcessModuleFrontController extends FrontController
     public $ssl = true;
 
     /**
-     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
      * @throws AdyenException
      */
     public function postProcess()

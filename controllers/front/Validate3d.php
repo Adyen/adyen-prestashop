@@ -30,11 +30,12 @@ use Adyen\AdyenException;
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use Adyen\PrestaShop\service\Checkout;
 use Adyen\PrestaShop\controllers\FrontController;
+use PrestaShop\PrestaShop\Adapter\CoreException;
 
 class AdyenValidate3dModuleFrontController extends FrontController
 {
     /**
-     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
+     * @throws CoreException
      * @throws AdyenException
      */
     public function postProcess()

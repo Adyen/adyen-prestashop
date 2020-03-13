@@ -317,7 +317,7 @@ class Adyen extends PaymentModule
             `result_code` varchar(255) DEFAULT NULL COMMENT \'Result code\',
             `response` text COMMENT \'Response\',
             `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT \'Created At\',
-            `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP 
+            `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             COMMENT \'Updated At\',
             PRIMARY KEY (`entity_id`),
             KEY `ADYEN_PAYMENT_RESPONSE_ID_CART` (`id_cart`)
@@ -363,7 +363,9 @@ class Adyen extends PaymentModule
     }
 
     /**
+     * Drop all Adyen related database tables
      *
+     * @return bool
      */
     private function removeAdyenDatabaseTables()
     {
@@ -804,8 +806,7 @@ class Adyen extends PaymentModule
      * Hook payment options PrestaShop > 1.7
      *
      * @return array
-     * @throws SmartyException
-     * @throws Adyen\AdyenException
+     * @throws Exception
      */
     public function hookPaymentOptions()
     {
@@ -942,7 +943,8 @@ class Adyen extends PaymentModule
     /**
      * Hook payment options PrestaShop <= 1.6
      *
-     * @return string|void
+     * @return string|null
+     * @throws Exception
      */
     public function hookPayment()
     {
@@ -968,7 +970,8 @@ class Adyen extends PaymentModule
     }
 
     /**
-     * @return array|void
+     * @return array|null
+     * @throws Exception
      */
     public function hookDisplayPaymentEU()
     {
@@ -1070,7 +1073,10 @@ class Adyen extends PaymentModule
         return $this->display(__FILE__, '/views/templates/front/adyencheckout.tpl');
     }
 
-
+    /**
+     * @param array $params
+     * @return void|null
+     */
     public function hookActionOrderSlipAdd(array $params)
     {
         if (!$this->active) {
@@ -1125,6 +1131,11 @@ class Adyen extends PaymentModule
         $refundService->request($orderSlip, $currency['iso_code']);
     }
 
+    /**
+     * @param $message
+     * @param Order|null $order
+     * @param OrderSlip|null $orderSlip
+     */
     private function addMessageToOrderForOrderSlipAndLogErrorMessage(
         $message,
         Order $order = null,
@@ -1239,7 +1250,6 @@ class Adyen extends PaymentModule
 
     /**
      * @param array $paymentMethods
-     *
      * @return string
      */
     private function getOneClickPaymentMethods(array $paymentMethods)
@@ -1285,7 +1295,6 @@ class Adyen extends PaymentModule
 
     /**
      * @param array $paymentMethods
-     *
      * @return string
      */
     private function getLocalPaymentMethods(array $paymentMethods)

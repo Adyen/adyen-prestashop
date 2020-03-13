@@ -31,6 +31,7 @@ use Adyen\PrestaShop\controllers\FrontController;
 use Adyen\PrestaShop\exception\MissingDataException;
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use Adyen\PrestaShop\service\Checkout;
+use PrestaShop\PrestaShop\Adapter\CoreException;
 
 class AdyenPaymentModuleFrontController extends FrontController
 {
@@ -150,7 +151,7 @@ class AdyenPaymentModuleFrontController extends FrontController
 
     /**
      * @return mixed
-     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
+     * @throws CoreException
      * @throws AdyenException
      */
     public function postProcess()
@@ -599,7 +600,7 @@ class AdyenPaymentModuleFrontController extends FrontController
 
     /**
      * @param $paymentMethod
-     * @param Cart $cart
+     * @param \Cart $cart
      * @param $request
      * @return mixed
      */

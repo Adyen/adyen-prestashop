@@ -29,6 +29,8 @@
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use Adyen\PrestaShop\controllers\FrontController;
 use Adyen\AdyenException;
+use PrestaShop\PrestaShop\Adapter\CoreException;
+use Adyen\PrestaShop\service\Checkout;
 
 class AdyenResultModuleFrontController extends FrontController
 {
@@ -38,7 +40,7 @@ class AdyenResultModuleFrontController extends FrontController
     public $ssl = true;
 
     /**
-     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
+     * @throws CoreException
      * @throws AdyenException
      */
     public function postProcess()
@@ -59,7 +61,7 @@ class AdyenResultModuleFrontController extends FrontController
             \Tools::redirect($this->context->link->getPageLink('order', $this->ssl));
         }
 
-        /** @var \Adyen\PrestaShop\service\Checkout $checkout */
+        /** @var Checkout $checkout */
         $checkout = ServiceLocator::get('Adyen\PrestaShop\service\Checkout');
         $response = $checkout->paymentsDetails(
             array(
