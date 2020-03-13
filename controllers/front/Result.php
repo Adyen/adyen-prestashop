@@ -46,7 +46,7 @@ class AdyenResultModuleFrontController extends FrontController
     public function postProcess()
     {
         // Retrieve cart based on the reference parameter
-        $cart = new \Cart(\Tools::getValue('reference'));
+        $cart = new \Cart(\Tools::getValue(self::ADYEN_MERCHANT_REFERENCE));
 
         // Validate if cart exists - if not redirect back to order page
         if (!\Validate::isLoadedObject($cart)) {

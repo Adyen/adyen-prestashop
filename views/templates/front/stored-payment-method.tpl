@@ -50,7 +50,7 @@
                 <input type="hidden" name="issuerUrl"/>
                 <input type="hidden" name="paRequest"/>
                 <input type="hidden" name="md"/>
-                <input type="hidden" name="reference">
+                <input type="hidden" name="adyenMerchantReference">
 
                 {if $prestashop16}
                     <div style="display:none">

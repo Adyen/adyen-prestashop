@@ -43,6 +43,7 @@ use Guest;
 use PrestaShopDatabaseException;
 use PrestaShopException;
 use Tools;
+use Adyen\PrestaShop\controllers\FrontController;
 
 class Data
 {
@@ -291,14 +292,14 @@ class Data
                 if (!empty($details['paRequest']) &&
                     !empty($details['md']) &&
                     !empty($details['issuerUrl']) &&
-                    !empty($details['reference']) &&
+                    !empty($details[FrontController::ADYEN_MERCHANT_REFERENCE]) &&
                     !empty($details['redirectMethod'])) {
                     $response = array(
                         'action' => 'threeDS1',
                         'paRequest' => $details['paRequest'],
                         'md' => $details['md'],
                         'issuerUrl' => $details['issuerUrl'],
-                        'reference' => $details['reference'],
+                        FrontController::ADYEN_MERCHANT_REFERENCE => $details[FrontController::ADYEN_MERCHANT_REFERENCE],
                         'redirectMethod' => $details['redirectMethod']
                     );
                 } else {

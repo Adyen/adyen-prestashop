@@ -39,13 +39,7 @@ class AdyenPaymentModuleFrontController extends FrontController
     const DATE_OF_BIRTH = 'dateOfBirth';
     const GENDER = 'gender';
     const TELEPHONE_NUMBER = 'telephoneNumber';
-    const ISSUER = 'issuer';
-    const PA_REQUEST = 'paRequest';
-    const MD = 'md';
-    const ISSUER_URL = 'issuerUrl';
-    const REDIRECT_METHOD = 'redirectMethod';
     const STORE_DETAILS = 'storeDetails';
-    const METHOD = 'method';
     const CARDHOLDER_NAME = 'holderName';
     const ENCRYPTED_CARD_NUMBER = 'encryptedCardNumber';
     const ENCRYPTED_EXPIRY_MONTH = 'encryptedExpiryMonth';
@@ -55,7 +49,6 @@ class AdyenPaymentModuleFrontController extends FrontController
     const TYPE = 'type';
     const STORED_PAYMENT_METHOD_ID = 'storedPaymentMethodId';
     const PERSONAL_DETAILS = 'personalDetails';
-    const REFERENCE = 'reference';
 
     /**
      * @var bool
@@ -323,7 +316,7 @@ class AdyenPaymentModuleFrontController extends FrontController
             $this->module->name,
             'Result',
             array(
-                'reference' => $cart->id
+                self::ADYEN_MERCHANT_REFERENCE => $cart->id
             ),
             $this->ssl
         );

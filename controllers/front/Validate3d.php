@@ -41,7 +41,7 @@ class AdyenValidate3dModuleFrontController extends FrontController
     public function postProcess()
     {
         // retrieve cart from temp value and restore the cart to approve payment
-        $cart = new \Cart((int)\Tools::getValue('reference'));
+        $cart = new \Cart((int)\Tools::getValue(self::ADYEN_MERCHANT_REFERENCE));
 
         $paymentResponse = $this->adyenPaymentResponseModel->getPaymentResponseByCartId($cart->id);
 

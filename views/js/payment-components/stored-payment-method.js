@@ -243,14 +243,14 @@ jQuery(function ($) {
                     !!response.md &&
                     !!response.issuerUrl &&
                     !!response.redirectMethod &&
-                    !!response.reference
+                    !!response.adyenMerchantReference
                 ) {
                     //populate hidden form inputs
                     $('input[name=redirectMethod]').attr('value', response.redirectMethod);
                     $('input[name=issuerUrl]').attr('value', response.issuerUrl);
                     $('input[name=paRequest]').attr('value', response.paRequest);
                     $('input[name=md]').attr('value', response.md);
-                    $('input[name=reference]').attr('value', response.reference);
+                    $('input[name=adyenMerchantReference]').attr('value', response.adyenMerchantReference);
 
                     placeOrder(paymentForm);
                 } else {

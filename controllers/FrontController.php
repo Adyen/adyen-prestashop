@@ -29,12 +29,18 @@ use Adyen\PrestaShop\service\Logger;
 use Adyen\PrestaShop\application\VersionChecker;
 use Adyen\PrestaShop\helper\Data as AdyenHelper;
 use Adyen\AdyenException;
-use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
 use Adyen\PrestaShop\service\Cart as CartService;
 use Adyen\PrestaShop\model\AdyenPaymentResponse;
 
 abstract class FrontController extends \ModuleFrontController
 {
+    const ADYEN_MERCHANT_REFERENCE = 'adyenMerchantReference';
+    const ISSUER = 'issuer';
+    const PA_REQUEST = 'paRequest';
+    const MD = 'md';
+    const ISSUER_URL = 'issuerUrl';
+    const REDIRECT_METHOD = 'redirectMethod';
+
     /**
      * @var AdyenHelper
      */
@@ -49,11 +55,6 @@ abstract class FrontController extends \ModuleFrontController
      * @var Logger
      */
     protected $logger;
-
-    /**
-     * @var OrderAdapter
-     */
-    protected $orderPaymentAdapter;
 
     /**
      * @var CartService
@@ -74,9 +75,6 @@ abstract class FrontController extends \ModuleFrontController
         $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
         $this->versionChecker = ServiceLocator::get('Adyen\PrestaShop\application\VersionChecker');
         $this->logger = ServiceLocator::get('Adyen\PrestaShop\service\Logger');
-        $this->orderPaymentAdapter = ServiceLocator::get(
-            'Adyen\PrestaShop\service\adapter\classes\order\OrderPaymentAdapter'
-        );
         $this->cartService = ServiceLocator::get('Adyen\PrestaShop\service\Cart');
         $this->adyenPaymentResponseModel = ServiceLocator::get('Adyen\PrestaShop\model\AdyenPaymentResponse');
     }
@@ -294,11 +292,11 @@ abstract class FrontController extends \ModuleFrontController
                         $this->helperData->buildControllerResponseJson(
                             'threeDS1',
                             array(
-                                'paRequest' => $paRequest,
-                                'md' => $md,
-                                'issuerUrl' => $redirectUrl,
-                                'redirectMethod' => $redirectMethod,
-                                'reference' => $cart->id
+                                self::PA_REQUEST => $paRequest,
+                                self::MD => $md,
+                                self::ISSUER_URL => $redirectUrl,
+                                self::REDIRECT_METHOD => $redirectMethod,
+                                self::ADYEN_MERCHANT_REFERENCE => $cart->id
                             )
                         )
                     );
@@ -424,16 +422,16 @@ abstract class FrontController extends \ModuleFrontController
      */
     protected function handle3DS1()
     {
-        $paRequest = \Tools::getValue(\AdyenPaymentModuleFrontController::PA_REQUEST);
-        $md = \Tools::getValue(\AdyenPaymentModuleFrontController::MD);
-        $issuerUrl = \Tools::getValue(\AdyenPaymentModuleFrontController::ISSUER_URL);
-        $redirectMethod = \Tools::getValue(\AdyenPaymentModuleFrontController::REDIRECT_METHOD);
-        $reference = \Tools::getValue(\AdyenPaymentModuleFrontController::REFERENCE);
+        $paRequest = \Tools::getValue(self::PA_REQUEST);
+        $md = \Tools::getValue(self::MD);
+        $issuerUrl = \Tools::getValue(self::ISSUER_URL);
+        $redirectMethod = \Tools::getValue(self::REDIRECT_METHOD);
+        $adyenMerchantReference = \Tools::getValue(self::ADYEN_MERCHANT_REFERENCE);
 
         $termUrl = $this->context->link->getModuleLink(
             "adyen",
             'Validate3d',
-            array('reference' => $reference),
+            array(self::ADYEN_MERCHANT_REFERENCE => $adyenMerchantReference),
             true
         );
 
@@ -457,17 +455,17 @@ abstract class FrontController extends \ModuleFrontController
      */
     protected function is3DS1Process()
     {
-        $paRequest = \Tools::getValue(\AdyenPaymentModuleFrontController::PA_REQUEST);
-        $md = \Tools::getValue(\AdyenPaymentModuleFrontController::MD);
-        $issuerUrl = \Tools::getValue(\AdyenPaymentModuleFrontController::ISSUER_URL);
-        $redirectMethod = \Tools::getValue(\AdyenPaymentModuleFrontController::REDIRECT_METHOD);
-        $reference = \Tools::getValue(\AdyenPaymentModuleFrontController::REFERENCE);
+        $paRequest = \Tools::getValue(self::PA_REQUEST);
+        $md = \Tools::getValue(self::MD);
+        $issuerUrl = \Tools::getValue(self::ISSUER_URL);
+        $redirectMethod = \Tools::getValue(self::REDIRECT_METHOD);
+        $adyenMerchantReference = \Tools::getValue(self::ADYEN_MERCHANT_REFERENCE);
 
         if (!empty($paRequest) &&
             !empty($md) &&
             !empty($issuerUrl) &&
             !empty($redirectMethod) &&
-            !empty($reference)
+            !empty($adyenMerchantReference)
         ) {
             return true;
         }
