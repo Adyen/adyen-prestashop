@@ -218,7 +218,8 @@ class Adyen extends PaymentModule
      */
     private function createAdyenDatabaseTables()
     {
-        return $this->createAdyenPaymentResponseTable() && $this->createAdyenNotificationTable();
+        return $this->createAdyenPaymentResponseTable() &&
+            $this->createAdyenNotificationTable();
     }
 
     /**
