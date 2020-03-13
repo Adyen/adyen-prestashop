@@ -25,6 +25,8 @@
 namespace Adyen\PrestaShop\service\notification;
 
 use Adyen\PrestaShop\helper\Data as AdyenHelper;
+use Adyen\PrestaShop\model\AdyenNotification;
+use Adyen\PrestaShop\model\AdyenPaymentResponse;
 use Adyen\PrestaShop\service\adapter\classes\CustomerThreadAdapter;
 use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
 use Context;
@@ -66,6 +68,11 @@ class NotificationProcessor
     private $context;
 
     /**
+     * @var AdyenPaymentResponse
+     */
+    private $adyenPaymentResponse;
+
+    /**
      * NotificationProcessor constructor.
      *
      * @param AdyenHelper $helperData
@@ -74,6 +81,7 @@ class NotificationProcessor
      * @param CustomerThreadAdapter $customerThreadAdapter
      * @param LoggerInterface $logger
      * @param Context $context
+     * @param AdyenPaymentResponse $adyenPaymentResponse
      */
     public function __construct(
         AdyenHelper $helperData,
@@ -81,7 +89,8 @@ class NotificationProcessor
         OrderAdapter $orderAdapter,
         CustomerThreadAdapter $customerThreadAdapter,
         LoggerInterface $logger,
-        Context $context
+        Context $context,
+        AdyenPaymentResponse $adyenPaymentResponse
     ) {
         $this->helperData = $helperData;
         $this->dbInstance = $dbInstance;
@@ -89,72 +98,26 @@ class NotificationProcessor
         $this->customerThreadAdapter = $customerThreadAdapter;
         $this->logger = $logger;
         $this->context = $context;
+        $this->adyenPaymentResponse = $adyenPaymentResponse;
     }
 
     /**
-     * @return array|bool|null|object
+     * @param $unprocessedNotification
+     * @return bool
      */
-    public function getUnprocessedNotifications()
+    public function processNotification($unprocessedNotification)
     {
-        $dateStart = new \DateTime();
-        $dateStart->modify('-1 day');
+        // Add cron message to order
+        if (!$this->addMessage($unprocessedNotification)) {
+            return false;
+        }
 
-        $dateEnd = new \DateTime();
-        $dateEnd->modify('-1 minute');
-
-        $sql = 'SELECT * FROM ' . _DB_PREFIX_ . 'adyen_notification'
-            . ' WHERE `done` = 0'
-            . ' AND `processing` = 0'
-            . ' AND `created_at` > "' . $dateStart->format('Y-m-d H:i:s') . '"'
-            . ' AND `created_at` < "' . $dateEnd->format('Y-m-d H:i:s'). '"'
-            . ' LIMIT 100';
-
-        return $this->dbInstance->executeS($sql);
-    }
-
-    /**
-     * Update the unprocessed and not done notification to processing
-     * @param $id
-     * @return mixed
-     */
-    public function updateNotificationAsProcessing($id)
-    {
-        $sql = 'UPDATE ' . _DB_PREFIX_ . 'adyen_notification'
-            . ' SET `processing` = 1'
-            . ' WHERE `done` = 0'
-            . ' AND `processing` = 0'
-            . ' AND `entity_id` = "' . (int)$id . '"';
-        return $this->dbInstance->execute($sql);
-    }
-
-    /**
-     * Update the processed but not done notification to done
-     * @param $id
-     * @return mixed
-     */
-    public function updateNotificationAsDone($id)
-    {
-        $sql = 'UPDATE ' . _DB_PREFIX_ . 'adyen_notification'
-            . ' SET `processing` = 0, `done` = 1'
-            . ' WHERE `done` = 0'
-            . ' AND `processing` = 1'
-            . ' AND `entity_id` = "' . (int)$id . '"';
-        return $this->dbInstance->execute($sql);
-    }
-
-    /**
-     * Update the processed but not done notification to new
-     * @param $id
-     * @return mixed
-     */
-    public function updateNotificationAsNew($id)
-    {
-        $sql = 'UPDATE ' . _DB_PREFIX_ . 'adyen_notification'
-            . ' SET `processing` = 0, `done` = 0'
-            . ' WHERE `done` = 0'
-            . ' AND `processing` = 1'
-            . ' AND `entity_id` = "' . (int)$id . '"';
-        return $this->dbInstance->execute($sql);
+        switch ($unprocessedNotification['eventCode']) {
+            case AdyenNotification::AUTHORISATION:
+            case AdyenNotification::OFFER_CLOSED:
+                $this->adyenPaymentResponse->deletePaymentResponseByCartId($unprocessedNotification);
+                break;
+        }
     }
 
     /**

@@ -27,8 +27,12 @@
 // phpcs:disable PSR1.Classes.ClassDeclaration
 
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
+use Adyen\PrestaShop\controllers\FrontController;
+use Adyen\AdyenException;
+use PrestaShop\PrestaShop\Adapter\CoreException;
+use Adyen\PrestaShop\service\Checkout;
 
-class AdyenResultModuleFrontController extends \Adyen\PrestaShop\controllers\FrontController
+class AdyenResultModuleFrontController extends FrontController
 {
     /**
      * @var bool
@@ -36,24 +40,39 @@ class AdyenResultModuleFrontController extends \Adyen\PrestaShop\controllers\Fro
     public $ssl = true;
 
     /**
-     * @throws \Adyen\AdyenException
+     * @throws CoreException
+     * @throws AdyenException
      */
     public function postProcess()
     {
-        if (!isset($_SESSION['paymentData'])) {
+        // Retrieve cart based on the reference parameter
+        $cart = new \Cart(\Tools::getValue(self::ADYEN_MERCHANT_REFERENCE));
+
+        // Validate if cart exists - if not redirect back to order page
+        if (!\Validate::isLoadedObject($cart)) {
             \Tools::redirect($this->context->link->getPageLink('order', $this->ssl));
-            return;
         }
-        /** @var \Adyen\PrestaShop\service\Checkout $checkout */
+
+        // Retrieve previous payment response to validate the payment via the paymentDetails request
+        $paymentResponse = $this->adyenPaymentResponseModel->getPaymentResponseByCartId($cart->id);
+
+        // Validate if we have the necessary objects stored
+        if (empty($paymentResponse) || empty($paymentResponse['paymentData'])) {
+            \Tools::redirect($this->context->link->getPageLink('order', $this->ssl));
+        }
+
+        /** @var Checkout $checkout */
         $checkout = ServiceLocator::get('Adyen\PrestaShop\service\Checkout');
         $response = $checkout->paymentsDetails(
             array(
-                'paymentData' => $_SESSION['paymentData'],
-                'details' => Tools::getAllValues()
+                'paymentData' => $paymentResponse['paymentData'],
+                'details' => \Tools::getAllValues()
             )
         );
-        unset($_SESSION['paymentData']);
-        $cart = new Cart($this->context->cookie->id_cart_temp);
+
+        // Remove stored response since the paymentDetails call is done
+        $this->adyenPaymentResponseModel->deletePaymentResponseByCartId($cart->id);
+
         if ($response['resultCode'] == 'Authorised') {
             $total = (float)$cart->getOrderTotal(true, \Cart::BOTH);
             $extra_vars = array();
@@ -64,7 +83,7 @@ class AdyenResultModuleFrontController extends \Adyen\PrestaShop\controllers\Fro
             $customer = new \Customer($cart->id_customer);
             $this->module->validateOrder(
                 $cart->id,
-                2,
+                \Configuration::get('PS_OS_PAYMENT'),
                 $total,
                 $this->module->displayName,
                 null,
@@ -73,6 +92,7 @@ class AdyenResultModuleFrontController extends \Adyen\PrestaShop\controllers\Fro
                 false,
                 $customer->secure_key
             );
+
             \Tools::redirect(
                 $this->context->link->getPageLink(
                     'order-confirmation',
@@ -89,7 +109,7 @@ class AdyenResultModuleFrontController extends \Adyen\PrestaShop\controllers\Fro
             );
         } else {
             // create new cart from the current cart
-            $this->helperData->cloneCurrentCart($this->context, $cart);
+            $this->cartService->cloneCurrentCart($this->context, $cart);
 
             $this->logger->error("The payment was refused, id:  " . $cart->id);
             $this->setTemplate($this->helperData->getTemplateFromModulePath('views/templates/front/error.tpl'));
