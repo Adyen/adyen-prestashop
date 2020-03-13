@@ -370,7 +370,8 @@ class Adyen extends PaymentModule
     private function removeAdyenDatabaseTables()
     {
         $db = Db::getInstance();
-        return $db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'adyen_notification`');
+        return $db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'adyen_notification`') &&
+            $db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'adyen_payment_response`');
     }
 
     /**
