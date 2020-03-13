@@ -299,7 +299,8 @@ class Data
                         'paRequest' => $details['paRequest'],
                         'md' => $details['md'],
                         'issuerUrl' => $details['issuerUrl'],
-                        FrontController::ADYEN_MERCHANT_REFERENCE => $details[FrontController::ADYEN_MERCHANT_REFERENCE],
+                        FrontController::ADYEN_MERCHANT_REFERENCE =>
+                            $details[FrontController::ADYEN_MERCHANT_REFERENCE],
                         'redirectMethod' => $details['redirectMethod']
                     );
                 } else {
