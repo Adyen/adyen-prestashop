@@ -34,7 +34,7 @@ class Payment
      * @param $origin
      * @param string $encryptedSecurityCode
      * @param string $paymentMethodType
-     * @param bool $storeDetails
+     * @param bool $storePaymentMethod
      * @param array $request
      * @return array
      */
@@ -46,7 +46,7 @@ class Payment
         $origin,
         $encryptedSecurityCode = '',
         $paymentMethodType = 'scheme',
-        $storeDetails = false,
+        $storePaymentMethod = false,
         $request = array()
     ) {
         $request['paymentMethod']['type'] = $paymentMethodType;
@@ -61,10 +61,9 @@ class Payment
         }
 
         // Store card details required fields
-        if (true === $storeDetails) {
-            $request['paymentMethod']['storeDetails'] = true;
-            $request['enableOneClick'] = true;
-            $request['enableRecurring'] = false;
+        if (true == $storePaymentMethod) {
+            $request['storePaymentMethod'] = true;
+            $request['shopperInteraction'] = 'Ecommerce';
         }
 
         $request = $this->build3DS2Data($origin, $request);

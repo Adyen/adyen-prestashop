@@ -49,7 +49,7 @@ jQuery(function ($) {
                 'isAjax': true,
                 'browserInfo': data.browserInfo,
                 'paymentMethod': data.paymentMethod,
-                'storeDetails': data.storeDetails
+                'storePaymentMethod': data.storePaymentMethod
             });
 
             return false;

@@ -39,7 +39,7 @@ class AdyenPaymentModuleFrontController extends FrontController
     const DATE_OF_BIRTH = 'dateOfBirth';
     const GENDER = 'gender';
     const TELEPHONE_NUMBER = 'telephoneNumber';
-    const STORE_DETAILS = 'storeDetails';
+    const STORE_PAYMENT_METHOD = 'storePaymentMethod';
     const CARDHOLDER_NAME = 'holderName';
     const ENCRYPTED_CARD_NUMBER = 'encryptedCardNumber';
     const ENCRYPTED_EXPIRY_MONTH = 'encryptedExpiryMonth';
@@ -256,6 +256,7 @@ class AdyenPaymentModuleFrontController extends FrontController
     public function buildCardData($request = array())
     {
         $paymentMethod = \Tools::getValue(self::PAYMENT_METHOD);
+        $storePaymentMethod = \Tools::getValue(self::STORE_PAYMENT_METHOD);
 
         $encryptedCardNumber = $paymentMethod[self::ENCRYPTED_CARD_NUMBER];
         $encryptedExpiryMonth = $paymentMethod[self::ENCRYPTED_EXPIRY_MONTH];
@@ -274,12 +275,6 @@ class AdyenPaymentModuleFrontController extends FrontController
             $encryptedSecurityCode = '';
         }
 
-        if (!empty($paymentMethod[self::STORE_DETAILS])) {
-            $storeDetails = $paymentMethod[self::STORE_DETAILS];
-        } else {
-            $storeDetails = false;
-        }
-
         $origin = $this->configuration->httpHost;
 
         return $this->paymentBuilder->buildCardData(
@@ -290,7 +285,7 @@ class AdyenPaymentModuleFrontController extends FrontController
             $origin,
             $encryptedSecurityCode,
             $paymentMethodType,
-            $storeDetails,
+            $storePaymentMethod,
             $request
         );
     }
