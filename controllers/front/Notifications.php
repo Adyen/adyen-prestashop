@@ -47,30 +47,32 @@ class AdyenNotificationsModuleFrontController extends FrontController
     }
 
     /**
-     * @throws Adapter_Exception
+     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
      */
     public function postProcess()
     {
         $crypto = ServiceLocator::get('\Adyen\PrestaShop\infra\Crypto');
 
-        $hmacKey = $crypto->decrypt(Configuration::get('ADYEN_NOTI_HMAC'));
-        $notificationPassword = $crypto->decrypt(Configuration::get('ADYEN_NOTI_PASSWORD'));
+        $hmacKey = $crypto->decrypt(\Configuration::get('ADYEN_NOTI_HMAC'));
+        $notificationPassword = $crypto->decrypt(\Configuration::get('ADYEN_NOTI_PASSWORD'));
 
         $notificationReceiver = new NotificationReceiver(
             $this->helperData,
             new HmacSignature(),
             $hmacKey,
-            Configuration::get('ADYEN_MERCHANT_ACCOUNT'),
-            Configuration::get('ADYEN_NOTI_USERNAME'),
+            \Configuration::get('ADYEN_MERCHANT_ACCOUNT'),
+            \Configuration::get('ADYEN_NOTI_USERNAME'),
             $notificationPassword,
-            Db::getInstance(),
+            \Db::getInstance(),
             ServiceLocator::get('Adyen\PrestaShop\service\Logger'),
-            ServiceLocator::get('Adyen\PrestaShop\service\adapter\classes\Configuration')
+            ServiceLocator::get('Adyen\PrestaShop\service\adapter\classes\Configuration'),
+            ServiceLocator::get('Adyen\PrestaShop\model\AdyenNotification')
         );
+
         try {
             die(
                 $notificationReceiver->doPostProcess(
-                    json_decode(Tools::file_get_contents('php://input'), true)
+                    json_decode(\Tools::file_get_contents('php://input'), true)
                 )
             );
         } catch (AuthenticationException $e) {
