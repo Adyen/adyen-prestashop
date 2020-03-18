@@ -31,6 +31,7 @@ use Adyen\PrestaShop\helper\Data as AdyenHelper;
 use Adyen\AdyenException;
 use Adyen\PrestaShop\service\Cart as CartService;
 use Adyen\PrestaShop\model\AdyenPaymentResponse;
+use Adyen\PrestaShop\service\Order as OrderService;
 
 abstract class FrontController extends \ModuleFrontController
 {
@@ -67,6 +68,11 @@ abstract class FrontController extends \ModuleFrontController
     protected $adyenPaymentResponseModel;
 
     /**
+     * @var OrderService
+     */
+    protected $orderService;
+
+    /**
      * FrontController constructor.
      */
     public function __construct()
@@ -77,6 +83,7 @@ abstract class FrontController extends \ModuleFrontController
         $this->logger = ServiceLocator::get('Adyen\PrestaShop\service\Logger');
         $this->cartService = ServiceLocator::get('Adyen\PrestaShop\service\Cart');
         $this->adyenPaymentResponseModel = ServiceLocator::get('Adyen\PrestaShop\model\AdyenPaymentResponse');
+        $this->orderService = ServiceLocator::get('Adyen\PrestaShop\service\Order');
     }
 
     /**
@@ -164,31 +171,7 @@ abstract class FrontController extends \ModuleFrontController
 
                 $newOrder = new \Order((int)$this->module->currentOrder);
 
-                if (\Validate::isLoadedObject($newOrder)) {
-                    // Save available data into the order_payment table
-                    $paymentCollection = $newOrder->getOrderPaymentCollection();
-                    foreach ($paymentCollection as $payment) {
-                        $cardSummary = !empty($response['additionalData']['cardSummary'])
-                            ? pSQL($response['additionalData']['cardSummary'])
-                            : '****';
-                        $cardBin = !empty($response['additionalData']['cardBin'])
-                            ? pSQL($response['additionalData']['cardBin'])
-                            : '******';
-                        $paymentMethod = !empty($response['additionalData']['paymentMethod'])
-                            ? pSQL($response['additionalData']['paymentMethod'])
-                            : 'Adyen';
-                        $expiryDate = !empty($response['additionalData']['expiryDate'])
-                            ? pSQL($response['additionalData']['expiryDate'])
-                            : '';
-                        $cardHolderName = !empty($response['additionalData']['cardHolderName'])
-                            ? pSQL($response['additionalData']['cardHolderName']) : '';
-                        $payment->card_number = $cardBin . ' *** ' . $cardSummary;
-                        $payment->card_brand = $paymentMethod;
-                        $payment->card_expiration = $expiryDate;
-                        $payment->card_holder = $cardHolderName;
-                        $payment->save();
-                    }
-                }
+                $this->orderService->addPaymentDataToOrderFromResponse($newOrder, $response);
 
                 $this->redirectUserToPageLink(
                     $this->context->link->getPageLink(
