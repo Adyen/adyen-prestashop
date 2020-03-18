@@ -336,7 +336,7 @@ class Adyen extends PaymentModule
      */
     public function createWaitingForPaymentOrderStatus()
     {
-        if (!Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT')) {
+        if (!$this->configuration->get('ADYEN_OS_WAITING_FOR_PAYMENT')) {
             $order_state = new OrderState();
             $order_state->name = array();
             foreach (Language::getLanguages() as $language) {
@@ -352,7 +352,7 @@ class Adyen extends PaymentModule
             $order_state->shipped = false;
             $order_state->paid = false;
             if ($order_state->add()) {
-                $source = _PS_ROOT_DIR_ . '/img/os/' . Configuration::get('PS_OS_BANKWIRE') . '.gif';
+                $source = _PS_ROOT_DIR_ . '/img/os/' . $this->configuration->get('PS_OS_BANKWIRE') . '.gif';
                 $destination = _PS_ROOT_DIR_ . '/img/os/' . (int)$order_state->id . '.gif';
                 copy($source, $destination);
             }
@@ -525,7 +525,7 @@ class Adyen extends PaymentModule
         $this->context->controller->addCSS($this->_path . 'views/css/adyen_admin.css', 'all');
 
         // Get default Language
-        $default_lang = (int)Configuration::get('PS_LANG_DEFAULT');
+        $default_lang = (int)$this->configuration->get('PS_LANG_DEFAULT');
 
         // Init Fields form array
         $fields_form = array(array());
@@ -591,7 +591,7 @@ class Adyen extends PaymentModule
         $notificationPassword = '';
 
         try {
-            $notificationPassword = $this->crypto->decrypt(Configuration::get('ADYEN_NOTI_PASSWORD'));
+            $notificationPassword = $this->crypto->decrypt($this->configuration->get('ADYEN_NOTI_PASSWORD'));
         } catch (\Adyen\PrestaShop\exception\GenericLoggedException $e) {
             $this->logger->error(
                 'For configuration "ADYEN_NOTI_PASSWORD" an exception was thrown: ' . $e->getMessage()
@@ -619,7 +619,7 @@ class Adyen extends PaymentModule
         $notificationHmacKey = '';
 
         try {
-            $notificationHmacKey = $this->crypto->decrypt(Configuration::get('ADYEN_NOTI_HMAC'));
+            $notificationHmacKey = $this->crypto->decrypt($this->configuration->get('ADYEN_NOTI_HMAC'));
         } catch (\Adyen\PrestaShop\exception\GenericLoggedException $e) {
             $this->logger->error('For configuration "ADYEN_NOTI_HMAC" an exception was thrown: ' . $e->getMessage());
         } catch (\Adyen\PrestaShop\exception\MissingDataException $e) {
@@ -643,7 +643,7 @@ class Adyen extends PaymentModule
         $cronjobToken = '';
 
         try {
-            $cronjobToken = $this->crypto->decrypt(Configuration::get('ADYEN_CRONJOB_TOKEN'));
+            $cronjobToken = $this->crypto->decrypt($this->configuration->get('ADYEN_CRONJOB_TOKEN'));
         } catch (\Adyen\PrestaShop\exception\GenericLoggedException $e) {
             $this->logger->error(
                 'For configuration "ADYEN_CRONJOB_TOKEN" an exception was thrown: ' . $e->getMessage()
@@ -675,7 +675,7 @@ class Adyen extends PaymentModule
         $apiKeyTest = '';
 
         try {
-            $apiKeyTest = $this->crypto->decrypt(Configuration::get('ADYEN_APIKEY_TEST'));
+            $apiKeyTest = $this->crypto->decrypt($this->configuration->get('ADYEN_APIKEY_TEST'));
         } catch (\Adyen\PrestaShop\exception\GenericLoggedException $e) {
             $this->logger->error(
                 'For configuration "ADYEN_APIKEY_TEST" an exception was thrown: ' . $e->getMessage()
@@ -706,7 +706,7 @@ class Adyen extends PaymentModule
         $apiKeyLive = '';
 
         try {
-            $apiKeyLive = $this->crypto->decrypt(Configuration::get('ADYEN_APIKEY_LIVE'));
+            $apiKeyLive = $this->crypto->decrypt($this->configuration->get('ADYEN_APIKEY_LIVE'));
         } catch (\Adyen\PrestaShop\exception\GenericLoggedException $e) {
             $this->logger->error(
                 'For configuration "ADYEN_APIKEY_LIVE" an exception was thrown: ' . $e->getMessage()
@@ -787,11 +787,11 @@ class Adyen extends PaymentModule
             $cron_job_token = Tools::getValue('ADYEN_CRONJOB_TOKEN');
             $live_endpoint_url_prefix = (string)Tools::getValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
         } else {
-            $merchant_account = Configuration::get('ADYEN_MERCHANT_ACCOUNT');
-            $mode = Configuration::get('ADYEN_MODE');
-            $notification_username = Configuration::get('ADYEN_NOTI_USERNAME');
+            $merchant_account = $this->configuration->get('ADYEN_MERCHANT_ACCOUNT');
+            $mode = $this->configuration->get('ADYEN_MODE');
+            $notification_username = $this->configuration->get('ADYEN_NOTI_USERNAME');
             $cron_job_token = $cronjobToken;
-            $live_endpoint_url_prefix = Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
+            $live_endpoint_url_prefix = $this->configuration->get('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
         }
 
         // Load current value
@@ -1000,7 +1000,7 @@ class Adyen extends PaymentModule
         return array(
             'locale' => $this->languageAdapter->getLocaleCode($this->context->language),
             'originKey' => $this->helper_data->getOriginKeyForOrigin(),
-            'environment' => Configuration::get('ADYEN_MODE')
+            'environment' => $this->configuration->get('ADYEN_MODE')
         );
     }
 
@@ -1111,7 +1111,7 @@ class Adyen extends PaymentModule
         $refundService = new Adyen\PrestaShop\service\modification\Refund(
             $modificationService,
             $notificationRetriever,
-            Configuration::get('ADYEN_MERCHANT_ACCOUNT'),
+            $this->configuration->get('ADYEN_MERCHANT_ACCOUNT'),
             $this->logger
         );
 

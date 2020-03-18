@@ -88,11 +88,11 @@ class Configuration
     {
         $this->logger = $logger;
         $this->httpHost = \Tools::getHttpHost(true, true);
-        $adyenModeConfiguration = \Configuration::get('ADYEN_MODE');
+        $adyenModeConfiguration = $this->get('ADYEN_MODE');
         $this->adyenMode = !empty($adyenModeConfiguration) ? $adyenModeConfiguration : Environment::TEST;
         $this->sslEncryptionKey = _COOKIE_KEY_;
         $this->encryptedApiKey = $this->getEncryptedAPIKey();
-        $this->liveEndpointPrefix = \Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
+        $this->liveEndpointPrefix = $this->get('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
         $this->moduleVersion = '2.0.0';
         $this->moduleName = 'adyen-prestashop';
         $this->versionChecker = $versionChecker;
@@ -106,9 +106,9 @@ class Configuration
     private function getEncryptedAPIKey()
     {
         if ($this->isTestMode()) {
-            $encryptedApiKey = \Configuration::get('ADYEN_APIKEY_TEST');
+            $encryptedApiKey = $this->get('ADYEN_APIKEY_TEST');
         } else {
-            $encryptedApiKey = \Configuration::get('ADYEN_APIKEY_LIVE');
+            $encryptedApiKey = $this->get('ADYEN_APIKEY_LIVE');
         }
         return $encryptedApiKey;
     }

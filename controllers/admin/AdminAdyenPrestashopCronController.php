@@ -30,6 +30,7 @@ use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use PrestaShop\PrestaShop\Adapter\CoreException;
 use Adyen\PrestaShop\exception\GenericLoggedException;
 use Adyen\PrestaShop\exception\MissingDataException;
+use Adyen\PrestaShop\service\adapter\classes\Configuration;
 
 class AdminAdyenPrestashopCronController extends \ModuleAdminController
 {
@@ -54,6 +55,11 @@ class AdminAdyenPrestashopCronController extends \ModuleAdminController
     private $crypto;
 
     /**
+     * @var Configuration
+     */
+    private $configuration;
+
+    /**
      * AdminAdyenPrestashopCronController constructor.
      *
      * @throws CoreException
@@ -63,11 +69,12 @@ class AdminAdyenPrestashopCronController extends \ModuleAdminController
         $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
         $this->logger = ServiceLocator::get('Adyen\PrestaShop\service\Logger');
         $this->crypto = ServiceLocator::get('Adyen\PrestaShop\infra\Crypto');
+        $this->configuration = ServiceLocator::get('Adyen\PrestaShop\service\adapter\classes\Configuration');
 
         $cronjobToken = '';
 
         try {
-            $cronjobToken = $this->crypto->decrypt(\Configuration::get('ADYEN_CRONJOB_TOKEN'));
+            $cronjobToken = $this->crypto->decrypt($this->configuration->get('ADYEN_CRONJOB_TOKEN'));
         } catch (GenericLoggedException $e) {
             $this->logger->error(
                 'For configuration "ADYEN_CRONJOB_TOKEN" an exception was thrown: ' . $e->getMessage()

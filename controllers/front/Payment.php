@@ -111,11 +111,6 @@ class AdyenPaymentModuleFrontController extends FrontController
     private $genderService;
 
     /**
-     * @var Adyen\PrestaShop\service\adapter\classes\Configuration
-     */
-    private $configuration;
-
-    /**
      * @var Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter
      */
     private $orderAdapter;
@@ -137,7 +132,6 @@ class AdyenPaymentModuleFrontController extends FrontController
         $this->countryAdapter = ServiceLocator::get('Adyen\PrestaShop\service\adapter\classes\Country');
         $this->paymentBuilder = ServiceLocator::get('Adyen\PrestaShop\service\builder\Payment');
         $this->genderService = ServiceLocator::get('Adyen\PrestaShop\service\Gender');
-        $this->configuration = ServiceLocator::get('Adyen\PrestaShop\service\adapter\classes\Configuration');
         $this->logger = ServiceLocator::get('Adyen\PrestaShop\service\Logger');
         $this->orderAdapter = ServiceLocator::get('Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter');
     }
@@ -305,7 +299,7 @@ class AdyenPaymentModuleFrontController extends FrontController
         );
 
         // Retrieve merchant account
-        $merchantAccount = \Configuration::get('ADYEN_MERCHANT_ACCOUNT');
+        $merchantAccount = $this->configuration->get('ADYEN_MERCHANT_ACCOUNT');
 
         $returnUrl = $this->context->link->getModuleLink(
             $this->module->name,

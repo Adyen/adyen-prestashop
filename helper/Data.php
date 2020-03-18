@@ -151,7 +151,7 @@ class Data
      */
     public function fetchPaymentMethods(Cart $cart, $language)
     {
-        $merchantAccount = \Configuration::get('ADYEN_MERCHANT_ACCOUNT');
+        $merchantAccount = $this->configuration->get('ADYEN_MERCHANT_ACCOUNT');
 
         if (!$merchantAccount) {
             $this->logger->error(

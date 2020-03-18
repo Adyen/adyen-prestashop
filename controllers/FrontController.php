@@ -31,6 +31,7 @@ use Adyen\PrestaShop\helper\Data as AdyenHelper;
 use Adyen\AdyenException;
 use Adyen\PrestaShop\service\Cart as CartService;
 use Adyen\PrestaShop\model\AdyenPaymentResponse;
+use Adyen\PrestaShop\service\adapter\classes\Configuration;
 
 abstract class FrontController extends \ModuleFrontController
 {
@@ -67,6 +68,11 @@ abstract class FrontController extends \ModuleFrontController
     protected $adyenPaymentResponseModel;
 
     /**
+     * @var Configuration
+     */
+    protected $configuration;
+
+    /**
      * FrontController constructor.
      */
     public function __construct()
@@ -77,6 +83,7 @@ abstract class FrontController extends \ModuleFrontController
         $this->logger = ServiceLocator::get('Adyen\PrestaShop\service\Logger');
         $this->cartService = ServiceLocator::get('Adyen\PrestaShop\service\Cart');
         $this->adyenPaymentResponseModel = ServiceLocator::get('Adyen\PrestaShop\model\AdyenPaymentResponse');
+        $this->configuration = ServiceLocator::get('Adyen\PrestaShop\service\adapter\classes\Configuration');
     }
 
     /**
@@ -152,7 +159,7 @@ abstract class FrontController extends \ModuleFrontController
             case 'Authorised':
                 $this->module->validateOrder(
                     $cart->id,
-                    \Configuration::get('PS_OS_PAYMENT'),
+                    $this->configuration->get('PS_OS_PAYMENT'),
                     $total,
                     $this->module->displayName,
                     null,
@@ -315,7 +322,7 @@ abstract class FrontController extends \ModuleFrontController
 
                     $this->module->validateOrder(
                         $cart->id,
-                        \Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT'),
+                        $this->configuration->get('ADYEN_OS_WAITING_FOR_PAYMENT'),
                         $total,
                         $this->module->displayName,
                         null,
@@ -346,7 +353,7 @@ abstract class FrontController extends \ModuleFrontController
             case 'Error':
                 $this->module->validateOrder(
                     $cart->id,
-                    \Configuration::get('PS_OS_ERROR'),
+                    $this->configuration->get('PS_OS_ERROR'),
                     $total,
                     $this->module->displayName,
                     null,
@@ -383,7 +390,7 @@ abstract class FrontController extends \ModuleFrontController
                 // Unsupported result code
                 $this->module->validateOrder(
                     $cart->id,
-                    \Configuration::get('PS_OS_ERROR'),
+                    $this->configuration->get('PS_OS_ERROR'),
                     $total,
                     $this->module->displayName,
                     null,
