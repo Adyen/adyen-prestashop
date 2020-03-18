@@ -34,6 +34,7 @@ use Db;
 use PrestaShopDatabaseException;
 use PrestaShopException;
 use Psr\Log\LoggerInterface;
+use Adyen\PrestaShop\service\Order as OrderService;
 
 class NotificationProcessor
 {
@@ -73,6 +74,11 @@ class NotificationProcessor
     private $adyenPaymentResponse;
 
     /**
+     * @var OrderService
+     */
+    private $orderService;
+
+    /**
      * NotificationProcessor constructor.
      *
      * @param AdyenHelper $helperData
@@ -90,7 +96,8 @@ class NotificationProcessor
         CustomerThreadAdapter $customerThreadAdapter,
         LoggerInterface $logger,
         Context $context,
-        AdyenPaymentResponse $adyenPaymentResponse
+        AdyenPaymentResponse $adyenPaymentResponse,
+        OrderService $orderService
     ) {
         $this->helperData = $helperData;
         $this->dbInstance = $dbInstance;
@@ -99,6 +106,7 @@ class NotificationProcessor
         $this->logger = $logger;
         $this->context = $context;
         $this->adyenPaymentResponse = $adyenPaymentResponse;
+        $this->orderService = $orderService;
     }
 
     /**
@@ -112,12 +120,19 @@ class NotificationProcessor
             return false;
         }
 
-        switch ($unprocessedNotification['eventCode']) {
+        switch ($unprocessedNotification['event_code']) {
             case AdyenNotification::AUTHORISATION:
+                $order = \Order::getByCartId($unprocessedNotification['merchant_reference']);
+                $order->setCurrentState(\Configuration::get('PS_OS_PAYMENT'));
+                $this->orderService->addPaymentDataToOrderFromResponse($order, $unprocessedNotification);
+                $this->adyenPaymentResponse->deletePaymentResponseByCartId($unprocessedNotification);
+                break;
             case AdyenNotification::OFFER_CLOSED:
                 $this->adyenPaymentResponse->deletePaymentResponseByCartId($unprocessedNotification);
                 break;
         }
+
+        return true;
     }
 
     /**
