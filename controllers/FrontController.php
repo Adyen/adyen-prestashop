@@ -288,6 +288,7 @@ abstract class FrontController extends \ModuleFrontController
                 }
 
                 break;
+            case 'Received':
             case 'PresentToShopper':
                 // Store response for cart temporarily until the payment is done
                 $this->adyenPaymentResponseModel->insertPaymentResponse($cart->id, $resultCode, $response);
