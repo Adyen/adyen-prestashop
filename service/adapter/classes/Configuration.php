@@ -86,6 +86,7 @@ class Configuration
         VersionChecker $versionChecker
     )
     {
+        $this->versionChecker = $versionChecker;
         $this->logger = $logger;
         $this->httpHost = \Tools::getHttpHost(true, true);
         $adyenModeConfiguration = $this->get('ADYEN_MODE');
@@ -95,7 +96,6 @@ class Configuration
         $this->liveEndpointPrefix = $this->get('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
         $this->moduleVersion = '2.0.0';
         $this->moduleName = 'adyen-prestashop';
-        $this->versionChecker = $versionChecker;
     }
 
     /**
