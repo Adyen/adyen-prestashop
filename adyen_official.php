@@ -26,7 +26,7 @@
 // PrestaShop good practices ask developers to check if PrestaShop is loaded
 // before running any other PHP code, which breaks a PSR1 element.
 // Also, the main class is not in a namespace, which breaks another element.
-// phpcs:disable PSR1.Files.SideEffects,PSR1.Classes.ClassDeclaration
+// phpcs:disable PSR1.Files.SideEffects,PSR1.Classes.ClassDeclaration,Squiz.Classes.ValidClassName
 
 if (!defined('_PS_VERSION_')) {
     exit;
