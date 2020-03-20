@@ -1032,10 +1032,15 @@ class Adyen extends PaymentModule
             $paymentAction = $paymentResponse['action'];
         }
 
+        if (!empty($paymentResponse) && !empty($paymentResponse['additionalData'])) {
+            $paymentAdditionalData = $paymentResponse['additionalData'];
+        }
+
         $smartyVariables = array(
             'isPrestaShop16' => $this->versionChecker->isPrestaShop16() ? 'true' : 'false',
             'paymentMethodsResponse' => '{}',
-            'action' => json_encode($paymentAction)
+            'action' => json_encode($paymentAction),
+            'additionalData' => json_encode($paymentAdditionalData)
         );
 
         // Add checkout component default configuration parameters for smarty variables

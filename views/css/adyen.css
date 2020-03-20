@@ -88,3 +88,7 @@ div.adyen-payment-method-label {
     margin: 6px;
     font-size: 16px;
 }
+
+div.adyen-additional-data-line {
+    padding-left: 15px;
+}
