@@ -94,7 +94,7 @@ jQuery(function ($) {
             }
         });
 
-        var card = window.adyenCheckout.create('card', configuration).mount("#cardContainer-" + storedPaymentMethod.id);
+        window.adyenCheckout.create('card', configuration).mount("#cardContainer-" + storedPaymentMethod.id);
     }
 
     /**
