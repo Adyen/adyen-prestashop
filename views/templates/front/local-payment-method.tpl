@@ -30,7 +30,7 @@
     <div class="row adyen-payment {$paymentMethodType|escape:'html'}"
          data-local-payment-method="{$paymentMethodType|escape:'html'}"
     >
-        <div class="adyen-payment-method-label">{l s='Pay with ' mod='adyen'}{$paymentMethodName}</div>
+        <div class="adyen-payment-method-label">{l s='Pay with ' mod='adyen_official'}{$paymentMethodName}</div>
         <form action="{$paymentProcessUrl}" class="adyen-payment-form-{$paymentMethodType|escape:'html'}" method="post">
             <!-- Display payment errors -->
             <div class="alert alert-danger error-container" role="alert"></div>
@@ -38,7 +38,7 @@
             <div data-adyen-payment-error-container role="alert"></div>
             {if $renderPayButton}
                 <button type="submit" class="button btn btn-default standard-checkout button-medium">
-                    <span>{l s='Pay' mod='adyen'} <i class="icon-chevron-right right"></i> </span>
+                    <span>{l s='Pay' mod='adyen_official'} <i class="icon-chevron-right right"></i> </span>
                 </button>
             {/if}
         </form>

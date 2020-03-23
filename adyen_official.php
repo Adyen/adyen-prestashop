@@ -26,16 +26,16 @@
 // PrestaShop good practices ask developers to check if PrestaShop is loaded
 // before running any other PHP code, which breaks a PSR1 element.
 // Also, the main class is not in a namespace, which breaks another element.
-// phpcs:disable PSR1.Files.SideEffects,PSR1.Classes.ClassDeclaration
+// phpcs:disable PSR1.Files.SideEffects,PSR1.Classes.ClassDeclaration,Squiz.Classes.ValidClassName
 
 if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-require _PS_ROOT_DIR_ . '/modules/adyen/vendor/autoload.php';
+require _PS_ROOT_DIR_ . '/modules/adyen_official/vendor/autoload.php';
 
 // this file cannot contain the `use` operator for PrestaShop 1.6
-class Adyen extends PaymentModule
+class Adyen_Official extends PaymentModule
 {
     /**
      * @var string
@@ -99,7 +99,7 @@ class Adyen extends PaymentModule
      */
     public function __construct()
     {
-        $this->name = 'adyen';
+        $this->name = 'adyen_official';
         $this->version = '2.0.0';
         $this->tab = 'payments_gateways';
         $this->author = 'Adyen';
