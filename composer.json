@@ -4,8 +4,11 @@
       "Adyen\\PrestaShop\\": ""
     }
   },
+  "config": {
+    "prepend-autoloader": false
+  },
   "require": {
-    "adyen/php-api-library": "~4",
+    "adyen/php-api-library": "~6",
     "ext-json": "*",
     "ext-openssl": "*",
     "monolog/monolog": "1.24.*",

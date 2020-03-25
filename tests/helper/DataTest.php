@@ -15,7 +15,9 @@
  *
  * Adyen PrestaShop plugin
  *
- * Copyright (c) 2019 Adyen B.V.
+ * @author Adyen BV <support@adyen.com>
+ * @copyright (c) 2020 Adyen B.V.
+ * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
@@ -23,8 +25,10 @@
 namespace Adyen\PrestaShop\helper;
 
 use Adyen\PrestaShop\service\adapter\classes\Configuration;
+use Adyen\PrestaShop\service\adapter\classes\Language;
 use Adyen\PrestaShop\service\Checkout;
 use Adyen\PrestaShop\service\CheckoutUtility;
+use Adyen\PrestaShop\infra\Crypto;
 
 class DataTest extends \PHPUnit_Framework_TestCase
 {
@@ -57,10 +61,28 @@ class DataTest extends \PHPUnit_Framework_TestCase
                                      ->disableOriginalConstructor()
                                      ->getMock();
 
+
+        $logger = $this->getMockBuilder(\Adyen\PrestaShop\service\Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        /** @var Language|\PHPUnit_Framework_MockObject_MockObject $languageAdapter */
+        $languageAdapter = $this->getMockBuilder('Adyen\PrestaShop\service\adapter\classes\Language')
+                                ->disableOriginalConstructor()
+                                ->getMock();
+
+        /** @var Crypto|\PHPUnit_Framework_MockObject_MockObject $crypto */
+        $crypto = $this->getMockBuilder('Adyen\PrestaShop\infra\Crypto')
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $this->adyenHelper = new Data(
             $configuration,
             $adyenCheckoutUtilityService,
-            $adyenCheckoutService
+            $adyenCheckoutService,
+            $logger,
+            $languageAdapter,
+            $crypto
         );
     }
 

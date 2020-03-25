@@ -16,9 +16,9 @@ We strongly encourage you to join us in contributing to this repository so every
 Read our [**contribution guidelines**](CONTRIBUTING.md) to find out how.
 
 ## Installation
-Copy the folders into the **/modules/adyen** folder of your main PrestaShop environment.
+Copy the folders into the **/modules/adyen_official** folder of your main PrestaShop environment.
 
-Search for Adyen in the **Modules and Services**(1.6) / **Module Manager**(1.7) menu in the PrestaShop admin panel and select Enable
+Search for Adyen in the **Modules and Services**(1.6) / **Module Catalog**(1.7) menu in the PrestaShop admin panel and select Enable
 
 ## Set up Adyen Customer Area
 
@@ -58,6 +58,9 @@ Configure the Adyen plugin in your PrestaShop admin panel: 
 |**Live endpoint prefix**|The URL prefix [random]-[company name] from your Adyen live > Account > API URLs. For more information, refer to Checkout endpoints.|
 
 (\*) You noted this down when you Set up Adyen Customer Area.
+
+## Deprecation strategy
+Whenever a not private function or property is tagged deprecated, please be aware that in the next major release it will be permanently removed.
 
 ## Support
 You can create issues on our PrestaShop Repository. In case of specific problems with your account, please contact  <a href="mailto:support@adyen.com">support@adyen.com</a>.

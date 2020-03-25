@@ -14,7 +14,9 @@
  *
  * Adyen PrestaShop plugin
  *
- * Copyright (c) 2019 Adyen B.V.
+ * @author Adyen BV <support@adyen.com>
+ * @copyright (c) 2020 Adyen B.V.
+ * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
@@ -24,30 +26,16 @@ jQuery(function ($) {
         return;
     }
 
-    var holderName;
-    var encryptedCardNumber;
-    var encryptedExpiryMonth;
-    var encryptedExpiryYear;
-    var encryptedSecurityCode;
     var allValidCard;
-
-    var screenWidth;
-    var screenHeight;
-    var colorDepth;
-    var timeZoneOffset;
-    var language;
-    var javaEnabled;
-
     var placeOrderAllowed;
     var popupModal;
-
-    var storeCc;
+    var data;
 
     /* Create adyen checkout with default settings */
     placeOrderAllowed = false;
 
     /* Subscribes to the adyen payment method form submission */
-    var paymentForm = $("#payment-form.adyen-payment-form");
+    var paymentForm = $(".adyen-payment-form");
     paymentForm.on('submit', function (e) {
         if (!placeOrderAllowed) {
             e.preventDefault();
@@ -59,20 +47,9 @@ jQuery(function ($) {
 
             processPayment({
                 'isAjax': true,
-                'holderName': holderName,
-                'encryptedCardNumber': encryptedCardNumber,
-                'encryptedExpiryMonth': encryptedExpiryMonth,
-                'encryptedExpiryYear': encryptedExpiryYear,
-                'encryptedSecurityCode': encryptedSecurityCode,
-                'storeCc': storeCc,
-                'browserInfo': {
-                    'screenWidth': screenWidth,
-                    'screenHeight': screenHeight,
-                    'colorDepth': colorDepth,
-                    'timeZoneOffset': timeZoneOffset,
-                    'language': language,
-                    'javaEnabled': javaEnabled
-                }
+                'browserInfo': data.browserInfo,
+                'paymentMethod': data.paymentMethod,
+                'storePaymentMethod': data.storePaymentMethod
             });
 
             return false;
@@ -82,14 +59,13 @@ jQuery(function ($) {
     });
 
     renderCardComponent();
-    fillBrowserInfo();
 
     /**
      * Renders checkout card component
      */
     function renderCardComponent() {
         // we can now rely on $ within the safety of our "bodyguard" function
-        var card = window.adyenCheckout.create('card', {
+        window.adyenCheckout.create('card', {
             type: 'card',
             hasHolderName: true,
             holderNameRequired: true,
@@ -97,15 +73,7 @@ jQuery(function ($) {
 
             onChange: function (state, component) {
                 if (state.isValid && !component.state.errors.encryptedSecurityCode) {
-                    storeCc = !!state.data.storePaymentMethod;
-                    holderName = state.data.paymentMethod.holderName;
-                    encryptedCardNumber = state.data.paymentMethod.encryptedCardNumber;
-                    encryptedExpiryMonth = state.data.paymentMethod.encryptedExpiryMonth;
-                    encryptedExpiryYear = state.data.paymentMethod.encryptedExpiryYear;
-                    if (state.data.paymentMethod.encryptedSecurityCode) {
-                        encryptedSecurityCode = state.data.paymentMethod.encryptedSecurityCode;
-                    }
-
+                    data = state.data;
                     allValidCard = true;
                 } else {
                     resetFields();
@@ -197,7 +165,7 @@ jQuery(function ($) {
      * Does the initial payments call with the encrypted data from the card component
      */
     function processPayment(data) {
-        var paymentProcessUrl = $('#payment-form.adyen-payment-form').attr('action');
+        var paymentProcessUrl = $('.adyen-payment-form').attr('action');
 
         $.ajax({
             type: "POST",
@@ -208,7 +176,7 @@ jQuery(function ($) {
                 processControllerResponse(response);
             },
             error: function (response) {
-                $('#payment-form.adyen-payment-form').find('#errors').text(response.message).fadeIn(1000);
+                $('.adyen-payment-form').find('.error-container').text(response.message).fadeIn(1000);
             }
         });
     }
@@ -220,7 +188,7 @@ jQuery(function ($) {
         switch (response.action) {
             case 'error':
                 // show error message
-                $('#payment-form.adyen-payment-form').find('#errors').text(response.message).fadeIn(1000);
+                $('.adyen-payment-form').find('.error-container').text(response.message).fadeIn(1000);
                 break;
             case 'redirect':
                 window.location.replace(response.redirectUrl);
@@ -237,15 +205,15 @@ jQuery(function ($) {
                 if (!!response.paRequest &&
                     !!response.md &&
                     !!response.issuerUrl &&
-                    !!response.paymentData &&
-                    !!response.redirectMethod
+                    !!response.redirectMethod &&
+                    !!response.adyenMerchantReference
                 ) {
                     //populate hidden form inputs
-                    $('input[name=paymentData]').attr('value', response.paymentData);
                     $('input[name=redirectMethod]').attr('value', response.redirectMethod);
                     $('input[name=issuerUrl]').attr('value', response.issuerUrl);
                     $('input[name=paRequest]').attr('value', response.paRequest);
                     $('input[name=md]').attr('value', response.md);
+                    $('input[name=adyenMerchantReference]').attr('value', response.adyenMerchantReference);
 
                     placeOrder();
                 } else {
@@ -282,25 +250,7 @@ jQuery(function ($) {
      * Reset card details
      */
     function resetFields() {
-        holderName = "";
-        encryptedCardNumber = "";
-        encryptedExpiryMonth = "";
-        encryptedExpiryYear = "";
-        encryptedSecurityCode = "";
+        data = '';
         allValidCard = false;
-    }
-
-    /**
-     *  Using the threeds2-js-utils.js to fill browserinfo
-     */
-    function fillBrowserInfo() {
-        var browserInfo = ThreedDS2Utils.getBrowserInfo();
-
-        javaEnabled = browserInfo.javaEnabled;
-        colorDepth = browserInfo.colorDepth;
-        screenWidth = browserInfo.screenWidth;
-        screenHeight = browserInfo.screenHeight;
-        timeZoneOffset = browserInfo.timeZoneOffset;
-        language = browserInfo.language;
     }
 });

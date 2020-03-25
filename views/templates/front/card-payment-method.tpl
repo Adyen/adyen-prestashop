@@ -1,32 +1,54 @@
+{*
+ *                       ######
+ *                       ######
+ * ############    ####( ######  #####. ######  ############   ############
+ * #############  #####( ######  #####. ######  #############  #############
+ *        ######  #####( ######  #####. ######  #####  ######  #####  ######
+ * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
+ * ###### ######  #####( ######  #####. ######  #####          #####  ######
+ * #############  #############  #############  #############  #####  ######
+ *  ############   ############  #############   ############  #####  ######
+ *                                      ######
+ *                               #############
+ *                               ############
+ *
+ * Adyen PrestaShop plugin
+ *
+ * @author Adyen BV <support@adyen.com>
+ * @copyright (c) 2020 Adyen B.V.
+ * @license https://opensource.org/licenses/MIT MIT license
+ * This file is open source and available under the MIT license.
+ * See the LICENSE file for more info.
+ *}
+
 {if !$originKey}
-<form id="payment-form" method="post">
-    <h5>There is an error with retrieving the originKey,
-        please check your API key in the Adyen Module configuration</h5>
-</form>
+    <form method="post">
+        <h5>There is an error with retrieving the originKey,
+            please check your API key in the Adyen Module configuration</h5>
+    </form>
 {else}
     {if $prestashop16}
         <p></p>
         <div class="adyen-payment-method-label">
-            {l s='Pay with Credit Card' mod='adyen'}
+            {l s='Pay with Credit Card' mod='adyen_official'}
         </div>
-
     {/if}
     <div class="row adyen-payment">
         <div class="col-xs-12 col-md-6">
-            <form id="payment-form" action="{$paymentProcessUrl}" class="adyen-payment-form" method="post"
+            <form action="{$paymentProcessUrl}" class="adyen-payment-form" method="post"
                   data-is-logged-in-user="{$loggedInUser}"
                   data-three-ds-process-url="{$threeDSProcessUrl|escape:'html'}"
             >
 
                 <!-- Display payment errors -->
-                <div id="errors" role="alert"></div>
+                <div class="alert alert-danger error-container" role="alert"></div>
 
                 <div class="checkout-container" id="cardContainer"></div>
-                <input type="hidden" name="paymentData"/>
                 <input type="hidden" name="redirectMethod"/>
                 <input type="hidden" name="issuerUrl"/>
                 <input type="hidden" name="paRequest"/>
                 <input type="hidden" name="md"/>
+                <input type="hidden" name="adyenMerchantReference">
 
                 {if $prestashop16}
                     <div style="display:none">
@@ -34,7 +56,6 @@
                             <div id="threeDS2Container"></div>
                         </div>
                     </div>
-
                 {else}
                     <div id="threeDS2Modal" class="modal fade" tabindex="-1" role="dialog">
                         <div class="modal-dialog" role="document">
@@ -52,7 +73,7 @@
 
                 {if $prestashop16}
                     <button type="submit" class="button btn btn-default standard-checkout button-medium"><span>
-                     {l s='Pay' mod='adyen'} <i class="icon-chevron-right right"></i> </span></button>
+                     {l s='Pay' mod='adyen_official'} <i class="icon-chevron-right right"></i> </span></button>
                 {/if}
             </form>
         </div>

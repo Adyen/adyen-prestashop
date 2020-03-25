@@ -14,7 +14,9 @@
  *
  * Adyen PrestaShop plugin
  *
- * Copyright (c) 2019 Adyen B.V.
+ * @author Adyen BV <support@adyen.com>
+ * @copyright (c) 2020 Adyen B.V.
+ * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
@@ -25,38 +27,37 @@ jQuery(function ($) {
         return;
     }
 
-    var encryptedSecurityCode;
     var allValidcard;
-    var recurringDetailReference;
 
-    var screenWidth;
-    var screenHeight;
-    var colorDepth;
-    var timeZoneOffset;
-    var language;
-    var javaEnabled;
+    var data;
 
-    var placeOrderAllowed;
+    var placeOrderAllowed = false;
     var popupModal;
 
     var threeDSProcessUrl;
 
-    $('[data-one-click-payment]').each(function (index, element) {
-        var oneClickPaymentConfiguration = $(element).data();
-        var oneClickPaymentMethod = oneClickPaymentConfiguration.oneClickPayment;
-        if (oneClickPaymentMethod) {
-            renderOneClickComponent(oneClickPaymentMethod);
-            fillBrowserInfo();
+    // use this object to iterate through the stored payment methods
+    var checkoutStoredPaymentMethods = window.adyenCheckout.paymentMethodsResponse.storedPaymentMethods;
+
+    // Iterate through the stored payment methods list we got from the adyen checkout component
+    checkoutStoredPaymentMethods.forEach(function (storedPaymentMethod) {
+
+        //  storedPaymentMethod.id = $storedPaymentApiId in the stored-payment-method.tpl
+        //  don't try to render the component if the container doesn't exist
+        var storedPaymentMethodContainer = $("#cardContainer-" + storedPaymentMethod.id);
+
+        // container doesn't exist, something went wrong on the template side
+        if (!storedPaymentMethodContainer.length) {
+            return;
         }
 
-        threeDSProcessUrl = oneClickPaymentConfiguration.threeDsProcessUrl;
+        var storedPaymentMethodConfiguration = $('[data-stored-payment-api-id="' + storedPaymentMethod.id + '"]').data();
+        threeDSProcessUrl = storedPaymentMethodConfiguration.threeDsProcessUrl;
 
-        /* Create adyen checkout with default settings */
-
-        placeOrderAllowed = false;
+        renderStoredPaymentComponent(storedPaymentMethod);
 
         /* Subscribes to the adyen payment method form submission */
-        var paymentForm = $("#payment-form.adyen-payment-form-" + oneClickPaymentMethod.recurringDetailReference);
+        var paymentForm = $(".adyen-payment-form-" + storedPaymentMethod.id);
         paymentForm.on('submit', function (e) {
             if (placeOrderAllowed) {
                 return;
@@ -70,42 +71,30 @@ jQuery(function ($) {
 
             processPayment({
                 'isAjax': true,
-                'encryptedSecurityCode': encryptedSecurityCode,
-                'recurringDetailReference': oneClickPaymentMethod.recurringDetailReference,
-                'browserInfo': {
-                    'screenWidth': screenWidth,
-                    'screenHeight': screenHeight,
-                    'colorDepth': colorDepth,
-                    'timeZoneOffset': timeZoneOffset,
-                    'language': language,
-                    'javaEnabled': javaEnabled
-                }
-            }, oneClickPaymentMethod, paymentForm);
+                'browserInfo': data.browserInfo,
+                'paymentMethod': data.paymentMethod
+            }, storedPaymentMethod, paymentForm);
         });
     });
 
     /**
      * Renders checkout card component
      */
-    function renderOneClickComponent(oneClickPaymentMethod) {
-        var card = window.adyenCheckout.create('card', {
-            type: oneClickPaymentMethod.type,
-            oneClick: true,
-            details: oneClickPaymentMethod.details,
-            storedDetails: oneClickPaymentMethod.storedDetails,
+    function renderStoredPaymentComponent(storedPaymentMethod) {
 
+        /*Use the storedPaymentMethod object and the custom onChange function as the configuration object together*/
+        var configuration = Object.assign(storedPaymentMethod, {
             onChange: function (state, component) {
                 if (state.isValid && !component.state.errors.encryptedSecurityCode) {
-                    if (state.data.paymentMethod.encryptedSecurityCode) {
-                        encryptedSecurityCode = state.data.paymentMethod.encryptedSecurityCode;
-                        recurringDetailReference = oneClickPaymentMethod.recurringDetailReference;
-                    }
+                    data = state.data;
                     allValidcard = true;
                 } else {
                     resetFields();
                 }
             }
-        }).mount("#cardContainer-" + oneClickPaymentMethod.recurringDetailReference);
+        });
+
+        window.adyenCheckout.create('card', configuration).mount("#cardContainer-" + storedPaymentMethod.id);
     }
 
     /**
@@ -119,7 +108,7 @@ jQuery(function ($) {
     /**
      * Does the initial payments call with the encrypted data from the card component
      */
-    function processPayment(data, oneClickPaymentMethod, paymentForm) {
+    function processPayment(data, storedPaymentMethod, paymentForm) {
         var paymentProcessUrl = paymentForm.attr('action');
 
         $.ajax({
@@ -128,7 +117,7 @@ jQuery(function ($) {
             data: data,
             dataType: "json",
             success: function (response) {
-                processControllerResponse(response, oneClickPaymentMethod, paymentForm);
+                processControllerResponse(response, storedPaymentMethod, paymentForm);
             },
             error: function (response) {
                 paymentForm.find('#errors').text(response.message).fadeIn(1000);
@@ -136,12 +125,11 @@ jQuery(function ($) {
         });
     }
 
-
     /**
      * Reset card details
      */
     function resetFields() {
-        encryptedSecurityCode = "";
+        data = "";
         allValidcard = false;
     }
 
@@ -172,38 +160,38 @@ jQuery(function ($) {
         });
     }
 
-    function renderThreeDS2Component(type, token, oneClickPaymentMethod, paymentForm) {
+    function renderThreeDS2Component(type, token, storedPaymentMethod, paymentForm) {
         if (type === "IdentifyShopper") {
-            adyenCheckout.create('threeDS2DeviceFingerprint', {
+            window.adyenCheckout.create('threeDS2DeviceFingerprint', {
                 fingerprintToken: token,
                 onComplete: function (result) {
                     processThreeDS2(result.data).done(function (responseJSON) {
-                        processControllerResponse(responseJSON, oneClickPaymentMethod, paymentForm)
+                        processControllerResponse(responseJSON, storedPaymentMethod, paymentForm)
                     });
                 },
                 onError: function (error) {
                     console.log(JSON.stringify(error));
                 }
-            }).mount('#threeDS2Container-' + oneClickPaymentMethod.recurringDetailReference);
+            }).mount('#threeDS2Container-' + storedPaymentMethod.id);
         } else if (type === "ChallengeShopper") {
-            showPopup(oneClickPaymentMethod);
+            showPopup(storedPaymentMethod);
 
-            adyenCheckout.create('threeDS2Challenge', {
+            window.adyenCheckout.create('threeDS2Challenge', {
                 challengeToken: token,
                 onComplete: function (result) {
                     hidePopup();
                     processThreeDS2(result.data).done(function (responseJSON) {
-                        processControllerResponse(responseJSON, oneClickPaymentMethod, paymentForm);
+                        processControllerResponse(responseJSON, storedPaymentMethod, paymentForm);
                     });
                 },
                 onError: function (error) {
                     console.log(JSON.stringify(error));
                 }
-            }).mount('#threeDS2Container-' + oneClickPaymentMethod.recurringDetailReference);
+            }).mount('#threeDS2Container-' + storedPaymentMethod.id);
         }
     }
 
-    function showPopup(oneClickPaymentMethod) {
+    function showPopup(storedPaymentMethod) {
         if (IS_PRESTA_SHOP_16) {
             $.fancybox({
                 'autoScale': true,
@@ -215,10 +203,10 @@ jQuery(function ($) {
                 'centerOnScroll': true,
                 'hideOnContentClick': false,
                 'showCloseButton': false,
-                'href': '#threeDS2Modal-' + oneClickPaymentMethod.recurringDetailReference
+                'href': '#threeDS2Modal-' + storedPaymentMethod.id
             });
         } else {
-            popupModal = $('#threeDS2Modal-' + oneClickPaymentMethod.recurringDetailReference).modal();
+            popupModal = $('#threeDS2Modal-' + storedPaymentMethod.id).modal();
         }
     }
 
@@ -233,7 +221,7 @@ jQuery(function ($) {
     /**
      * Decides what to do next based on the payments response
      */
-    function processControllerResponse(response, oneClickPaymentMethod, paymentForm) {
+    function processControllerResponse(response, storedPaymentMethod, paymentForm) {
         switch (response.action) {
             case 'error':
                 // show error message
@@ -244,7 +232,7 @@ jQuery(function ($) {
                 break;
             case 'threeDS2':
                 if (!!response.type && !!response.token) {
-                    renderThreeDS2Component(response.type, response.token, oneClickPaymentMethod, paymentForm);
+                    renderThreeDS2Component(response.type, response.token, storedPaymentMethod, paymentForm);
                 } else {
                     placeOrder(paymentForm);
                 }
@@ -254,15 +242,15 @@ jQuery(function ($) {
                 if (!!response.paRequest &&
                     !!response.md &&
                     !!response.issuerUrl &&
-                    !!response.paymentData &&
-                    !!response.redirectMethod
+                    !!response.redirectMethod &&
+                    !!response.adyenMerchantReference
                 ) {
                     //populate hidden form inputs
-                    $('input[name=paymentData]').attr('value', response.paymentData);
                     $('input[name=redirectMethod]').attr('value', response.redirectMethod);
                     $('input[name=issuerUrl]').attr('value', response.issuerUrl);
                     $('input[name=paRequest]').attr('value', response.paRequest);
                     $('input[name=md]').attr('value', response.md);
+                    $('input[name=adyenMerchantReference]').attr('value', response.adyenMerchantReference);
 
                     placeOrder(paymentForm);
                 } else {
@@ -275,20 +263,4 @@ jQuery(function ($) {
                 console.log("Something went wrong on the frontend");
         }
     }
-
-    /**
-     *  Using the threeds2-js-utils.js to fill browserinfo
-     */
-    function fillBrowserInfo() {
-        var browserInfo = ThreedDS2Utils.getBrowserInfo();
-
-        javaEnabled = browserInfo.javaEnabled;
-        colorDepth = browserInfo.colorDepth;
-        screenWidth = browserInfo.screenWidth;
-        screenHeight = browserInfo.screenHeight;
-        timeZoneOffset = browserInfo.timeZoneOffset;
-        language = browserInfo.language;
-    }
 });
-
-

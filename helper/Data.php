@@ -15,7 +15,9 @@
  *
  * Adyen PrestaShop plugin
  *
- * Copyright (c) 2019 Adyen B.V.
+ * @author Adyen BV <support@adyen.com>
+ * @copyright (c) 2020 Adyen B.V.
+ * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
@@ -25,11 +27,23 @@ namespace Adyen\PrestaShop\helper;
 use Address;
 use Adyen;
 use Adyen\AdyenException;
+use Adyen\Environment;
+use Adyen\PrestaShop\infra\Crypto;
 use Adyen\PrestaShop\service\adapter\classes\Configuration;
+use Adyen\PrestaShop\service\adapter\classes\Language;
 use Adyen\PrestaShop\service\Checkout;
 use Adyen\PrestaShop\service\CheckoutUtility;
+use Adyen\PrestaShop\service\Logger;
+use Cart;
 use Country;
 use Currency;
+use Exception;
+use FileLogger;
+use Guest;
+use PrestaShopDatabaseException;
+use PrestaShopException;
+use Tools;
+use Adyen\PrestaShop\controllers\FrontController;
 
 class Data
 {
@@ -58,16 +72,47 @@ class Data
      */
     private $configuration;
 
+    /**
+     * @var Logger
+     */
+    private $logger;
+
+    /**
+     * @var Language
+     */
+    private $languageAdapter;
+
+    /**
+     * @var Crypto
+     */
+    private $crypto;
+
+    /**
+     * Data constructor.
+     *
+     * @param Configuration $configuration
+     * @param CheckoutUtility $adyenCheckoutUtilityService
+     * @param Checkout $adyenCheckoutService
+     * @param Logger $logger
+     * @param Language $languageAdapter
+     * @param Crypto $crypto
+     */
     public function __construct(
         Configuration $configuration,
         CheckoutUtility $adyenCheckoutUtilityService,
-        Checkout $adyenCheckoutService
+        Checkout $adyenCheckoutService,
+        Logger $logger,
+        Language $languageAdapter,
+        Crypto $crypto
     ) {
         $this->httpHost = $configuration->httpHost;
         $this->sslEncryptionKey = $configuration->sslEncryptionKey;
         $this->adyenCheckoutUtilityService = $adyenCheckoutUtilityService;
         $this->adyenCheckoutService = $adyenCheckoutService;
         $this->configuration = $configuration;
+        $this->logger = $logger;
+        $this->languageAdapter = $languageAdapter;
+        $this->crypto = $crypto;
     }
 
     /**
@@ -82,7 +127,7 @@ class Data
         try {
             $response = $this->adyenCheckoutUtilityService->originKeys($params);
         } catch (AdyenException $e) {
-            $this->adyenLogger()->logError("exception: " . $e->getMessage());
+            $this->logger->error("getOriginKeyForOrigin failed. ", array('exception' => $e));
         }
 
         $originKey = "";
@@ -91,24 +136,25 @@ class Data
         if (!empty($response['originKeys'][$this->httpHost])) {
             $originKey = $response['originKeys'][$this->httpHost];
         } else {
-            $this->adyenLogger()->logError("OriginKey is empty, please verify that your API key is correct");
+            $this->logger->error("OriginKey is empty, please verify that your API key is correct");
         }
 
         return $originKey;
     }
 
     /**
-     * @param $cart
+     * @param Cart $cart
      * @param $language
      *
      * @return array
+     * @throws Exception
      */
-    public function fetchPaymentMethods($cart, $language)
+    public function fetchPaymentMethods(Cart $cart, $language)
     {
         $merchantAccount = \Configuration::get('ADYEN_MERCHANT_ACCOUNT');
 
         if (!$merchantAccount) {
-            $this->adyenLogger()->logError(
+            $this->logger->error(
                 "The merchant account field is empty, check your Adyen configuration in Prestashop."
             );
             return array();
@@ -120,7 +166,7 @@ class Data
         $address = new Address($cart->id_address_invoice);
         $countryCode = Country::getIsoById($address->id_country);
         $shopperReference = $cart->id_customer;
-        $shopperLocale = $this->getLocale($language);
+        $shopperLocale = $this->languageAdapter->getLocaleCode($language);
 
         $adyenFields = array(
             "channel" => "Web",
@@ -140,25 +186,34 @@ class Data
         $responseData = "";
         try {
             $responseData = $this->adyenCheckoutService->paymentMethods($adyenFields);
-        } catch (\Adyen\AdyenException $e) {
-            $this->adyenLogger()->logError("There was an error retrieving the payment methods. message: " . $e->getMessage());
+        } catch (AdyenException $e) {
+            $this->logger->error("There was an error retrieving the payment methods. message: " . $e->getMessage());
         }
         return $responseData;
     }
 
+    /**
+     * @return bool
+     * @deprecated Use Adyen\PrestaShop\service\adapter\classes\Configuration isTestMode() instead.
+     * This method will be removed in version 2.
+     */
     public function isDemoMode()
     {
-        if (strpos($this->configuration->adyenMode, \Adyen\Environment::TEST) !== false) {
+        if (strpos($this->configuration->adyenMode, Environment::TEST) !== false) {
             return true;
         } else {
             return false;
         }
     }
 
+    /**
+     * @return FileLogger
+     * @deprecated Use \Adyen\PrestaShop\service\logger instead. This method will be removed in version 2.
+     */
     public function adyenLogger()
     {
         // TODO: debug level should be in configuration
-        $logger = new \FileLogger(0); //0 == debug level, logDebug() won’t work without this.
+        $logger = new FileLogger(0); //0 == debug level, logDebug() won’t work without this.
 
         if (version_compare(_PS_VERSION_, '1.6', '>=') &&
             version_compare(_PS_VERSION_, '1.7', '<')
@@ -173,23 +228,6 @@ class Data
         $logger->setFilename($dirPath . '/debug.log');
 
         return $logger;
-    }
-
-    public function encrypt($data)
-    {
-        // Generate an initialization vector
-        $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-ctr'));
-        // Encrypt the data using AES 256 encryption in CBC mode using our encryption key and initialization vector.
-        $encrypted = openssl_encrypt($data, 'aes-256-ctr', $this->sslEncryptionKey, 0, $iv);
-        // The $iv is just as important as the key for decrypting, so save it with our encrypted data using a unique separator (::)
-        return base64_encode($encrypted . '::' . $iv);
-    }
-
-    public function decrypt($data)
-    {
-        // To decrypt, split the encrypted data from our IV - our unique separator used was "::"
-        list($data, $iv) = explode('::', base64_decode($data), 2);
-        return openssl_decrypt($data, 'aes-256-ctr', $this->sslEncryptionKey, 0, $iv);
     }
 
     /**
@@ -218,7 +256,6 @@ class Data
     {
         switch ($action) {
             case 'error':
-
                 if (empty($details['message'])) {
                     throw new AdyenException('No message is included in the error response');
                 }
@@ -230,7 +267,6 @@ class Data
 
                 break;
             case 'threeDS2':
-
                 $response = array(
                     'action' => 'threeDS2'
                 );
@@ -242,7 +278,6 @@ class Data
 
                 break;
             case 'redirect':
-
                 if (empty($details['redirectUrl'])) {
                     throw new AdyenException('No redirect url is included in the redirect response');
                 }
@@ -254,18 +289,18 @@ class Data
 
                 break;
             case 'threeDS1':
-
                 if (!empty($details['paRequest']) &&
                     !empty($details['md']) &&
                     !empty($details['issuerUrl']) &&
-                    !empty($details['paymentData']) &&
+                    !empty($details[FrontController::ADYEN_MERCHANT_REFERENCE]) &&
                     !empty($details['redirectMethod'])) {
                     $response = array(
                         'action' => 'threeDS1',
                         'paRequest' => $details['paRequest'],
                         'md' => $details['md'],
                         'issuerUrl' => $details['issuerUrl'],
-                        'paymentData' => $details['paymentData'],
+                        FrontController::ADYEN_MERCHANT_REFERENCE =>
+                            $details[FrontController::ADYEN_MERCHANT_REFERENCE],
                         'redirectMethod' => $details['redirectMethod']
                     );
                 } else {
@@ -273,17 +308,14 @@ class Data
                 }
                 break;
             default:
-            case 'error': // this case is never executed
-
                 $response = array(
                     'action' => 'error',
                     'message' => 'Something went wrong'
                 );
-
                 break;
         }
 
-        return \Tools::jsonEncode($response);
+        return Tools::jsonEncode($response);
     }
 
     /**
@@ -291,6 +323,7 @@ class Data
      * @param $amount
      * @param $currency
      * @return string
+     * @deprecated Use Adyen\Util\Currency sanitize() from Adyen php api library
      */
     public function formatAmount($amount, $currency)
     {
@@ -329,62 +362,9 @@ class Data
     }
 
     /**
-     * @param $context
-     * @param $cart
-     *
-     * @return void
-     * @throws \PrestaShopDatabaseException
-     * @throws \PrestaShopException
-     */
-    public function cloneCurrentCart($context, $cart)
-    {
-        // To save the secure key of current cart id and reassign the same to new cart
-        $old_cart_secure_key = $cart->secure_key;
-        // To save the customer id of current cart id and reassign the same to new cart
-        $old_cart_customer_id = (int)$cart->id_customer;
-
-        // To fetch the current cart products
-        $cart_products = $cart->getProducts();
-        // Creating new cart object
-        $context->cart = new \Cart();
-        $context->cart->id_lang = $context->language->id;
-
-        $context->cart->id_currency = $context->currency->id;
-        $context->cart->secure_key = $old_cart_secure_key;
-        // to add new cart
-        $context->cart->add();
-        // to update the new cart
-        foreach ($cart_products as $product) {
-            $context->cart->updateQty((int)$product['quantity'], (int)$product['id_product'],
-                (int)$product['id_product_attribute']);
-        }
-        if ($context->cookie->id_guest) {
-            $guest = new \Guest($context->cookie->id_guest);
-            $context->cart->mobile_theme = $guest->mobile_theme;
-        }
-        // to map the new cart with the customer
-        $context->cart->id_customer = $old_cart_customer_id;
-        // to save the new cart
-        $context->cart->save();
-        if ($context->cart->id) {
-            $context->cookie->id_cart = (int)$context->cart->id;
-            $context->cookie->write();
-        }
-    }
-
-    /**
-     * Start the session if does not exists yet
-     */
-    public function startSession()
-    {
-        if (!isset($_SESSION)) {
-            session_start();
-        }
-    }
-
-    /**
      * Get locale for 1.6/1.7
      * @return mixed
+     * @deprecated use Adyen\PrestaShop\service\adapter\classes\Language
      */
     public function getLocale($language)
     {
@@ -409,7 +389,7 @@ class Data
             return basename($templatePath);
         }
 
-        return 'module:adyen/' . ltrim($templatePath, '/');
+        return 'module:adyen_official/' . ltrim($templatePath, '/');
     }
 
     /**

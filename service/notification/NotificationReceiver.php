@@ -1,5 +1,4 @@
 <?php
-
 /**
  *                       ######
  *                       ######
@@ -16,17 +15,22 @@
  *
  * Adyen PrestaShop plugin
  *
- * Copyright (c) 2019 Adyen B.V.
+ * @author Adyen BV <support@adyen.com>
+ * @copyright (c) 2020 Adyen B.V.
+ * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
 
 namespace Adyen\PrestaShop\service\notification;
 
+use Adyen\AdyenException;
 use Adyen\PrestaShop\helper\Data as AdyenHelper;
+use Adyen\PrestaShop\model\AdyenNotification;
+use Adyen\PrestaShop\service\adapter\classes\Configuration;
 use Adyen\Util\HmacSignature;
-use DateTime;
 use Db;
+use Psr\Log\LoggerInterface;
 
 class NotificationReceiver
 {
@@ -66,7 +70,23 @@ class NotificationReceiver
     private $dbInstance;
 
     /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
+     * @var Configuration
+     */
+    private $configuration;
+
+    /**
+     * @var AdyenNotification
+     */
+    private $adyenNotification;
+
+    /**
      * NotificationReceiver constructor.
+     *
      * @param AdyenHelper $helperData
      * @param HmacSignature $hmacSignature
      * @param $notificationHMAC
@@ -74,6 +94,9 @@ class NotificationReceiver
      * @param $notificationUsername
      * @param $notificationPassword
      * @param Db $dbInstance
+     * @param LoggerInterface $logger
+     * @param Configuration $configuration
+     * @param AdyenNotification $adyenNotification
      */
     public function __construct(
         AdyenHelper $helperData,
@@ -82,7 +105,10 @@ class NotificationReceiver
         $merchantAccount,
         $notificationUsername,
         $notificationPassword,
-        Db $dbInstance
+        Db $dbInstance,
+        LoggerInterface $logger,
+        Configuration $configuration,
+        AdyenNotification $adyenNotification
     ) {
         $this->helperData = $helperData;
         $this->hmacSignature = $hmacSignature;
@@ -91,6 +117,9 @@ class NotificationReceiver
         $this->notificationUsername = $notificationUsername;
         $this->notificationPassword = $notificationPassword;
         $this->dbInstance = $dbInstance;
+        $this->logger = $logger;
+        $this->configuration = $configuration;
+        $this->adyenNotification = $adyenNotification;
     }
 
     /**
@@ -99,7 +128,7 @@ class NotificationReceiver
      * @throws AuthenticationException
      * @throws HMACKeyValidationException
      * @throws MerchantAccountCodeException
-     * @throws \Adyen\AdyenException
+     * @throws AdyenException
      * @throws \PrestaShopDatabaseException
      * @throws AuthorizationException
      */
@@ -107,7 +136,7 @@ class NotificationReceiver
     {
         if (empty($notificationItems)) {
             $message = 'Notification is not formatted correctly';
-            $this->helperData->adyenLogger()->logError($message);
+            $this->logger->addAdyenNotification($message);
             return json_encode(
                 array(
                     'success' => false,
@@ -117,7 +146,6 @@ class NotificationReceiver
         }
 
         if (!empty($notificationItems['live']) && $this->validateNotificationMode($notificationItems['live'])) {
-
             $acceptedMessage = '[accepted]';
 
             foreach ($notificationItems['notificationItems'] as $notificationItem) {
@@ -130,17 +158,17 @@ class NotificationReceiver
             // Run the query for checking unprocessed notifications, do this only for test notifications coming from
             // the Adyen Customer Area
             if ($this->isTestNotification($cronCheckTest)) {
-                $unprocessedNotifications = $this->getUnprocessedNotifications();
+                $unprocessedNotifications = $this->adyenNotification->getNumberOfUnprocessedNotifications();
                 if ($unprocessedNotifications > 0) {
                     $acceptedMessage .= "\nYou have $unprocessedNotifications unprocessed notifications.";
                 }
             }
 
-            $this->helperData->adyenLogger()->logDebug('The result is accepted');
+            $this->logger->addAdyenNotification('The result is accepted');
             return $this->returnAccepted($acceptedMessage);
         } else {
             $message = 'Mismatch between Live/Test modes of PrestaShop store and the Adyen platform';
-            $this->helperData->adyenLogger()->logError($message);
+            $this->logger->addAdyenNotification($message);
             return json_encode(
                 array(
                     'success' => false,
@@ -158,7 +186,7 @@ class NotificationReceiver
      * @throws MerchantAccountCodeException
      * @throws AuthenticationException
      * @throws HMACKeyValidationException
-     * @throws \Adyen\AdyenException
+     * @throws AdyenException
      */
     protected function authorised($response)
     {
@@ -177,18 +205,16 @@ class NotificationReceiver
         if ((!isset($_SERVER['PHP_AUTH_USER']) && !isset($_SERVER['PHP_AUTH_PW']))) {
             if ($isTestNotification) {
                 $message = 'Authentication failed: PHP_AUTH_USER and PHP_AUTH_PW are empty.';
-                $this->helperData->adyenLogger()->logError($message);
+                $this->logger->addAdyenNotification($message);
                 throw new AuthenticationException($message);
             }
             return false;
         }
 
         // validate hmac
-
-
         if (!$this->hmacSignature->isValidNotificationHMAC($this->notificationHMAC, $response)) {
             $message = 'HMAC key validation failed';
-            $this->helperData->adyenLogger()->logError($message);
+            $this->logger->addAdyenNotification($message);
             throw new HMACKeyValidationException($message);
         }
 
@@ -201,8 +227,9 @@ class NotificationReceiver
         // If notification is test check if fields are correct if not return error
         if ($isTestNotification) {
             if ($usernameCmp != 0 || $passwordCmp != 0) {
-                $message = 'username (PHP_AUTH_USER) and\or password (PHP_AUTH_PW) are not the same as PrestaShop settings';
-                $this->helperData->adyenLogger()->logError($message);
+                $message = 'username (PHP_AUTH_USER) and\or password (PHP_AUTH_PW) are not the same as PrestaShop' .
+                    ' settings';
+                $this->logger->addAdyenNotification($message);
                 throw new AuthenticationException($message);
             }
         }
@@ -211,17 +238,18 @@ class NotificationReceiver
 
 
     /**
+     * Checks if notification mode and the store mode configuration matches
+     *
      * @param $notificationMode
      * @return bool
      */
     protected function validateNotificationMode($notificationMode)
     {
-        $mode = $this->helperData->isDemoMode();
+        $testMode = $this->configuration->isTestMode();
 
         // Notification mode can be a string or a boolean
-        if (
-            ($mode == '1' && ($notificationMode == 'false' || $notificationMode == false)) ||
-            ($mode == '0' && ($notificationMode == 'true' || $notificationMode == true))
+        if (($testMode && ($notificationMode == 'false' || $notificationMode == false)) ||
+            (!$testMode && ($notificationMode == 'true' || $notificationMode == true))
         ) {
             return true;
         }
@@ -229,42 +257,43 @@ class NotificationReceiver
     }
 
     /**
-     * save notification into the database for cron job to execute notification
+     * Save notification into the database for cron job to execute notification
      *
-     * @param $response
+     * @param $notification
      * @return bool
      * @throws AuthenticationException
      * @throws HMACKeyValidationException
      * @throws MerchantAccountCodeException
-     * @throws \Adyen\AdyenException
-     * @throws \PrestaShopDatabaseException
+     * @throws AdyenException
      */
-    protected function processNotification($response)
+    protected function processNotification($notification)
     {
         // validate the notification
-        if ($this->authorised($response)) {
-
+        if ($this->authorised($notification)) {
             // log the notification
-            $this->helperData->adyenLogger()->logDebug(
-                'The content of the notification item is: ' . print_r($response, 1)
+            $this->logger->addAdyenNotification(
+                'The content of the notification item is: ' . print_r($notification, 1)
             );
 
             // skip report notifications
-            if ($this->isReportNotification($response['eventCode'])) {
-                $this->helperData->adyenLogger()->logDebug('Notification is a REPORT notification from Adyen Customer Area');
+            if ($this->isReportNotification($notification['eventCode'])) {
+                $this->logger->addAdyenNotification('Notification is a REPORT notification from Adyen Customer Area');
                 return true;
             }
 
             // check if notification already exists
-            if (!$this->isTestNotification($response['pspReference']) && !$this->isDuplicate($response)) {
-                $this->insertNotification($response);
+            if (!$this->isTestNotification($notification['pspReference']) && !$this->adyenNotification->isDuplicate(
+                $notification
+            )) {
+                $this->adyenNotification->insertNotification($notification);
                 return true;
             } else {
                 // duplicated so do nothing but return accepted to Adyen
-                $this->helperData->adyenLogger()->logDebug('Notification is a TEST notification from Adyen Customer Area');
+                $this->logger->addAdyenNotification('Notification is a TEST notification from Adyen Customer Area');
                 return true;
             }
         }
+
         return false;
     }
 
@@ -276,8 +305,8 @@ class NotificationReceiver
      */
     protected function isTestNotification($pspReference)
     {
-        if (strpos(strtolower($pspReference), 'test_') !== false
-            || strpos(strtolower($pspReference), 'testnotification_') !== false
+        if (strpos(\Tools::strtolower($pspReference), 'test_') !== false
+            || strpos(\Tools::strtolower($pspReference), 'testnotification_') !== false
         ) {
             return true;
         }
@@ -300,103 +329,17 @@ class NotificationReceiver
         return false;
     }
 
+    /**
+     * Add '[accepted]' into $acceptedMessage if empty
+     *
+     * @param $acceptedMessage
+     * @return string
+     */
     private function returnAccepted($acceptedMessage)
     {
         if (empty($acceptedMessage)) {
             $acceptedMessage = '[accepted]';
         }
         return $acceptedMessage;
-    }
-
-    /**
-     * @param array $notification
-     * @throws \PrestaShopDatabaseException
-     */
-    private function insertNotification($notification)
-    {
-        $data = array();
-        if (isset($notification['pspReference'])) {
-            $data['pspreference'] = pSQL($notification['pspReference']);
-        }
-        if (isset($notification['originalReference'])) {
-            $data['original_reference'] = pSQL($notification['originalReference']);
-        }
-        if (isset($notification['merchantReference'])) {
-            $data['merchant_reference'] = pSQL($notification['merchantReference']);
-        }
-        if (isset($notification['eventCode'])) {
-            $data['event_code'] = pSQL($notification['eventCode']);
-        }
-        if (isset($notification['success'])) {
-            $data['success'] = pSQL($notification['success']);
-        }
-        if (isset($notification['paymentMethod'])) {
-            $data['payment_method'] = pSQL($notification['paymentMethod']);
-        }
-        if (isset($notification['amount'])) {
-            $data['amount_value'] = pSQL($notification['amount']['value']);
-            $data['amount_currency'] = pSQL($notification['amount']['currency']);
-        }
-        if (isset($notification['reason'])) {
-            $data['reason'] = pSQL($notification['reason']);
-        }
-
-        if (isset($notification['additionalData'])) {
-            $data['additional_data'] = pSQL(serialize($notification['additionalData']));
-        }
-        if (isset($notification['done'])) {
-            $data['done'] = pSQL($notification['done']);
-        }
-
-        // do this to set both fields in the correct timezone
-        $date = new DateTime();
-        $data['created_at'] = $date->format('Y-m-d H:i:s');
-        $data['updated_at'] = $date->format('Y-m-d H:i:s');
-
-        $this->dbInstance->insert(
-            _DB_PREFIX_ . 'adyen_notification',
-            $data,
-            false,
-            false,
-            Db::INSERT,
-            false
-        );
-    }
-
-    /**
-     * If notification is already saved ignore it
-     *
-     * @param $response
-     * @return mixed
-     */
-    protected function isDuplicate($response)
-    {
-        $pspReference = trim($response['pspReference']);
-        $eventCode = trim($response['eventCode']);
-        $success = trim($response['success']);
-
-        $sql = 'SELECT * FROM ' . _DB_PREFIX_ . 'adyen_notification '
-            . 'WHERE `pspreference` = "' . pSQL($pspReference) . '"'
-            . ' AND `event_code` = "' . pSQL($eventCode) . '"'
-            . ' AND `success` = "' . pSQL($success) . '"';
-
-        $originalReference = null;
-        if (!empty($response['originalReference'])) {
-            $originalReference = trim($response['originalReference']);
-            $sql .= ' AND `original_reference` = "' . pSQL($originalReference) . '"';
-        }
-        $query = $this->dbInstance->getValue($sql);
-
-        return $query;
-    }
-
-    protected function getUnprocessedNotifications()
-    {
-        /** @noinspection SqlDialectInspection */
-        $sql = 'SELECT COUNT(*) FROM ' . _DB_PREFIX_ . 'adyen_notification '
-            . 'WHERE `done` = "' . (int)0 . '"'
-            . ' AND `processing` = "' . (int)0 . '"';
-
-        return $this->dbInstance->getValue($sql);
     }
 }

@@ -15,21 +15,23 @@
  *
  * Adyen PrestaShop plugin
  *
- * Copyright (c) 2019 Adyen B.V.
+ * @author Adyen BV <support@adyen.com>
+ * @copyright (c) 2020 Adyen B.V.
+ * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
  */
 
 namespace Adyen\PrestaShop\service\modification;
 
-use AbstractLogger;
 use Adyen\AdyenException;
+use Adyen\PrestaShop\infra\NotificationRetriever;
 use Adyen\PrestaShop\service\modification\exception\NotificationNotFoundException;
 use Adyen\Service\Modification;
 use Adyen\Util\Currency;
-use Db;
 use OrderSlip;
 use PrestaShopDatabaseException;
+use Psr\Log\LoggerInterface;
 
 class Refund
 {
@@ -42,30 +44,33 @@ class Refund
      * @var string
      */
     private $merchantAccount;
+
     /**
-     * @var Db
+     * @var NotificationRetriever
      */
-    private $db;
+    private $notificationRetriever;
+
     /**
-     * @var AbstractLogger
+     * @var LoggerInterface
      */
     private $logger;
 
     /**
      * Refund constructor.
+     *
      * @param Modification $modificationClient
-     * @param Db $db
+     * @param NotificationRetriever $notificationRetriever
      * @param $merchantAccount
-     * @param AbstractLogger $logger
+     * @param LoggerInterface $logger
      */
     public function __construct(
         Modification $modificationClient,
-        Db $db,
+        NotificationRetriever $notificationRetriever,
         $merchantAccount,
-        AbstractLogger $logger = null
+        LoggerInterface $logger = null
     ) {
         $this->modificationClient = $modificationClient;
-        $this->db = $db;
+        $this->notificationRetriever = $notificationRetriever;
         $this->merchantAccount = $merchantAccount;
         $this->logger = $logger;
     }
@@ -82,12 +87,12 @@ class Refund
         $amount = $currencyConverter->sanitize($orderSlip->amount, $currency);
 
         try {
-            $pspReference = $this->getPSPReferenceByOrderId($orderSlip->id_order);
+            $pspReference = $this->notificationRetriever->getPSPReferenceByOrderId($orderSlip->id_order);
         } catch (NotificationNotFoundException $e) {
-            $this->logger->logError($e->getMessage());
+            $this->logger->error($e->getMessage());
             return false;
         } catch (PrestaShopDatabaseException $e) {
-            $this->logger->logError($e->getMessage());
+            $this->logger->error($e->getMessage());
             return false;
         }
         try {
@@ -103,37 +108,9 @@ class Refund
                 )
             );
         } catch (AdyenException $e) {
-            $this->logger->logError($e->getMessage());
+            $this->logger->error($e->getMessage());
             return false;
         }
         return true;
-    }
-
-    /**
-     * @param string $orderId
-     *
-     * @return string
-     * @throws PrestaShopDatabaseException
-     * @throws NotificationNotFoundException
-     */
-    private function getPSPReferenceByOrderId($orderId)
-    {
-        $results = $this->db->executeS(
-            sprintf(
-                <<<SQL
-select a.pspreference as pspReference
-from %sadyen_notification a
-inner join %sorders o on a.merchant_reference = o.id_cart
-where o.id_order = $orderId
-SQL
-                ,
-                _DB_PREFIX_, _DB_PREFIX_
-            )
-        );
-        if (empty($results)) {
-            throw new NotificationNotFoundException("Cannot find a notification for Order ID $orderId");
-        }
-        $pspReference = $results[0]['pspReference'];
-        return $pspReference;
     }
 }
