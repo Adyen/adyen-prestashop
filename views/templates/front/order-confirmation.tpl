@@ -23,18 +23,18 @@
 
 {include './adyencheckout.tpl'}
 
-{if $action or $additionalData}
+{if isset($action) or isset($additionalData)}
     <div class="row">
       <div class="col-md-12">
         <h3 class="card-title h3">Please use these details to finish the payment:</h3>
-        {if $action}
+        {if isset($action)}
           <div
                   data-adyen-payment-action-container
                   data-adyen-payment-action="{$action|escape:'html'}"
           ></div>
         {/if}
 
-        {if $additionalData}
+        {if isset($additionalData)}
           <div
                   data-adyen-payment-additional-data-container
                   data-adyen-payment-additional-data="{$additionalData|escape:'html'}"
