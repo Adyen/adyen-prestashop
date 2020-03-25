@@ -65,7 +65,7 @@ jQuery(function ($) {
      */
     function renderCardComponent() {
         // we can now rely on $ within the safety of our "bodyguard" function
-        var card = window.adyenCheckout.create('card', {
+        window.adyenCheckout.create('card', {
             type: 'card',
             hasHolderName: true,
             holderNameRequired: true,
