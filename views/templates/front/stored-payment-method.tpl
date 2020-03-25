@@ -40,8 +40,8 @@
                 {if $prestashop16}
                     <p></p>
                     <div class="adyen-payment-method-label">
-                        {l s='Pay with saved ' mod='adyen'} {$name}
-                        {l s=' ending: ' mod='adyen'} {$number}
+                        {l s='Pay with saved ' mod='adyen_official'} {$name}
+                        {l s=' ending: ' mod='adyen_official'} {$number}
                     </div>
                 {/if}
 
@@ -75,7 +75,7 @@
 
                 {if $prestashop16}
                     <button type="submit" class="button btn btn-default standard-checkout button-medium"><span>
-                             {l s='Pay' mod='adyen'} <i class="icon-chevron-right right"></i> </span></button>
+                             {l s='Pay' mod='adyen_official'} <i class="icon-chevron-right right"></i> </span></button>
                 {/if}
             </form>
         </div>

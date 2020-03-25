@@ -24,7 +24,7 @@
 
 // This class is not in a namespace because of the way PrestaShop loads
 // Controllers, which breaks a PSR1 element.
-// phpcs:disable PSR1.Classes.ClassDeclaration
+// phpcs:disable PSR1.Classes.ClassDeclaration,Squiz.Classes.ValidClassName
 
 use Adyen\AdyenException;
 use Adyen\PrestaShop\controllers\FrontController;
@@ -36,7 +36,7 @@ use Adyen\PrestaShop\service\notification\MerchantAccountCodeException;
 use Adyen\PrestaShop\service\notification\NotificationReceiver;
 use Adyen\Util\HmacSignature;
 
-class AdyenNotificationsModuleFrontController extends FrontController
+class Adyen_officialNotificationsModuleFrontController extends FrontController
 {
     /**
      * AdyenNotificationsModuleFrontController constructor.

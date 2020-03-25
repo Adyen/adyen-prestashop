@@ -24,7 +24,7 @@
 
 // This class is not in a namespace because of the way PrestaShop loads
 // Controllers, which breaks a PSR1 element.
-// phpcs:disable PSR1.Classes.ClassDeclaration
+// phpcs:disable PSR1.Classes.ClassDeclaration,Squiz.Classes.ValidClassName
 
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use PrestaShop\PrestaShop\Adapter\CoreException;
@@ -32,7 +32,7 @@ use Adyen\PrestaShop\service\Checkout;
 use Adyen\AdyenException;
 use Adyen\PrestaShop\controllers\FrontController;
 
-class AdyenThreeDSProcessModuleFrontController extends FrontController
+class Adyen_officialThreeDSProcessModuleFrontController extends FrontController
 {
     /**
      * @var bool
