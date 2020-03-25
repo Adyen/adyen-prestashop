@@ -32,7 +32,7 @@ use Adyen\PrestaShop\service\Checkout;
 use Adyen\PrestaShop\controllers\FrontController;
 use PrestaShop\PrestaShop\Adapter\CoreException;
 
-class AdyenValidate3dModuleFrontController extends FrontController
+class Adyen_officialValidate3dModuleFrontController extends FrontController
 {
     /**
      * @throws CoreException

@@ -429,7 +429,7 @@ abstract class FrontController extends \ModuleFrontController
         $adyenMerchantReference = \Tools::getValue(self::ADYEN_MERCHANT_REFERENCE);
 
         $termUrl = $this->context->link->getModuleLink(
-            "adyen",
+            "adyen_official",
             'Validate3d',
             array(self::ADYEN_MERCHANT_REFERENCE => $adyenMerchantReference),
             true

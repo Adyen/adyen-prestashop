@@ -31,7 +31,7 @@ use PrestaShop\PrestaShop\Adapter\CoreException;
 use Adyen\PrestaShop\exception\GenericLoggedException;
 use Adyen\PrestaShop\exception\MissingDataException;
 
-class AdminAdyenPrestashopCronController extends \ModuleAdminController
+class AdminAdyen_officialPrestashopCronController extends \ModuleAdminController
 {
     /**
      * @var bool

@@ -36,7 +36,7 @@ use Adyen\PrestaShop\service\notification\MerchantAccountCodeException;
 use Adyen\PrestaShop\service\notification\NotificationReceiver;
 use Adyen\Util\HmacSignature;
 
-class AdyenNotificationsModuleFrontController extends FrontController
+class Adyen_officialNotificationsModuleFrontController extends FrontController
 {
     /**
      * AdyenNotificationsModuleFrontController constructor.
@@ -65,7 +65,8 @@ class AdyenNotificationsModuleFrontController extends FrontController
             $notificationPassword,
             Db::getInstance(),
             ServiceLocator::get('Adyen\PrestaShop\service\Logger'),
-            ServiceLocator::get('Adyen\PrestaShop\service\adapter\classes\Configuration')
+            ServiceLocator::get('Adyen\PrestaShop\service\adapter\classes\Configuration'),
+            ServiceLocator::get('Adyen\PrestaShop\model\AdyenNotification')
         );
         try {
             die(

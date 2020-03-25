@@ -32,7 +32,7 @@ use Adyen\PrestaShop\service\Checkout;
 use Adyen\AdyenException;
 use Adyen\PrestaShop\controllers\FrontController;
 
-class AdyenThreeDSProcessModuleFrontController extends FrontController
+class Adyen_officialThreeDSProcessModuleFrontController extends FrontController
 {
     /**
      * @var bool

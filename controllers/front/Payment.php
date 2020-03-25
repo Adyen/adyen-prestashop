@@ -33,7 +33,7 @@ use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use Adyen\PrestaShop\service\Checkout;
 use PrestaShop\PrestaShop\Adapter\CoreException;
 
-class AdyenPaymentModuleFrontController extends FrontController
+class Adyen_officialPaymentModuleFrontController extends FrontController
 {
     const IS_AJAX = 'isAjax';
     const DATE_OF_BIRTH = 'dateOfBirth';

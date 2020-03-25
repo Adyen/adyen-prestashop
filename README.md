@@ -16,7 +16,7 @@ We strongly encourage you to join us in contributing to this repository so every
 Read our [**contribution guidelines**](CONTRIBUTING.md) to find out how.
 
 ## Installation
-Copy the folders into the **/modules/adyen** folder of your main PrestaShop environment.
+Copy the folders into the **/modules/adyen_official** folder of your main PrestaShop environment.
 
 Search for Adyen in the **Modules and Services**(1.6) / **Module Catalog**(1.7) menu in the PrestaShop admin panel and select Enable
 
