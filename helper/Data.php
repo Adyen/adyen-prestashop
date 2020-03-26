@@ -389,7 +389,7 @@ class Data
             return basename($templatePath);
         }
 
-        return 'module:adyen_official/' . ltrim($templatePath, '/');
+        return 'module:adyenofficial/' . ltrim($templatePath, '/');
     }
 
     /**

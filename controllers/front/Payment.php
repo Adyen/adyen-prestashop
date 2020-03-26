@@ -24,7 +24,7 @@
 
 // This class is not in a namespace because of the way PrestaShop loads
 // Controllers, which breaks a PSR1 element.
-// phpcs:disable PSR1.Classes.ClassDeclaration,Squiz.Classes.ValidClassName
+// phpcs:disable PSR1.Classes.ClassDeclaration
 
 use Adyen\AdyenException;
 use Adyen\PrestaShop\controllers\FrontController;
@@ -33,7 +33,7 @@ use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use Adyen\PrestaShop\service\Checkout;
 use PrestaShop\PrestaShop\Adapter\CoreException;
 
-class Adyen_officialPaymentModuleFrontController extends FrontController
+class AdyenOfficialPaymentModuleFrontController extends FrontController
 {
     const IS_AJAX = 'isAjax';
     const DATE_OF_BIRTH = 'dateOfBirth';
