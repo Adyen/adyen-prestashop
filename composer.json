@@ -14,12 +14,6 @@
     "monolog/monolog": "1.24.*",
     "php": ">=5.2"
   },
-  "repositories":[
-    {
-      "type": "vcs",
-      "url": "https://github.com/PrestaShopCorp/autoindex"
-    }
-  ],
   "require-dev": {
     "phpunit/phpunit": "~4",
     "mockery/mockery": "dev-master",
