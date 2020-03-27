@@ -36,6 +36,7 @@ use Order;
 use PHPUnit_Framework_MockObject_MockObject;
 use PrestaShopDatabaseException;
 use PrestaShopException;
+use Adyen\PrestaShop\service\Order as OrderService;
 
 class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
 {
@@ -68,6 +69,11 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
      * @var AdyenPaymentResponse|PHPUnit_Framework_MockObject_MockObject $adyenPaymentResponseMock
      */
     private $adyenPaymentResponseMock;
+
+    /**
+     * @var OrderService|PHPUnit_Framework_MockObject_MockObject orderServiceMock
+     */
+    private $orderServiceMock;
 
     /**
      *
@@ -103,6 +109,10 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
         // Mock AdyenNotification
         /** @var PHPUnit_Framework_MockObject_MockObject|AdyenPaymentResponse $customerMock */
         $this->adyenPaymentResponseMock = $this->getMockBuilder(AdyenPaymentResponse::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->orderServiceMock = $this->getMockBuilder(OrderService::class)
             ->disableOriginalConstructor()
             ->getMock();
     }
@@ -162,7 +172,8 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
             $this->customerThreadAdapter,
             $this->logger,
             $context,
-            $this->adyenPaymentResponseMock
+            $this->adyenPaymentResponseMock,
+            $this->orderServiceMock
         );
 
         $this->assertTrue($notificationProcessor->addMessage($notification));
@@ -193,7 +204,8 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
             $this->customerThreadAdapter,
             $this->logger,
             $context,
-            $this->adyenPaymentResponseMock
+            $this->adyenPaymentResponseMock,
+            $this->orderServiceMock
         );
 
         $this->logger->expects($this->once())
@@ -234,7 +246,8 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
             $this->customerThreadAdapter,
             $this->logger,
             $context,
-            $this->adyenPaymentResponseMock
+            $this->adyenPaymentResponseMock,
+            $this->orderServiceMock
         );
 
         $this->logger->expects($this->once())
