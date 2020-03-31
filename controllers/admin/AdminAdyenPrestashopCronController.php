@@ -24,14 +24,20 @@
 
 // This class is not in a namespace because of the way PrestaShop loads
 // Controllers, which breaks a PSR1 element.
-// phpcs:disable PSR1.Classes.ClassDeclaration,Squiz.Classes.ValidClassName
+// phpcs:disable PSR1.Classes.ClassDeclaration
 
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use PrestaShop\PrestaShop\Adapter\CoreException;
 use Adyen\PrestaShop\exception\GenericLoggedException;
 use Adyen\PrestaShop\exception\MissingDataException;
+use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
+use Adyen\PrestaShop\service\adapter\classes\CustomerThreadAdapter;
+use Adyen\PrestaShop\service\notification\NotificationProcessor;
+use Adyen\PrestaShop\model\AdyenPaymentResponse;
+use Adyen\PrestaShop\model\AdyenNotification;
+use \Adyen\PrestaShop\service\Order as OrderService;
 
-class AdminAdyen_officialPrestashopCronController extends \ModuleAdminController
+class AdminAdyenOfficialPrestashopCronController extends \ModuleAdminController
 {
     /**
      * @var bool
@@ -94,18 +100,20 @@ class AdminAdyen_officialPrestashopCronController extends \ModuleAdminController
      */
     public function postProcess()
     {
-        $notificationProcessor = new \Adyen\PrestaShop\service\notification\NotificationProcessor(
+        $notificationProcessor = new NotificationProcessor(
             $this->helperData,
             \Db::getInstance(),
-            new \Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter(),
-            new \Adyen\PrestaShop\service\adapter\classes\CustomerThreadAdapter(),
+            new OrderAdapter(),
+            new CustomerThreadAdapter(),
             $this->logger,
-            \Context::getContext()
+            \Context::getContext(),
+            new AdyenPaymentResponse(),
+            new OrderService()
         );
 
-        $notificationModel = new \Adyen\PrestaShop\model\AdyenNotification();
+        $notificationModel = new AdyenNotification();
 
-        $unprocessedNotifications = $notificationProcessor->getUnprocessedNotifications();
+        $unprocessedNotifications = $notificationModel->getUnprocessedNotifications();
 
         foreach ($unprocessedNotifications as $unprocessedNotification) {
             // update as processing

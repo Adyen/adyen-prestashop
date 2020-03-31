@@ -84,7 +84,7 @@ class Configuration
         $this->sslEncryptionKey = _COOKIE_KEY_;
         $this->encryptedApiKey = $this->getEncryptedAPIKey($this->adyenMode);
         $this->liveEndpointPrefix = \Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
-        $this->moduleVersion = '2.0.0';
+        $this->moduleVersion = '2.1.0';
         $this->moduleName = 'adyen-prestashop';
     }
 

@@ -22,10 +22,10 @@
  *}
 
 {block name='page_content_container'}
-    <h3>{l s='There was an error' mod='adyen_official'}</h3>
+    <h3>{l s='There was an error' mod='adyenofficial'}</h3>
 
     <p class="warning">
-        {l s='We have noticed that there is a problem with your order.' mod='adyen_official'}
+        {l s='We have noticed that there is a problem with your order.' mod='adyenofficial'}
     </p>
 
 {/block}

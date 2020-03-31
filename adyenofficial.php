@@ -32,10 +32,10 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-require _PS_ROOT_DIR_ . '/modules/adyen_official/vendor/autoload.php';
+require _PS_ROOT_DIR_ . '/modules/adyenofficial/vendor/autoload.php';
 
 // this file cannot contain the `use` operator for PrestaShop 1.6
-class Adyen_Official extends PaymentModule
+class AdyenOfficial extends PaymentModule
 {
     /**
      * @var string
@@ -99,8 +99,8 @@ class Adyen_Official extends PaymentModule
      */
     public function __construct()
     {
-        $this->name = 'adyen_official';
-        $this->version = '2.0.0';
+        $this->name = 'adyenofficial';
+        $this->version = '2.1.0';
         $this->tab = 'payments_gateways';
         $this->author = 'Adyen';
         $this->bootstrap = true;
@@ -1014,29 +1014,43 @@ class Adyen_Official extends PaymentModule
             return null;
         }
 
-        $paymentAction = false;
-
         if ($this->versionChecker->isPrestaShop16()) {
             $order = $params['objOrder'];
         } else {
             $order = $params['order'];
         }
 
+        // Check if order object is not empty
         if (empty($order)) {
-            // something went wrong
+            $this->logger->debug('In hookPaymentReturn Order object is empty');
+            return null;
         }
 
+        // Retrieve payment response for order
         $paymentResponse = $this->adyenPaymentResponseModel->getPaymentResponseByCartId($order->id_cart);
 
-        if (!empty($paymentResponse) && !empty($paymentResponse['action'])) {
-            $paymentAction = $paymentResponse['action'];
+        // Check if payment response is not empty and has action or additional data to show
+        if (empty($paymentResponse) ||
+            (empty($paymentResponse['action']) && empty($paymentResponse['additionalData']))
+        ) {
+            return null;
         }
 
+        // Default parameters to frontend
         $smartyVariables = array(
             'isPrestaShop16' => $this->versionChecker->isPrestaShop16() ? 'true' : 'false',
-            'paymentMethodsResponse' => '{}',
-            'action' => json_encode($paymentAction)
+            'paymentMethodsResponse' => '{}'
         );
+
+        // checkout action if available
+        if (!empty($paymentResponse['action'])) {
+            $smartyVariables['action'] = json_encode($paymentResponse['action']);
+        }
+
+        // additional payment data if available
+        if (!empty($paymentResponse['additionalData'])) {
+            $smartyVariables['additionalData'] = json_encode($paymentResponse['additionalData']);
+        }
 
         // Add checkout component default configuration parameters for smarty variables
         $smartyVariables = array_merge($smartyVariables, $this->getCheckoutComponentInitData());
