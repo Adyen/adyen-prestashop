@@ -97,23 +97,23 @@ class AdyenOfficial extends PaymentModule
      *
      * @var array
      */
-    private $links = array(
-        [
+    private static $links = array(
+        array(
             "label" => "Docs",
             "url" => "https://docs.adyen.com/plugins/prestashop"
-        ],
-        [
+        ),
+        array(
             "label" => "Support",
             "url" => "https://support.adyen.com/hc/en-us/requests/new?ticket_form_id=78764"
-        ],
-        [
+        ),
+        array(
             "label" => "GitHub",
             "url" => "https://github.com/Adyen/adyen-prestashop/releases"
-        ],
-        [
+        ),
+        array(
             "label" => "PrestaShop Marketplace",
             "url" => "https://addons.prestashop.com"
-        ]
+        )
     );
 
     /**
@@ -541,7 +541,7 @@ class AdyenOfficial extends PaymentModule
     {
         $smartyVariables = array(
             'logo' => Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/adyen.png'),
-            'links' => $this->links
+            'links' => self::$links
         );
 
         $this->context->smarty->assign($smartyVariables);
