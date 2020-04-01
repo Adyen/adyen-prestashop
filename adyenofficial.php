@@ -539,7 +539,6 @@ class AdyenOfficial extends PaymentModule
      */
     private function displayGetStarted()
     {
-
         $smartyVariables = array(
             'logo' => Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/adyen.png'),
             'links' => $this->links
@@ -548,7 +547,6 @@ class AdyenOfficial extends PaymentModule
         $this->context->smarty->assign($smartyVariables);
 
         return $this->display(__FILE__, '/views/templates/front/get-started.tpl');
-
     }
 
     /**
