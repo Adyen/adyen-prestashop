@@ -28,7 +28,7 @@
     <div>
         <p>Adyen all-in-one payments platform.</p>
         <p>Offer key payment methods anywhere in the world at the flick of a switch.</p>
-        <p>Easy integration with our in-house built Prestashop Plugin, no set-up fee.</p>
+        <p>Easy integration with our in-house built PrestaShop Plugin, no set-up fee.</p>
     </div>
 </div>
 <div>
