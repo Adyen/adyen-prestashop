@@ -537,7 +537,7 @@ class AdyenOfficial extends PaymentModule
     /**
      * @return string
      */
-    public function displayGetStarted()
+    private function displayGetStarted()
     {
 
         $smartyVariables = array(
