@@ -522,7 +522,7 @@ class AdyenOfficial extends PaymentModule
      */
     public function displayForm()
     {
-        $this->context->controller->addCSS($this->_path . 'views/css/adyen_admin.css', 'all');
+        $this->context->controller->addCSS('modules/' . $this->name . '/views/css/adyen_admin.css', 'all');
 
         // Get default Language
         $default_lang = (int)Configuration::get('PS_LANG_DEFAULT');
@@ -954,7 +954,7 @@ class AdyenOfficial extends PaymentModule
             return null;
         }
 
-        $this->context->controller->addCSS($this->_path . 'views/css/adyen.css', 'all');
+        $this->context->controller->addCSS('modules/' . $this->name . '/views/css/adyen.css', 'all');
 
         $payments = "";
         $paymentMethods = $this->helper_data->fetchPaymentMethods($this->context->cart, $this->context->language);
@@ -1457,36 +1457,36 @@ class AdyenOfficial extends PaymentModule
 
         $controllerAdapter->registerJavascript(
             'adyen-polyfill',
-            $this->_path . 'views/js/polyfill.js',
+            'modules/' . $this->name . '/views/js/polyfill.js',
             array('position' => 'bottom', 'priority' => 140)
         );
 
         $controllerAdapter->registerJavascript(
             'adyen-component-renderer',
-            $this->_path . 'views/js/checkout-component-renderer.js',
+            'modules/' . $this->name . '/views/js/checkout-component-renderer.js',
             array('position' => 'bottom', 'priority' => 170)
         );
 
         $controllerAdapter->registerStylesheet(
             'adyen-adyencss',
-            $this->_path . 'views/css/adyen.css'
+            'modules/' . $this->name . '/views/css/adyen.css'
         );
 
         // Only for Order controller
         if ($controller->php_self == 'order') {
             $controllerAdapter->registerJavascript(
                 'adyen-card-payment-method',
-                $this->_path . 'views/js/payment-components/card-payment-method.js',
+                'modules/' . $this->name . '/views/js/payment-components/card-payment-method.js',
                 array('position' => 'bottom', 'priority' => 170)
             );
             $controllerAdapter->registerJavascript(
                 'adyen-local-payment-method',
-                $this->_path . 'views/js/payment-components/local-payment-method.js',
+                'modules/' . $this->name . '/views/js/payment-components/local-payment-method.js',
                 array('position' => 'bottom', 'priority' => 170)
             );
             $controllerAdapter->registerJavascript(
                 'adyen-stored-payment-method',
-                $this->_path . 'views/js/payment-components/stored-payment-method.js',
+                'modules/' . $this->name . '/views/js/payment-components/stored-payment-method.js',
                 array('position' => 'bottom', 'priority' => 170)
             );
 
@@ -1499,7 +1499,7 @@ class AdyenOfficial extends PaymentModule
         if ($controller->php_self == 'order-confirmation') {
             $controllerAdapter->registerJavascript(
                 'adyen-order-confirmation',
-                $this->_path . 'views/js/payment-components/order-confirmation.js',
+                'modules/' . $this->name . '/views/js/payment-components/order-confirmation.js',
                 array('position' => 'bottom', 'priority' => 170)
             );
         }
