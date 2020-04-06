@@ -93,6 +93,30 @@ class AdyenOfficial extends PaymentModule
     private $adyenPaymentResponseModel;
 
     /**
+     * Links to show on the Adyen payment method header
+     *
+     * @var array
+     */
+    private static $links = array(
+        array(
+            "label" => "Docs",
+            "url" => "https://docs.adyen.com/plugins/prestashop"
+        ),
+        array(
+            "label" => "Support",
+            "url" => "https://support.adyen.com/hc/en-us/requests/new?ticket_form_id=78764"
+        ),
+        array(
+            "label" => "GitHub",
+            "url" => "https://github.com/Adyen/adyen-prestashop/releases"
+        ),
+        array(
+            "label" => "PrestaShop Marketplace",
+            "url" => "https://addons.prestashop.com"
+        )
+    );
+
+    /**
      * Adyen constructor.
      *
      * @throws \PrestaShop\PrestaShop\Adapter\CoreException
@@ -507,14 +531,22 @@ class AdyenOfficial extends PaymentModule
                 $output .= $this->displayConfirmation($this->l('Settings updated'));
             }
         }
-        return $output . $this->displayForm();
+        return $output . $this->displayGetStarted() . $this->displayForm();
     }
 
     /**
-     * TODO: Implement displayGetStarted
+     * @return string
      */
-    public function displayGetStarted()
+    private function displayGetStarted()
     {
+        $smartyVariables = array(
+            'logo' => Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/adyen.png'),
+            'links' => self::$links
+        );
+
+        $this->context->smarty->assign($smartyVariables);
+
+        return $this->display(__FILE__, '/views/templates/front/get-started.tpl');
     }
 
     /**
