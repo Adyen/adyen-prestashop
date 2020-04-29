@@ -23,8 +23,7 @@
 
 {if !$originKey}
     <form method="post">
-        <h5>There is an error with retrieving the originKey,
-            please check your API key in the Adyen Module configuration</h5>
+        {include './originkey-error.tpl'}
     </form>
 {else}
     <div class="row adyen-payment {$paymentMethodType|escape:'html'}"

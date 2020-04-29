@@ -26,7 +26,7 @@
 {if !empty($action) or !empty($additionalData)}
     <div class="row">
       <div class="col-md-12">
-        <h3 class="card-title h3">Please use these details to finish the payment:</h3>
+        <h3 class="card-title h3">{l s='Please use these details to finish the payment' mod='adyenofficial'}:</h3>
         {if !empty($action)}
           <div
                   data-adyen-payment-action-container

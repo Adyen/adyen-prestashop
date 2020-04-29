@@ -23,8 +23,7 @@
 
 {if !$originKey}
     <form method="post">
-        <h5>There is an error with retrieving the originKey,
-            please check your API key in the Adyen Module configuration</h5>
+        {include './originkey-error.tpl'}
     </form>
 {else}
     <div class="row adyen-payment"
@@ -63,7 +62,7 @@
                         <div class="modal-dialog" role="document">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h4 class="modal-title">Authentication</h4>
+                                    <h4 class="modal-title">{l s='Authentication' mod='adyenofficial'}</h4>
                                 </div>
                                 <div class="modal-body">
                                     <div id="threeDS2Container-{$storedPaymentApiId|escape:'html'}"></div>

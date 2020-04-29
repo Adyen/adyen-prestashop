@@ -22,8 +22,7 @@
  *}
 
 {if !$originKey}
-    <h5>There is an error with retrieving the originKey,
-        please check your API key in the Adyen Module configuration</h5>
+    {include './originkey-error.tpl'}
 {else}
     <div id="adyen-checkout-configuration"
          data-is-presta-shop16="{$isPrestaShop16|escape:'html'}"
