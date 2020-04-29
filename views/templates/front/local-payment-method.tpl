@@ -30,8 +30,8 @@
     <div class="row adyen-payment {$paymentMethodType|escape:'html'}"
          data-local-payment-method="{$paymentMethodType|escape:'html'}"
     >
-        <div class="adyen-payment-method-label">{l s='Pay with ' mod='adyenofficial'}{$paymentMethodName}</div>
-        <form action="{$paymentProcessUrl}" class="adyen-payment-form-{$paymentMethodType|escape:'html'}" method="post">
+        <div class="adyen-payment-method-label">{l s='Pay with ' mod='adyenofficial'}{$paymentMethodName|escape:'html'}</div>
+        <form action="{$paymentProcessUrl|escape:'html'}" class="adyen-payment-form-{$paymentMethodType|escape:'html'}" method="post">
             <!-- Display payment errors -->
             <div class="alert alert-danger error-container" role="alert"></div>
             <div data-adyen-payment-container></div>

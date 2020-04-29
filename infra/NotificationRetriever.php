@@ -56,7 +56,7 @@ class NotificationRetriever
 select a.pspreference as pspReference
 from %sadyen_notification a
 inner join %sorders o on a.merchant_reference = o.id_cart
-where o.id_order = $orderId
+where o.id_order = intval($orderId)
 SQL
                 ,
                 _DB_PREFIX_,

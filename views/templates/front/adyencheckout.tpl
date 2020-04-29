@@ -26,11 +26,11 @@
         please check your API key in the Adyen Module configuration</h5>
 {else}
     <div id="adyen-checkout-configuration"
-         data-is-presta-shop16="{$isPrestaShop16}"
-         data-locale="{$locale}"
-         data-origin-key="{$originKey}"
-         data-environment="{$environment}"
-         data-payment-methods-response='{$paymentMethodsResponse}'
+         data-is-presta-shop16="{$isPrestaShop16|escape:'html'}"
+         data-locale="{$locale|escape:'html'}"
+         data-origin-key="{$originKey|escape:'html'}"
+         data-environment="{$environment|escape:'html'}"
+         data-payment-methods-response='{$paymentMethodsResponse|escape:'html'}'
     ></div>
     <script>
         var adyenCheckoutConfiguration = document.querySelector('#adyen-checkout-configuration').dataset;
