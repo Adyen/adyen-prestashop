@@ -93,31 +93,6 @@ class AdyenOfficial extends PaymentModule
     private $adyenPaymentResponseModel;
 
     /**
-     * Links to show on the Adyen payment method header
-     *
-     * @var array
-     */
-    private static $links = array(
-        array(
-            "label" => "Docs",
-            "url" => "https://docs.adyen.com/plugins/prestashop"
-        ),
-        array(
-            "label" => "Support",
-            "url" => "https://support.adyen.com/hc/en-us/requests/new?ticket_form_id=78764"
-        ),
-        array(
-            "label" => "GitHub",
-            "url" => "https://github.com/Adyen/adyen-prestashop/releases"
-        ),
-        array(
-            "label" => "PrestaShop Marketplace",
-            "url" => "https://addons.prestashop.com" .
-                "/en/payments-gateways-prestashop-modules/48042-adyen-the-payments-platform-built-for-growth.html"
-        )
-    );
-
-    /**
      * Adyen constructor.
      *
      * @throws \PrestaShop\PrestaShop\Adapter\CoreException
@@ -542,7 +517,25 @@ class AdyenOfficial extends PaymentModule
     {
         $smartyVariables = array(
             'logo' => Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/adyen.png'),
-            'links' => self::$links
+            'links' => array(
+                array(
+                    "label" => "Docs",
+                    "url" => "https://docs.adyen.com/plugins/prestashop"
+                ),
+                array(
+                    "label" => "Support",
+                    "url" => "https://support.adyen.com/hc/en-us/requests/new?ticket_form_id=78764"
+                ),
+                array(
+                    "label" => "GitHub",
+                    "url" => "https://github.com/Adyen/adyen-prestashop/releases"
+                ),
+                array(
+                    "label" => "PrestaShop Marketplace",
+                    "url" => "https://addons.prestashop.com/en/payments-gateways-prestashop-modules/" .
+                        "48042-adyen-the-payments-platform-built-for-growth.html"
+                )
+            )
         );
 
         $this->context->smarty->assign($smartyVariables);
