@@ -21,26 +21,4 @@
  * See the LICENSE file for more info.
  *}
 
-{include './adyencheckout.tpl'}
-
-{if !empty($action) or !empty($additionalData)}
-    <div class="row">
-      <div class="col-md-12">
-        <h3 class="card-title h3">{l s='Please use these details to finish the payment' mod='adyenofficial'}:</h3>
-        {if !empty($action)}
-          <div
-                  data-adyen-payment-action-container
-                  data-adyen-payment-action="{$action|escape:'html'}"
-          ></div>
-        {/if}
-
-        {if !empty($additionalData)}
-          <div
-                  data-adyen-payment-additional-data-container
-                  data-adyen-payment-additional-data="{$additionalData|escape:'html'}"
-          ></div>
-        {/if}
-        <div data-adyen-payment-error-container role="alert"></div>
-      </div>
-    </div>
-{/if}
+<h5>{l s='There is an error with retrieving the originKey, please check your API key in the Adyen Module configuration.' mod='adyenofficial'}</h5>

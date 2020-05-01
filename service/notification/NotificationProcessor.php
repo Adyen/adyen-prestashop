@@ -115,6 +115,13 @@ class NotificationProcessor
      */
     public function processNotification($unprocessedNotification)
     {
+        // Validate if order is available by merchant reference
+        $order = $this->orderAdapter->getOrderByCartId($unprocessedNotification['merchant_reference']);
+
+        if (!\Validate::isLoadedObject($order)) {
+            return false;
+        }
+
         // Add cron message to order
         if (!$this->addMessage($unprocessedNotification)) {
             return false;
@@ -122,7 +129,6 @@ class NotificationProcessor
 
         switch ($unprocessedNotification['event_code']) {
             case AdyenNotification::AUTHORISATION:
-                $order = \Order::getByCartId($unprocessedNotification['merchant_reference']);
                 $order->setCurrentState(\Configuration::get('PS_OS_PAYMENT'));
                 $this->orderService->addPaymentDataToOrderFromResponse($order, $unprocessedNotification);
                 $this->adyenPaymentResponse->deletePaymentResponseByCartId($unprocessedNotification);

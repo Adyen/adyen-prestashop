@@ -21,26 +21,19 @@
  * See the LICENSE file for more info.
  *}
 
-{include './adyencheckout.tpl'}
-
-{if !empty($action) or !empty($additionalData)}
-    <div class="row">
-      <div class="col-md-12">
-        <h3 class="card-title h3">{l s='Please use these details to finish the payment' mod='adyenofficial'}:</h3>
-        {if !empty($action)}
-          <div
-                  data-adyen-payment-action-container
-                  data-adyen-payment-action="{$action|escape:'html'}"
-          ></div>
-        {/if}
-
-        {if !empty($additionalData)}
-          <div
-                  data-adyen-payment-additional-data-container
-                  data-adyen-payment-additional-data="{$additionalData|escape:'html'}"
-          ></div>
-        {/if}
-        <div data-adyen-payment-error-container role="alert"></div>
-      </div>
+<div style="display: flex;">
+    <div style="float:left;padding-right:10px;">
+        <img width="120px" src="{$logo|escape:'html'}">
     </div>
-{/if}
+    <div>
+        <p>{l s='Adyen all-in-one payments platform.' mod='adyenofficial'}</p>
+        <p>{l s='Offer key payment methods anywhere in the world at the flick of a switch.' mod='adyenofficial'}</p>
+        <p>{l s='Easy integration with our in-house built PrestaShop Plugin, no set-up fee.' mod='adyenofficial'}</p>
+        <p>{l s='Sign up for an Adyen account at' mod='adyenofficial'} <a href="https://www.adyen.com/signup">https://www.adyen.com/signup</a></p>
+    </div>
+</div>
+<div>
+    {foreach from=$links item=value name=links}
+        <a href="{$value.url|escape:'html'}" target="_blank">{$value.label|escape:'html'}</a> {if not $smarty.foreach.links.last} | {/if}
+    {/foreach}
+</div>

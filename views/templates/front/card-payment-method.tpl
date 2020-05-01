@@ -23,8 +23,7 @@
 
 {if !$originKey}
     <form method="post">
-        <h5>There is an error with retrieving the originKey,
-            please check your API key in the Adyen Module configuration</h5>
+        {include './originkey-error.tpl'}
     </form>
 {else}
     {if $prestashop16}
@@ -35,8 +34,8 @@
     {/if}
     <div class="row adyen-payment">
         <div class="col-xs-12 col-md-6">
-            <form action="{$paymentProcessUrl}" class="adyen-payment-form" method="post"
-                  data-is-logged-in-user="{$loggedInUser}"
+            <form action="{$paymentProcessUrl|escape:'html'}" class="adyen-payment-form" method="post"
+                  data-is-logged-in-user="{$loggedInUser|escape:'html'}"
                   data-three-ds-process-url="{$threeDSProcessUrl|escape:'html'}"
             >
 
@@ -61,7 +60,7 @@
                         <div class="modal-dialog" role="document">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h4 class="modal-title">Authentication</h4>
+                                    <h4 class="modal-title">{l s='Authentication' mod='adyenofficial'}</h4>
                                 </div>
                                 <div class="modal-body">
                                     <div id="threeDS2Container"></div>
