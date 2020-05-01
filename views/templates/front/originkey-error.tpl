@@ -21,5 +21,4 @@
  * See the LICENSE file for more info.
  *}
 
-<h5>{l s='There is an error with retrieving the originKey' mod='adyenofficial'},
-    {l s='please check your API key in the Adyen Module configuration' mod='adyenofficial'}</h5>
+<h5>{l s='There is an error with retrieving the originKey, please check your API key in the Adyen Module configuration.' mod='adyenofficial'}</h5>
