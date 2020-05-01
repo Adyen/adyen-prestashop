@@ -443,7 +443,7 @@ class AdyenOfficial extends PaymentModule
             foreach (Language::getLanguages(true) as $lang) {
                 $tab->name[$lang['id_lang']] = 'Adyen Prestashop Cron';
             }
-            $tab->class_name = 'AdminAdyenPrestashopCron';
+            $tab->class_name = 'AdminAdyenOfficialPrestashopCron';
             $tab->module = $this->name;
             return $tab->add();
         } catch (PrestaShopDatabaseException $e) {
@@ -459,7 +459,7 @@ class AdyenOfficial extends PaymentModule
     public function uninstallTab()
     {
         try {
-            $id_tab = (int)Tab::getIdFromClassName('AdminAdyenPrestashopCron');
+            $id_tab = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashopCron');
             if ($id_tab) {
                 $tab = new Tab($id_tab);
                 return $tab->delete();
@@ -691,7 +691,7 @@ class AdyenOfficial extends PaymentModule
             'desc' => $cronjobToken ?
                 $this->l("Your adyen cron job processor's url includes this secure token . Your URL looks like: ") .
                 sprintf(
-                    "%s/%s/index.php?fc=module&controller=AdminAdyenPrestashopCron&token=%s",
+                    "%s/%s/index.php?fc=module&controller=AdminAdyenOfficialPrestashopCron&token=%s",
                     Tools::getShopDomainSsl(),
                     basename(_PS_ADMIN_DIR_),
                     $cronjobToken
