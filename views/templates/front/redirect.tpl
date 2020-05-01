@@ -38,8 +38,8 @@
         <br>
         <br>
         <div style="text-align: center">
-            <h1>Processing your 3-D Secure Transaction</h1>
-            <p>Please click continue to continue the processing of your 3-D Secure transaction.</p>
+            <h1>{l s='Processing your 3-D Secure Transaction' mod='adyenofficial'}</h1>
+            <p>{l s='Please click continue to continue the processing of your 3-D Secure transaction.' mod='adyenofficial'}</p>
             <input type="submit" class="button" value="continue"/>
         </div>
     </noscript>
