@@ -23,7 +23,7 @@
 
 <div style="display: flex;">
     <div style="float:left;padding-right:10px;">
-        <img width="120px" src="{$logo}">
+        <img width="120px" src="{$logo|escape:'html'}">
     </div>
     <div>
         <p>{l s='Adyen all-in-one payments platform.' mod='adyenofficial'}</p>
@@ -34,6 +34,6 @@
 </div>
 <div>
     {foreach from=$links item=value name=links}
-        <a href="{$value.url}" target="_blank">{$value.label}</a> {if not $smarty.foreach.links.last} | {/if}
+        <a href="{$value.url|escape:'html'}" target="_blank">{$value.label|escape:'html'}</a> {if not $smarty.foreach.links.last} | {/if}
     {/foreach}
 </div>
