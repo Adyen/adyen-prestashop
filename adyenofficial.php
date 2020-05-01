@@ -112,7 +112,8 @@ class AdyenOfficial extends PaymentModule
         ),
         array(
             "label" => "PrestaShop Marketplace",
-            "url" => "https://addons.prestashop.com/en/payments-gateways-prestashop-modules/48042-adyen-the-payments-platform-built-for-growth.html"
+            "url" => "https://addons.prestashop.com" .
+                "/en/payments-gateways-prestashop-modules/48042-adyen-the-payments-platform-built-for-growth.html"
         )
     );
 
