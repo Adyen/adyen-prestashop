@@ -281,16 +281,14 @@ class NotificationProcessor
             return false;
         }
 
-        $hasProcessedAuthorisedNotification = false;
-
         foreach ($processedNotifications as $processedNotification) {
             if (AdyenNotification::AUTHORISATION === $processedNotification['event_code'] &&
                 'true' === $processedNotification['success']
             ) {
-                $hasProcessedAuthorisedNotification = true;
+                return true;
             }
         }
 
-        return $hasProcessedAuthorisedNotification;
+        return false;
     }
 }
