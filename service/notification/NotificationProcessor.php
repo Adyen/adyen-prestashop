@@ -129,11 +129,38 @@ class NotificationProcessor
 
         switch ($unprocessedNotification['event_code']) {
             case AdyenNotification::AUTHORISATION:
-                $order->setCurrentState(\Configuration::get('PS_OS_PAYMENT'));
-                $this->orderService->addPaymentDataToOrderFromResponse($order, $unprocessedNotification);
+                if ('true' === $unprocessedNotification['success']) {
+                    // AUTHORISATION success = true moves order to paid if order status is not PS_OS_PAYMENT
+                    if ($order->getCurrentState() !== \Configuration::get('PS_OS_PAYMENT')) {
+                        $order->setCurrentState(\Configuration::get('PS_OS_PAYMENT'));
+                    }
+
+                    $this->orderService->addPaymentDataToOrderFromResponse($order, $unprocessedNotification);
+                } else {
+                    if ($order->getCurrentState() !== \Configuration::get('PS_OS_CANCELED')) {
+                        // No previous authorisation notification was processed before
+                        if (!$this->hasProcessedAuthorisationSuccessNotification(
+                            $unprocessedNotification['merchant_reference']
+                        )) {
+                            // AUTHORISATION success = false moves order to canceled if not canceled already
+                            $order->setCurrentState(\Configuration::get('PS_OS_CANCELED'));
+                        } else {
+                            $this->logger->addAdyenNotification('Notification with entity_id (' . $unprocessedNotification['entity_id'] . ') was ignored during processing the notifications because another Authorisation success = true notification has already been processed for the same order.');
+                        }
+                    }
+                }
+
                 $this->adyenPaymentResponse->deletePaymentResponseByCartId($unprocessedNotification);
                 break;
             case AdyenNotification::OFFER_CLOSED:
+                if ('true' === $unprocessedNotification['success']) {
+                    // OFFER_CLOSED success = true moves order to canceled if order status is
+                    // ADYEN_OS_WAITING_FOR_PAYMENT
+                    if ($order->getCurrentState() === \Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT')) {
+                        $order->setCurrentState(\Configuration::get('PS_OS_CANCELED'));
+                    }
+                }
+
                 $this->adyenPaymentResponse->deletePaymentResponseByCartId($unprocessedNotification);
                 break;
         }
@@ -232,5 +259,36 @@ class NotificationProcessor
         }
 
         return true;
+    }
+
+    /**
+     * Returns true if an Authorisation notification with success = true has already been processed before for the same
+     * merchant_reference
+     *
+     * @param $merchantReference
+     * @return bool
+     */
+    private function hasProcessedAuthorisationSuccessNotification($merchantReference)
+    {
+        $notificationModel = new AdyenNotification();
+
+        $processedNotifications = $notificationModel->getProcessedNotificationsByMerchantReference($merchantReference);
+
+        if (empty($processedNotifications)) {
+            return false;
+        }
+
+        $hasProcessedAuthorisedNotification = false;
+
+        foreach ($processedNotifications as $processedNotification) {
+            if (
+                AdyenNotification::AUTHORISATION === $processedNotification['event_code'] &&
+                'true' === $processedNotification['success']
+            ) {
+                $hasProcessedAuthorisedNotification = true;
+            }
+        }
+
+        return $hasProcessedAuthorisedNotification;
     }
 }
