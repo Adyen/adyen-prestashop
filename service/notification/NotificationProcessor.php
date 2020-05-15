@@ -145,7 +145,10 @@ class NotificationProcessor
                             // AUTHORISATION success = false moves order to canceled if not canceled already
                             $order->setCurrentState(\Configuration::get('PS_OS_CANCELED'));
                         } else {
-                            $this->logger->addAdyenNotification('Notification with entity_id (' . $unprocessedNotification['entity_id'] . ') was ignored during processing the notifications because another Authorisation success = true notification has already been processed for the same order.');
+                            $this->logger->addAdyenNotification('Notification with entity_id (' .
+                                $unprocessedNotification['entity_id'] . ') was ignored during processing the ' .
+                                'notifications because another Authorisation success = true notification has already ' .
+                                'been processed for the same order.');
                         }
                     }
                 }
@@ -281,8 +284,7 @@ class NotificationProcessor
         $hasProcessedAuthorisedNotification = false;
 
         foreach ($processedNotifications as $processedNotification) {
-            if (
-                AdyenNotification::AUTHORISATION === $processedNotification['event_code'] &&
+            if (AdyenNotification::AUTHORISATION === $processedNotification['event_code'] &&
                 'true' === $processedNotification['success']
             ) {
                 $hasProcessedAuthorisedNotification = true;
