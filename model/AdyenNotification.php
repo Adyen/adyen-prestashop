@@ -213,4 +213,17 @@ class AdyenNotification extends AbstractModel
 
         return $this->dbInstance->getValue($sql);
     }
+
+    /**
+     * @param $merchantReference
+     * @return mixed
+     */
+    public function getProcessedNotificationsByMerchantReference($merchantReference)
+    {
+        $sql = 'SELECT * FROM ' . _DB_PREFIX_ . self::$tableName
+            . ' WHERE `merchant_reference` = "' . pSQL($merchantReference) . '"'
+            . ' AND `done` = 1';
+
+        return $this->dbInstance->executeS($sql);
+    }
 }
