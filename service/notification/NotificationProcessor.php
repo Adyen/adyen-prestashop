@@ -140,7 +140,6 @@ class NotificationProcessor
                     // Add additional data to order if there is any (only possible when the notification success is true
                     $this->orderService->addPaymentDataToOrderFromResponse($order, $unprocessedNotification);
                 } else { // Notification success is 'false'
-
                     // Order state is not canceled yet
                     if ($order->getCurrentState() !== \Configuration::get('PS_OS_CANCELED')) {
                         // No previous authorisation notification was processed before
