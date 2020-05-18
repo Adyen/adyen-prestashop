@@ -127,13 +127,50 @@ class NotificationProcessor
             return false;
         }
 
+        // Process notifications based on it's event code
         switch ($unprocessedNotification['event_code']) {
             case AdyenNotification::AUTHORISATION:
-                $order->setCurrentState(\Configuration::get('PS_OS_PAYMENT'));
-                $this->orderService->addPaymentDataToOrderFromResponse($order, $unprocessedNotification);
+                // Notification success is 'true'
+                if ('true' === $unprocessedNotification['success']) {
+                    // Moves order to paid if order status is not paid already
+                    if ($order->getCurrentState() !== \Configuration::get('PS_OS_PAYMENT')) {
+                        $order->setCurrentState(\Configuration::get('PS_OS_PAYMENT'));
+                    }
+
+                    // Add additional data to order if there is any (only possible when the notification success is true
+                    $this->orderService->addPaymentDataToOrderFromResponse($order, $unprocessedNotification);
+                } else { // Notification success is 'false'
+                    // Order state is not canceled yet
+                    if ($order->getCurrentState() !== \Configuration::get('PS_OS_CANCELED')) {
+                        // No previous authorisation notification was processed before
+                        if (!$this->hasProcessedAuthorisationSuccessNotification(
+                            $unprocessedNotification['merchant_reference']
+                        )) {
+                            // Moves order to canceled
+                            $order->setCurrentState(\Configuration::get('PS_OS_CANCELED'));
+                        } else {
+                            // Add this log when the notification is ignore because an authorisation success true
+                            // notification has already been processed for the same order
+                            $this->logger->addAdyenNotification('Notification with entity_id (' .
+                                $unprocessedNotification['entity_id'] . ') was ignored during processing the ' .
+                                'notifications because another Authorisation success = true notification has already ' .
+                                'been processed for the same order.');
+                        }
+                    }
+                }
+
                 $this->adyenPaymentResponse->deletePaymentResponseByCartId($unprocessedNotification);
                 break;
             case AdyenNotification::OFFER_CLOSED:
+                // Notification success is 'true'
+                if ('true' === $unprocessedNotification['success']) {
+                    // Moves order to canceled if order status is waiting for payment
+                    if ($order->getCurrentState() === \Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT')) {
+                        $order->setCurrentState(\Configuration::get('PS_OS_CANCELED'));
+                    }
+                }
+
+
                 $this->adyenPaymentResponse->deletePaymentResponseByCartId($unprocessedNotification);
                 break;
         }
@@ -232,5 +269,33 @@ class NotificationProcessor
         }
 
         return true;
+    }
+
+    /**
+     * Returns true if an Authorisation notification with success = true has already been processed before for the same
+     * merchant_reference
+     *
+     * @param $merchantReference
+     * @return bool
+     */
+    private function hasProcessedAuthorisationSuccessNotification($merchantReference)
+    {
+        $notificationModel = new AdyenNotification();
+
+        $processedNotifications = $notificationModel->getProcessedNotificationsByMerchantReference($merchantReference);
+
+        if (empty($processedNotifications)) {
+            return false;
+        }
+
+        foreach ($processedNotifications as $processedNotification) {
+            if (AdyenNotification::AUTHORISATION === $processedNotification['event_code'] &&
+                'true' === $processedNotification['success']
+            ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
