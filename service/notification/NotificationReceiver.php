@@ -202,9 +202,9 @@ class NotificationReceiver
         }
 
         // validate username and password
-        if ((!isset($_SERVER['PHP_AUTH_USER']) && !isset($_SERVER['PHP_AUTH_PW']))) {
+        if ((!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW']))) {
             if ($isTestNotification) {
-                $message = 'Authentication failed: PHP_AUTH_USER and PHP_AUTH_PW are empty.';
+                $message = 'Authentication failed: PHP_AUTH_USER and/or PHP_AUTH_PW are empty.';
                 $this->logger->addAdyenNotification($message);
                 throw new AuthenticationException($message);
             }
@@ -218,15 +218,15 @@ class NotificationReceiver
             throw new HMACKeyValidationException($message);
         }
 
-        $usernameCmp = strcmp($_SERVER['PHP_AUTH_USER'], $this->notificationUsername);
-        $passwordCmp = strcmp($_SERVER['PHP_AUTH_PW'], $this->notificationPassword);
-        if ($usernameCmp === 0 && $passwordCmp === 0) {
+        $usernameIsValid = hash_equals($this->notificationUsername, $_SERVER['PHP_AUTH_USER']);
+        $passwordIsValid = hash_equals($this->notificationPassword, $_SERVER['PHP_AUTH_PW']);
+        if ($usernameIsValid && $passwordIsValid) {
             return true;
         }
 
         // If notification is test check if fields are correct if not return error
         if ($isTestNotification) {
-            if ($usernameCmp != 0 || $passwordCmp != 0) {
+            if (!$usernameIsValid || !$passwordIsValid) {
                 $message = 'username (PHP_AUTH_USER) and\or password (PHP_AUTH_PW) are not the same as PrestaShop' .
                     ' settings';
                 $this->logger->addAdyenNotification($message);

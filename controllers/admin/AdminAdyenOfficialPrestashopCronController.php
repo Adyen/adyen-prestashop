@@ -24,7 +24,7 @@
 
 // This class is not in a namespace because of the way PrestaShop loads
 // Controllers, which breaks a PSR1 element.
-// phpcs:disable PSR1.Classes.ClassDeclaration
+// phpcs:disable PSR1.Files.SideEffects, PSR1.Classes.ClassDeclaration
 
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use PrestaShop\PrestaShop\Adapter\CoreException;
@@ -36,6 +36,8 @@ use Adyen\PrestaShop\service\notification\NotificationProcessor;
 use Adyen\PrestaShop\model\AdyenPaymentResponse;
 use Adyen\PrestaShop\model\AdyenNotification;
 use \Adyen\PrestaShop\service\Order as OrderService;
+
+require_once _PS_ROOT_DIR_ . '/modules/adyenofficial/vendor/autoload.php';
 
 class AdminAdyenOfficialPrestashopCronController extends \ModuleAdminController
 {
