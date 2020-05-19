@@ -32,7 +32,7 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-require _PS_ROOT_DIR_ . '/modules/adyenofficial/vendor/autoload.php';
+require_once _PS_ROOT_DIR_ . '/modules/adyenofficial/vendor/autoload.php';
 
 // this file cannot contain the `use` operator for PrestaShop 1.6
 class AdyenOfficial extends PaymentModule

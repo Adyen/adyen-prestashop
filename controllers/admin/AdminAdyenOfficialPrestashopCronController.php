@@ -26,6 +26,8 @@
 // Controllers, which breaks a PSR1 element.
 // phpcs:disable PSR1.Classes.ClassDeclaration
 
+require_once _PS_ROOT_DIR_ . '/modules/adyenofficial/vendor/autoload.php';
+
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use PrestaShop\PrestaShop\Adapter\CoreException;
 use Adyen\PrestaShop\exception\GenericLoggedException;
