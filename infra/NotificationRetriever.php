@@ -50,7 +50,7 @@ class NotificationRetriever
      */
     public function getPSPReferenceByOrderId($orderId)
     {
-        $orderId = intval($orderId);
+        $orderId = (int)$orderId;
         $results = $this->db->executeS(
             sprintf(
                 <<<SQL
