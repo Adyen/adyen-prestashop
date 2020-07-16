@@ -59,7 +59,8 @@ class Order
      * @param \OrderCore $order
      * @param string $pspReference
      */
-    public function addPspReferenceForOrderPayment($order, $pspReference) {
+    public function addPspReferenceForOrderPayment($order, $pspReference)
+    {
         if (\Validate::isLoadedObject($order)) {
             $paymentCollection = $order->getOrderPaymentCollection();
 
@@ -74,14 +75,14 @@ class Order
      * @param \OrderCore $order
      * @return mixed|null
      */
-    public function getPspReferenceForOrderPayment($order) {
+    public function getPspReferenceForOrderPayment($order)
+    {
         if (\Validate::isLoadedObject($order)) {
             $paymentCollection = $order->getOrderPaymentCollection();
 
             // get first transaction
             $payment = $paymentCollection[0];
             return $payment->transaction_id;
-
         }
 
         return null;
