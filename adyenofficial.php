@@ -1410,7 +1410,9 @@ class AdyenOfficial extends PaymentModule
      */
     private function isUnsupportedPaymentMethod($paymentMethodType)
     {
+        // TODO Revise the list when implementing PW-2215
         $unsupportedPaymentMethods = array(
+            'bcmc',
             'scheme',
             'bcmc_mobile_QR',
             'wechatpay',
