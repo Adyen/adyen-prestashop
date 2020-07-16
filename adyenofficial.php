@@ -1117,7 +1117,7 @@ class AdyenOfficial extends PaymentModule
 
     /**
      * @param array $params
-     * @return void|null
+     * @return bool|null
      */
     public function hookActionOrderSlipAdd(array $params)
     {
@@ -1134,7 +1134,7 @@ class AdyenOfficial extends PaymentModule
                 'Error initializing Adyen Modification Service in actionOrderSlipAdd hook:'
                 . PHP_EOL . $e->getMessage()
             );
-            return;
+            return false;
         }
 
         try {
@@ -1146,7 +1146,7 @@ class AdyenOfficial extends PaymentModule
                 'Error initializing the Notification Retriever service in actionOrderSlipAdd hook:'
                 . PHP_EOL . $e->getMessage()
             );
-            return;
+            return false;
         }
         $refundService = new Adyen\PrestaShop\service\modification\Refund(
             $modificationService,
@@ -1165,12 +1165,12 @@ class AdyenOfficial extends PaymentModule
             $this->addMessageToOrderForOrderSlipAndLogErrorMessage(
                 'Error fetching order slips in actionOrderSlipAdd hook:' . PHP_EOL . $e->getMessage()
             );
-            return;
+            return false;
         }
 
         $currency = Currency::getCurrency($order->id_currency);
 
-        $refundService->request($orderSlip, $currency['iso_code']);
+        return $refundService->request($orderSlip, $currency['iso_code']);
     }
 
     /**

@@ -116,6 +116,7 @@ class NotificationProcessor
     public function processNotification($unprocessedNotification)
     {
         // Validate if order is available by merchant reference
+        /* @var \OrderCore $order */
         $order = $this->orderAdapter->getOrderByCartId($unprocessedNotification['merchant_reference']);
 
         if (!\Validate::isLoadedObject($order)) {
@@ -135,10 +136,23 @@ class NotificationProcessor
                     // Moves order to paid if order status is not paid already
                     if ($order->getCurrentState() !== \Configuration::get('PS_OS_PAYMENT')) {
                         $order->setCurrentState(\Configuration::get('PS_OS_PAYMENT'));
+
+                        // Add additional data to order if there is any (only possible when the notification success is
+                        // true
+                        $this->orderService->addPaymentDataToOrderFromResponse($order, $unprocessedNotification);
                     }
 
-                    // Add additional data to order if there is any (only possible when the notification success is true
-                    $this->orderService->addPaymentDataToOrderFromResponse($order, $unprocessedNotification);
+                    // In case psp reference is missing from the order_payment add it
+                    $storedPspReference = $this->orderService->getPspReferenceForOrderPayment($order);
+                    if (empty($storedPspReference)) {
+                        if (!empty($unprocessedNotification['original_reference'])) {
+                            $pspReference = $unprocessedNotification['original_reference'];
+                        } else {
+                            $pspReference = $unprocessedNotification['pspreference'];
+                        }
+
+                        $this->orderService->addPspReferenceForOrderPayment($order, $pspReference);
+                    }
                 } else { // Notification success is 'false'
                     // Order state is not canceled yet
                     if ($order->getCurrentState() !== \Configuration::get('PS_OS_CANCELED')) {

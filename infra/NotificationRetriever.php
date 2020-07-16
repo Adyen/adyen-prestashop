@@ -50,13 +50,14 @@ class NotificationRetriever
      */
     public function getPSPReferenceByOrderId($orderId)
     {
+        $orderId = (int)$orderId;
         $results = $this->db->executeS(
             sprintf(
                 <<<SQL
-select a.pspreference as pspReference
-from %sadyen_notification a
-inner join %sorders o on a.merchant_reference = o.id_cart
-where o.id_order = intval($orderId)
+select op.transaction_id as pspReference
+from %sorder_payment op
+inner join %sorders o on op.order_reference = o.reference
+where o.id_order = $orderId
 SQL
                 ,
                 _DB_PREFIX_,
