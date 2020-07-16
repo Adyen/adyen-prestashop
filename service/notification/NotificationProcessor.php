@@ -143,7 +143,8 @@ class NotificationProcessor
                     }
 
                     // In case psp reference is missing from the order_payment add it
-                    if (empty($this->orderService->getPspReferenceForOrderPayment($order))) {
+                    $storedPspReference = $this->orderService->getPspReferenceForOrderPayment($order);
+                    if (empty($storedPspReference)) {
                         if (!empty($unprocessedNotification['original_reference'])) {
                             $pspReference = $unprocessedNotification['original_reference'];
                         } else {
