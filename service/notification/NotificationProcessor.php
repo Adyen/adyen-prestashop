@@ -135,10 +135,10 @@ class NotificationProcessor
                     // Moves order to paid if order status is not paid already
                     if ($order->getCurrentState() !== \Configuration::get('PS_OS_PAYMENT')) {
                         $order->setCurrentState(\Configuration::get('PS_OS_PAYMENT'));
-                    }
 
-                    // Add additional data to order if there is any (only possible when the notification success is true
-                    $this->orderService->addPaymentDataToOrderFromResponse($order, $unprocessedNotification);
+                        // Add additional data to order if there is any (only possible when the notification success is true
+                        $this->orderService->addPaymentDataToOrderFromResponse($order, $unprocessedNotification);
+                    }
                 } else { // Notification success is 'false'
                     // Order state is not canceled yet
                     if ($order->getCurrentState() !== \Configuration::get('PS_OS_CANCELED')) {
