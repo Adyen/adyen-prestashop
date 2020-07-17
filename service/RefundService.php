@@ -91,7 +91,8 @@ class RefundService
             return $refundService->request($orderSlip, $currency['iso_code']);
         } else {
             $this->logger->error('Refund occurred without a credit slip.');
-            return false;
         }
+        
+        return false;
     }
 }
