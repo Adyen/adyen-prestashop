@@ -34,9 +34,9 @@
     {/if}
     <div class="row adyen-payment">
         <div class="col-xs-12 col-md-6">
-            <form action="{$paymentProcessUrl|escape:'html'}" class="adyen-payment-form" method="post"
-                  data-is-logged-in-user="{$loggedInUser|escape:'html'}"
-                  data-three-ds-process-url="{$threeDSProcessUrl|escape:'html'}"
+            <form action="{$paymentProcessUrl|escape:'html':'UTF-8'}" class="adyen-payment-form" method="post"
+                  data-is-logged-in-user="{$loggedInUser|escape:'html':'UTF-8'}"
+                  data-three-ds-process-url="{$threeDSProcessUrl|escape:'html':'UTF-8'}"
             >
 
                 <!-- Display payment errors -->

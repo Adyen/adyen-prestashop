@@ -25,11 +25,11 @@
     {include './originkey-error.tpl'}
 {else}
     <div id="adyen-checkout-configuration"
-         data-is-presta-shop16="{$isPrestaShop16|escape:'html'}"
-         data-locale="{$locale|escape:'html'}"
-         data-origin-key="{$originKey|escape:'html'}"
-         data-environment="{$environment|escape:'html'}"
-         data-payment-methods-response='{$paymentMethodsResponse|escape:'html'}'
+         data-is-presta-shop16="{$isPrestaShop16|escape:'html':'UTF-8'}"
+         data-locale="{$locale|escape:'html':'UTF-8'}"
+         data-origin-key="{$originKey|escape:'html':'UTF-8'}"
+         data-environment="{$environment|escape:'html':'UTF-8'}"
+         data-payment-methods-response='{$paymentMethodsResponse|escape:'html':'UTF-8'}'
     ></div>
     <script>
         var adyenCheckoutConfiguration = document.querySelector('#adyen-checkout-configuration').dataset;
