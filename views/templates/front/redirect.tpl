@@ -24,16 +24,16 @@
 {if $redirectMethod == "GET"}
     <body>
     <script>
-        window.location.replace("{$issuerUrl|escape:'html'}");
+        window.location.replace("{$issuerUrl|escape:'html':'UTF-8'}");
     </script>
     </body>
 {/if}
 
 <body onload="document.getElementById('3dform').submit();">
-<form method="POST" action="{$issuerUrl|escape:'html'}" id="3dform">
-    <input type="hidden" name="PaReq" value="{$paRequest|escape:'html'}"/>
-    <input type="hidden" name="MD" value="{$md|escape:'html'}"/>
-    <input type="hidden" name="TermUrl" value="{$termUrl|escape:'html'}"/>
+<form method="POST" action="{$issuerUrl|escape:'html':'UTF-8'}" id="3dform">
+    <input type="hidden" name="PaReq" value="{$paRequest|escape:'html':'UTF-8'}"/>
+    <input type="hidden" name="MD" value="{$md|escape:'html':'UTF-8'}"/>
+    <input type="hidden" name="TermUrl" value="{$termUrl|escape:'html':'UTF-8'}"/>
     <noscript>
         <br>
         <br>

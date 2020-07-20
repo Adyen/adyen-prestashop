@@ -26,11 +26,12 @@
         {include './originkey-error.tpl'}
     </form>
 {else}
-    <div class="row adyen-payment {$paymentMethodType|escape:'html'}"
-         data-local-payment-method="{$paymentMethodType|escape:'html'}"
+    <div class="row adyen-payment {$paymentMethodType|escape:'html':'UTF-8'}"
+         data-local-payment-method="{$paymentMethodType|escape:'html':'UTF-8'}"
     >
-        <div class="adyen-payment-method-label">{l s='Pay with ' mod='adyenofficial'}{$paymentMethodName|escape:'html'}</div>
-        <form action="{$paymentProcessUrl|escape:'html'}" class="adyen-payment-form-{$paymentMethodType|escape:'html'}" method="post">
+        <div class="adyen-payment-method-label">{l s='Pay with ' mod='adyenofficial'}{$paymentMethodName|escape:'html':'UTF-8'}</div>
+        <form action="{$paymentProcessUrl|escape:'html':'UTF-8'}"
+              class="adyen-payment-form-{$paymentMethodType|escape:'html':'UTF-8'}" method="post">
             <!-- Display payment errors -->
             <div class="alert alert-danger error-container" role="alert"></div>
             <div data-adyen-payment-container></div>
