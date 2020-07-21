@@ -100,7 +100,7 @@ class AdyenOfficial extends PaymentModule
     public function __construct()
     {
         $this->name = 'adyenofficial';
-        $this->version = '2.1.3';
+        $this->version = '2.1.4';
         $this->tab = 'payments_gateways';
         $this->author = 'Adyen';
         $this->bootstrap = true;
@@ -1032,7 +1032,8 @@ class AdyenOfficial extends PaymentModule
 
     /**
      * @param $params
-     * @return |null
+     *
+     * @return null
      */
     public function hookPaymentReturn($params)
     {
@@ -1088,7 +1089,7 @@ class AdyenOfficial extends PaymentModule
     }
 
     /**
-     * @return |null
+     * @return null
      * @throws Exception
      */
     public function hookDisplayPaymentTop()
@@ -1116,8 +1117,15 @@ class AdyenOfficial extends PaymentModule
     }
 
     /**
+     * Handles refunds
+     *
+     * For standard refunds, you need to:
+     * 1. Enable Merchandise Returns in PrestaShop's admin panel, under the Customer Service area
+     * 2. Generate a credit slip when refunding
+     *
      * @param array $params
-     * @return void|null
+     *
+     * @return bool|null
      */
     public function hookActionOrderSlipAdd(array $params)
     {
@@ -1126,51 +1134,27 @@ class AdyenOfficial extends PaymentModule
         }
 
         try {
-            $modificationService = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
-                'Adyen\PrestaShop\service\Modification'
+            /** @var Adyen\PrestaShop\service\RefundService $refundService */
+            $refundService = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
+                'Adyen\PrestaShop\service\RefundService'
             );
         } catch (\PrestaShop\PrestaShop\Adapter\CoreException $e) {
             $this->addMessageToOrderForOrderSlipAndLogErrorMessage(
-                'Error initializing Adyen Modification Service in actionOrderSlipAdd hook:'
+                'Error initializing Refund Service in actionOrderSlipAdd hook:'
                 . PHP_EOL . $e->getMessage()
             );
-            return;
+            return false;
         }
 
         try {
-            $notificationRetriever = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
-                'Adyen\PrestaShop\infra\NotificationRetriever'
-            );
-        } catch (\PrestaShop\PrestaShop\Adapter\CoreException $e) {
-            $this->addMessageToOrderForOrderSlipAndLogErrorMessage(
-                'Error initializing the Notification Retriever service in actionOrderSlipAdd hook:'
-                . PHP_EOL . $e->getMessage()
-            );
-            return;
-        }
-        $refundService = new Adyen\PrestaShop\service\modification\Refund(
-            $modificationService,
-            $notificationRetriever,
-            Configuration::get('ADYEN_MERCHANT_ACCOUNT'),
-            $this->logger
-        );
-
-        /** @var Order $order */
-        $order = $params['order'];
-
-        try {
-            /** @var OrderSlip $orderSlip */
-            $orderSlip = $order->getOrderSlipsCollection()->orderBy('date_upd', 'desc')->getFirst();
+            return $refundService->refund($params['order']);
         } catch (PrestaShopException $e) {
             $this->addMessageToOrderForOrderSlipAndLogErrorMessage(
-                'Error fetching order slips in actionOrderSlipAdd hook:' . PHP_EOL . $e->getMessage()
+                'Error while requesting a refund in actionOrderSlipAdd:'
+                . PHP_EOL . $e->getMessage()
             );
-            return;
+            return false;
         }
-
-        $currency = Currency::getCurrency($order->id_currency);
-
-        $refundService->request($orderSlip, $currency['iso_code']);
     }
 
     /**
@@ -1410,7 +1394,9 @@ class AdyenOfficial extends PaymentModule
      */
     private function isUnsupportedPaymentMethod($paymentMethodType)
     {
+        // TODO Revise the list when implementing PW-2215
         $unsupportedPaymentMethods = array(
+            'bcmc',
             'scheme',
             'bcmc_mobile_QR',
             'wechatpay',
