@@ -84,7 +84,15 @@ class Refund
     public function request(OrderSlip $orderSlip, $currency)
     {
         $currencyConverter = new Currency();
-        $amount = $currencyConverter->sanitize($orderSlip->amount, $currency);
+
+        $fullRefundAmount = $orderSlip->amount;
+
+        // In case shipping cost amount is not empty add shipping costs to the order slip amount
+        if (!empty($orderSlip->shipping_cost_amount)) {
+            $fullRefundAmount += $orderSlip->shipping_cost_amount;
+        }
+
+        $amount = $currencyConverter->sanitize($fullRefundAmount, $currency);
 
         try {
             $pspReference = $this->notificationRetriever->getPSPReferenceByOrderId($orderSlip->id_order);
