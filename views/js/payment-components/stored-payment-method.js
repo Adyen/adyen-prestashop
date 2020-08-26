@@ -32,6 +32,7 @@ jQuery(function ($) {
     var data;
 
     var placeOrderAllowed = false;
+    var placeOrderInProgress = false;
     var popupModal;
 
     var threeDSProcessUrl;
@@ -54,18 +55,22 @@ jQuery(function ($) {
         var storedPaymentMethodConfiguration = $('[data-stored-payment-api-id="' + storedPaymentMethod.id + '"]').data();
         threeDSProcessUrl = storedPaymentMethodConfiguration.threeDsProcessUrl;
 
-        renderStoredPaymentComponent(storedPaymentMethod);
+        var storedPaymentComponent = renderStoredPaymentComponent(storedPaymentMethod);
 
         /* Subscribes to the adyen payment method form submission */
         var paymentForm = $(".adyen-payment-form-" + storedPaymentMethod.id);
         paymentForm.on('submit', function (e) {
-            if (placeOrderAllowed) {
-                return;
+            e.preventDefault();
+
+            if (isPlaceOrderInProgress()) {
+              return false;
             }
 
-            e.preventDefault();
+            placingOrderStarts(paymentForm);
+
             if (!validatePaymentData()) {
-                console.log('Validation failed!');
+                storedPaymentComponent.showValidation();
+                placingOrderEnds(paymentForm);
                 return;
             }
 
@@ -94,7 +99,7 @@ jQuery(function ($) {
             }
         });
 
-        window.adyenCheckout.create('card', configuration).mount("#cardContainer-" + storedPaymentMethod.id);
+        return window.adyenCheckout.create('card', configuration).mount("#cardContainer-" + storedPaymentMethod.id);
     }
 
     /**
@@ -103,6 +108,7 @@ jQuery(function ($) {
     function placeOrder(paymentForm) {
         placeOrderAllowed = true;
         paymentForm.submit();
+        placingOrderEnds(paymentForm);
     }
 
     /**
@@ -120,7 +126,8 @@ jQuery(function ($) {
                 processControllerResponse(response, storedPaymentMethod, paymentForm);
             },
             error: function (response) {
-                paymentForm.find('#errors').text(response.message).fadeIn(1000);
+                paymentForm.find('.error-container').text(response.message).fadeIn(1000);
+                placingOrderEnds(paymentForm);
             }
         });
     }
@@ -225,7 +232,8 @@ jQuery(function ($) {
         switch (response.action) {
             case 'error':
                 // show error message
-                paymentForm.find('#errors').text(response.message).fadeIn(1000);
+                paymentForm.find('.error-container').text(response.message).fadeIn(1000);
+                placingOrderEnds(paymentForm);
                 break;
             case 'redirect':
                 window.location.replace(response.redirectUrl);
@@ -255,12 +263,32 @@ jQuery(function ($) {
                     placeOrder(paymentForm);
                 } else {
                     console.log("Something went wrong on the frontend");
+                    placingOrderEnds(paymentForm);
                 }
 
                 break;
             default:
                 // show error message
                 console.log("Something went wrong on the frontend");
+                placingOrderEnds(paymentForm);
         }
+    }
+
+    function isPlaceOrderInProgress() {
+        return placeOrderInProgress;
+    }
+
+    function placingOrderStarts(paymentForm)
+    {
+        placeOrderInProgress = true;
+        paymentForm.find('button[type="submit"]').prop('disabled', true);
+        paymentForm.find('button[type="submit"] i').toggleClass('icon-spinner icon-chevron-right right');
+    }
+
+    function placingOrderEnds(paymentForm)
+    {
+        placeOrderInProgress = false;
+        paymentForm.find('button[type="submit"]').prop('disabled', false);
+        paymentForm.find('button[type="submit"] i').toggleClass('icon-spinner icon-chevron-right right');
     }
 });
