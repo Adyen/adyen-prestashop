@@ -332,7 +332,8 @@ class NotificationProcessor
      * @param string $currentOrderStatus
      * @return bool
      */
-    private function isCurrentOrderStatusANonFinalStatus($currentOrderStatus) {
+    private function isCurrentOrderStatusANonFinalStatus($currentOrderStatus)
+    {
         foreach (self::$nonFinalOrderStatuses as $nonFinalOrderStatus) {
             if ($currentOrderStatus === \Configuration::get($nonFinalOrderStatus)) {
                 return true;
