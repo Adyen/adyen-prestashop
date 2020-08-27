@@ -39,6 +39,19 @@ use Adyen\PrestaShop\service\Order as OrderService;
 class NotificationProcessor
 {
     /**
+     * Order statuses which can be overwritten by an authorised success = true notification
+     * In case an order is canceled or waiting for payment, an authorisation notification can bump the order status to
+     * paid, but in case it's already paid or under preparation it should not change it's order status
+     *
+     * @var string[]
+     */
+    private static $nonFinalOrderStatuses = array(
+        'PS_OS_CANCELED',
+        'PS_OS_ERROR',
+        'ADYEN_OS_WAITING_FOR_PAYMENT'
+    );
+
+    /**
      * @var AdyenHelper
      */
     private $helperData;
@@ -134,7 +147,7 @@ class NotificationProcessor
                 // Notification success is 'true'
                 if ('true' === $unprocessedNotification['success']) {
                     // Moves order to paid if order status is not paid already
-                    if ($order->getCurrentState() !== \Configuration::get('PS_OS_PAYMENT')) {
+                    if ($this->isCurrentOrderStatusANonFinalStatus($order->getCurrentState())) {
                         $order->setCurrentState(\Configuration::get('PS_OS_PAYMENT'));
 
                         // Add additional data to order if there is any (only possible when the notification success is
@@ -306,6 +319,23 @@ class NotificationProcessor
             if (AdyenNotification::AUTHORISATION === $processedNotification['event_code'] &&
                 'true' === $processedNotification['success']
             ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks if the current order status is in the self::$nonFinalOrderStatuses list
+     *
+     * @param string $currentOrderStatus
+     * @return bool
+     */
+    private function isCurrentOrderStatusANonFinalStatus($currentOrderStatus)
+    {
+        foreach (self::$nonFinalOrderStatuses as $nonFinalOrderStatus) {
+            if ($currentOrderStatus === \Configuration::get($nonFinalOrderStatus)) {
                 return true;
             }
         }
