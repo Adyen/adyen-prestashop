@@ -69,7 +69,7 @@ class AdyenPaymentResponse extends AbstractModel
     {
         $data = array(
             'result_code' => $resultCode,
-            'response' => $this->jsonEncodeIfArray($response)
+            'response' => pSQL($this->jsonEncodeIfArray($response))
         );
 
         return $this->dbInstance->update(self::$tableName, $data, '`id_cart` = "' . (int)$cartId . '"');

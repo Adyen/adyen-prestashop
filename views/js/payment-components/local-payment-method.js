@@ -27,6 +27,7 @@ jQuery(function ($) {
     }
 
     var placeOrderAllowed = false;
+    var placeOrderInProgress = false;
     var data;
 
     // use this object to iterate through the stored payment methods
@@ -52,6 +53,12 @@ jQuery(function ($) {
             if (!placeOrderAllowed && paymentMethod.details) {
                 return;
             }
+
+            if (isPlaceOrderInProgress()) {
+                return false;
+            }
+
+            placingOrderStarts(paymentForm);
 
             var paymentMethodData = {'type': paymentMethod.type};
             var browserInfo = {};
@@ -115,6 +122,7 @@ jQuery(function ($) {
             },
             error: function (response) {
                 paymentForm.find('.error-container').text(response.message).fadeIn(1000);
+                placingOrderEnds(paymentForm);
             }
         });
     }
@@ -134,6 +142,7 @@ jQuery(function ($) {
             case 'error':
                 // show error message
                 paymentForm.find('.error-container').text(response.message).fadeIn(1000);
+                placingOrderEnds(paymentForm);
                 break;
             case 'redirect':
                 window.location.replace(response.redirectUrl);
@@ -141,6 +150,7 @@ jQuery(function ($) {
             default:
                 // show error message
                 console.log("Something went wrong on the frontend");
+                placingOrderEnds(paymentForm);
         }
     }
 
@@ -193,5 +203,23 @@ jQuery(function ($) {
         return arr.filter(function (item) {
             return typeof item !== 'undefined';
         });
+    }
+
+    function isPlaceOrderInProgress() {
+      return placeOrderInProgress;
+    }
+
+    function placingOrderStarts(paymentForm)
+    {
+      placeOrderInProgress = true;
+      paymentForm.find('button[type="submit"]').prop('disabled', true);
+      paymentForm.find('button[type="submit"] i').toggleClass('icon-spinner icon-chevron-right right');
+    }
+
+    function placingOrderEnds(paymentForm)
+    {
+      placeOrderInProgress = false;
+      paymentForm.find('button[type="submit"]').prop('disabled', false);
+      paymentForm.find('button[type="submit"] i').toggleClass('icon-spinner icon-chevron-right right');
     }
 });

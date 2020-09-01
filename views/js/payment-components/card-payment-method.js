@@ -28,8 +28,10 @@ jQuery(function ($) {
 
     var allValidCard;
     var placeOrderAllowed;
+    var placeOrderInProgress = false;
     var popupModal;
     var data;
+    var cardComponent;
 
     /* Create adyen checkout with default settings */
     placeOrderAllowed = false;
@@ -37,11 +39,18 @@ jQuery(function ($) {
     /* Subscribes to the adyen payment method form submission */
     var paymentForm = $(".adyen-payment-form");
     paymentForm.on('submit', function (e) {
+        if (isPlaceOrderInProgress()) {
+          return false;
+        }
+
+        placingOrderStarts();
+
         if (!placeOrderAllowed) {
             e.preventDefault();
 
             if (!allValidCard) {
-                console.log('Validation failed!');
+                cardComponent.showValidation();
+                placingOrderEnds();
                 return false;
             }
 
@@ -65,7 +74,7 @@ jQuery(function ($) {
      */
     function renderCardComponent() {
         // we can now rely on $ within the safety of our "bodyguard" function
-        window.adyenCheckout.create('card', {
+        cardComponent = window.adyenCheckout.create('card', {
             type: 'card',
             hasHolderName: true,
             holderNameRequired: true,
@@ -158,7 +167,9 @@ jQuery(function ($) {
      */
     function placeOrder() {
         placeOrderAllowed = true;
+        // wait for submit and disable button meanwhile
         paymentForm.submit();
+        placingOrderEnds();
     }
 
     /**
@@ -177,6 +188,7 @@ jQuery(function ($) {
             },
             error: function (response) {
                 $('.adyen-payment-form').find('.error-container').text(response.message).fadeIn(1000);
+                placingOrderEnds();
             }
         });
     }
@@ -189,6 +201,7 @@ jQuery(function ($) {
             case 'error':
                 // show error message
                 $('.adyen-payment-form').find('.error-container').text(response.message).fadeIn(1000);
+                placingOrderEnds();
                 break;
             case 'redirect':
                 window.location.replace(response.redirectUrl);
@@ -218,12 +231,14 @@ jQuery(function ($) {
                     placeOrder();
                 } else {
                     console.log("Something went wrong on the frontend");
+                    placingOrderEnds();
                 }
 
                 break;
             default:
                 // show error message
                 console.log("Something went wrong on the frontend");
+                placingOrderEnds();
         }
     }
 
@@ -252,5 +267,23 @@ jQuery(function ($) {
     function resetFields() {
         data = '';
         allValidCard = false;
+    }
+
+    function isPlaceOrderInProgress() {
+        return placeOrderInProgress;
+    }
+
+    function placingOrderStarts()
+    {
+        placeOrderInProgress = true;
+        paymentForm.find('button[type="submit"]').prop('disabled', true);
+        paymentForm.find('button[type="submit"] i').toggleClass('icon-spinner icon-chevron-right right');
+    }
+
+    function placingOrderEnds()
+    {
+        placeOrderInProgress = false;
+        paymentForm.find('button[type="submit"]').prop('disabled', false);
+        paymentForm.find('button[type="submit"] i').toggleClass('icon-spinner icon-chevron-right right');
     }
 });
