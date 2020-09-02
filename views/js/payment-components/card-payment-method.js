@@ -168,8 +168,8 @@ jQuery(function ($) {
     function placeOrder() {
         placeOrderAllowed = true;
         // wait for submit and disable button meanwhile
-        paymentForm.submit();
         placingOrderEnds();
+        paymentForm.submit();
     }
 
     /**
