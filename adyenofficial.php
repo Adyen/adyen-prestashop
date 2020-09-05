@@ -1441,31 +1441,13 @@ class AdyenOfficial extends PaymentModule
         $controllerAdapter->setController($controller);
 
         // needs to be rendered for each controller
-        if ($this->configuration->isTestMode()) {
-            $controllerAdapter->registerJavascript(
-                'adyen-checkout-component', // Unique ID
-                \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_JS_TEST, // JS path
-                array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
-            );
 
-            $controllerAdapter->registerStylesheet(
-                'adyen-stylecheckout', // Unique ID
-                \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_CSS_TEST, // CSS path
-                array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
-            );
-        } else {
-            $controllerAdapter->registerJavascript(
-                'adyen-checkout-component', // Unique ID
-                \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_JS_LIVE, // JS path
-                array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
-            );
-
-            $controllerAdapter->registerStylesheet(
-                'adyen-stylecheckout', // Unique ID
-                \Adyen\PrestaShop\service\Configuration::CHECKOUT_COMPONENT_CSS_LIVE, // CSS path
-                array('server' => 'remote', 'position' => 'bottom', 'priority' => 150) // Arguments
-            );
-        }
+        // Register Checkout component js
+        $controllerAdapter->registerJavascript(
+            'adyen-checkout-component', // Unique ID
+            'modules/' . $this->name . '/views/js/bundle.js', // JS path
+            array('position' => 'bottom', 'priority' => 150) // Arguments
+        );
 
         $controllerAdapter->registerJavascript(
             'adyen-polyfill',
