@@ -645,6 +645,10 @@ class AdyenOfficialPaymentModuleFrontController extends FrontController
         $deliveryCost = $cart->getPackageShippingCost();
         $cartSummary = $cart->getSummaryDetails();
         $carrier = $cartSummary['carrier'];
+        $totalShipping = $this->utilCurrency->sanitize(
+            $cartSummary['total_shipping'],
+            $this->context->currency->iso_code
+        );
         $shippingTax = ($cartSummary['total_shipping'] - $cartSummary['total_shipping_tax_exc']) * 100;
 
         if ($cartSummary['total_shipping']) {
@@ -656,7 +660,7 @@ class AdyenOfficialPaymentModuleFrontController extends FrontController
         if ($deliveryCost) {
             $lineItems[] = $this->openInvoiceBuilder->buildOpenInvoiceLineItem(
                 $carrier->name,
-                $cartSummary['total_shipping'],
+                $totalShipping,
                 $shippingTax,
                 $shippingTaxRate,
                 1,
