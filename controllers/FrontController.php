@@ -35,6 +35,31 @@ use Adyen\PrestaShop\service\Order as OrderService;
 
 abstract class FrontController extends \ModuleFrontController
 {
+    /**
+     * List of approved root keys from the state.data in the frontend checkout components
+     * Available in the php api library from version 7.0.0
+     *
+     * @var string[]
+     */
+    protected $stateDataRootKeys = array(
+        'paymentMethod',
+        'billingAddress',
+        'deliveryAddress',
+        'riskData',
+        'shopperName',
+        'dateOfBirth',
+        'telephoneNumber',
+        'shopperEmail',
+        'countryCode',
+        'socialSecurityNumber',
+        'browserInfo',
+        'installments',
+        'storePaymentMethod',
+        'conversionId',
+        'paymentData',
+        'details'
+    );
+
     const ADYEN_MERCHANT_REFERENCE = 'adyenMerchantReference';
     const ISSUER = 'issuer';
     const PA_REQUEST = 'paRequest';
@@ -455,5 +480,40 @@ abstract class FrontController extends \ModuleFrontController
         }
 
         return false;
+    }
+
+    /**
+     * Available in the php api library from version 7.0.0
+     *
+     * @param array $stateData
+     * @return array
+     */
+    protected function getValidatedAdditionalData($stateData)
+    {
+        // Get validated state data array
+        if (!empty($stateData)) {
+            $stateData = self::getArrayOnlyWithApprovedKeys($stateData, $this->stateDataRootKeys);
+        }
+        return $stateData;
+    }
+
+    /**
+     * Returns an array with only the approved keys
+     * Available in the php api library from version 7.0.0
+     *
+     * @param array $array
+     * @param array $approvedKeys
+     * @return array
+     */
+    protected static function getArrayOnlyWithApprovedKeys($array, $approvedKeys)
+    {
+        $result = array();
+
+        foreach ($approvedKeys as $approvedKey) {
+            if (isset($array[$approvedKey])) {
+                $result[$approvedKey] = $array[$approvedKey];
+            }
+        }
+        return $result;
     }
 }
