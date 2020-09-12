@@ -1066,7 +1066,7 @@ class AdyenOfficial extends PaymentModule
 
         $smartyVariables = array(
             'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
-            'threeDSProcessUrl' => $this->context->link->getModuleLink($this->name, 'ThreeDSProcess', array(), true),
+            'paymentsDetailsUrl' => $this->context->link->getModuleLink($this->name, 'PaymentsDetails', array(), true),
             'paymentMethodsResponse' => json_encode($paymentMethods),
             'isPrestaShop16' => $this->versionChecker->isPrestaShop16() ? 'true' : 'false',
             'isUserLoggedIn' => !$this->context->customer->is_guest
@@ -1261,9 +1261,9 @@ class AdyenOfficial extends PaymentModule
                         array(),
                         true
                     ),
-                    'threeDSProcessUrl' => $this->context->link->getModuleLink(
+                    'paymentsDetailsUrl' => $this->context->link->getModuleLink(
                         $this->name,
-                        'ThreeDSProcess',
+                        'PaymentsDetails',
                         array(),
                         true
                     ),

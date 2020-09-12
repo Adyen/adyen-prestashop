@@ -31,7 +31,7 @@
          data-environment="{$environment|escape:'html':'UTF-8'}"
          data-payment-methods-response='{$paymentMethodsResponse|escape:'html':'UTF-8'}'
          data-is-user-logged-in="{$isUserLoggedIn|escape:'html':'UTF-8'}"
-         data-three-ds-process-url="{$threeDSProcessUrl|escape:'html':'UTF-8'}"
+         data-payments-details-url="{$paymentsDetailsUrl|escape:'html':'UTF-8'}"
     ></div>
 
 
@@ -60,7 +60,7 @@
         var adyenCheckoutConfiguration = document.querySelector('#adyen-checkout-configuration').dataset;
         var IS_PRESTA_SHOP_16 = ('true' === adyenCheckoutConfiguration.isPrestaShop16.toLowerCase());
         var isUserLoggedIn = adyenCheckoutConfiguration.isUserLoggedIn;
-        var threeDsProcessUrl = adyenCheckoutConfiguration.threeDsProcessUrl;
+        var paymentsDetailsUrl = adyenCheckoutConfiguration.paymentsDetailsUrl;
 
         var ADYEN_CHECKOUT_CONFIG = {
             locale: adyenCheckoutConfiguration.locale,

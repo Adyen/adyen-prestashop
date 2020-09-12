@@ -152,19 +152,12 @@ jQuery(document).ready(function () {
         });
     }
 
-    /**
-     * The results that the 3DS2 components returns in the onComplete callback needs to be sent to the
-     * backend to the threeDSProcess endpoint and based on the response render a new threeDS2
-     * component or place the order (validateThreeDS2OrPlaceOrder)
-     * @param data
-     * // TODO rename it to payment-details
-     */
-    function processThreeDS2(data) {
+    function processPaymentsDetails(data) {
         data.isAjax = true;
 
         return $.ajax({
             type: 'POST',
-            url: threeDsProcessUrl,
+            url: paymentsDetailsUrl,
             data: data,
             dataType: 'json',
         });
@@ -220,7 +213,7 @@ jQuery(document).ready(function () {
     }
 
     function handleOnAdditionalDetails(state) {
-        processThreeDS2(state.data).done(function(responseJSON) {
+        processPaymentsDetails(state.data).done(function(responseJSON) {
             processControllerResponse(responseJSON, getSelectedPaymentMethod());
         });
     }
