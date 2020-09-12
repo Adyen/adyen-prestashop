@@ -843,37 +843,37 @@ class AdyenOfficial extends PaymentModule
         //retrieve payment methods
         $paymentMethods = $this->helper_data->fetchPaymentMethods($this->context->cart, $this->context->language);
 
+        $paymentProcessUrl = $this->context->link->getModuleLink(
+            $this->name,
+            'Payment',
+            array(),
+            true
+        );
+
         if (!$this->context->customer->is_guest && !empty($paymentMethods['storedPaymentMethods'])) {
+
             $storedPaymentMethods = $paymentMethods['storedPaymentMethods'];
             foreach ($storedPaymentMethods as $storedPaymentMethod) {
+
                 if (!empty($storedPaymentMethod)) {
                     // Only show on the frontend the Ecommerce stored payment methods and not the ContAuth
                     if (!in_array('Ecommerce', $storedPaymentMethod['supportedShopperInteractions'])) {
                         continue;
                     }
+
                     $smartyVariables = array(
-                        'paymentProcessUrl' => $this->context->link->getModuleLink(
-                            $this->name,
-                            'Payment',
-                            array(),
-                            true
-                        ),
-                        'threeDSProcessUrl' => $this->context->link->getModuleLink(
-                            $this->name,
-                            'ThreeDSProcess',
-                            array(),
-                            true
-                        ),
-                        'prestashop16' => false,
+                        'paymentProcessUrl' => $paymentProcessUrl,
+                        'isPrestaShop16' => false,
+                        'renderPayButton' => false,
                         'storedPaymentApiId' => $storedPaymentMethod['id']
                     );
 
                     // Add checkout component default configuration parameters for smarty variables
                     $smartyVariables = array_merge($smartyVariables, $this->getCheckoutComponentInitData());
-
                     // Assign variables to frontend
                     $this->context->smarty->assign($smartyVariables);
                 }
+
                 $oneClickOption = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
                 $oneClickOption->setCallToActionText(
                     $this->l(
@@ -908,12 +908,7 @@ class AdyenOfficial extends PaymentModule
                 $smartyVariables = array(
                     'paymentMethodType' => $paymentMethod['type'],
                     'paymentMethodName' => $paymentMethod['name'],
-                    'paymentProcessUrl' => $this->context->link->getModuleLink(
-                        $this->name,
-                        'Payment',
-                        array(),
-                        true
-                    ),
+                    'paymentProcessUrl' => $paymentProcessUrl,
                     'renderPayButton' => false,
                 );
 
@@ -928,7 +923,7 @@ class AdyenOfficial extends PaymentModule
                     ->setForm(
                         $this->context->smarty->fetch(
                             _PS_MODULE_DIR_ . $this->name .
-                            '/views/templates/front/local-payment-method.tpl'
+                            '/views/templates/front/payment-method.tpl'
                         )
                     )
                     ->setAction(
@@ -937,33 +932,6 @@ class AdyenOfficial extends PaymentModule
                 $payment_options[] = $localPaymentMethod;
             }
         }
-
-        $embeddedOption = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
-
-        $cc_img = 'cc_border.png';
-
-        $smartyVariables = array(
-            'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
-            'threeDSProcessUrl' => $this->context->link->getModuleLink($this->name, 'ThreeDSProcess', array(), true),
-            'prestashop16' => false,
-            'loggedInUser' => (int)!$this->context->customer->is_guest
-        );
-
-        // Add checkout component default configuration parameters for smarty variables
-        $smartyVariables = array_merge($smartyVariables, $this->getCheckoutComponentInitData());
-
-        // Assign variables to frontend
-        $this->context->smarty->assign($smartyVariables);
-
-        $embeddedOption->setCallToActionText($this->l('Pay by card'))
-            ->setForm(
-                $this->context->smarty->fetch(
-                    _PS_MODULE_DIR_ . $this->name . '/views/templates/front/card-payment-method.tpl'
-                )
-            )
-            ->setLogo(Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $cc_img))
-            ->setAction($this->context->link->getModuleLink($this->name, 'Payment', array(), true));
-        $payment_options[] = $embeddedOption;
 
         return $payment_options;
     }
@@ -991,8 +959,6 @@ class AdyenOfficial extends PaymentModule
         if (!empty($paymentMethods['paymentMethods'])) {
             $payments .= $this->getLocalPaymentMethods($paymentMethods);
         }
-
-        $payments .= $this->getStandardPaymentMethod();
 
         return $payments;
     }
@@ -1104,7 +1070,8 @@ class AdyenOfficial extends PaymentModule
             'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
             'threeDSProcessUrl' => $this->context->link->getModuleLink($this->name, 'ThreeDSProcess', array(), true),
             'paymentMethodsResponse' => json_encode($paymentMethods),
-            'isPrestaShop16' => $this->versionChecker->isPrestaShop16() ? 'true' : 'false'
+            'isPrestaShop16' => $this->versionChecker->isPrestaShop16() ? 'true' : 'false',
+            'isUserLoggedIn' => !$this->context->customer->is_guest
         );
 
         // Add checkout component default configuration parameters for smarty variables
@@ -1302,7 +1269,7 @@ class AdyenOfficial extends PaymentModule
                         array(),
                         true
                     ),
-                    'prestashop16' => true,
+                    'isPrestaShop16' => true,
                     'storedPaymentApiId' => $storedPayment['id'],
                     'name' => $storedPayment['name'],
                     'number' => $storedPayment['lastFour']
@@ -1350,39 +1317,8 @@ class AdyenOfficial extends PaymentModule
             // Assign variables to frontend
             $this->context->smarty->assign($smartyVariables);
 
-            $payments .= $this->display(__FILE__, '/views/templates/front/local-payment-method.tpl');
+            $payments .= $this->display(__FILE__, '/views/templates/front/payment-method.tpl');
         }
-        return $payments;
-    }
-
-    /**
-     * PrestaShop 1.6
-     *
-     * @return string
-     */
-    private function getStandardPaymentMethod()
-    {
-        $payments = '';
-
-        $smartyVariables = array(
-            'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
-            'threeDSProcessUrl' => $this->context->link->getModuleLink(
-                $this->name,
-                'ThreeDSProcess',
-                array(),
-                true
-            ),
-            'prestashop16' => true,
-            'loggedInUser' => !$this->context->customer->is_guest
-        );
-
-        // Add checkout component default configuration parameters for smarty variables
-        $smartyVariables = array_merge($smartyVariables, $this->getCheckoutComponentInitData());
-
-        // Assign variables to frontend
-        $this->context->smarty->assign($smartyVariables);
-
-        $payments .= $this->display(__FILE__, '/views/templates/front/card-payment-method.tpl');
         return $payments;
     }
 
@@ -1396,8 +1332,6 @@ class AdyenOfficial extends PaymentModule
     {
         // TODO Revise the list when implementing PW-2215
         $unsupportedPaymentMethods = array(
-            'bcmc',
-            'scheme',
             'bcmc_mobile_QR',
             'wechatpay',
             'wechatpay_pos',
@@ -1468,22 +1402,6 @@ class AdyenOfficial extends PaymentModule
 
         // Only for Order controller
         if ($controller->php_self == 'order') {
-            $controllerAdapter->registerJavascript(
-                'adyen-card-payment-method',
-                'modules/' . $this->name . '/views/js/payment-components/card-payment-method.js',
-                array('position' => 'bottom', 'priority' => 170)
-            );
-            $controllerAdapter->registerJavascript(
-                'adyen-local-payment-method',
-                'modules/' . $this->name . '/views/js/payment-components/local-payment-method.js',
-                array('position' => 'bottom', 'priority' => 170)
-            );
-            $controllerAdapter->registerJavascript(
-                'adyen-stored-payment-method',
-                'modules/' . $this->name . '/views/js/payment-components/stored-payment-method.js',
-                array('position' => 'bottom', 'priority' => 170)
-            );
-
             if ($this->versionChecker->isPrestaShop16()) {
                 $controller->addJqueryPlugin('fancybox');
             }

@@ -266,15 +266,11 @@ class Data
                 );
 
                 break;
-            case 'threeDS2':
+            case 'action':
                 $response = array(
-                    'action' => 'threeDS2'
+                    'action' => 'action',
+                    'response' => $details['response']
                 );
-
-                if (!empty($details['type']) && !empty($details['token'])) {
-                    $response['type'] = $details['type'];
-                    $response['token'] = $details['token'];
-                }
 
                 break;
             case 'redirect':
@@ -287,25 +283,6 @@ class Data
                     'redirectUrl' => $details['redirectUrl']
                 );
 
-                break;
-            case 'threeDS1':
-                if (!empty($details['paRequest']) &&
-                    !empty($details['md']) &&
-                    !empty($details['issuerUrl']) &&
-                    !empty($details[FrontController::ADYEN_MERCHANT_REFERENCE]) &&
-                    !empty($details['redirectMethod'])) {
-                    $response = array(
-                        'action' => 'threeDS1',
-                        'paRequest' => $details['paRequest'],
-                        'md' => $details['md'],
-                        'issuerUrl' => $details['issuerUrl'],
-                        FrontController::ADYEN_MERCHANT_REFERENCE =>
-                            $details[FrontController::ADYEN_MERCHANT_REFERENCE],
-                        'redirectMethod' => $details['redirectMethod']
-                    );
-                } else {
-                    throw new AdyenException("3DS1 details missing");
-                }
                 break;
             default:
                 $response = array(

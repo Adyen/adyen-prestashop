@@ -201,6 +201,8 @@ abstract class FrontController extends \ModuleFrontController
                 $newOrder = new \Order((int)$this->module->currentOrder);
 
                 $this->orderService->addPaymentDataToOrderFromResponse($newOrder, $response);
+                // PaymentResponse can be deleted
+                $this->adyenPaymentResponseModel->deletePaymentResponseByCartId($cart->id);
 
                 $this->redirectUserToPageLink(
                     $this->context->link->getPageLink(
@@ -220,6 +222,9 @@ abstract class FrontController extends \ModuleFrontController
 
                 break;
             case 'Refused':
+                // PaymentResponse can be deleted
+                $this->adyenPaymentResponseModel->deletePaymentResponseByCartId($cart->id);
+
                 // In case of refused payment there is no order created and the cart needs to be cloned and reinitiated
                 $this->cartService->cloneCurrentCart($this->context, $cart);
                 $this->logger->error("The payment was refused, id:  " . $cart->id);
@@ -241,80 +246,21 @@ abstract class FrontController extends \ModuleFrontController
 
                 break;
             case 'IdentifyShopper':
+            case 'ChallengeShopper':
+            case 'RedirectShopper':
+
+                // TODO check if $this->context->cookie->__set("id_cart", ""); needed for redirectshopper
                 // Store response for cart until the payment is done
                 $this->adyenPaymentResponseModel->insertPaymentResponse($cart->id, $resultCode, $response);
 
                 $this->ajaxRender(
                     $this->helperData->buildControllerResponseJson(
-                        'threeDS2',
+                        'action',
                         array(
-                            'type' => 'IdentifyShopper',
-                            'token' => $response['authentication']['threeds2.fingerprintToken']
+                            'response' => $response['action']
                         )
                     )
                 );
-
-                break;
-            case 'ChallengeShopper':
-                // Store response for cart temporarily until the payment is done
-                $this->adyenPaymentResponseModel->insertPaymentResponse($cart->id, $resultCode, $response);
-
-                $this->ajaxRender(
-                    $this->helperData->buildControllerResponseJson(
-                        'threeDS2',
-                        array(
-                            'type' => 'ChallengeShopper',
-                            'token' => $response['authentication']['threeds2.challengeToken']
-                        )
-                    )
-                );
-                break;
-            case 'RedirectShopper':
-                // Check if redirect shopper response data is valid
-                if (empty($response['redirect']['url']) ||
-                    empty($response['redirect']['method']) ||
-                    empty($response['paymentData'])
-                ) {
-                    $this->ajaxRender(
-                        $this->helperData->buildControllerResponseJson(
-                            'error',
-                            array(
-                                'message' => $this->l(
-                                    "There was an error with the payment method, please choose another one."
-                                )
-                            )
-                        )
-                    );
-                }
-
-                // Store response for cart temporarily until the payment is done
-                $this->adyenPaymentResponseModel->insertPaymentResponse($cart->id, $resultCode, $response);
-
-                $this->context->cookie->__set("id_cart", "");
-
-                $redirectUrl = $response['redirect']['url'];
-                $redirectMethod = $response['redirect']['method'];
-
-                // Identify if 3DS1 redirect
-                if (!empty($response['redirect']['data']['PaReq']) && !empty($response['redirect']['data']['MD'])) {
-                    $paRequest = $response['redirect']['data']['PaReq'];
-                    $md = $response['redirect']['data']['MD'];
-
-                    $this->ajaxRender(
-                        $this->helperData->buildControllerResponseJson(
-                            'threeDS1',
-                            array(
-                                self::PA_REQUEST => $paRequest,
-                                self::MD => $md,
-                                self::ISSUER_URL => $redirectUrl,
-                                self::REDIRECT_METHOD => $redirectMethod,
-                                self::ADYEN_MERCHANT_REFERENCE => $cart->id
-                            )
-                        )
-                    );
-                } else {
-                    $this->redirectUserToPageLink($redirectUrl, $isAjax);
-                }
 
                 break;
             case 'Received':
@@ -368,6 +314,12 @@ abstract class FrontController extends \ModuleFrontController
                     false,
                     $customer->secure_key
                 );
+
+                // PaymentResponse can be deleted
+                $this->adyenPaymentResponseModel->deletePaymentResponseByCartId($cart->id);
+
+                // In case of refused payment there is no order created and the cart needs to be cloned and reinitiated
+                $this->cartService->cloneCurrentCart($this->context, $cart);
 
                 $this->logger->error(
                     "There was an error with the payment method. id:  " . $cart->id .

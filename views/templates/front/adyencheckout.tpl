@@ -30,10 +30,37 @@
          data-origin-key="{$originKey|escape:'html':'UTF-8'}"
          data-environment="{$environment|escape:'html':'UTF-8'}"
          data-payment-methods-response='{$paymentMethodsResponse|escape:'html':'UTF-8'}'
+         data-is-user-logged-in="{$isUserLoggedIn|escape:'html':'UTF-8'}"
+         data-three-ds-process-url="{$threeDSProcessUrl|escape:'html':'UTF-8'}"
     ></div>
+
+
+    {if $isPrestaShop16}
+        <div style="display:none">
+            <div id="actionModal">
+                <div id="actionContainer"></div>
+            </div>
+        </div>
+    {else}
+        <div id="actionModal" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">{l s='Authentication' mod='adyenofficial'}</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div id="actionContainer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {/if}
+
     <script>
         var adyenCheckoutConfiguration = document.querySelector('#adyen-checkout-configuration').dataset;
         var IS_PRESTA_SHOP_16 = ('true' === adyenCheckoutConfiguration.isPrestaShop16.toLowerCase());
+        var isUserLoggedIn = adyenCheckoutConfiguration.isUserLoggedIn;
+        var threeDsProcessUrl = adyenCheckoutConfiguration.threeDsProcessUrl;
 
         var ADYEN_CHECKOUT_CONFIG = {
             locale: adyenCheckoutConfiguration.locale,

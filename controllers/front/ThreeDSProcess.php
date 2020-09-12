@@ -56,32 +56,17 @@ class AdyenOfficialThreeDSProcessModuleFrontController extends FrontController
                 $this->helperData->buildControllerResponseJson(
                     'error',
                     array(
-                        'message' => "3D secure 2.0 failed, payment data not found"
+                        'message' => "Payment data not found"
                     )
                 )
             );
         }
+
+        // Get validated state data
+        $request = $this->getValidatedAdditionalData($payload);
 
         // Add payment data into the request object
-        $request = array(
-            "paymentData" => $paymentResponse['paymentData']
-        );
-
-        // Depends on the component's response we send a fingerprint or the challenge result
-        if (!empty($payload['details']['threeds2.fingerprint'])) {
-            $request['details']['threeds2.fingerprint'] = $payload['details']['threeds2.fingerprint'];
-        } elseif (!empty($payload['details']['threeds2.challengeResult'])) {
-            $request['details']['threeds2.challengeResult'] = $payload['details']['threeds2.challengeResult'];
-        } else {
-            $this->ajaxRender(
-                $this->helperData->buildControllerResponseJson(
-                    'error',
-                    array(
-                        'message' => "3D secure 2.0 failed, payload details are not found"
-                    )
-                )
-            );
-        }
+        $request["paymentData"] = $paymentResponse['paymentData'];
 
         // Send the payments details request
         try {
@@ -90,20 +75,14 @@ class AdyenOfficialThreeDSProcessModuleFrontController extends FrontController
 
             $result = $service->paymentsDetails($request);
         } catch (AdyenException $e) {
-            $this->ajaxRender(
-                $this->helperData->buildControllerResponseJson(
-                    'error',
-                    array(
-                        'message' => '3D secure 2.0 failed'
-                    )
-                )
-            );
+            $result['resultCode'] = 'Error';
+
         } catch (CoreException $e) {
             $this->ajaxRender(
                 $this->helperData->buildControllerResponseJson(
                     'error',
                     array(
-                        'message' => '3D secure 2.0 failed'
+                        'message' => 'The payment failed, please try again with another payment method!'
                     )
                 )
             );
@@ -112,24 +91,6 @@ class AdyenOfficialThreeDSProcessModuleFrontController extends FrontController
         // Update saved response for cart
         $this->adyenPaymentResponseModel->updatePaymentResponseByCartId($cart->id, $result['resultCode'], $result);
 
-        // Check if result is challenge shopper, if yes return the token
-        if (!empty($result['resultCode']) &&
-            $result['resultCode'] === 'ChallengeShopper' &&
-            !empty($result['authentication']['threeds2.challengeToken'])
-        ) {
-            $this->ajaxRender(
-                $this->helperData->buildControllerResponseJson(
-                    'threeDS2',
-                    array(
-                        'type' => $result['resultCode'],
-                        'token' => $result['authentication']['threeds2.challengeToken']
-                    )
-                )
-            );
-        }
-
-        // Payment can get back to the original flow
-        $this->adyenPaymentResponseModel->deletePaymentResponseByCartId($cart->id);
 
         $customer = new \Customer($cart->id_customer);
 
