@@ -160,6 +160,7 @@ class AdyenOfficialPaymentModuleFrontController extends FrontController
         $request = array();
 
         try {
+            $request = $this->getValidatedAdditionalData(\Tools::getAllValues());
             $request = $this->buildBrowserData($request);
             $request = $this->buildAddresses($request);
             $request = $this->buildPaymentData($request);
