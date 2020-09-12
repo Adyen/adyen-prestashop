@@ -60,6 +60,10 @@ abstract class FrontController extends \ModuleFrontController
         'details'
     );
 
+    const BROWSER_INFO = 'browserInfo';
+    const USER_AGENT = 'userAgent';
+    const ACCEPT_HEADER = 'acceptHeader';
+
     const ADYEN_MERCHANT_REFERENCE = 'adyenMerchantReference';
     const ISSUER = 'issuer';
     const PA_REQUEST = 'paRequest';

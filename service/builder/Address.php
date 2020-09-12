@@ -144,6 +144,12 @@ class Address
         $country,
         $request
     ) {
+
+        // Don't overwrite the state data address details
+        if (!empty($request[$addressType])) {
+            return $request;
+        }
+
         $address = array();
         if (!empty($street)) {
             $address["street"] = $street;
