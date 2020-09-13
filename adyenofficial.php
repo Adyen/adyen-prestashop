@@ -389,6 +389,8 @@ class AdyenOfficial extends PaymentModule
             'ADYEN_NOTI_PASSWORD',
             'ADYEN_APIKEY_TEST',
             'ADYEN_APIKEY_LIVE',
+            'ADYEN_CLIENTKEY_TEST',
+            'ADYEN_CLIENTKEY_LIVE',
             'ADYEN_NOTI_HMAC',
             'ADYEN_LIVE_ENDPOINT_URL_PREFIX',
             'ADYEN_CRONJOB_TOKEN'
@@ -467,6 +469,8 @@ class AdyenOfficial extends PaymentModule
             $cron_job_token = Tools::getValue('ADYEN_CRONJOB_TOKEN');
             $api_key_test = Tools::getValue('ADYEN_APIKEY_TEST');
             $api_key_live = Tools::getValue('ADYEN_APIKEY_LIVE');
+            $client_key_test = Tools::getValue('ADYEN_CLIENTKEY_TEST');
+            $client_key_live = Tools::getValue('ADYEN_CLIENTKEY_LIVE');
             $live_endpoint_url_prefix = (string)Tools::getValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
 
             // validating the input
@@ -483,6 +487,8 @@ class AdyenOfficial extends PaymentModule
                 Configuration::updateValue('ADYEN_MODE', $mode);
                 Configuration::updateValue('ADYEN_NOTI_USERNAME', $notification_username);
                 Configuration::updateValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX', $live_endpoint_url_prefix);
+                Configuration::updateValue('ADYEN_CLIENTKEY_TEST', $client_key_test);
+                Configuration::updateValue('ADYEN_CLIENTKEY_LIVE', $client_key_live);
 
                 if (!empty($notification_password)) {
                     Configuration::updateValue('ADYEN_NOTI_PASSWORD', $this->crypto->encrypt($notification_password));
@@ -760,6 +766,36 @@ class AdyenOfficial extends PaymentModule
             )
         );
 
+        // Client key input test
+        $fields_form[0]['form']['input'][] = array(
+            'type' => 'text',
+            'label' => $this->l('Client key test'),
+            'name' => 'ADYEN_CLIENTKEY_TEST',
+            'size' => 50,
+            'required' => false,
+            'lang' => false,
+            'hint' => $this->l(
+                'If you don\'t know your client key, log in to your Test Customer Area. Navigate to' .
+                ' Settings > Users > System, and click on your webservice user, normally this will be' .
+                ' ws@Company.YourCompanyAccount. Under Client Key is your Client Key.'
+            )
+        );
+
+        // Client key input live
+        $fields_form[0]['form']['input'][] = array(
+            'type' => 'text',
+            'label' => $this->l('Client key live'),
+            'name' => 'ADYEN_CLIENTKEY_LIVE',
+            'size' => 50,
+            'required' => false,
+            'lang' => false,
+            'hint' => $this->l(
+                'If you don\'t know your client key, log in to your Live Customer Area. Navigate to' .
+                ' Settings > Users > System, and click on your webservice user, normally this will be' .
+                ' ws@Company.YourCompanyAccount. Under Client Key is your Client Key.'
+            )
+        );
+
         $fields_form[0]['form']['input'][] = array(
             'type' => 'text',
             'label' => $this->l('Live endpoint prefix'),
@@ -811,12 +847,16 @@ class AdyenOfficial extends PaymentModule
             $mode = (string)Tools::getValue('ADYEN_MODE');
             $notification_username = (string)Tools::getValue('ADYEN_NOTI_USERNAME');
             $cron_job_token = Tools::getValue('ADYEN_CRONJOB_TOKEN');
+            $client_key_test = Tools::getValue('ADYEN_CLIENTKEY_TEST');
+            $client_key_live = Tools::getValue('ADYEN_CLIENTKEY_LIVE');
             $live_endpoint_url_prefix = (string)Tools::getValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
         } else {
             $merchant_account = Configuration::get('ADYEN_MERCHANT_ACCOUNT');
             $mode = Configuration::get('ADYEN_MODE');
             $notification_username = Configuration::get('ADYEN_NOTI_USERNAME');
             $cron_job_token = $cronjobToken;
+            $client_key_test = Configuration::get('ADYEN_CLIENTKEY_TEST');
+            $client_key_live = Configuration::get('ADYEN_CLIENTKEY_LIVE');
             $live_endpoint_url_prefix = Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
         }
 
@@ -825,6 +865,8 @@ class AdyenOfficial extends PaymentModule
         $helper->fields_value['ADYEN_MODE'] = $mode;
         $helper->fields_value['ADYEN_NOTI_USERNAME'] = $notification_username;
         $helper->fields_value['ADYEN_CRONJOB_TOKEN'] = $cron_job_token;
+        $helper->fields_value['ADYEN_CLIENTKEY_TEST'] = $client_key_test;
+        $helper->fields_value['ADYEN_CLIENTKEY_LIVE'] = $client_key_live;
         $helper->fields_value['ADYEN_LIVE_ENDPOINT_URL_PREFIX'] = $live_endpoint_url_prefix;
 
         return $helper->generateForm($fields_form);
@@ -989,7 +1031,7 @@ class AdyenOfficial extends PaymentModule
     {
         return array(
             'locale' => $this->languageAdapter->getLocaleCode($this->context->language),
-            'originKey' => $this->helper_data->getOriginKeyForOrigin(),
+            'clientKey' => $this->configuration->clientKey,
             'environment' => Configuration::get('ADYEN_MODE')
         );
     }

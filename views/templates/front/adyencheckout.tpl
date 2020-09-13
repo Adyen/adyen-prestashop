@@ -21,13 +21,13 @@
  * See the LICENSE file for more info.
  *}
 
-{if !$originKey}
-    {include './originkey-error.tpl'}
+{if !$clientKey}
+    {include './clientkey-error.tpl'}
 {else}
     <div id="adyen-checkout-configuration"
          data-is-presta-shop16="{$isPrestaShop16|escape:'html':'UTF-8'}"
          data-locale="{$locale|escape:'html':'UTF-8'}"
-         data-origin-key="{$originKey|escape:'html':'UTF-8'}"
+         data-client-key="{$clientKey|escape:'html':'UTF-8'}"
          data-environment="{$environment|escape:'html':'UTF-8'}"
          data-payment-methods-response='{$paymentMethodsResponse|escape:'html':'UTF-8'}'
          data-is-user-logged-in="{$isUserLoggedIn|escape:'html':'UTF-8'}"
@@ -64,7 +64,7 @@
 
         var ADYEN_CHECKOUT_CONFIG = {
             locale: adyenCheckoutConfiguration.locale,
-            originKey: adyenCheckoutConfiguration.originKey,
+            clientKey: adyenCheckoutConfiguration.clientKey,
             environment: adyenCheckoutConfiguration.environment,
             showPayButton: false,
             paymentMethodsResponse: JSON.parse(adyenCheckoutConfiguration.paymentMethodsResponse)

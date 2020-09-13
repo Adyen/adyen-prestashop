@@ -32,7 +32,6 @@ use Adyen\PrestaShop\infra\Crypto;
 use Adyen\PrestaShop\service\adapter\classes\Configuration;
 use Adyen\PrestaShop\service\adapter\classes\Language;
 use Adyen\PrestaShop\service\Checkout;
-use Adyen\PrestaShop\service\CheckoutUtility;
 use Adyen\PrestaShop\service\Logger;
 use Cart;
 use Country;
@@ -43,24 +42,13 @@ use Guest;
 use PrestaShopDatabaseException;
 use PrestaShopException;
 use Tools;
-use Adyen\PrestaShop\controllers\FrontController;
 
 class Data
 {
     /**
      * @var string
      */
-    private $httpHost;
-
-    /**
-     * @var string
-     */
     private $sslEncryptionKey;
-
-    /**
-     * @var CheckoutUtility
-     */
-    private $adyenCheckoutUtilityService;
 
     /**
      * @var Checkout
@@ -91,7 +79,6 @@ class Data
      * Data constructor.
      *
      * @param Configuration $configuration
-     * @param CheckoutUtility $adyenCheckoutUtilityService
      * @param Checkout $adyenCheckoutService
      * @param Logger $logger
      * @param Language $languageAdapter
@@ -99,47 +86,17 @@ class Data
      */
     public function __construct(
         Configuration $configuration,
-        CheckoutUtility $adyenCheckoutUtilityService,
         Checkout $adyenCheckoutService,
         Logger $logger,
         Language $languageAdapter,
         Crypto $crypto
     ) {
-        $this->httpHost = $configuration->httpHost;
         $this->sslEncryptionKey = $configuration->sslEncryptionKey;
-        $this->adyenCheckoutUtilityService = $adyenCheckoutUtilityService;
         $this->adyenCheckoutService = $adyenCheckoutService;
         $this->configuration = $configuration;
         $this->logger = $logger;
         $this->languageAdapter = $languageAdapter;
         $this->crypto = $crypto;
-    }
-
-    /**
-     * Get origin key for a specific origin using the adyen api library client
-     *
-     * @return string
-     */
-    public function getOriginKeyForOrigin()
-    {
-        $params = array("originDomains" => array($this->httpHost));
-
-        try {
-            $response = $this->adyenCheckoutUtilityService->originKeys($params);
-        } catch (AdyenException $e) {
-            $this->logger->error("getOriginKeyForOrigin failed. ", array('exception' => $e));
-        }
-
-        $originKey = "";
-
-        // TODO: improve error treatment
-        if (!empty($response['originKeys'][$this->httpHost])) {
-            $originKey = $response['originKeys'][$this->httpHost];
-        } else {
-            $this->logger->error("OriginKey is empty, please verify that your API key is correct");
-        }
-
-        return $originKey;
     }
 
     /**
@@ -367,13 +324,5 @@ class Data
         }
 
         return 'module:adyenofficial/' . ltrim($templatePath, '/');
-    }
-
-    /**
-     * @return string
-     */
-    public function getHttpHost()
-    {
-        return $this->httpHost;
     }
 }

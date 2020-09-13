@@ -21,9 +21,9 @@
  * See the LICENSE file for more info.
  *}
 
-{if !$originKey}
+{if !$clientKey}
     <form method="post">
-        {include './originkey-error.tpl'}
+        {include './clientkey-error.tpl'}
     </form>
 {else}
     <div class="row adyen-payment"
