@@ -1106,12 +1106,24 @@ class AdyenOfficial extends PaymentModule
 
         $paymentMethods = $this->helper_data->fetchPaymentMethods($this->context->cart, $this->context->language);
 
+        $selectedDeliveryAddressId = null;
+        if ($this->context->cart->id_address_delivery) {
+            $selectedDeliveryAddressId = $this->context->cart->id_address_delivery;
+        }
+
+        $selectedInvoiceAddressId = $selectedDeliveryAddressId;
+        if ($this->context->cart->id_address_invoice) {
+            $selectedInvoiceAddressId = $this->context->cart->id_address_invoice;
+        }
+
         $smartyVariables = array(
             'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
             'paymentsDetailsUrl' => $this->context->link->getModuleLink($this->name, 'PaymentsDetails', array(), true),
             'paymentMethodsResponse' => json_encode($paymentMethods),
             'isPrestaShop16' => $this->versionChecker->isPrestaShop16() ? 'true' : 'false',
-            'isUserLoggedIn' => !$this->context->customer->is_guest
+            'isUserLoggedIn' => !$this->context->customer->is_guest,
+            'selectedDeliveryAddressId' => $selectedDeliveryAddressId,
+            'selectedInvoiceAddressId' => $selectedInvoiceAddressId
         );
 
         // Add checkout component default configuration parameters for smarty variables

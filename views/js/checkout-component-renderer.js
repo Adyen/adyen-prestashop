@@ -32,13 +32,48 @@ jQuery(document).ready(function () {
 
     var notSupportedComponents = ['paypal'];
 
+    var invoiceAddress = prestashop.customer.addresses[selectedInvoiceAddressId];
+    var deliveryAddress = prestashop.customer.addresses[selectedDeliveryAddressId];
+
+    var phoneNumber = invoiceAddress.phone ? invoiceAddress.phone : invoiceAddress.phone_mobile;
+
+    var personalDetails = {
+        firstName: prestashop.customer.firstname,
+        lastName: prestashop.customer.lastname,
+        shopperEmail: prestashop.customer.email,
+        telephoneNumber: phoneNumber,
+        gender: getAdyenGenderByPrestashopType(prestashop.customer.gender.type),
+        dateOfBirth: prestashop.customer.birthday
+    }
+
+    var billingAddress = {
+        city: invoiceAddress.city,
+        country: invoiceAddress.country_iso,
+        houseNumberOrName: invoiceAddress.address2,
+        postalCode: invoiceAddress.postcode,
+        street: invoiceAddress.address1
+    }
+
+    var deliveryAddress = {
+        city: deliveryAddress.city,
+        country: deliveryAddress.country_iso,
+        houseNumberOrName: deliveryAddress.address2,
+        postalCode: deliveryAddress.postcode,
+        street: deliveryAddress.address1
+    }
+
     var configuration = Object.assign(
         ADYEN_CHECKOUT_CONFIG,
         {
             hasHolderName: true,
             holderNameRequired: false,
             enableStoreDetails: !!isUserLoggedIn,
-            countryCode: 'NL', //TODO add country code
+            countryCode: invoiceAddress.country_iso,
+            data: {
+                billingAddress: billingAddress,
+                deliveryAddress: deliveryAddress,
+                personalDetails: personalDetails
+            },
             onAdditionalDetails: handleOnAdditionalDetails
         }
     )
@@ -267,6 +302,19 @@ jQuery(document).ready(function () {
         } else {
             popupModal.modal('hide');
         }
+    }
+
+    function getAdyenGenderByPrestashopType(type)
+    {
+        if ("0" === type) {
+            return 'MALE';
+        }
+
+        if ("1" === type) {
+            return 'FEMALE';
+        }
+
+        return 'UNKNOWN'
     }
 
     function resetFields() {

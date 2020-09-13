@@ -32,6 +32,8 @@
          data-payment-methods-response='{$paymentMethodsResponse|escape:'html':'UTF-8'}'
          data-is-user-logged-in="{$isUserLoggedIn|escape:'html':'UTF-8'}"
          data-payments-details-url="{$paymentsDetailsUrl|escape:'html':'UTF-8'}"
+         data-selected-delivery-address-id="{$selectedDeliveryAddressId|escape:'html':'UTF-8'}"
+         data-selected-invoice-address-id="{$selectedInvoiceAddressId|escape:'html':'UTF-8'}"
     ></div>
 
 
@@ -61,6 +63,8 @@
         var IS_PRESTA_SHOP_16 = ('true' === adyenCheckoutConfiguration.isPrestaShop16.toLowerCase());
         var isUserLoggedIn = adyenCheckoutConfiguration.isUserLoggedIn;
         var paymentsDetailsUrl = adyenCheckoutConfiguration.paymentsDetailsUrl;
+        var selectedDeliveryAddressId = adyenCheckoutConfiguration.selectedDeliveryAddressId;
+        var selectedInvoiceAddressId = adyenCheckoutConfiguration.selectedInvoiceAddressId;
 
         var ADYEN_CHECKOUT_CONFIG = {
             locale: adyenCheckoutConfiguration.locale,
