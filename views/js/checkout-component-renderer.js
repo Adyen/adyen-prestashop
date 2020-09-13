@@ -22,21 +22,28 @@
  */
 
 jQuery(document).ready(function () {
+    if (!window.ADYEN_CHECKOUT_CONFIG) {
+        return;
+    }
+
     var placeOrderInProgress = false;
     var data = {};
     var placeOrderAllowed;
 
-    if (window.ADYEN_CHECKOUT_CONFIG) {
-        var configuration = Object.assign(
-            ADYEN_CHECKOUT_CONFIG,
-            {
-                hasHolderName: true,
-                enableStoreDetails: isUserLoggedIn,
-                onAdditionalDetails: handleOnAdditionalDetails
-            }
-        )
-        window.adyenCheckout = new AdyenCheckout(configuration);
-    }
+    var notSupportedComponents = ['paypal'];
+
+    var configuration = Object.assign(
+        ADYEN_CHECKOUT_CONFIG,
+        {
+            hasHolderName: true,
+            holderNameRequired: false,
+            enableStoreDetails: !!isUserLoggedIn,
+            countryCode: 'NL', //TODO add country code
+            onAdditionalDetails: handleOnAdditionalDetails
+        }
+    )
+
+    window.adyenCheckout = new AdyenCheckout(configuration);
 
     // use this object to iterate through the stored payment methods
     var paymentMethods = window.adyenCheckout.paymentMethodsResponse.paymentMethods;
@@ -57,7 +64,7 @@ jQuery(document).ready(function () {
         var component = renderPaymentComponent(paymentMethod, paymentMethodContainer);
 
         // Use data to reteive the payment method data
-        subscribeToPaymentFormSubmit(paymentForm, component);
+        subscribeToPaymentFormSubmit(paymentForm, paymentMethod, component);
     });
 
     var checkoutStoredPaymentMethods = window.adyenCheckout.paymentMethodsResponse.storedPaymentMethods;
@@ -83,6 +90,11 @@ jQuery(document).ready(function () {
     });
 
     function renderPaymentComponent(paymentMethod, paymentMethodContainer) {
+
+        if (notSupportedComponents.includes(paymentMethod.type)) {
+            return;
+        }
+
         var configuration = Object.assign(paymentMethod, {
             'onChange':handleOnChange
         });
@@ -98,7 +110,7 @@ jQuery(document).ready(function () {
         }
     }
 
-    function subscribeToPaymentFormSubmit(paymentForm, component) {
+    function subscribeToPaymentFormSubmit(paymentForm, paymentMethod, component) {
         paymentForm.on('submit', function(e) {
             e.preventDefault();
 
@@ -119,6 +131,7 @@ jQuery(document).ready(function () {
 
             // If data is not set (component doesn't exist) prefill the type
             if (!data) {
+                data = {};
                 data.paymentMethod = {'type': paymentMethod.type};
             } else if (typeof data.paymentMethod === 'undefined') {
                 data.paymentMethod = {'type': paymentMethod.type};
