@@ -76,7 +76,6 @@ class AdyenOfficialThreeDSProcessModuleFrontController extends FrontController
             $result = $service->paymentsDetails($request);
         } catch (AdyenException $e) {
             $result['resultCode'] = 'Error';
-
         } catch (CoreException $e) {
             $this->ajaxRender(
                 $this->helperData->buildControllerResponseJson(

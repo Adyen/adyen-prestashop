@@ -851,10 +851,8 @@ class AdyenOfficial extends PaymentModule
         );
 
         if (!$this->context->customer->is_guest && !empty($paymentMethods['storedPaymentMethods'])) {
-
             $storedPaymentMethods = $paymentMethods['storedPaymentMethods'];
             foreach ($storedPaymentMethods as $storedPaymentMethod) {
-
                 if (!empty($storedPaymentMethod)) {
                     // Only show on the frontend the Ecommerce stored payment methods and not the ContAuth
                     if (!in_array('Ecommerce', $storedPaymentMethod['supportedShopperInteractions'])) {

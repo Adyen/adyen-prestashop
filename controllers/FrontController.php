@@ -248,7 +248,6 @@ abstract class FrontController extends \ModuleFrontController
             case 'IdentifyShopper':
             case 'ChallengeShopper':
             case 'RedirectShopper':
-
                 // TODO check if $this->context->cookie->__set("id_cart", ""); needed for redirectshopper
                 // Store response for cart until the payment is done
                 $this->adyenPaymentResponseModel->insertPaymentResponse($cart->id, $resultCode, $response);
