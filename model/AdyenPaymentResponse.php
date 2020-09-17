@@ -34,15 +34,20 @@ class AdyenPaymentResponse extends AbstractModel
      * @param $response
      * @return bool
      */
-    public function insertPaymentResponse($cartId, $resultCode, $response)
+    public function insertOrUpdatePaymentResponse($cartId, $resultCode, $response)
     {
         $data = array(
-            'id_cart' => (int)$cartId,
             'result_code' => pSQL($resultCode),
             'response' => pSQL($this->jsonEncodeIfArray($response))
         );
 
-        return $this->dbInstance->insert(self::$tableName, $data);
+        if ($this->getPaymentResponseByCartId($cartId)) {
+            return $this->updatePaymentResponseByCartId($cartId, $data);
+        }
+
+        $data['id_cart'] = (int)$cartId;
+
+        return $this->insertPaymentResponse($data);
     }
 
     /**
@@ -61,18 +66,22 @@ class AdyenPaymentResponse extends AbstractModel
 
     /**
      * @param $cartId
-     * @param $resultCode
-     * @param $response
+     * @param $data
      * @return bool
      */
-    public function updatePaymentResponseByCartId($cartId, $resultCode, $response)
+    public function updatePaymentResponseByCartId($cartId, $data)
     {
-        $data = array(
-            'result_code' => $resultCode,
-            'response' => pSQL($this->jsonEncodeIfArray($response))
-        );
-
         return $this->dbInstance->update(self::$tableName, $data, '`id_cart` = "' . (int)$cartId . '"');
+    }
+
+    /**
+     * @param $data
+     * @return bool
+     *
+     */
+    public function insertPaymentResponse($data)
+    {
+        return $this->dbInstance->insert(self::$tableName, $data);
     }
 
     /**

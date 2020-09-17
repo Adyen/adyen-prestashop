@@ -29,6 +29,7 @@ jQuery(document).ready(function () {
     var placeOrderInProgress = false;
     var data = {};
     var placeOrderAllowed;
+    var popupModal;
 
     var notSupportedComponents = ['paypal'];
 
@@ -232,8 +233,13 @@ jQuery(document).ready(function () {
     }
 
     function renderActionComponent(action) {
+        // TODO remove when fix is rolled out in a new checkout component version
+        delete configuration.data;
+
+        var actionComponent = window.adyenCheckout = new AdyenCheckout(configuration);
+
         try {
-            window.adyenCheckout.createFromAction(action).mount('#actionContainer');
+            actionComponent.createFromAction(action).mount('#actionContainer');
 
             if (action.type === 'threeDS2Challenge') {
                 showPopup();
@@ -261,6 +267,7 @@ jQuery(document).ready(function () {
     }
 
     function handleOnAdditionalDetails(state) {
+        hidePopup();
         processPaymentsDetails(state.data).done(function(responseJSON) {
             processControllerResponse(responseJSON, getSelectedPaymentMethod());
         });
@@ -300,7 +307,9 @@ jQuery(document).ready(function () {
         if (IS_PRESTA_SHOP_16) {
             $.fancybox.close();
         } else {
-            popupModal.modal('hide');
+            if (popupModal) {
+                popupModal.modal('hide');
+            }
         }
     }
 

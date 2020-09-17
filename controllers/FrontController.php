@@ -245,12 +245,15 @@ abstract class FrontController extends \ModuleFrontController
                 }
 
                 break;
+
+            case 'RedirectShopper':
+                $this->context->cookie->__set("id_cart", "");
+
             case 'IdentifyShopper':
             case 'ChallengeShopper':
-            case 'RedirectShopper':
-                // TODO check if $this->context->cookie->__set("id_cart", ""); needed for redirectshopper
+
                 // Store response for cart until the payment is done
-                $this->adyenPaymentResponseModel->insertPaymentResponse($cart->id, $resultCode, $response);
+                $this->adyenPaymentResponseModel->insertOrUpdatePaymentResponse($cart->id, $resultCode, $response);
 
                 $this->ajaxRender(
                     $this->helperData->buildControllerResponseJson(
@@ -265,7 +268,7 @@ abstract class FrontController extends \ModuleFrontController
             case 'Received':
             case 'PresentToShopper':
                 // Store response for cart temporarily until the payment is done
-                $this->adyenPaymentResponseModel->insertPaymentResponse($cart->id, $resultCode, $response);
+                $this->adyenPaymentResponseModel->insertOrUpdatePaymentResponse($cart->id, $resultCode, $response);
 
                 if (\Validate::isLoadedObject($customer)) {
                     $total = (float)$cart->getOrderTotal(true, \Cart::BOTH);
@@ -379,62 +382,6 @@ abstract class FrontController extends \ModuleFrontController
 
                 break;
         }
-    }
-
-    /**
-     * @return mixed
-     */
-    protected function handle3DS1()
-    {
-        $paRequest = \Tools::getValue(self::PA_REQUEST);
-        $md = \Tools::getValue(self::MD);
-        $issuerUrl = \Tools::getValue(self::ISSUER_URL);
-        $redirectMethod = \Tools::getValue(self::REDIRECT_METHOD);
-        $adyenMerchantReference = \Tools::getValue(self::ADYEN_MERCHANT_REFERENCE);
-
-        $termUrl = $this->context->link->getModuleLink(
-            "adyenofficial",
-            'Validate3d',
-            array(self::ADYEN_MERCHANT_REFERENCE => $adyenMerchantReference),
-            true
-        );
-
-        $this->context->smarty->assign(
-            array(
-                'paRequest' => $paRequest,
-                'md' => $md,
-                'issuerUrl' => $issuerUrl,
-                'redirectMethod' => $redirectMethod,
-                'termUrl' => $termUrl
-            )
-        );
-
-        return $this->setTemplate(
-            $this->helperData->getTemplateFromModulePath('views/templates/front/redirect.tpl')
-        );
-    }
-
-    /**
-     * @return bool
-     */
-    protected function is3DS1Process()
-    {
-        $paRequest = \Tools::getValue(self::PA_REQUEST);
-        $md = \Tools::getValue(self::MD);
-        $issuerUrl = \Tools::getValue(self::ISSUER_URL);
-        $redirectMethod = \Tools::getValue(self::REDIRECT_METHOD);
-        $adyenMerchantReference = \Tools::getValue(self::ADYEN_MERCHANT_REFERENCE);
-
-        if (!empty($paRequest) &&
-            !empty($md) &&
-            !empty($issuerUrl) &&
-            !empty($redirectMethod) &&
-            !empty($adyenMerchantReference)
-        ) {
-            return true;
-        }
-
-        return false;
     }
 
     /**

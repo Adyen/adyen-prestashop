@@ -142,13 +142,6 @@ class AdyenOfficialPaymentModuleFrontController extends FrontController
      */
     public function postProcess()
     {
-        // Handle 3DS1 flow, when the payments call is already done and the details are submitted from the frontend,
-        // by the place order button
-        // TODO remove and use the component handleAction for the redirect
-        if ($this->is3DS1Process()) {
-            return $this->handle3DS1();
-        }
-
         $cart = $this->getCurrentCart();
         $isAjax = \Tools::getValue(self::IS_AJAX);
         $request = array();

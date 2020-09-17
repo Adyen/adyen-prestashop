@@ -1071,7 +1071,7 @@ class AdyenOfficial extends PaymentModule
 
         // Default parameters to frontend
         $smartyVariables = array(
-            'isPrestaShop16' => $this->versionChecker->isPrestaShop16() ? 'true' : 'false',
+            'isPrestaShop16' => $this->versionChecker->isPrestaShop16() ? true : false,
             'paymentMethodsResponse' => '{}'
         );
 
@@ -1120,7 +1120,7 @@ class AdyenOfficial extends PaymentModule
             'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
             'paymentsDetailsUrl' => $this->context->link->getModuleLink($this->name, 'PaymentsDetails', array(), true),
             'paymentMethodsResponse' => json_encode($paymentMethods),
-            'isPrestaShop16' => $this->versionChecker->isPrestaShop16() ? 'true' : 'false',
+            'isPrestaShop16' => $this->versionChecker->isPrestaShop16() ? true : false,
             'isUserLoggedIn' => !$this->context->customer->is_guest,
             'selectedDeliveryAddressId' => $selectedDeliveryAddressId,
             'selectedInvoiceAddressId' => $selectedInvoiceAddressId
