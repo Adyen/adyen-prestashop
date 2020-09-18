@@ -902,9 +902,6 @@ class AdyenOfficial extends PaymentModule
                     }
 
                     $smartyVariables = array(
-                        'paymentProcessUrl' => $paymentProcessUrl,
-                        'isPrestaShop16' => false,
-                        'renderPayButton' => false,
                         'storedPaymentApiId' => $storedPaymentMethod['id']
                     );
 
@@ -947,9 +944,7 @@ class AdyenOfficial extends PaymentModule
 
                 $smartyVariables = array(
                     'paymentMethodType' => $paymentMethod['type'],
-                    'paymentMethodName' => $paymentMethod['name'],
-                    'paymentProcessUrl' => $paymentProcessUrl,
-                    'renderPayButton' => false,
+                    'paymentMethodName' => $paymentMethod['name']
                 );
 
                 // Add checkout component default configuration parameters for smarty variables
@@ -1032,7 +1027,12 @@ class AdyenOfficial extends PaymentModule
         return array(
             'locale' => $this->languageAdapter->getLocaleCode($this->context->language),
             'clientKey' => $this->configuration->clientKey,
-            'environment' => Configuration::get('ADYEN_MODE')
+            'environment' => Configuration::get('ADYEN_MODE'),
+            'isUserLoggedIn' => !$this->context->customer->is_guest,
+            'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
+            'paymentsDetailsUrl' => $this->context->link->getModuleLink($this->name, 'PaymentsDetails', array(), true),
+            'isPrestaShop16' => $this->versionChecker->isPrestaShop16() ? true : false,
+            'isUserLoggedIn' => !$this->context->customer->is_guest
         );
     }
 
@@ -1071,7 +1071,6 @@ class AdyenOfficial extends PaymentModule
 
         // Default parameters to frontend
         $smartyVariables = array(
-            'isPrestaShop16' => $this->versionChecker->isPrestaShop16() ? true : false,
             'paymentMethodsResponse' => '{}'
         );
 
@@ -1117,11 +1116,7 @@ class AdyenOfficial extends PaymentModule
         }
 
         $smartyVariables = array(
-            'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
-            'paymentsDetailsUrl' => $this->context->link->getModuleLink($this->name, 'PaymentsDetails', array(), true),
             'paymentMethodsResponse' => json_encode($paymentMethods),
-            'isPrestaShop16' => $this->versionChecker->isPrestaShop16() ? true : false,
-            'isUserLoggedIn' => !$this->context->customer->is_guest,
             'selectedDeliveryAddressId' => $selectedDeliveryAddressId,
             'selectedInvoiceAddressId' => $selectedInvoiceAddressId
         );
@@ -1309,19 +1304,6 @@ class AdyenOfficial extends PaymentModule
                 }
 
                 $smartyVariables = array(
-                    'paymentProcessUrl' => $this->context->link->getModuleLink(
-                        $this->name,
-                        'Payment',
-                        array(),
-                        true
-                    ),
-                    'paymentsDetailsUrl' => $this->context->link->getModuleLink(
-                        $this->name,
-                        'PaymentsDetails',
-                        array(),
-                        true
-                    ),
-                    'isPrestaShop16' => true,
                     'storedPaymentApiId' => $storedPayment['id'],
                     'name' => $storedPayment['name'],
                     'number' => $storedPayment['lastFour']
@@ -1353,14 +1335,7 @@ class AdyenOfficial extends PaymentModule
 
             $smartyVariables = array(
                 'paymentMethodType' => $paymentMethod['type'],
-                'paymentMethodName' => $paymentMethod['name'],
-                'paymentProcessUrl' => $this->context->link->getModuleLink(
-                    $this->name,
-                    'Payment',
-                    array(),
-                    true
-                ),
-                'renderPayButton' => true
+                'paymentMethodName' => $paymentMethod['name']
             );
 
             // Add checkout component default configuration parameters for smarty variables

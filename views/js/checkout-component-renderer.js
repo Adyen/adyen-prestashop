@@ -274,8 +274,7 @@ jQuery(document).ready(function () {
     }
 
     function getSelectedPaymentMethod() {
-         //TODO
-        return getSelectedPaymentForm('scheme');
+        return getSelectedPaymentForm(data.paymentMethod.type);
     }
 
     function getSelectedPaymentForm(paymentMethodType) {

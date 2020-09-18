@@ -42,7 +42,7 @@
                 <div class="alert alert-danger error-container" role="alert"></div>
                 <div data-adyen-payment-container></div>
                 <div data-adyen-payment-error-container role="alert"></div>
-                {if $renderPayButton}
+                {if $isPrestaShop16}
                     <button type="submit" class="button btn btn-default standard-checkout button-medium"><span>
                          {l s='Pay' mod='adyenofficial'} <i class="icon-chevron-right right"></i> </span></button>
                 {/if}

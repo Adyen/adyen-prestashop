@@ -32,8 +32,12 @@
          data-payment-methods-response='{$paymentMethodsResponse|escape:'html':'UTF-8'}'
          data-is-user-logged-in="{$isUserLoggedIn|escape:'html':'UTF-8'}"
          data-payments-details-url="{$paymentsDetailsUrl|escape:'html':'UTF-8'}"
+            {if isset($selectedDeliveryAddressId)}
          data-selected-delivery-address-id="{$selectedDeliveryAddressId|escape:'html':'UTF-8'}"
+            {/if}
+            {if isset($selectedInvoiceAddressId)}
          data-selected-invoice-address-id="{$selectedInvoiceAddressId|escape:'html':'UTF-8'}"
+            {/if}
     ></div>
 
 
