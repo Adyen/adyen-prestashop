@@ -33,12 +33,38 @@ jQuery(document).ready(function () {
 
     var notSupportedComponents = ['paypal'];
 
-    var invoiceAddress = prestashop.customer.addresses[selectedInvoiceAddressId];
-    var deliveryAddress = prestashop.customer.addresses[selectedDeliveryAddressId];
+    var componentBillingAddress = {};
+    var countryCode = '';
+    var phoneNumber = '';
+    if (selectedInvoiceAddressId in prestashop.customer.addresses) {
+        var invoiceAddress = prestashop.customer.addresses[selectedInvoiceAddressId];
 
-    var phoneNumber = invoiceAddress.phone ? invoiceAddress.phone : invoiceAddress.phone_mobile;
+        componentBillingAddress = {
+            city: invoiceAddress.city,
+            country: invoiceAddress.country_iso,
+            houseNumberOrName: invoiceAddress.address2,
+            postalCode: invoiceAddress.postcode,
+            street: invoiceAddress.address1
+        }
 
-    var personalDetails = {
+        countryCode = invoiceAddress.country_iso;
+        phoneNumber = invoiceAddress.phone ? invoiceAddress.phone : invoiceAddress.phone_mobile;
+    }
+
+    var componentDeliveryAddress = {};
+    if (selectedDeliveryAddressId in prestashop.customer.addresses) {
+        var deliveryAddress = prestashop.customer.addresses[selectedDeliveryAddressId];
+
+        componentDeliveryAddress = {
+            city: deliveryAddress.city,
+            country: deliveryAddress.country_iso,
+            houseNumberOrName: deliveryAddress.address2,
+            postalCode: deliveryAddress.postcode,
+            street: deliveryAddress.address1
+        }
+    }
+
+    var componentPersonalDetails = {
         firstName: prestashop.customer.firstname,
         lastName: prestashop.customer.lastname,
         shopperEmail: prestashop.customer.email,
@@ -47,33 +73,17 @@ jQuery(document).ready(function () {
         dateOfBirth: prestashop.customer.birthday
     }
 
-    var billingAddress = {
-        city: invoiceAddress.city,
-        country: invoiceAddress.country_iso,
-        houseNumberOrName: invoiceAddress.address2,
-        postalCode: invoiceAddress.postcode,
-        street: invoiceAddress.address1
-    }
-
-    var deliveryAddress = {
-        city: deliveryAddress.city,
-        country: deliveryAddress.country_iso,
-        houseNumberOrName: deliveryAddress.address2,
-        postalCode: deliveryAddress.postcode,
-        street: deliveryAddress.address1
-    }
-
     var configuration = Object.assign(
         ADYEN_CHECKOUT_CONFIG,
         {
             hasHolderName: true,
             holderNameRequired: false,
             enableStoreDetails: !!isUserLoggedIn,
-            countryCode: invoiceAddress.country_iso,
+            countryCode: countryCode,
             data: {
-                billingAddress: billingAddress,
-                deliveryAddress: deliveryAddress,
-                personalDetails: personalDetails
+                billingAddress: componentBillingAddress,
+                deliveryAddress: componentDeliveryAddress,
+                personalDetails: componentPersonalDetails
             },
             onAdditionalDetails: handleOnAdditionalDetails
         }
@@ -167,7 +177,6 @@ jQuery(document).ready(function () {
 
             // If data is not set (component doesn't exist) prefill the type
             if (!data) {
-                data = {};
                 data.paymentMethod = {'type': paymentMethod.type};
             } else if (typeof data.paymentMethod === 'undefined') {
                 data.paymentMethod = {'type': paymentMethod.type};
@@ -326,7 +335,7 @@ jQuery(document).ready(function () {
     }
 
     function resetFields() {
-        data = null;
+        data = {};
     }
 
     function isPlaceOrderInProgress() {
