@@ -36,41 +36,44 @@ jQuery(document).ready(function () {
     var componentBillingAddress = {};
     var countryCode = '';
     var phoneNumber = '';
-    if (selectedInvoiceAddressId in prestashop.customer.addresses) {
-        var invoiceAddress = prestashop.customer.addresses[selectedInvoiceAddressId];
-
-        componentBillingAddress = {
-            city: invoiceAddress.city,
-            country: invoiceAddress.country_iso,
-            houseNumberOrName: invoiceAddress.address2,
-            postalCode: invoiceAddress.postcode,
-            street: invoiceAddress.address1
-        }
-
-        countryCode = invoiceAddress.country_iso;
-        phoneNumber = invoiceAddress.phone ? invoiceAddress.phone : invoiceAddress.phone_mobile;
-    }
-
     var componentDeliveryAddress = {};
-    if (selectedDeliveryAddressId in prestashop.customer.addresses) {
-        var deliveryAddress = prestashop.customer.addresses[selectedDeliveryAddressId];
+    var componentPersonalDetails
+    if (typeof prestashop !== 'undefined') {
+        if (selectedInvoiceAddressId in prestashop.customer.addresses) {
+            var invoiceAddress = prestashop.customer.addresses[selectedInvoiceAddressId];
 
-        componentDeliveryAddress = {
-            city: deliveryAddress.city,
-            country: deliveryAddress.country_iso,
-            houseNumberOrName: deliveryAddress.address2,
-            postalCode: deliveryAddress.postcode,
-            street: deliveryAddress.address1
+            componentBillingAddress = {
+                city: invoiceAddress.city,
+                country: invoiceAddress.country_iso,
+                houseNumberOrName: invoiceAddress.address2,
+                postalCode: invoiceAddress.postcode,
+                street: invoiceAddress.address1
+            }
+
+            countryCode = invoiceAddress.country_iso;
+            phoneNumber = invoiceAddress.phone ? invoiceAddress.phone : invoiceAddress.phone_mobile;
         }
-    }
 
-    var componentPersonalDetails = {
-        firstName: prestashop.customer.firstname,
-        lastName: prestashop.customer.lastname,
-        shopperEmail: prestashop.customer.email,
-        telephoneNumber: phoneNumber,
-        gender: getAdyenGenderByPrestashopType(prestashop.customer.gender.type),
-        dateOfBirth: prestashop.customer.birthday
+        if (selectedDeliveryAddressId in prestashop.customer.addresses) {
+            var deliveryAddress = prestashop.customer.addresses[selectedDeliveryAddressId];
+
+            componentDeliveryAddress = {
+                city: deliveryAddress.city,
+                country: deliveryAddress.country_iso,
+                houseNumberOrName: deliveryAddress.address2,
+                postalCode: deliveryAddress.postcode,
+                street: deliveryAddress.address1
+            }
+        }
+
+        componentPersonalDetails = {
+            firstName: prestashop.customer.firstname,
+            lastName: prestashop.customer.lastname,
+            shopperEmail: prestashop.customer.email,
+            telephoneNumber: phoneNumber,
+            gender: getAdyenGenderByPrestashopType(prestashop.customer.gender.type),
+            dateOfBirth: prestashop.customer.birthday
+        }
     }
 
     var configuration = Object.assign(
@@ -291,6 +294,7 @@ jQuery(document).ready(function () {
     }
 
     function showPopup() {
+        debugger;
         if (IS_PRESTA_SHOP_16) {
             $.fancybox({
                 'autoDimensions': true,

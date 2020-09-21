@@ -64,7 +64,7 @@
 
     <script>
         var adyenCheckoutConfiguration = document.querySelector('#adyen-checkout-configuration').dataset;
-        var IS_PRESTA_SHOP_16 = ('true' === adyenCheckoutConfiguration.isPrestaShop16.toLowerCase());
+        var IS_PRESTA_SHOP_16 = adyenCheckoutConfiguration.isPrestaShop16;
         var isUserLoggedIn = adyenCheckoutConfiguration.isUserLoggedIn;
         var paymentsDetailsUrl = adyenCheckoutConfiguration.paymentsDetailsUrl;
         var selectedDeliveryAddressId = adyenCheckoutConfiguration.selectedDeliveryAddressId;
