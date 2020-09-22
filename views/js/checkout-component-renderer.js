@@ -294,7 +294,6 @@ jQuery(document).ready(function () {
     }
 
     function showPopup() {
-        debugger;
         if (IS_PRESTA_SHOP_16) {
             $.fancybox({
                 'autoDimensions': true,

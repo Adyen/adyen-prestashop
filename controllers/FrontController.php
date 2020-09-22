@@ -246,7 +246,7 @@ abstract class FrontController extends \ModuleFrontController
 
                 break;
             case 'RedirectShopper':
-                // When the resultCode is redicert shopper the cart needs to be cleared
+                // When the resultCode is RedirectShopper the cart needs to be cleared
                 $this->context->cookie->__set("id_cart", "");
                 // Continue with the same logic as IdentifyShopper and ChallengeShopper
             case 'IdentifyShopper':
