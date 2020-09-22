@@ -22,12 +22,52 @@
  */
 
 jQuery(document).ready(function () {
+    renderPaymentMethods();
+
+    // For prestashop 1.6 one page checkout retrieves the payment methods via
+    // ajax when the terms and conditions checkbox is clicked, so to render the
+    // components we call the renderPaymentMethods when the HOOK_PAYMENT childs
+    // are being added or removed
+    if (!!IS_PRESTA_SHOP_16) {
+        // Select the node that will be observed for mutations
+        const targetNode = document.getElementById('HOOK_PAYMENT');
+
+        // Options for the observer (which mutations to observe)
+        const config = { attributes: true, childList: true, subtree: false };
+
+        // Callback function to execute when mutations are observed
+        const callback = function(mutationsList, observer) {
+            // Use traditional 'for loops' for IE 11
+            for(const mutation of mutationsList) {
+                if (mutation.type === 'childList') {
+                    // The children are being changed so disconnet the observer
+                    // at first to avoid infinite loop
+                    observer.disconnect();
+                    // Render the adyen checkout components
+                    renderPaymentMethods();
+                }
+            }
+
+            // Connect the observer again in case the checkbox is clicked
+            // multiple times
+            observer.observe(targetNode, config);
+        };
+
+        // Create an observer instance linked to the callback function
+        const observer = new MutationObserver(callback);
+
+        // Start observing the target node for configured mutations
+        observer.observe(targetNode, config);
+    }
+});
+
+function renderPaymentMethods() {
     if (!window.ADYEN_CHECKOUT_CONFIG) {
         return;
     }
 
     var placeOrderInProgress = false;
-    var data = {};
+    var selectedPaymentMethod;
     var placeOrderAllowed;
     var popupModal;
 
@@ -178,14 +218,14 @@ jQuery(document).ready(function () {
 
             placingOrderStarts(paymentForm);
 
-            // If data is not set (component doesn't exist) prefill the type
-            if (!data) {
-                data.paymentMethod = {'type': paymentMethod.type};
-            } else if (typeof data.paymentMethod === 'undefined') {
-                data.paymentMethod = {'type': paymentMethod.type};
-            } else if (typeof data.paymentMethod.type === 'undefined') {
+            var data = {};
+            if (!!component && 'data' in component) {
+                data = component.data;
+            } else {
                 data.paymentMethod = {'type': paymentMethod.type};
             }
+
+            selectedPaymentMethod = paymentMethod.type;
 
             var paymentData = Object.assign(data, {
                 'isAjax': true,
@@ -270,11 +310,9 @@ jQuery(document).ready(function () {
      */
     function handleOnChange(state) {
         if (state.isValid) {
-            data = state.data;
             placeOrderAllowed = true;
         } else {
             placeOrderAllowed = false;
-            resetFields();
         }
     }
 
@@ -286,7 +324,7 @@ jQuery(document).ready(function () {
     }
 
     function getSelectedPaymentMethod() {
-        return getSelectedPaymentForm(data.paymentMethod.type);
+        return getSelectedPaymentForm(selectedPaymentMethod);
     }
 
     function getSelectedPaymentForm(paymentMethodType) {
@@ -294,7 +332,6 @@ jQuery(document).ready(function () {
     }
 
     function showPopup() {
-        debugger;
         if (IS_PRESTA_SHOP_16) {
             $.fancybox({
                 'autoDimensions': true,
@@ -338,10 +375,6 @@ jQuery(document).ready(function () {
         return 'UNKNOWN'
     }
 
-    function resetFields() {
-        data = {};
-    }
-
     function isPlaceOrderInProgress() {
         return placeOrderInProgress;
     }
@@ -359,4 +392,4 @@ jQuery(document).ready(function () {
         paymentForm.find('button[type="submit"] i').
             toggleClass('icon-spinner icon-chevron-right right');
     }
-});
+}
