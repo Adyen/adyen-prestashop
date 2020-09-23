@@ -1381,8 +1381,7 @@ class AdyenOfficial extends PaymentModule
     public function hookActionFrontControllerSetMedia($params)
     {
         // List of front controllers where we set the assets
-        $frontControllers = array('order', 'order-confirmation');
-
+        $frontControllers = array('order', 'order-confirmation', 'order-opc');
         $controller = $this->context->controller;
 
         if (in_array($controller->php_self, $frontControllers)) {
@@ -1400,8 +1399,7 @@ class AdyenOfficial extends PaymentModule
         $controllerAdapter = $this->getService('Adyen\PrestaShop\service\adapter\classes\Controller');
         $controllerAdapter->setController($controller);
 
-        // needs to be rendered for each controller
-
+        // Needs to be rendered for each controller
         // Register Checkout component js
         $controllerAdapter->registerJavascript(
             'adyen-checkout-component', // Unique ID
@@ -1426,8 +1424,8 @@ class AdyenOfficial extends PaymentModule
             'modules/' . $this->name . '/views/css/adyen.css'
         );
 
-        // Only for Order controller
-        if ($controller->php_self == 'order') {
+        // Only for Order and Order one page checkout controller
+        if ($controller->php_self == 'order' || $controller->php_self == 'order-opc') {
             if ($this->versionChecker->isPrestaShop16()) {
                 $controller->addJqueryPlugin('fancybox');
             }
