@@ -288,16 +288,18 @@ function renderPaymentMethods() {
         // TODO remove when fix is rolled out in a new checkout component version
         delete configuration.data;
 
+        if (action.type === 'threeDS2Challenge') {
+            showPopup();
+        }
+
         var actionComponent = window.adyenCheckout = new AdyenCheckout(configuration);
 
         try {
             actionComponent.createFromAction(action).mount('#actionContainer');
-
-            if (action.type === 'threeDS2Challenge') {
-                showPopup();
-            }
+            //$.fancybox.update()
         } catch (e) {
             console.log(e);
+            hidePopup();
         }
     }
 
@@ -336,6 +338,9 @@ function renderPaymentMethods() {
             $.fancybox({
                 'autoDimensions': true,
                 'autoScale': true,
+                'autoSize' : true,
+                'width':500,
+                'height':500,
                 'centerOnScroll': true,
                 'href': '#actionModal',
                 'modal': true,
