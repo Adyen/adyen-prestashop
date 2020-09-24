@@ -336,11 +336,11 @@ function renderPaymentMethods() {
     function showPopup() {
         if (IS_PRESTA_SHOP_16) {
             $.fancybox({
-                'autoDimensions': true,
-                'autoScale': true,
-                'autoSize' : true,
-                'width':500,
-                'height':500,
+                'autoDimensions': false,
+                'autoScale': false,
+                'autoSize': false,
+                'width': 500,
+                'height': 500,
                 'centerOnScroll': true,
                 'href': '#actionModal',
                 'modal': true,
