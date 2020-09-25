@@ -28,9 +28,14 @@ jQuery(document).ready(function () {
     // ajax when the terms and conditions checkbox is clicked, so to render the
     // components we call the renderPaymentMethods when the HOOK_PAYMENT childs
     // are being added or removed
-    if (!!IS_PRESTA_SHOP_16) {
+    if (typeof IS_PRESTA_SHOP_16 !== 'undefined' && IS_PRESTA_SHOP_16) {
         // Select the node that will be observed for mutations
         const targetNode = document.getElementById('HOOK_PAYMENT');
+
+        // In case the targetNode does not exist return early
+        if (null === targetNode) {
+            return;
+        }
 
         // Options for the observer (which mutations to observe)
         const config = { attributes: true, childList: true, subtree: false };
@@ -57,7 +62,11 @@ jQuery(document).ready(function () {
         const observer = new MutationObserver(callback);
 
         // Start observing the target node for configured mutations
-        observer.observe(targetNode, config);
+        try {
+            observer.observe(targetNode, config);
+        } catch (e) {
+            // observer exception
+        }
     }
 });
 
