@@ -175,7 +175,7 @@ function renderPaymentMethods() {
         /* Subscribes to the adyen payment method form submission */
         var paymentForm = $(".adyen-payment-form-" + storedPaymentMethod.id);
 
-        subscribeToPaymentFormSubmit(paymentForm, component);
+        subscribeToPaymentFormSubmit(paymentForm, storedPaymentMethod, component);
     });
 
     function renderPaymentComponent(paymentMethod, paymentMethodContainer) {
@@ -201,6 +201,7 @@ function renderPaymentMethods() {
 
     function subscribeToPaymentFormSubmit(paymentForm, paymentMethod, component) {
         paymentForm.on('submit', function(e) {
+            debugger;
             e.preventDefault();
 
             if (!paymentMethod.details) {
