@@ -201,7 +201,6 @@ function renderPaymentMethods() {
 
     function subscribeToPaymentFormSubmit(paymentForm, paymentMethod, component) {
         paymentForm.on('submit', function(e) {
-            debugger;
             e.preventDefault();
 
             if (!paymentMethod.details) {
