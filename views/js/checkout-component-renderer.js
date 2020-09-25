@@ -235,6 +235,10 @@ function renderPaymentMethods() {
             }
 
             selectedPaymentMethod = paymentMethod.type;
+            // In case the payment method is a storedPayment method overwrite the selectedPaymentMethod
+            if ('storedPaymentMethodId' in paymentMethod) {
+                selectedPaymentMethod = paymentMethod.storedPaymentMethodId;
+            }
 
             var paymentData = Object.assign(data, {
                 'isAjax': true,
