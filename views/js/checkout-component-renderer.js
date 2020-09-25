@@ -288,16 +288,17 @@ function renderPaymentMethods() {
         // TODO remove when fix is rolled out in a new checkout component version
         delete configuration.data;
 
+        if (action.type === 'threeDS2Challenge') {
+            showPopup();
+        }
+
         var actionComponent = window.adyenCheckout = new AdyenCheckout(configuration);
 
         try {
             actionComponent.createFromAction(action).mount('#actionContainer');
-
-            if (action.type === 'threeDS2Challenge') {
-                showPopup();
-            }
         } catch (e) {
             console.log(e);
+            hidePopup();
         }
     }
 
@@ -334,8 +335,7 @@ function renderPaymentMethods() {
     function showPopup() {
         if (IS_PRESTA_SHOP_16) {
             $.fancybox({
-                'autoDimensions': true,
-                'autoScale': true,
+                'autoSize': false,
                 'centerOnScroll': true,
                 'href': '#actionModal',
                 'modal': true,
