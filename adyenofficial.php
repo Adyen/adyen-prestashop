@@ -1080,7 +1080,8 @@ class AdyenOfficial extends PaymentModule
 
         // Default parameters to frontend
         $smartyVariables = array(
-            'paymentMethodsResponse' => '{}'
+            'paymentMethodsResponse' => '{}',
+            'selectedInvoiceAddress' => '{}'
         );
 
         // checkout action if available
