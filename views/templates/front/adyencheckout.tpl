@@ -38,6 +38,9 @@
             {if isset($selectedInvoiceAddressId)}
          data-selected-invoice-address-id="{$selectedInvoiceAddressId|escape:'html':'UTF-8'}"
             {/if}
+            {if isset($selectedInvoiceAddress)}
+                data-selected-invoice-address="{$selectedInvoiceAddress|escape:'html':'UTF-8'}"
+            {/if}
     ></div>
 
 
@@ -69,6 +72,7 @@
         var paymentsDetailsUrl = adyenCheckoutConfiguration.paymentsDetailsUrl;
         var selectedDeliveryAddressId = adyenCheckoutConfiguration.selectedDeliveryAddressId;
         var selectedInvoiceAddressId = adyenCheckoutConfiguration.selectedInvoiceAddressId;
+        var selectedInvoiceAddress = JSON.parse(adyenCheckoutConfiguration.selectedInvoiceAddress)
 
         var ADYEN_CHECKOUT_CONFIG = {
             locale: adyenCheckoutConfiguration.locale,

@@ -93,6 +93,11 @@ class AdyenOfficial extends PaymentModule
     private $adyenPaymentResponseModel;
 
     /**
+     * @var Adyen\PrestaShop\service\adapter\classes\Country
+     */
+    private $countryAdapter;
+
+    /**
      * Adyen constructor.
      *
      * @throws \PrestaShop\PrestaShop\Adapter\CoreException
@@ -138,6 +143,10 @@ class AdyenOfficial extends PaymentModule
 
         $this->adyenPaymentResponseModel = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
             'Adyen\PrestaShop\model\AdyenPaymentResponse'
+        );
+
+        $this->countryAdapter = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
+            'Adyen\PrestaShop\service\adapter\classes\Country'
         );
 
         // start for 1.6
@@ -1115,10 +1124,26 @@ class AdyenOfficial extends PaymentModule
             $selectedInvoiceAddressId = $this->context->cart->id_address_invoice;
         }
 
+        $selectedInvoiceAddressArray = array();
+
+        /** @var AddressCore $selectedInvoiceAddress */
+        $selectedInvoiceAddress = AddressCore::initialize($selectedInvoiceAddressId);
+        if (\Validate::isLoadedObject($selectedInvoiceAddress)) {
+            // Format the address in a way that frontend can use it
+            $selectedInvoiceAddressArray = array(
+                'city' => $selectedInvoiceAddress->city,
+                'country' => $this->countryAdapter->getIsoById($selectedInvoiceAddress->id_country),
+                'houseNumberOrName' => $selectedInvoiceAddress->address2,
+                'postalCode' => $selectedInvoiceAddress->postcode,
+                'street' => $selectedInvoiceAddress->address1
+            );
+        }
+
         $smartyVariables = array(
             'paymentMethodsResponse' => json_encode($paymentMethods),
             'selectedDeliveryAddressId' => $selectedDeliveryAddressId,
-            'selectedInvoiceAddressId' => $selectedInvoiceAddressId
+            'selectedInvoiceAddressId' => $selectedInvoiceAddressId,
+            'selectedInvoiceAddress' => json_encode($selectedInvoiceAddressArray)
         );
 
         // Add checkout component default configuration parameters for smarty variables
