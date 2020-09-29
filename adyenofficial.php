@@ -894,13 +894,6 @@ class AdyenOfficial extends PaymentModule
         //retrieve payment methods
         $paymentMethods = $this->helper_data->fetchPaymentMethods($this->context->cart, $this->context->language);
 
-        $paymentProcessUrl = $this->context->link->getModuleLink(
-            $this->name,
-            'Payment',
-            array(),
-            true
-        );
-
         if (!$this->context->customer->is_guest && !empty($paymentMethods['storedPaymentMethods'])) {
             $storedPaymentMethods = $paymentMethods['storedPaymentMethods'];
             foreach ($storedPaymentMethods as $storedPaymentMethod) {
