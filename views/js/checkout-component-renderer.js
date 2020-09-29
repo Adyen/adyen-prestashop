@@ -82,11 +82,17 @@ function renderPaymentMethods() {
 
     var notSupportedComponents = ['paypal'];
 
-    var componentBillingAddress = {};
+    var componentBillingAddress = selectedInvoiceAddress;
+
     var countryCode = '';
+    if ('country' in selectedInvoiceAddress) {
+        countryCode = selectedInvoiceAddress.country;
+    }
+    
     var phoneNumber = '';
     var componentDeliveryAddress = {};
-    var componentPersonalDetails
+    var componentPersonalDetails;
+
     if (typeof prestashop !== 'undefined') {
         if (selectedInvoiceAddressId in prestashop.customer.addresses) {
             var invoiceAddress = prestashop.customer.addresses[selectedInvoiceAddressId];
