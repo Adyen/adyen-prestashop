@@ -24,60 +24,30 @@
 
 namespace Adyen\PrestaShop\service\builder;
 
+use Adyen\PrestaShop\controllers\FrontController;
+
 class Browser
 {
     /**
+     * Add additional browser info into the request
+     *
      * @param string $userAgent
      * @param string $acceptHeader
-     * @param int $screenWidth
-     * @param int $screenHeight
-     * @param int $colorDepth
-     * @param int $timeZoneOffset
-     * @param string $language
-     * @param bool $javaEnabled
      * @param array $request
      * @return array
      */
     public function buildBrowserData(
         $userAgent = '',
         $acceptHeader = '',
-        $screenWidth = 0,
-        $screenHeight = 0,
-        $colorDepth = 0,
-        $timeZoneOffset = 0,
-        $language = '',
-        $javaEnabled = false,
         $request = array()
     ) {
         if (!empty($userAgent)) {
-            $request['browserInfo']['userAgent'] = $userAgent;
+            $request[FrontController::BROWSER_INFO][FrontController::USER_AGENT] = $userAgent;
         }
 
         if (!empty($acceptHeader)) {
-            $request['browserInfo']['acceptHeader'] = $acceptHeader;
+            $request[FrontController::BROWSER_INFO][FrontController::ACCEPT_HEADER] = $acceptHeader;
         }
-
-        if (!empty($screenWidth)) {
-            $request['browserInfo']['screenWidth'] = $screenWidth;
-        }
-
-        if (!empty($screenHeight)) {
-            $request['browserInfo']['screenHeight'] = $screenHeight;
-        }
-
-        if (!empty($colorDepth)) {
-            $request['browserInfo']['colorDepth'] = $colorDepth;
-        }
-
-        if (!empty($timeZoneOffset)) {
-            $request['browserInfo']['timeZoneOffset'] = $timeZoneOffset;
-        }
-
-        if (!empty($language)) {
-            $request['browserInfo']['language'] = $language;
-        }
-
-        $request['browserInfo']['javaEnabled'] = $javaEnabled;
 
         return $request;
     }

@@ -35,6 +35,35 @@ use Adyen\PrestaShop\service\Order as OrderService;
 
 abstract class FrontController extends \ModuleFrontController
 {
+    /**
+     * List of approved root keys from the state.data in the frontend checkout components
+     * Available in the php api library from version 7.0.0
+     *
+     * @var string[]
+     */
+    protected $stateDataRootKeys = array(
+        'paymentMethod',
+        'billingAddress',
+        'deliveryAddress',
+        'riskData',
+        'shopperName',
+        'dateOfBirth',
+        'telephoneNumber',
+        'shopperEmail',
+        'countryCode',
+        'socialSecurityNumber',
+        'browserInfo',
+        'installments',
+        'storePaymentMethod',
+        'conversionId',
+        'paymentData',
+        'details'
+    );
+
+    const BROWSER_INFO = 'browserInfo';
+    const USER_AGENT = 'userAgent';
+    const ACCEPT_HEADER = 'acceptHeader';
+
     const ADYEN_MERCHANT_REFERENCE = 'adyenMerchantReference';
     const ISSUER = 'issuer';
     const PA_REQUEST = 'paRequest';
@@ -172,6 +201,8 @@ abstract class FrontController extends \ModuleFrontController
                 $newOrder = new \Order((int)$this->module->currentOrder);
 
                 $this->orderService->addPaymentDataToOrderFromResponse($newOrder, $response);
+                // PaymentResponse can be deleted
+                $this->adyenPaymentResponseModel->deletePaymentResponseByCartId($cart->id);
 
                 $this->redirectUserToPageLink(
                     $this->context->link->getPageLink(
@@ -191,6 +222,9 @@ abstract class FrontController extends \ModuleFrontController
 
                 break;
             case 'Refused':
+                // PaymentResponse can be deleted
+                $this->adyenPaymentResponseModel->deletePaymentResponseByCartId($cart->id);
+
                 // In case of refused payment there is no order created and the cart needs to be cloned and reinitiated
                 $this->cartService->cloneCurrentCart($this->context, $cart);
                 $this->logger->error("The payment was refused, id:  " . $cart->id);
@@ -211,87 +245,29 @@ abstract class FrontController extends \ModuleFrontController
                 }
 
                 break;
-            case 'IdentifyShopper':
-                // Store response for cart until the payment is done
-                $this->adyenPaymentResponseModel->insertPaymentResponse($cart->id, $resultCode, $response);
-
-                $this->ajaxRender(
-                    $this->helperData->buildControllerResponseJson(
-                        'threeDS2',
-                        array(
-                            'type' => 'IdentifyShopper',
-                            'token' => $response['authentication']['threeds2.fingerprintToken']
-                        )
-                    )
-                );
-
-                break;
-            case 'ChallengeShopper':
-                // Store response for cart temporarily until the payment is done
-                $this->adyenPaymentResponseModel->insertPaymentResponse($cart->id, $resultCode, $response);
-
-                $this->ajaxRender(
-                    $this->helperData->buildControllerResponseJson(
-                        'threeDS2',
-                        array(
-                            'type' => 'ChallengeShopper',
-                            'token' => $response['authentication']['threeds2.challengeToken']
-                        )
-                    )
-                );
-                break;
             case 'RedirectShopper':
-                // Check if redirect shopper response data is valid
-                if (empty($response['redirect']['url']) ||
-                    empty($response['redirect']['method']) ||
-                    empty($response['paymentData'])
-                ) {
-                    $this->ajaxRender(
-                        $this->helperData->buildControllerResponseJson(
-                            'error',
-                            array(
-                                'message' => $this->l(
-                                    "There was an error with the payment method, please choose another one."
-                                )
-                            )
-                        )
-                    );
-                }
-
-                // Store response for cart temporarily until the payment is done
-                $this->adyenPaymentResponseModel->insertPaymentResponse($cart->id, $resultCode, $response);
-
+                // When the resultCode is RedirectShopper the cart needs to be cleared
                 $this->context->cookie->__set("id_cart", "");
+                // Continue with the same logic as IdentifyShopper and ChallengeShopper
+            case 'IdentifyShopper':
+            case 'ChallengeShopper':
+                // Store response for cart until the payment is done
+                $this->adyenPaymentResponseModel->insertOrUpdatePaymentResponse($cart->id, $resultCode, $response);
 
-                $redirectUrl = $response['redirect']['url'];
-                $redirectMethod = $response['redirect']['method'];
-
-                // Identify if 3DS1 redirect
-                if (!empty($response['redirect']['data']['PaReq']) && !empty($response['redirect']['data']['MD'])) {
-                    $paRequest = $response['redirect']['data']['PaReq'];
-                    $md = $response['redirect']['data']['MD'];
-
-                    $this->ajaxRender(
-                        $this->helperData->buildControllerResponseJson(
-                            'threeDS1',
-                            array(
-                                self::PA_REQUEST => $paRequest,
-                                self::MD => $md,
-                                self::ISSUER_URL => $redirectUrl,
-                                self::REDIRECT_METHOD => $redirectMethod,
-                                self::ADYEN_MERCHANT_REFERENCE => $cart->id
-                            )
+                $this->ajaxRender(
+                    $this->helperData->buildControllerResponseJson(
+                        'action',
+                        array(
+                            'response' => $response['action']
                         )
-                    );
-                } else {
-                    $this->redirectUserToPageLink($redirectUrl, $isAjax);
-                }
+                    )
+                );
 
                 break;
             case 'Received':
             case 'PresentToShopper':
                 // Store response for cart temporarily until the payment is done
-                $this->adyenPaymentResponseModel->insertPaymentResponse($cart->id, $resultCode, $response);
+                $this->adyenPaymentResponseModel->insertOrUpdatePaymentResponse($cart->id, $resultCode, $response);
 
                 if (\Validate::isLoadedObject($customer)) {
                     $total = (float)$cart->getOrderTotal(true, \Cart::BOTH);
@@ -339,6 +315,12 @@ abstract class FrontController extends \ModuleFrontController
                     false,
                     $customer->secure_key
                 );
+
+                // PaymentResponse can be deleted
+                $this->adyenPaymentResponseModel->deletePaymentResponseByCartId($cart->id);
+
+                // In case of refused payment there is no order created and the cart needs to be cloned and reinitiated
+                $this->cartService->cloneCurrentCart($this->context, $cart);
 
                 $this->logger->error(
                     "There was an error with the payment method. id:  " . $cart->id .
@@ -402,58 +384,37 @@ abstract class FrontController extends \ModuleFrontController
     }
 
     /**
-     * @return mixed
+     * Available in the php api library from version 7.0.0
+     *
+     * @param array $stateData
+     * @return array
      */
-    protected function handle3DS1()
+    protected function getValidatedAdditionalData($stateData)
     {
-        $paRequest = \Tools::getValue(self::PA_REQUEST);
-        $md = \Tools::getValue(self::MD);
-        $issuerUrl = \Tools::getValue(self::ISSUER_URL);
-        $redirectMethod = \Tools::getValue(self::REDIRECT_METHOD);
-        $adyenMerchantReference = \Tools::getValue(self::ADYEN_MERCHANT_REFERENCE);
-
-        $termUrl = $this->context->link->getModuleLink(
-            "adyenofficial",
-            'Validate3d',
-            array(self::ADYEN_MERCHANT_REFERENCE => $adyenMerchantReference),
-            true
-        );
-
-        $this->context->smarty->assign(
-            array(
-                'paRequest' => $paRequest,
-                'md' => $md,
-                'issuerUrl' => $issuerUrl,
-                'redirectMethod' => $redirectMethod,
-                'termUrl' => $termUrl
-            )
-        );
-
-        return $this->setTemplate(
-            $this->helperData->getTemplateFromModulePath('views/templates/front/redirect.tpl')
-        );
+        // Get validated state data array
+        if (!empty($stateData)) {
+            $stateData = self::getArrayOnlyWithApprovedKeys($stateData, $this->stateDataRootKeys);
+        }
+        return $stateData;
     }
 
     /**
-     * @return bool
+     * Returns an array with only the approved keys
+     * Available in the php api library from version 7.0.0
+     *
+     * @param array $array
+     * @param array $approvedKeys
+     * @return array
      */
-    protected function is3DS1Process()
+    protected static function getArrayOnlyWithApprovedKeys($array, $approvedKeys)
     {
-        $paRequest = \Tools::getValue(self::PA_REQUEST);
-        $md = \Tools::getValue(self::MD);
-        $issuerUrl = \Tools::getValue(self::ISSUER_URL);
-        $redirectMethod = \Tools::getValue(self::REDIRECT_METHOD);
-        $adyenMerchantReference = \Tools::getValue(self::ADYEN_MERCHANT_REFERENCE);
+        $result = array();
 
-        if (!empty($paRequest) &&
-            !empty($md) &&
-            !empty($issuerUrl) &&
-            !empty($redirectMethod) &&
-            !empty($adyenMerchantReference)
-        ) {
-            return true;
+        foreach ($approvedKeys as $approvedKey) {
+            if (isset($array[$approvedKey])) {
+                $result[$approvedKey] = $array[$approvedKey];
+            }
         }
-
-        return false;
+        return $result;
     }
 }

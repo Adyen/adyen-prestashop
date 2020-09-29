@@ -121,27 +121,27 @@ class Customer
         $lastName,
         $request = array()
     ) {
-        if (!empty($email)) {
+        if (!empty($email) && empty($request['paymentMethod']['personalDetails']['shopperEmail'])) {
             $request['paymentMethod']['personalDetails']['shopperEmail'] = $email;
         }
 
-        if (!empty($telephoneNumber)) {
+        if (!empty($telephoneNumber) && empty($request['paymentMethod']['personalDetails']['telephoneNumber'])) {
             $request['paymentMethod']['personalDetails']['telephoneNumber'] = $telephoneNumber;
         }
 
-        if (!empty($gender)) {
+        if (!empty($gender) && empty($request['paymentMethod']['personalDetails']['gender'])) {
             $request['paymentMethod']['personalDetails']['gender'] = $gender;
         }
 
-        if (!empty($dateOfBirth)) {
+        if (!empty($dateOfBirth) && empty($request['paymentMethod']['personalDetails']['dateOfBirth'])) {
             $request['paymentMethod']['personalDetails']['dateOfBirth'] = $dateOfBirth;
         }
 
-        if (!empty($firstName)) {
+        if (!empty($firstName) && empty($request['paymentMethod']['personalDetails']['firstName'])) {
             $request['paymentMethod']['personalDetails']['firstName'] = $firstName;
         }
 
-        if (!empty($lastName)) {
+        if (!empty($lastName) && empty($request['paymentMethod']['personalDetails']['lastName'])) {
             $request['paymentMethod']['personalDetails']['lastName'] = $lastName;
         }
         return $request;
@@ -168,27 +168,27 @@ class Customer
         $lastName,
         $request = array()
     ) {
-        if (!empty($email)) {
+        if (!empty($email) && empty($request['shopperEmail'])) {
             $request['shopperEmail'] = $email;
         }
 
-        if (!empty($telephoneNumber)) {
+        if (!empty($telephoneNumber) && empty($request['telephoneNumber'])) {
             $request['telephoneNumber'] = $telephoneNumber;
         }
 
-        if (!empty($gender)) {
+        if (!empty($gender) && empty($request['shopperName']['gender'])) {
             $request['shopperName']['gender'] = $gender;
         }
 
-        if (!empty($dateOfBirth)) {
+        if (!empty($dateOfBirth) && empty($request['dateOfBirth'])) {
             $request['dateOfBirth'] = $dateOfBirth;
         }
 
-        if (!empty($firstName)) {
+        if (!empty($firstName) && empty($request['shopperName']['firstName'])) {
             $request['shopperName']['firstName'] = $firstName;
         }
 
-        if (!empty($lastName)) {
+        if (!empty($lastName) && empty($request['shopperName']['lastName'])) {
             $request['shopperName']['lastName'] = $lastName;
         }
 
