@@ -67,8 +67,6 @@ abstract class FrontController extends \ModuleFrontController
     const ADYEN_MERCHANT_REFERENCE = 'adyenMerchantReference';
     const ISSUER = 'issuer';
     const PA_REQUEST = 'paRequest';
-    const MD = 'md';
-    const ISSUER_URL = 'issuerUrl';
     const REDIRECT_METHOD = 'redirectMethod';
 
     /**
