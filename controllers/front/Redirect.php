@@ -70,18 +70,14 @@ class AdyenOfficialRedirectModuleFrontController
             true
         );
 
-        $this->logger->debug($redirectUrl);
-
         // In case there is no POST request redirect back to the main page
         if (empty($_POST)) {
-            $this->logger->debug('Empty POST, redirecting to result');
             header('Location: ' . $redirectUrl);
             exit;
         }
 
         // Prepare the parameters that can be forwarded to the Result Adyen module endpoint
         $params = $this->preparePostParameters($_POST);
-        $this->logger->debug(json_encode($params));
 
         // Include template file which renders the form on the frontend using the params and redirectUrl variables
         include getcwd() . '/modules/adyenofficial/views/templates/front/redirect.php';
