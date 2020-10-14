@@ -90,7 +90,8 @@ class AdyenOfficialRedirectModuleFrontController
      * @param $post
      * @return array
      */
-    private function preparePostParameters($post) {
+    private function preparePostParameters($post)
+    {
         $params = array();
         foreach ($post as $key => $value) {
             // In case the parameter is not approved, skip the item
