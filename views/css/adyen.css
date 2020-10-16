@@ -85,7 +85,7 @@ div.adyen-payment .error-container {
 
 div.adyen-payment-method-label {
     display: inline-block;
-    margin: 6px;
+    margin: 6px 0;
     font-size: 16px;
 }
 
