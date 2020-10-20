@@ -105,7 +105,7 @@ class AdyenOfficial extends PaymentModule
     public function __construct()
     {
         $this->name = 'adyenofficial';
-        $this->version = '3.0.0';
+        $this->version = '3.1.0';
         $this->tab = 'payments_gateways';
         $this->author = 'Adyen';
         $this->bootstrap = true;
