@@ -105,7 +105,7 @@ class AdyenOfficial extends PaymentModule
     public function __construct()
     {
         $this->name = 'adyenofficial';
-        $this->version = '3.0.0';
+        $this->version = '3.1.0';
         $this->tab = 'payments_gateways';
         $this->author = 'Adyen';
         $this->bootstrap = true;
@@ -926,10 +926,8 @@ class AdyenOfficial extends PaymentModule
                         )
                     )
                     ->setLogo(
-                        Media::getMediaPath(
-                            _PS_MODULE_DIR_ . $this->name .
-                            '/views/img/' . $storedPaymentMethod['type'] . '.png'
-                        )
+                        'https://checkoutshopper-live.adyen.com/checkoutshopper/images/logos/medium/' .
+                        $storedPaymentMethod['brand'] . '.png'
                     )
                     ->setAction($this->context->link->getModuleLink($this->name, 'Payment', array(), true));
 
@@ -955,6 +953,11 @@ class AdyenOfficial extends PaymentModule
                 // Assign variables to frontend
                 $this->context->smarty->assign($smartyVariables);
 
+                $logoName = $paymentMethod['type'];
+                if ($logoName === 'scheme') {
+                    $logoName = 'card';
+                }
+
                 $localPaymentMethod = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
                 $localPaymentMethod->setCallToActionText($this->l('Pay by ' . $paymentMethod['name']))
                     ->setForm(
@@ -962,6 +965,10 @@ class AdyenOfficial extends PaymentModule
                             _PS_MODULE_DIR_ . $this->name .
                             '/views/templates/front/payment-method.tpl'
                         )
+                    )
+                    ->setLogo(
+                        'https://checkoutshopper-live.adyen.com/checkoutshopper/images/logos/medium/' .
+                        $logoName . '.png'
                     )
                     ->setAction(
                         $this->context->link->getModuleLink($this->name, 'Payment', array(), true)
