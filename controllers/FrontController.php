@@ -148,7 +148,7 @@ abstract class FrontController extends \ModuleFrontController
     protected function ajaxRender($value = null, $controller = null, $method = null)
     {
         header('content-type: application/json; charset=utf-8');
-        if (method_exists(\ControllerCore::class, 'ajaxRender')) {
+        if (method_exists('\ControllerCore', 'ajaxRender')) {
             parent::ajaxRender($value, $controller, $method);
             exit;
         } else {
