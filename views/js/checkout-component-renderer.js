@@ -223,7 +223,10 @@ function renderPaymentMethods() {
             }
 
             if (!placeOrderAllowed) {
-                component.showValidation();
+                if (!!component) {
+                    component.showValidation();
+                }
+
                 return;
             }
             
