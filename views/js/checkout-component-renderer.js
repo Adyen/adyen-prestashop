@@ -223,13 +223,13 @@ function renderPaymentMethods() {
             }
 
             if (!placeOrderAllowed) {
-                if (!!component) {
+                if (!!component && 'showValidation' in component) {
                     component.showValidation();
                 }
 
                 return;
             }
-            
+
             if (isPlaceOrderInProgress()) {
                 return false;
             }
