@@ -198,7 +198,7 @@ class NotificationProcessor
                     }
                 }
 
-                $this->adyenPaymentResponse->deletePaymentResponseByCartId($unprocessedNotification);
+                $this->adyenPaymentResponse->deletePaymentResponseByCartId($unprocessedNotification['merchant_reference']);
                 break;
             case AdyenNotification::OFFER_CLOSED:
                 // Notification success is 'true'
@@ -210,7 +210,7 @@ class NotificationProcessor
                 }
 
 
-                $this->adyenPaymentResponse->deletePaymentResponseByCartId($unprocessedNotification);
+                $this->adyenPaymentResponse->deletePaymentResponseByCartId($unprocessedNotification['merchant_reference']);
                 break;
         }
 
