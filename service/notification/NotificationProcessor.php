@@ -141,6 +141,18 @@ class NotificationProcessor
             return false;
         }
 
+        // Ignore notification when the order was paid using another payment module
+        if ($order->module !== 'adyenofficial') {
+            $this->logger->addAdyenNotification(
+                'Notification with entity_id (' .
+                $unprocessedNotification['entity_id'] . ') was ignored during processing the ' .
+                'notifications because the order was NOT paid using the "adyenofficial" Adyen payment module'
+            );
+
+            // Update the notification as done, no need to retry processing it
+            return true;
+        }
+
         // Process notifications based on it's event code
         switch ($unprocessedNotification['event_code']) {
             case AdyenNotification::AUTHORISATION:
