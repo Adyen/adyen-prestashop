@@ -310,7 +310,7 @@ function renderPaymentMethods() {
         // TODO remove when fix is rolled out in a new checkout component version
         delete configuration.data;
 
-        if (action.type === 'threeDS2Challenge') {
+        if (action.type === 'threeDS2Challenge' || action.type === 'await') {
             showPopup();
         }
 
