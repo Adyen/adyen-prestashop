@@ -190,10 +190,12 @@ class NotificationProcessor
                         } else {
                             // Add this log when the notification is ignore because an authorisation success true
                             // notification has already been processed for the same order
-                            $this->logger->addAdyenNotification('Notification with entity_id (' .
+                            $this->logger->addAdyenNotification(
+                                'Notification with entity_id (' .
                                 $unprocessedNotification['entity_id'] . ') was ignored during processing the ' .
                                 'notifications because another Authorisation success = true notification has already ' .
-                                'been processed for the same order.');
+                                'been processed for the same order.'
+                            );
                         }
                     }
                 }
@@ -254,24 +256,28 @@ class NotificationProcessor
         }
 
         if (empty($order)) {
-            $this->logger->error(sprintf(
-                "Order with id: \"%s\" cannot be found while notification with id: \"%s\" was processed.",
-                $notification['merchant_reference'],
-                $notification['entity_id']
-            ));
+            $this->logger->error(
+                sprintf(
+                    "Order with id: \"%s\" cannot be found while notification with id: \"%s\" was processed.",
+                    $notification['merchant_reference'],
+                    $notification['entity_id']
+                )
+            );
             return false;
         }
 
         // Find customer by order id
         $customer = $order->getCustomer();
         if (empty($customer)) {
-            $this->logger->error(sprintf(
-                "Customer with id: \"%s\" cannot be found for order with id: \"%s\" while notification with id:" .
-                " \"%s\" was processed.",
-                $order->id_customer,
-                $order->id,
-                $notification['entity_id']
-            ));
+            $this->logger->error(
+                sprintf(
+                    "Customer with id: \"%s\" cannot be found for order with id: \"%s\" while notification with id:" .
+                    " \"%s\" was processed.",
+                    $order->id_customer,
+                    $order->id,
+                    $notification['entity_id']
+                )
+            );
             return false;
         }
 
