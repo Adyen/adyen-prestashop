@@ -80,7 +80,7 @@ function renderPaymentMethods() {
     var placeOrderAllowed;
     var popupModal;
 
-    var notSupportedComponents = ['paypal'];
+    var notSupportedComponents = ['paypal', 'giropay'];
 
     var componentBillingAddress = selectedInvoiceAddress;
 
@@ -223,7 +223,10 @@ function renderPaymentMethods() {
             }
 
             if (!placeOrderAllowed) {
-                component.showValidation();
+                if (!!component && 'showValidation' in component) {
+                    component.showValidation();
+                }
+
                 return;
             }
 
