@@ -22,7 +22,7 @@
  * See the LICENSE file for more info.
  */
 
-namespace Adyen\PrestaShop\Model;
+namespace Adyen\PrestaShop\model;
 
 /**
  * Class Hashing to manage hash and crypto of user (clients/merchants) passwords.

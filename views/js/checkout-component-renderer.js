@@ -113,7 +113,7 @@ jQuery(document).ready(function() {
         var placeOrderAllowed;
         var popupModal;
 
-        var notSupportedComponents = ['paypal'];
+        var notSupportedComponents = ['paypal', 'giropay'];
 
         var componentBillingAddress = selectedInvoiceAddress;
 
@@ -361,8 +361,11 @@ jQuery(document).ready(function() {
                 }
 
                 if (!placeOrderAllowed) {
+                  if (!!component && 'showValidation' in component) {
                     component.showValidation();
-                    return;
+                  }
+                  
+                  return;
                 }
 
                 if (isPlaceOrderInProgress()) {
@@ -449,7 +452,7 @@ jQuery(document).ready(function() {
             // TODO remove when fix is rolled out in a new checkout component version
             delete configuration.data;
 
-            if (action.type === 'threeDS2Challenge') {
+            if (action.type === 'threeDS2Challenge' || action.type === 'await') {
                 showPopup();
             }
 

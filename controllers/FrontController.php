@@ -251,6 +251,7 @@ abstract class FrontController extends \ModuleFrontController
                 // Continue with the same logic as IdentifyShopper and ChallengeShopper
             case 'IdentifyShopper':
             case 'ChallengeShopper':
+            case 'Pending':
                 // Store response for cart until the payment is done
                 $this->adyenPaymentResponseModel->insertOrUpdatePaymentResponse($cart->id, $resultCode, $response);
 
