@@ -1,0 +1,21 @@
+name: Syntax check
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use PHP 7.4
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 7.4
+        tools: composer, phpunit, phpcs
+    - name: Install dependencies
+      run: composer install --prefer-dist
+    - name: Run tests
+      run: phpunit
+    - name: Run code sniffer
+      run: phpcs
