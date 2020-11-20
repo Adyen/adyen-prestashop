@@ -1145,16 +1145,16 @@ class AdyenOfficial extends PaymentModule
         );
 
         // List of payment methods that needs to show the pay button from the component
-        $paymentMethodsWithPayButtonFromComponent = json_encode(['paywithgoogle', 'applepay']);
+        $paymentMethodsWithPayButtonFromComponent = json_encode(array('paywithgoogle', 'applepay'));
 
         // All payment method specific configuration
         $paymentMethodsConfigurations = json_encode(
-            [
+            array(
                 'applePayMerchantName' => Configuration::get('ADYEN_APPLE_PAY_MERCHANT_NAME'),
                 'applePayMerchantIdentifier' => Configuration::get('ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER'),
                 'googlePayGatewayMerchantId' => Configuration::get('ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID'),
                 'googlePayMerchantIdentifier' => Configuration::get('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER')
-            ]
+            )
         );
 
         return array(
