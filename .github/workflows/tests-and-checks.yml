@@ -12,10 +12,10 @@ jobs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: 7.4
-        tools: composer, phpunit, phpcs
+        tools: composer
     - name: Install dependencies
       run: composer install --prefer-dist
     - name: Run tests
-      run: phpunit
+      run: vendor/bin/phpunit
     - name: Run code sniffer
-      run: phpcs
+      run: vendor/bin/phpcs
