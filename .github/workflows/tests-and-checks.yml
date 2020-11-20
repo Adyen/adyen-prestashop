@@ -1,4 +1,4 @@
-name: Syntax check
+name: Tests and checks
 
 on: [push, pull_request]
 
