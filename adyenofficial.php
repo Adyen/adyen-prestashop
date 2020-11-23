@@ -853,7 +853,7 @@ class AdyenOfficial extends PaymentModule
         // Apple pay merchant name input
         $fields_form[1]['form']['input'][] = array(
             'type' => 'text',
-            'label' => $this->l('Apple pay merchant name'),
+            'label' => $this->l('Apple Pay merchant name'),
             'name' => 'ADYEN_APPLE_PAY_MERCHANT_NAME',
             'size' => 50,
             'required' => false,
@@ -866,7 +866,7 @@ class AdyenOfficial extends PaymentModule
         // Apple pay merchant identifier input
         $fields_form[1]['form']['input'][] = array(
             'type' => 'text',
-            'label' => $this->l('Apple pay merchant identifier'),
+            'label' => $this->l('Apple Pay merchant identifier'),
             'name' => 'ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER',
             'size' => 50,
             'required' => false,
@@ -879,7 +879,7 @@ class AdyenOfficial extends PaymentModule
         // Google pay gateway merchant id
         $fields_form[1]['form']['input'][] = array(
             'type' => 'text',
-            'label' => $this->l('Google pay gateway merchant id'),
+            'label' => $this->l('Google Pay gateway merchant ID'),
             'name' => 'ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID',
             'size' => 50,
             'required' => false,
@@ -892,7 +892,7 @@ class AdyenOfficial extends PaymentModule
         // Google pay merchant identifier input
         $fields_form[1]['form']['input'][] = array(
             'type' => 'text',
-            'label' => $this->l('Google pay merchant identifier'),
+            'label' => $this->l('Google Pay merchant identifier'),
             'name' => 'ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER',
             'size' => 50,
             'required' => false,
