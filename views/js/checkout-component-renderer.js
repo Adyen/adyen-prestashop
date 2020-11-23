@@ -185,7 +185,7 @@ jQuery(document).ready(function() {
 
         window.adyenCheckout = new AdyenCheckout(configuration);
 
-        // use this object to iterate through the stored payment methods
+        // use this object to iterate through the payment methods
         var paymentMethods = window.adyenCheckout.paymentMethodsResponse.paymentMethods;
 
         // Iterate through the payment methods list we got from the adyen checkout component
