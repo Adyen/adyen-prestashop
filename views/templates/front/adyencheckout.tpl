@@ -32,6 +32,12 @@
          data-payment-methods-response='{$paymentMethodsResponse|escape:'html':'UTF-8'}'
          data-is-user-logged-in="{$isUserLoggedIn|escape:'html':'UTF-8'}"
          data-payments-details-url="{$paymentsDetailsUrl|escape:'html':'UTF-8'}"
+         data-payment-methods-configurations="{$paymentMethodsConfigurations|escape:'html':'UTF-8'}"
+
+         data-currency-iso-code="{$currencyIsoCode|escape:'html':'UTF-8'}"
+         data-total-amount-in-minor-units="{$totalAmountInMinorUnits|escape:'html':'UTF-8'}"
+         data-payment-methods-with-pay-button-from-component="{$paymentMethodsWithPayButtonFromComponent|escape:'html':'UTF-8'}"
+
             {if isset($selectedDeliveryAddressId)}
          data-selected-delivery-address-id="{$selectedDeliveryAddressId|escape:'html':'UTF-8'}"
             {/if}
@@ -67,12 +73,18 @@
 
     <script>
         var adyenCheckoutConfiguration = document.querySelector('#adyen-checkout-configuration').dataset;
+
         var IS_PRESTA_SHOP_16 = adyenCheckoutConfiguration.isPrestaShop16;
         var isUserLoggedIn = adyenCheckoutConfiguration.isUserLoggedIn;
         var paymentsDetailsUrl = adyenCheckoutConfiguration.paymentsDetailsUrl;
         var selectedDeliveryAddressId = adyenCheckoutConfiguration.selectedDeliveryAddressId;
         var selectedInvoiceAddressId = adyenCheckoutConfiguration.selectedInvoiceAddressId;
-        var selectedInvoiceAddress = JSON.parse(adyenCheckoutConfiguration.selectedInvoiceAddress)
+        var selectedInvoiceAddress = JSON.parse(adyenCheckoutConfiguration.selectedInvoiceAddress);
+        var paymentMethodsConfigurations = JSON.parse(adyenCheckoutConfiguration.paymentMethodsConfigurations);
+        var paymentMethodsWithPayButtonFromComponent = JSON.parse(adyenCheckoutConfiguration.paymentMethodsWithPayButtonFromComponent);
+
+        var currencyIsoCode = adyenCheckoutConfiguration.currencyIsoCode;
+        var totalAmountInMinorUnits = adyenCheckoutConfiguration.totalAmountInMinorUnits;
 
         var ADYEN_CHECKOUT_CONFIG = {
             locale: adyenCheckoutConfiguration.locale,
@@ -81,5 +93,11 @@
             showPayButton: false,
             paymentMethodsResponse: JSON.parse(adyenCheckoutConfiguration.paymentMethodsResponse)
         };
+
+        // Translated texts
+        const isNotAvailableText = "{l s=' is not available' js=1 mod='adyenofficial'}";
+        const placeOrderErrorRequiredConditionsText = "{l s='The order cannot be placed. Please make sure you accepted all the required conditions.' js=1 mod='adyenofficial'}";
+        const placeOrderInfoRequiredConditionsText = "{l s='Accept the required conditions which may be visible at the bottom of the page.' js=1 mod='adyenofficial'}";
+        const placeOrderInfoInProgressText ="{l s='Placing order is in progress' js=1 mod='adyenofficial'}";
     </script>
 {/if}

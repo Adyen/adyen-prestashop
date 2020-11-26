@@ -98,6 +98,11 @@ class AdyenOfficial extends PaymentModule
     private $countryAdapter;
 
     /**
+     * @var Adyen\Util\Currency
+     */
+    private $currencyUtil;
+
+    /**
      * Adyen constructor.
      *
      * @throws \PrestaShop\PrestaShop\Adapter\CoreException
@@ -147,6 +152,10 @@ class AdyenOfficial extends PaymentModule
 
         $this->countryAdapter = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
             'Adyen\PrestaShop\service\adapter\classes\Country'
+        );
+
+        $this->currencyUtil = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
+            '\Adyen\Util\Currency'
         );
 
         // start for 1.6
@@ -402,7 +411,11 @@ class AdyenOfficial extends PaymentModule
             'ADYEN_CLIENTKEY_LIVE',
             'ADYEN_NOTI_HMAC',
             'ADYEN_LIVE_ENDPOINT_URL_PREFIX',
-            'ADYEN_CRONJOB_TOKEN'
+            'ADYEN_CRONJOB_TOKEN',
+            'ADYEN_APPLE_PAY_MERCHANT_NAME',
+            'ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER',
+            'ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID',
+            'ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER'
         );
 
         $result = true;
@@ -481,6 +494,10 @@ class AdyenOfficial extends PaymentModule
             $client_key_test = Tools::getValue('ADYEN_CLIENTKEY_TEST');
             $client_key_live = Tools::getValue('ADYEN_CLIENTKEY_LIVE');
             $live_endpoint_url_prefix = (string)Tools::getValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
+            $apple_pay_merchant_name = Tools::getValue('ADYEN_APPLE_PAY_MERCHANT_NAME');
+            $apple_pay_merchant_identifier = Tools::getValue('ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER');
+            $google_pay_gateway_merchant_id = Tools::getValue('ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID');
+            $google_pay_merchant_identifier = Tools::getValue('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER');
 
             // validating the input
             if (empty($merchant_account) || !Validate::isGenericName($merchant_account)) {
@@ -498,6 +515,10 @@ class AdyenOfficial extends PaymentModule
                 Configuration::updateValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX', $live_endpoint_url_prefix);
                 Configuration::updateValue('ADYEN_CLIENTKEY_TEST', $client_key_test);
                 Configuration::updateValue('ADYEN_CLIENTKEY_LIVE', $client_key_live);
+                Configuration::updateValue('ADYEN_APPLE_PAY_MERCHANT_NAME', $apple_pay_merchant_name);
+                Configuration::updateValue('ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER', $apple_pay_merchant_identifier);
+                Configuration::updateValue('ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID', $google_pay_gateway_merchant_id);
+                Configuration::updateValue('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER', $google_pay_merchant_identifier);
 
                 if (!empty($notification_password)) {
                     Configuration::updateValue('ADYEN_NOTI_PASSWORD', $this->crypto->encrypt($notification_password));
@@ -805,6 +826,7 @@ class AdyenOfficial extends PaymentModule
             )
         );
 
+        // Live endpoint prefix
         $fields_form[0]['form']['input'][] = array(
             'type' => 'text',
             'label' => $this->l('Live endpoint prefix'),
@@ -813,6 +835,70 @@ class AdyenOfficial extends PaymentModule
             'required' => false,
             'hint' => $this->l(
                 'The URL prefix [random]-[company name] from your Adyen live > Account > API URLs.'
+            )
+        );
+
+        $fields_form[1]['form'] = array(
+            'legend' => array(
+                'title' => $this->l('Payment method configurations'),
+                'image' => '../img/admin/edit.gif'
+            ),
+            'input' => array(),
+            'submit' => array(
+                'title' => $this->l('Save'),
+                'class' => 'btn btn-default pull-right'
+            )
+        );
+
+        // Apple pay merchant name input
+        $fields_form[1]['form']['input'][] = array(
+            'type' => 'text',
+            'label' => $this->l('Apple Pay merchant name'),
+            'name' => 'ADYEN_APPLE_PAY_MERCHANT_NAME',
+            'size' => 50,
+            'required' => false,
+            'lang' => false,
+            'hint' => $this->l(
+                ''
+            )
+        );
+
+        // Apple pay merchant identifier input
+        $fields_form[1]['form']['input'][] = array(
+            'type' => 'text',
+            'label' => $this->l('Apple Pay merchant identifier'),
+            'name' => 'ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER',
+            'size' => 50,
+            'required' => false,
+            'lang' => false,
+            'hint' => $this->l(
+                ''
+            )
+        );
+
+        // Google pay gateway merchant id
+        $fields_form[1]['form']['input'][] = array(
+            'type' => 'text',
+            'label' => $this->l('Google Pay gateway merchant ID'),
+            'name' => 'ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID',
+            'size' => 50,
+            'required' => false,
+            'lang' => false,
+            'hint' => $this->l(
+                ''
+            )
+        );
+
+        // Google pay merchant identifier input
+        $fields_form[1]['form']['input'][] = array(
+            'type' => 'text',
+            'label' => $this->l('Google Pay merchant identifier'),
+            'name' => 'ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER',
+            'size' => 50,
+            'required' => false,
+            'lang' => false,
+            'hint' => $this->l(
+                ''
             )
         );
 
@@ -859,6 +945,10 @@ class AdyenOfficial extends PaymentModule
             $client_key_test = Tools::getValue('ADYEN_CLIENTKEY_TEST');
             $client_key_live = Tools::getValue('ADYEN_CLIENTKEY_LIVE');
             $live_endpoint_url_prefix = (string)Tools::getValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
+            $apple_pay_merchant_name = Tools::getValue('ADYEN_APPLE_PAY_MERCHANT_NAME');
+            $apple_pay_merchant_identifier = Tools::getValue('ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER');
+            $google_pay_gateway_merchant_id = Tools::getValue('ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID');
+            $google_pay_merchant_identifier = Tools::getValue('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER');
         } else {
             $merchant_account = Configuration::get('ADYEN_MERCHANT_ACCOUNT');
             $mode = Configuration::get('ADYEN_MODE');
@@ -867,6 +957,11 @@ class AdyenOfficial extends PaymentModule
             $client_key_test = Configuration::get('ADYEN_CLIENTKEY_TEST');
             $client_key_live = Configuration::get('ADYEN_CLIENTKEY_LIVE');
             $live_endpoint_url_prefix = Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
+
+            $apple_pay_merchant_name = Configuration::get('ADYEN_APPLE_PAY_MERCHANT_NAME');
+            $apple_pay_merchant_identifier = Configuration::get('ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER');
+            $google_pay_gateway_merchant_id = Configuration::get('ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID');
+            $google_pay_merchant_identifier = Configuration::get('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER');
         }
 
         // Load current value
@@ -877,6 +972,10 @@ class AdyenOfficial extends PaymentModule
         $helper->fields_value['ADYEN_CLIENTKEY_TEST'] = $client_key_test;
         $helper->fields_value['ADYEN_CLIENTKEY_LIVE'] = $client_key_live;
         $helper->fields_value['ADYEN_LIVE_ENDPOINT_URL_PREFIX'] = $live_endpoint_url_prefix;
+        $helper->fields_value['ADYEN_APPLE_PAY_MERCHANT_NAME'] = $apple_pay_merchant_name;
+        $helper->fields_value['ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER'] = $apple_pay_merchant_identifier;
+        $helper->fields_value['ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID'] = $google_pay_gateway_merchant_id;
+        $helper->fields_value['ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER'] = $google_pay_merchant_identifier;
 
         return $helper->generateForm($fields_form);
     }
@@ -1033,6 +1132,31 @@ class AdyenOfficial extends PaymentModule
      */
     private function getCheckoutComponentInitData()
     {
+        $currencyData = Currency::getCurrency($this->context->cart->id_currency);
+
+        $currencyIsoCode = '';
+        if (!empty($currencyData['iso_code'])) {
+            $currencyIsoCode = $currencyData['iso_code'];
+        }
+
+        $totalAmountInMinorUnits = $this->currencyUtil->sanitize(
+            $this->context->cart->getOrderTotal(),
+            $currencyIsoCode
+        );
+
+        // List of payment methods that needs to show the pay button from the component
+        $paymentMethodsWithPayButtonFromComponent = json_encode(array('paywithgoogle', 'applepay'));
+
+        // All payment method specific configuration
+        $paymentMethodsConfigurations = json_encode(
+            array(
+                'applePayMerchantName' => Configuration::get('ADYEN_APPLE_PAY_MERCHANT_NAME'),
+                'applePayMerchantIdentifier' => Configuration::get('ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER'),
+                'googlePayGatewayMerchantId' => Configuration::get('ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID'),
+                'googlePayMerchantIdentifier' => Configuration::get('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER')
+            )
+        );
+
         return array(
             'locale' => $this->languageAdapter->getLocaleCode($this->context->language),
             'clientKey' => $this->configuration->clientKey,
@@ -1041,7 +1165,10 @@ class AdyenOfficial extends PaymentModule
             'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
             'paymentsDetailsUrl' => $this->context->link->getModuleLink($this->name, 'PaymentsDetails', array(), true),
             'isPrestaShop16' => $this->versionChecker->isPrestaShop16() ? true : false,
-            'isUserLoggedIn' => !$this->context->customer->is_guest
+            'currencyIsoCode' => $currencyIsoCode,
+            'totalAmountInMinorUnits' => $totalAmountInMinorUnits,
+            'paymentMethodsConfigurations' => $paymentMethodsConfigurations,
+            'paymentMethodsWithPayButtonFromComponent' => $paymentMethodsWithPayButtonFromComponent
         );
     }
 
