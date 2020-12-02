@@ -200,6 +200,7 @@ class AdyenOfficial extends PaymentModule
                 $this->registerHook('paymentReturn') &&
                 $this->registerHook('actionOrderSlipAdd') &&
                 $this->registerHook('actionFrontControllerSetMedia') &&
+                $this->registerHook('displayHeader') &&
                 $this->installTab() &&
                 $this->updateCronJobToken() &&
                 $this->createWaitingForPaymentOrderStatus() &&
@@ -220,6 +221,7 @@ class AdyenOfficial extends PaymentModule
             $this->registerHook('paymentOptions') &&
             $this->registerHook('paymentReturn') &&
             $this->registerHook('actionOrderSlipAdd') &&
+            $this->registerHook('displayHeader') &&
             $this->updateCronJobToken() &&
             $this->createWaitingForPaymentOrderStatus() &&
             $this->createAdyenDatabaseTables()
@@ -1228,6 +1230,11 @@ class AdyenOfficial extends PaymentModule
         $this->context->smarty->assign($smartyVariables);
 
         return $this->display(__FILE__, '/views/templates/front/order-confirmation.tpl');
+    }
+
+    public function hookDisplayHeader()
+    {
+        echo '<meta http-equiv="Referrer-Policy" content="no-referrer-when-downgrade">';
     }
 
     /**
