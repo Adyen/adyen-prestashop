@@ -148,12 +148,12 @@ abstract class FrontController extends \ModuleFrontController
     protected function ajaxRender($value = null, $controller = null, $method = null)
     {
         header('content-type: application/json; charset=utf-8');
-        if ($this->versionChecker->isPrestaShop16()) {
-            $this->ajax = true;
-            parent::ajaxDie($value, $controller, $method);
-        } else {
+        if (method_exists('\ControllerCore', 'ajaxRender')) {
             parent::ajaxRender($value, $controller, $method);
             exit;
+        } else {
+            $this->ajax = true;
+            parent::ajaxDie($value, $controller, $method);
         }
     }
 
@@ -251,6 +251,7 @@ abstract class FrontController extends \ModuleFrontController
                 // Continue with the same logic as IdentifyShopper and ChallengeShopper
             case 'IdentifyShopper':
             case 'ChallengeShopper':
+            case 'Pending':
                 // Store response for cart until the payment is done
                 $this->adyenPaymentResponseModel->insertOrUpdatePaymentResponse($cart->id, $resultCode, $response);
 
