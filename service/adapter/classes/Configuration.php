@@ -97,12 +97,11 @@ class Configuration
     /**
      * Retrieves the encrypted API key based on the mode set in the admin configurations
      *
-     * @param string $adyenRunningMode
      * @return string
      */
-    private function getEncryptedAPIKey($adyenRunningMode)
+    private function getEncryptedAPIKey()
     {
-        if ($this->isTestMode($adyenRunningMode)) {
+        if ($this->isTestMode()) {
             $encryptedApiKey = \Configuration::get('ADYEN_APIKEY_TEST');
         } else {
             $encryptedApiKey = \Configuration::get('ADYEN_APIKEY_LIVE');
@@ -113,12 +112,11 @@ class Configuration
     /**
      * Retrieves the Client key based on the mode set in the admin configurations
      *
-     * @param string $adyenRunningMode
      * @return string
      */
-    private function getClientKey($adyenRunningMode)
+    private function getClientKey()
     {
-        if ($this->isTestMode($adyenRunningMode)) {
+        if ($this->isTestMode()) {
             $clientKey = \Configuration::get('ADYEN_CLIENTKEY_TEST');
         } else {
             $clientKey = \Configuration::get('ADYEN_CLIENTKEY_LIVE');
