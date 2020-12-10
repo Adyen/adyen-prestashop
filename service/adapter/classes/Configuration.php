@@ -87,8 +87,8 @@ class Configuration
         $adyenModeConfiguration = \Configuration::get('ADYEN_MODE');
         $this->adyenMode = !empty($adyenModeConfiguration) ? $adyenModeConfiguration : Environment::TEST;
         $this->sslEncryptionKey = _COOKIE_KEY_;
-        $this->encryptedApiKey = $this->getEncryptedAPIKey($this->adyenMode);
-        $this->clientKey = $this->getClientKey($this->adyenMode);
+        $this->encryptedApiKey = $this->getEncryptedAPIKey();
+        $this->clientKey = $this->getClientKey();
         $this->liveEndpointPrefix = \Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
         $this->moduleVersion = '3.2.0';
         $this->moduleName = 'adyen-prestashop';
