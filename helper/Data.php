@@ -38,9 +38,6 @@ use Country;
 use Currency;
 use Exception;
 use FileLogger;
-use Guest;
-use PrestaShopDatabaseException;
-use PrestaShopException;
 use Tools;
 
 class Data
@@ -122,7 +119,7 @@ class Data
         $currency = $currencyData['iso_code'];
         $address = new Address($cart->id_address_invoice);
         $countryCode = Country::getIsoById($address->id_country);
-        $shopperReference = $cart->id_customer;
+        $shopperReference = str_pad($cart->id_customer, 3, '0', STR_PAD_LEFT);
         $shopperLocale = $this->languageAdapter->getLocaleCode($language);
 
         $adyenFields = array(
