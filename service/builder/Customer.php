@@ -59,7 +59,7 @@ class Customer
     ) {
         // Add shopperReference to identify the unique shoppers in the store by id, necessary for recurring payments
         if (!empty($customerId)) {
-            $request['shopperReference'] = $customerId;
+            $request['shopperReference'] = str_pad($customerId, 3, '0', STR_PAD_LEFT);
         }
 
         // Open invoice methods requires different request format

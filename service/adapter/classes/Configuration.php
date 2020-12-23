@@ -87,22 +87,21 @@ class Configuration
         $adyenModeConfiguration = \Configuration::get('ADYEN_MODE');
         $this->adyenMode = !empty($adyenModeConfiguration) ? $adyenModeConfiguration : Environment::TEST;
         $this->sslEncryptionKey = _COOKIE_KEY_;
-        $this->encryptedApiKey = $this->getEncryptedAPIKey($this->adyenMode);
-        $this->clientKey = $this->getClientKey($this->adyenMode);
+        $this->encryptedApiKey = $this->getEncryptedAPIKey();
+        $this->clientKey = $this->getClientKey();
         $this->liveEndpointPrefix = \Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
-        $this->moduleVersion = '3.2.0';
+        $this->moduleVersion = '3.2.1';
         $this->moduleName = 'adyen-prestashop';
     }
 
     /**
      * Retrieves the encrypted API key based on the mode set in the admin configurations
      *
-     * @param string $adyenRunningMode
      * @return string
      */
-    private function getEncryptedAPIKey($adyenRunningMode)
+    private function getEncryptedAPIKey()
     {
-        if ($this->isTestMode($adyenRunningMode)) {
+        if ($this->isTestMode()) {
             $encryptedApiKey = \Configuration::get('ADYEN_APIKEY_TEST');
         } else {
             $encryptedApiKey = \Configuration::get('ADYEN_APIKEY_LIVE');
@@ -113,12 +112,11 @@ class Configuration
     /**
      * Retrieves the Client key based on the mode set in the admin configurations
      *
-     * @param string $adyenRunningMode
      * @return string
      */
-    private function getClientKey($adyenRunningMode)
+    private function getClientKey()
     {
-        if ($this->isTestMode($adyenRunningMode)) {
+        if ($this->isTestMode()) {
             $clientKey = \Configuration::get('ADYEN_CLIENTKEY_TEST');
         } else {
             $clientKey = \Configuration::get('ADYEN_CLIENTKEY_LIVE');
