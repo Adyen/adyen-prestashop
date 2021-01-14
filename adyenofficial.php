@@ -506,7 +506,7 @@ class AdyenOfficial extends PaymentModule
                 $output .= $this->displayError($this->l('Invalid Configuration value for Merchant Account'));
             }
 
-            if (!Validate::isGenericName($integrator_name)) {
+            if (!Validate::isGenericName($integrator_name) || preg_match('/[^A-Za-z0-9]/', $integrator_name)) {
                 $output .= $this->displayError($this->l('Invalid Configuration value for Integrator Name'));
             }
 
