@@ -71,6 +71,11 @@ class Configuration
     public $moduleName;
 
     /**
+     * @var string
+     */
+    public $integratorName;
+
+    /**
      * @var Logger
      */
     private $logger;
@@ -92,6 +97,7 @@ class Configuration
         $this->liveEndpointPrefix = \Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
         $this->moduleVersion = '3.2.1';
         $this->moduleName = 'adyen-prestashop';
+        $this->integratorName = \Configuration::get('ADYEN_INTEGRATOR_NAME', null, null, null, "");
     }
 
     /**
