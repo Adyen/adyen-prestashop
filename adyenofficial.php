@@ -634,7 +634,7 @@ class AdyenOfficial extends PaymentModule
             'required' => false,
             'lang' => false,
             'hint' => $this->l(
-                'Temporary hint'
+                'Name of the integrator used. Leave blank if no integrator was utilised.'
             )
         );
 
