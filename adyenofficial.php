@@ -625,19 +625,6 @@ class AdyenOfficial extends PaymentModule
             )
         );
 
-        // Integrator name input
-        $fields_form[0]['form']['input'][] = array(
-            'type' => 'text',
-            'label' => $this->l('Integrator Name'),
-            'name' => 'ADYEN_INTEGRATOR_NAME',
-            'size' => 20,
-            'required' => false,
-            'lang' => false,
-            'hint' => $this->l(
-                'Name of the integrator used. Leave blank if no integrator was utilised.'
-            )
-        );
-
         // Test/Production mode
         $fields_form[0]['form']['input'][] = array(
             'type' => 'radio',
@@ -919,6 +906,31 @@ class AdyenOfficial extends PaymentModule
             'lang' => false,
             'hint' => $this->l(
                 ''
+            )
+        );
+
+        $fields_form[2]['form'] = array(
+            'legend' => array(
+                'title' => $this->l('Developer settings'),
+                'image' => '../img/admin/edit.gif'
+            ),
+            'input' => array(),
+            'submit' => array(
+                'title' => $this->l('Save'),
+                'class' => 'btn btn-default pull-right'
+            )
+        );
+
+        // Integrator name input
+        $fields_form[2]['form']['input'][] = array(
+            'type' => 'text',
+            'label' => $this->l('Integrator Name'),
+            'name' => 'ADYEN_INTEGRATOR_NAME',
+            'size' => 20,
+            'required' => false,
+            'lang' => false,
+            'hint' => $this->l(
+                'Name of the integrator used. Leave blank if no integrator was utilised.'
             )
         );
 
