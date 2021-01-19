@@ -402,6 +402,7 @@ class AdyenOfficial extends PaymentModule
     {
         $adyenConfigurationNames = array(
             'ADYEN_MERCHANT_ACCOUNT',
+            'ADYEN_INTEGRATOR_NAME',
             'ADYEN_MODE',
             'ADYEN_NOTI_USERNAME',
             'ADYEN_NOTI_PASSWORD',
@@ -484,6 +485,7 @@ class AdyenOfficial extends PaymentModule
         if (Tools::isSubmit('submit' . $this->name)) {
             // get post values
             $merchant_account = (string)Tools::getValue('ADYEN_MERCHANT_ACCOUNT');
+            $integrator_name = (string)Tools::getValue('ADYEN_INTEGRATOR_NAME');
             $mode = (string)Tools::getValue('ADYEN_MODE');
             $notification_username = (string)Tools::getValue('ADYEN_NOTI_USERNAME');
             $notification_password = (string)Tools::getValue('ADYEN_NOTI_PASSWORD');
@@ -504,12 +506,17 @@ class AdyenOfficial extends PaymentModule
                 $output .= $this->displayError($this->l('Invalid Configuration value for Merchant Account'));
             }
 
+            if (!Validate::isGenericName($integrator_name) || preg_match('/[^A-Za-z0-9]/', $integrator_name)) {
+                $output .= $this->displayError($this->l('Invalid Configuration value for Integrator Name'));
+            }
+
             if (empty($notification_username) || !Validate::isGenericName($notification_username)) {
                 $output .= $this->displayError($this->l('Invalid Configuration value for Notification Username'));
             }
 
             if ($output == null) {
                 Configuration::updateValue('ADYEN_MERCHANT_ACCOUNT', $merchant_account);
+                Configuration::updateValue('ADYEN_INTEGRATOR_NAME', $integrator_name);
                 Configuration::updateValue('ADYEN_MODE', $mode);
                 Configuration::updateValue('ADYEN_NOTI_USERNAME', $notification_username);
                 Configuration::updateValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX', $live_endpoint_url_prefix);
@@ -902,6 +909,31 @@ class AdyenOfficial extends PaymentModule
             )
         );
 
+        $fields_form[2]['form'] = array(
+            'legend' => array(
+                'title' => $this->l('Developer settings'),
+                'image' => '../img/admin/edit.gif'
+            ),
+            'input' => array(),
+            'submit' => array(
+                'title' => $this->l('Save'),
+                'class' => 'btn btn-default pull-right'
+            )
+        );
+
+        // Integrator name input
+        $fields_form[2]['form']['input'][] = array(
+            'type' => 'text',
+            'label' => $this->l('Integrator Name'),
+            'name' => 'ADYEN_INTEGRATOR_NAME',
+            'size' => 20,
+            'required' => false,
+            'lang' => false,
+            'hint' => $this->l(
+                'Name of the integrator used. Leave blank if no integrator was utilised.'
+            )
+        );
+
         $helper = new HelperForm();
 
         // Module, token and currentIndex
@@ -939,6 +971,7 @@ class AdyenOfficial extends PaymentModule
         if (Tools::isSubmit('submit' . $this->name)) {
             // get settings from post because post can give errors and you want to keep values
             $merchant_account = (string)Tools::getValue('ADYEN_MERCHANT_ACCOUNT');
+            $integrator_name = (string)Tools::getValue('ADYEN_INTEGRATOR_NAME');
             $mode = (string)Tools::getValue('ADYEN_MODE');
             $notification_username = (string)Tools::getValue('ADYEN_NOTI_USERNAME');
             $cron_job_token = Tools::getValue('ADYEN_CRONJOB_TOKEN');
@@ -951,6 +984,7 @@ class AdyenOfficial extends PaymentModule
             $google_pay_merchant_identifier = Tools::getValue('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER');
         } else {
             $merchant_account = Configuration::get('ADYEN_MERCHANT_ACCOUNT');
+            $integrator_name = Configuration::get('ADYEN_INTEGRATOR_NAME');
             $mode = Configuration::get('ADYEN_MODE');
             $notification_username = Configuration::get('ADYEN_NOTI_USERNAME');
             $cron_job_token = $cronjobToken;
@@ -966,6 +1000,7 @@ class AdyenOfficial extends PaymentModule
 
         // Load current value
         $helper->fields_value['ADYEN_MERCHANT_ACCOUNT'] = $merchant_account;
+        $helper->fields_value['ADYEN_INTEGRATOR_NAME'] = $integrator_name;
         $helper->fields_value['ADYEN_MODE'] = $mode;
         $helper->fields_value['ADYEN_NOTI_USERNAME'] = $notification_username;
         $helper->fields_value['ADYEN_CRONJOB_TOKEN'] = $cron_job_token;
