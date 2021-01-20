@@ -336,9 +336,10 @@ jQuery(document).ready(function() {
                             }
                         }
                     }).catch(e => {
-                        paymentForm.find('.error-container').
-                            text(paymentMethod.type + isNotAvailableText).
-                            fadeIn(1000);
+                        const payWithOption = paymentForm.closest('.js-payment-option-form');
+                        const paymentOption = payWithOption.prev();
+                        paymentOption.remove();
+                        payWithOption.remove();
                     });
                 } else {
                     component.mount(containerDOM);
