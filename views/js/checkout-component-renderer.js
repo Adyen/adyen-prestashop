@@ -93,12 +93,7 @@ jQuery(document).ready(function() {
                     0).dataset.localPaymentMethod;
 
                 if (!IS_PRESTA_SHOP_16) {
-                    if (componentButtonPaymentMethods.includes(
-                        selectedAdyenPaymentMethodCode)) {
-                        if (prestaShopPlaceOrderButton.prop('disabled') && !isPlaceOrderInProgress()) {
-                            showRequiredConditionsInfoMessage(
-                                selectedPaymentForm);
-                        }
+                    if (componentButtonPaymentMethods.includes(selectedAdyenPaymentMethodCode)) {
                         prestaShopPlaceOrderButton.hide();
                     } else {
                         prestaShopPlaceOrderButton.show();
@@ -252,25 +247,10 @@ jQuery(document).ready(function() {
                     function(mutations) {
                         mutations.forEach(function(mutation) {
                             // Check the modified attributeName is "disabled"
-                            if (mutation.attributeName ===
-                                'disabled') {
-                                // Disable the component button if the place order button is disabled as well
-                                if ($(containerDOM).find('button').length > 0) {
-                                    $(containerDOM).
-                                        find('button').
-                                        prop('disabled',
-                                            prestaShopPlaceOrderButton.prop(
-                                                'disabled'));
-                                }
-
-                                // Show/hide info message
-                                if (prestaShopPlaceOrderButton.prop(
-                                    'disabled') && !isPlaceOrderInProgress()) {
-                                    showRequiredConditionsInfoMessage(
-                                        paymentMethodContainer);
-                                } else {
-                                    hideInfoMessage(
-                                        paymentMethodContainer);
+                            if (mutation.attributeName === 'disabled') {
+                                // Hide info message if main button is not disabled
+                                if (!prestaShopPlaceOrderButton.prop('disabled')) {
+                                    hideInfoMessage(paymentMethodContainer);
                                 }
                             }
                         });
@@ -290,6 +270,7 @@ jQuery(document).ready(function() {
                 },
                 onChange: handleOnChange,
                 onSubmit: handleOnSubmit.bind(context),
+                onClick: handleOnClick.bind(context),
             };
 
             // Remove after updating the checkout API to version 64 or above
@@ -502,6 +483,17 @@ jQuery(document).ready(function() {
                         text(placeOrderErrorRequiredConditionsText).
                         fadeIn(1000);
                 }
+            }
+        }
+
+        function handleOnClick(resolve, reject) {
+            const paymentMethodContainer = this.paymentForm.closest('.adyen-payment');
+            // Show/hide info message
+            if (prestaShopPlaceOrderButton.prop('disabled') && !isPlaceOrderInProgress()) {
+                showRequiredConditionsInfoMessage(paymentMethodContainer);
+            } else {
+                hideInfoMessage(paymentMethodContainer);
+                resolve();
             }
         }
 
