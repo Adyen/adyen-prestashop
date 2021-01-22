@@ -94,7 +94,7 @@ div.adyen-additional-data-line {
 }
 
 @supports (-webkit-appearance:-apple-pay-button) {
-    ._1dIj5OBNHw-_NvtfqKwJuZ, button, html [type=button] {
+    .adyen-checkout__applepay__button._1dIj5OBNHw-_NvtfqKwJuZ {
         -webkit-appearance: -apple-pay-button;
     }
 }
