@@ -488,10 +488,10 @@ jQuery(document).ready(function() {
 
         function handleOnClick(resolve, reject) {
             const paymentMethodContainer = this.paymentForm.closest('.adyen-payment');
-            // Show/hide info message
+            // Show message if button is disabled else if not in progress, hide and resolve
             if (prestaShopPlaceOrderButton.prop('disabled') && !isPlaceOrderInProgress()) {
                 showRequiredConditionsInfoMessage(paymentMethodContainer);
-            } else {
+            } else if (!isPlaceOrderInProgress()) {
                 hideInfoMessage(paymentMethodContainer);
                 resolve();
             }
