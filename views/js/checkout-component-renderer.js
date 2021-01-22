@@ -317,10 +317,15 @@ jQuery(document).ready(function() {
                             }
                         }
                     }).catch(e => {
-                        const payWithOption = paymentForm.closest('.js-payment-option-form');
-                        const paymentOption = payWithOption.prev();
-                        paymentOption.remove();
-                        payWithOption.remove();
+                        if (IS_PRESTA_SHOP_16) {
+                            const paymentRow = paymentForm.closest('.adyen-payment');
+                            paymentRow.remove();
+                        } else {
+                            const payWithOption = paymentForm.closest('.js-payment-option-form');
+                            const paymentOption = payWithOption.prev();
+                            paymentOption.remove();
+                            payWithOption.remove();
+                        }
                     });
                 } else {
                     component.mount(containerDOM);
