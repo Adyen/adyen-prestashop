@@ -92,3 +92,9 @@ div.adyen-payment-method-label {
 div.adyen-additional-data-line {
     padding-left: 15px;
 }
+
+@supports (-webkit-appearance:-apple-pay-button) {
+    html [type=button].adyen-checkout__applepay__button {
+        -webkit-appearance: -apple-pay-button;
+    }
+}
