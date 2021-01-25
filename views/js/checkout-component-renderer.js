@@ -496,6 +496,7 @@ jQuery(document).ready(function() {
             // Show message if button is disabled else if not in progress, hide and resolve
             if (prestaShopPlaceOrderButton.prop('disabled') && !isPlaceOrderInProgress()) {
                 showRequiredConditionsInfoMessage(paymentMethodContainer);
+                reject(new Error('Terms of service not agreed'));
             } else if (!isPlaceOrderInProgress()) {
                 hideInfoMessage(paymentMethodContainer);
                 resolve();
