@@ -182,7 +182,13 @@ class AdyenNotification extends AbstractModel
 
         // do this to set both fields in the correct timezone
         $date = new \DateTime();
-        $data['created_at'] = $date->format('Y-m-d H:i:s');
+        if ($data['event_code'] === self::AUTHORISATION && $data['success'] === 'false') {
+            $createdAt = new \DateTime();
+            $data['created_at'] = $createdAt->add(new \DateInterval("PT1H"))->format('Y-m-d H:i:s');
+        } else {
+            $data['created_at'] = $date->format('Y-m-d H:i:s');
+        }
+
         $data['updated_at'] = $date->format('Y-m-d H:i:s');
 
         $this->dbInstance->insert(self::$tableName, $data);
