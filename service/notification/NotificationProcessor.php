@@ -206,8 +206,9 @@ class NotificationProcessor
                 
                 break;
             case AdyenNotification::OFFER_CLOSED:
-                // Notification success is 'true'
-                if ('true' === $unprocessedNotification['success']) {
+                // Notification success is 'true' AND current status is a non-final one
+                if ('true' === $unprocessedNotification['success'] &&
+                    $this->isCurrentOrderStatusANonFinalStatus($order->getCurrentState())) {
                     // Moves order to canceled if order status is waiting for payment
                     if ($order->getCurrentState() === \Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT')) {
                         $order->setCurrentState(\Configuration::get('PS_OS_CANCELED'));
