@@ -232,7 +232,7 @@ class AdyenNotification extends AbstractModel
      * @param $data
      * @return \DateTime
      */
-    private function getCreatedAtDate($data): \DateTime
+    private function getCreatedAtDate($data)
     {
         $date = new \DateTime();
         // If authorisation w/ false success OR offer closed, delay by an hour
