@@ -182,13 +182,8 @@ class AdyenNotification extends AbstractModel
 
         // do this to set both fields in the correct timezone
         $date = new \DateTime();
-        if ($data['event_code'] === self::AUTHORISATION && $data['success'] === 'false') {
-            $createdAt = new \DateTime();
-            $data['created_at'] = $createdAt->add(new \DateInterval("PT1H"))->format('Y-m-d H:i:s');
-        } else {
-            $data['created_at'] = $date->format('Y-m-d H:i:s');
-        }
 
+        $data['created_at'] = $this->getCreatedAtDate($data)->format('Y-m-d H:i:s');
         $data['updated_at'] = $date->format('Y-m-d H:i:s');
 
         $this->dbInstance->insert(self::$tableName, $data);
@@ -231,5 +226,21 @@ class AdyenNotification extends AbstractModel
             . ' AND `done` = 1';
 
         return $this->dbInstance->executeS($sql);
+    }
+
+    /**
+     * @param $data
+     * @return \DateTime
+     */
+    private function getCreatedAtDate($data): \DateTime
+    {
+        $date = new \DateTime();
+        // If authorisation w/ false success OR offer closed, delay by an hour
+        if (($data['event_code'] === self::AUTHORISATION && $data['success'] === 'false') ||
+            $data['event_code'] === self::OFFER_CLOSED) {
+            $date->add(new \DateInterval("PT1H"));
+        }
+
+        return $date;
     }
 }
