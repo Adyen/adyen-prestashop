@@ -108,7 +108,8 @@ jQuery(document).ready(function() {
         var placeOrderAllowed;
         var popupModal;
 
-        var notSupportedComponents = ['paypal', 'giropay'];
+        var notSupportedComponents = ['giropay'];
+        const handleActionComponents = ['paypal'];
 
         var componentBillingAddress = selectedInvoiceAddress;
 
@@ -378,11 +379,11 @@ jQuery(document).ready(function() {
                     'isAjax': true,
                 });
 
-                processPayment(paymentData, paymentForm);
+                processPayment(paymentData, paymentForm, component);
             });
         }
 
-        function processPayment(data, paymentForm) {
+        function processPayment(data, paymentForm, component) {
             var paymentProcessUrl = paymentForm.attr('action');
 
             $.ajax({
@@ -391,7 +392,7 @@ jQuery(document).ready(function() {
                 data: data,
                 dataType: 'json',
                 success: function(response) {
-                    processControllerResponse(response, paymentForm);
+                    processControllerResponse(response, paymentForm, component);
                 },
                 error: function(response) {
                     paymentForm.find('.error-container').
@@ -413,7 +414,7 @@ jQuery(document).ready(function() {
             });
         }
 
-        function processControllerResponse(response, paymentForm) {
+        function processControllerResponse(response, paymentForm, component) {
             switch (response.action) {
                 case 'error':
                     // show error message
@@ -426,7 +427,7 @@ jQuery(document).ready(function() {
                     window.location.replace(response.redirectUrl);
                     break;
                 case 'action':
-                    renderActionComponent(response.response);
+                    renderActionComponent(response.response, component);
                     break;
                 default:
                     // show error message
@@ -435,7 +436,7 @@ jQuery(document).ready(function() {
             }
         }
 
-        function renderActionComponent(action) {
+        function renderActionComponent(action, component) {
             // TODO remove when fix is rolled out in a new checkout component version
             delete configuration.data;
 
@@ -447,8 +448,11 @@ jQuery(document).ready(function() {
                 configuration);
 
             try {
-                actionComponent.createFromAction(action).
-                    mount('#actionContainer');
+                if (handleActionComponents.includes(component.type)) {
+                    component.handleAction();
+                } else {
+                    actionComponent.createFromAction(action).mount('#actionContainer');
+                }
             } catch (e) {
                 console.log(e);
                 hidePopup();
