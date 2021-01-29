@@ -448,8 +448,8 @@ jQuery(document).ready(function() {
                 configuration);
 
             try {
-                if (handleActionComponents.includes(component.type)) {
-                    component.handleAction();
+                if (handleActionComponents.includes(action.paymentMethodType)) {
+                    component.handleAction(action);
                 } else {
                     actionComponent.createFromAction(action).mount('#actionContainer');
                 }
@@ -497,13 +497,22 @@ jQuery(document).ready(function() {
 
         function handleOnClick(resolve, reject) {
             const paymentMethodContainer = this.paymentForm.closest('.adyen-payment');
+            const paymentMethodType = paymentMethodContainer.data('local-payment-method');
             // Show message if button is disabled else if not in progress, hide and resolve
             if (prestaShopPlaceOrderButton.prop('disabled') && !isPlaceOrderInProgress()) {
                 showRequiredConditionsInfoMessage(paymentMethodContainer);
-                reject(new Error('Terms of service not agreed'));
+                if (paymentMethodType === 'paypal') {
+                    return false;
+                } else {
+                    reject(new Error('Terms of service not agreed'));
+                }
             } else if (!isPlaceOrderInProgress()) {
                 hideInfoMessage(paymentMethodContainer);
-                resolve();
+                if (paymentMethodType === 'paypal') {
+                    return true;
+                } else {
+                    resolve();
+                }
             }
         }
 
