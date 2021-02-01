@@ -272,6 +272,7 @@ jQuery(document).ready(function() {
                 onChange: handleOnChange,
                 onSubmit: handleOnSubmit.bind(context),
                 onClick: handleOnClick.bind(context),
+                onCancel: handleOnCancel.bind(context),
             };
 
             // Remove after updating the checkout API to version 64 or above
@@ -496,7 +497,7 @@ jQuery(document).ready(function() {
         }
 
         function handleOnClick(resolve, reject) {
-            const paymentMethodContainer = this.paymentForm.closest('.adyen-payment');
+            const paymentMethodContainer = getFormPaymentMethodContainer(this.paymentForm);
             const paymentMethodType = paymentMethodContainer.data('local-payment-method');
             // Show message if button is disabled else if not in progress, hide and resolve
             if (prestaShopPlaceOrderButton.prop('disabled') && !isPlaceOrderInProgress()) {
@@ -514,6 +515,31 @@ jQuery(document).ready(function() {
                     resolve();
                 }
             }
+        }
+
+        function handleOnCancel(state) {
+            hidePopup();
+            const component = getFormComponent(this.paymentForm);
+            processPaymentsDetails({
+                'details': { 'orderID': state.orderID },
+                'cancelled': true,
+            }).done(function(responseJSON) {
+                processControllerResponse(responseJSON, getSelectedPaymentMethod(), component);
+            });
+            // TODO do the same function handleOnAdditionalDetails(state)
+            // and don't forget to enrich the request with `cancelled`: true
+        }
+
+        function getFormComponent(paymentForm) {
+            const paymentMethodContainer = getFormPaymentMethodContainer(paymentForm);
+            const paymentMethodType = paymentMethodContainer.data('local-payment-method');
+            const paymentMethod = paymentMethods.find((paymentMethod) => paymentMethod.type === paymentMethodType);
+            return renderPaymentComponent(paymentMethod, paymentMethodContainer,
+                paymentForm);
+        }
+
+        function getFormPaymentMethodContainer(paymentForm) {
+            return paymentForm.closest('.adyen-payment');
         }
 
         function getSelectedPaymentMethod() {
