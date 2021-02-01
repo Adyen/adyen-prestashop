@@ -333,6 +333,8 @@ class AdyenOfficial extends PaymentModule
         $query = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'adyen_payment_response` (
             `entity_id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT \'Adyen Payment Entity ID\',
             `id_cart` int(11) DEFAULT NULL COMMENT \'Prestashop cart id\',
+            `request_amount` int COMMENT \'Payment amount in the request\',
+            `request_currency` varchar(3) COMMENT \'Payment currency in the request\',
             `result_code` varchar(255) DEFAULT NULL COMMENT \'Result code\',
             `response` text COMMENT \'Response\',
             `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT \'Created At\',
