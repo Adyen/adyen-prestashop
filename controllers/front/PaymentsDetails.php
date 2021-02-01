@@ -100,6 +100,6 @@ class AdyenOfficialPaymentsDetailsModuleFrontController extends FrontController
             );
         }
 
-        $this->handlePaymentsResponse($result, $cart, $customer, true);
+        $this->handleAdyenApiResponse($result, $cart, $customer, true);
     }
 }

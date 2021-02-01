@@ -167,12 +167,13 @@ abstract class FrontController extends \ModuleFrontController
 
     /**
      * @param $response
-     * @param $cart
+     * @param \Cart $cart
      * @param $customer
      * @param $isAjax
+     * @param array $paymentRequest
      * @throws AdyenException
      */
-    protected function handlePaymentsResponse($response, $cart, $customer, $isAjax)
+    protected function handleAdyenApiResponse($response, \Cart $cart, $customer, $isAjax, $paymentRequest = array())
     {
         $resultCode = $response['resultCode'];
 
