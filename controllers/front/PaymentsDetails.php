@@ -45,6 +45,7 @@ class AdyenOfficialPaymentsDetailsModuleFrontController extends FrontController
     public function postProcess()
     {
         $payload = $_REQUEST;
+        $cancelled = false;
 
         $cart = $this->getCurrentCart();
         $paymentResponse = $this->adyenPaymentResponseModel->getPaymentResponseByCartId($cart->id);
@@ -60,6 +61,11 @@ class AdyenOfficialPaymentsDetailsModuleFrontController extends FrontController
                     )
                 )
             );
+        }
+
+        // Check if customer cancelled the payment
+        if (!empty($payload['cancelled'])) {
+            $cancelled = true;
         }
 
         // Get validated state data
@@ -100,6 +106,6 @@ class AdyenOfficialPaymentsDetailsModuleFrontController extends FrontController
             );
         }
 
-        $this->handlePaymentsResponse($result, $cart, $customer, true);
+        $this->handlePaymentsResponse($result, $cart, $customer, true, $cancelled);
     }
 }
