@@ -526,8 +526,6 @@ jQuery(document).ready(function() {
             }).done(function(responseJSON) {
                 processControllerResponse(responseJSON, getSelectedPaymentMethod(), component);
             });
-            // TODO do the same function handleOnAdditionalDetails(state)
-            // and don't forget to enrich the request with `cancelled`: true
         }
 
         function getFormComponent(paymentForm) {
