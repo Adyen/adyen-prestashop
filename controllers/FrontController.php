@@ -337,11 +337,12 @@ abstract class FrontController extends \ModuleFrontController
                 );
 
                 if ($isAjax) {
+                    $message = $this->l('There was an error with the payment method, please choose another one');
                     $this->ajaxRender(
                         $this->helperData->buildControllerResponseJson(
                             'error',
                             array(
-                                'message' => $this->l('There was an error with the payment method, please choose another one'),
+                                'message' => $message,
                             )
                         )
                     );
