@@ -232,10 +232,9 @@ abstract class FrontController extends \ModuleFrontController
                 $this->logger->error("The payment was refused, id:  " . $cart->id);
 
                 if ($cancelled) {
-                    // TODO translate the message
-                    $message = "The payment was cancelled by the customer";
+                    $message = $this->l('The payment was cancelled by the customer');
                 } else {
-                    $message = "The payment was refused";
+                    $message = $this->l('The payment was refused');
                 }
 
                 if ($isAjax) {
@@ -342,9 +341,7 @@ abstract class FrontController extends \ModuleFrontController
                         $this->helperData->buildControllerResponseJson(
                             'error',
                             array(
-                                'message' => $this->l(
-                                    "There was an error with the payment method, please choose another one."
-                                )
+                                'message' => $this->l('There was an error with the payment method, please choose another one'),
                             )
                         )
                     );
@@ -379,7 +376,7 @@ abstract class FrontController extends \ModuleFrontController
                         $this->helperData->buildControllerResponseJson(
                             'error',
                             array(
-                                'message' => $this->l("Unsupported result code:") . "{" . $response['resultCode'] . "}"
+                                'message' => $this->l('Unsupported result code:') . "{" . $response['resultCode'] . "}"
                             )
                         )
                     );
