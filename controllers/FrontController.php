@@ -24,6 +24,7 @@
 
 namespace Adyen\PrestaShop\controllers;
 
+use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use Adyen\PrestaShop\service\Logger;
 use Adyen\PrestaShop\application\VersionChecker;
@@ -102,6 +103,16 @@ abstract class FrontController extends \ModuleFrontController
     protected $orderService;
 
     /**
+     * @var OrderAdapter
+     */
+    private $orderAdapter;
+
+    /**
+     * @var Adyen\Util\Currency
+     */
+    private $utilCurrency;
+
+    /**
      * FrontController constructor.
      */
     public function __construct()
@@ -113,6 +124,8 @@ abstract class FrontController extends \ModuleFrontController
         $this->cartService = ServiceLocator::get('Adyen\PrestaShop\service\Cart');
         $this->adyenPaymentResponseModel = ServiceLocator::get('Adyen\PrestaShop\model\AdyenPaymentResponse');
         $this->orderService = ServiceLocator::get('Adyen\PrestaShop\service\Order');
+        $this->orderAdapter = ServiceLocator::get('Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter');
+        $this->utilCurrency = ServiceLocator::get('Adyen\Util\Currency');
     }
 
     /**
@@ -182,22 +195,35 @@ abstract class FrontController extends \ModuleFrontController
             $extraVars['transaction_id'] = $response['pspReference'];
         }
 
-        $total = (float)$cart->getOrderTotal(true, \Cart::BOTH);
+        $paymentRequestAmount = null;
+        $paymentRequestCurrency = null;
+        if (!empty($paymentRequest['amount'])) {
+            $paymentRequestAmount = $paymentRequest['amount']['value'];
+            $paymentRequestCurrency = $paymentRequest['amount']['currency'];
+        }
+
+        $orderNeedsAttention = false;
+        // Validate if the response amount matches the cart amount
+        if (!empty($response['amount'])) {
+            if (!$this->validateCartOrderTotalAndCurrency(
+                $cart,
+                $response['amount']['value'],
+                $response['amount']['currency']
+            )) {
+                $orderNeedsAttention = true;
+            }
+        }
 
         // Based on the result code start different payment flows
         switch ($resultCode) {
             case 'Authorised':
-                $this->module->validateOrder(
-                    $cart->id,
-                    \Configuration::get('PS_OS_PAYMENT'),
-                    $total,
-                    $this->module->displayName,
-                    null,
-                    $extraVars,
-                    (int)$cart->id_currency,
-                    false,
-                    $customer->secure_key
-                );
+
+                $orderStatus = \Configuration::get('PS_OS_PAYMENT');
+                if ($orderNeedsAttention) {
+                    $orderStatus = \Configuration::get('ADYEN_OS_PAYMENT_NEEDS_ATTENTION');
+                }
+
+                $this->createOrUpdateOrder($cart, $extraVars, $customer, $orderStatus);
 
                 $newOrder = new \Order((int)$this->module->currentOrder);
 
@@ -226,6 +252,16 @@ abstract class FrontController extends \ModuleFrontController
                 // PaymentResponse can be deleted
                 $this->adyenPaymentResponseModel->deletePaymentResponseByCartId($cart->id);
 
+                if ($cart->OrderExists() !== false) {
+                    $order = $this->orderAdapter->getOrderByCartId($cart->id);
+                    if (\Validate::isLoadedObject($order)) {
+                        //$orderPayment = \OrderPaymentCore::getByOrderReference($order->reference);
+                        $order->setCurrentState(\Configuration::get('PS_OS_CANCELED'));
+                    } else {
+                        $this->logger->addError('Order cannot be loaded for cart id: ' . $cart->id);
+                    }
+                }
+
                 // In case of refused payment there is no order created and the cart needs to be cloned and reinitiated
                 $this->cartService->cloneCurrentCart($this->context, $cart);
                 $this->logger->error("The payment was refused, id:  " . $cart->id);
@@ -247,14 +283,23 @@ abstract class FrontController extends \ModuleFrontController
 
                 break;
             case 'RedirectShopper':
-                // When the resultCode is RedirectShopper the cart needs to be cleared
-                $this->context->cookie->__set("id_cart", "");
-                // Continue with the same logic as IdentifyShopper and ChallengeShopper
+                $this->createOrUpdateOrder(
+                    $cart,
+                    $extraVars,
+                    $customer,
+                    \Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT')
+                );
             case 'IdentifyShopper':
             case 'ChallengeShopper':
             case 'Pending':
                 // Store response for cart until the payment is done
-                $this->adyenPaymentResponseModel->insertOrUpdatePaymentResponse($cart->id, $resultCode, $response);
+                $this->adyenPaymentResponseModel->insertOrUpdatePaymentResponse(
+                    $cart->id,
+                    $resultCode,
+                    $response,
+                    $paymentRequestAmount,
+                    $paymentRequestCurrency
+                );
 
                 $this->ajaxRender(
                     $this->helperData->buildControllerResponseJson(
@@ -269,22 +314,26 @@ abstract class FrontController extends \ModuleFrontController
             case 'Received':
             case 'PresentToShopper':
                 // Store response for cart temporarily until the payment is done
-                $this->adyenPaymentResponseModel->insertOrUpdatePaymentResponse($cart->id, $resultCode, $response);
+                $this->adyenPaymentResponseModel->insertOrUpdatePaymentResponse(
+                    $cart->id,
+                    $resultCode,
+                    $response,
+                    $paymentRequestAmount,
+                    $paymentRequestCurrency
+                );
 
                 if (\Validate::isLoadedObject($customer)) {
-                    $total = (float)$cart->getOrderTotal(true, \Cart::BOTH);
-                    $extraVars = array();
 
-                    $this->module->validateOrder(
-                        $cart->id,
-                        \Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT'),
-                        $total,
-                        $this->module->displayName,
-                        null,
+                    $orderStatus = \Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT');
+                    if ($orderNeedsAttention) {
+                        $orderStatus = \Configuration::get('ADYEN_OS_PAYMENT_NEEDS_ATTENTION');
+                    }
+
+                    $this->createOrUpdateOrder(
+                        $cart,
                         $extraVars,
-                        $cart->id_currency,
-                        false,
-                        $customer->secure_key
+                        $customer,
+                        $orderStatus
                     );
 
                     $this->redirectUserToPageLink(
@@ -306,17 +355,7 @@ abstract class FrontController extends \ModuleFrontController
 
                 break;
             case 'Error':
-                $this->module->validateOrder(
-                    $cart->id,
-                    \Configuration::get('PS_OS_ERROR'),
-                    $total,
-                    $this->module->displayName,
-                    null,
-                    $extraVars,
-                    (int)$cart->id_currency,
-                    false,
-                    $customer->secure_key
-                );
+                $this->createOrUpdateOrder($cart, $extraVars, $customer, \Configuration::get('PS_OS_ERROR'));
 
                 // PaymentResponse can be deleted
                 $this->adyenPaymentResponseModel->deletePaymentResponseByCartId($cart->id);
@@ -348,18 +387,7 @@ abstract class FrontController extends \ModuleFrontController
 
                 break;
             default:
-                // Unsupported result code
-                $this->module->validateOrder(
-                    $cart->id,
-                    \Configuration::get('PS_OS_ERROR'),
-                    $total,
-                    $this->module->displayName,
-                    null,
-                    $extraVars,
-                    (int)$cart->id_currency,
-                    false,
-                    $customer->secure_key
-                );
+                $this->createOrUpdateOrder($cart, $extraVars, $customer, \Configuration::get('PS_OS_ERROR'));
 
                 $this->logger->error(
                     "There was an error with the payment method. id:  " . $cart->id .
@@ -418,5 +446,70 @@ abstract class FrontController extends \ModuleFrontController
             }
         }
         return $result;
+    }
+
+    /**
+     * @param $cart
+     * @param $extraVars
+     * @param $customer
+     * @param $orderStatus
+     */
+    private function createOrUpdateOrder($cart, $extraVars, $customer, $orderStatus)
+    {
+        // Load order if exists from cart id
+        if ($cart->OrderExists() !== false) {
+            $order = $this->orderAdapter->getOrderByCartId($cart->id);
+            if (\Validate::isLoadedObject($order)) {
+                $order->setCurrentState($orderStatus);
+            } else {
+                $this->logger->addError('Order cannot be loaded for cart id: ' . $cart->id);
+            }
+        } else {
+            $total = (float)$cart->getOrderTotal(true, \Cart::BOTH);
+            $this->module->validateOrder(
+                $cart->id,
+                $orderStatus,
+                $total,
+                $this->module->displayName,
+                null,
+                $extraVars,
+                (int)$cart->id_currency,
+                false,
+                $customer->secure_key
+            );
+        }
+    }
+
+    /**
+     * Returns true in case the payment value and currency matches the cart
+     *
+     * @param \Cart $cart
+     * @param $amount
+     * @param $currency
+     * @return bool
+     * @throws \Exception
+     */
+    protected function validateCartOrderTotalAndCurrency(\Cart $cart, $amount, $currency)
+    {
+        $cartCurrency = \Currency::getCurrency($cart->id_currency);
+        $cartCurrencyIso = $cartCurrency['iso_code'];
+
+        $orderTotalInMinorUnits = $this->utilCurrency->sanitize(
+            $cart->getOrderTotal(true, \Cart::BOTH),
+            $cartCurrencyIso
+        );
+
+        // In case amount or currency doesn't match return false
+        if ((int)$amount !== $orderTotalInMinorUnits || $currency !== $cartCurrencyIso) {
+            $this->logger->addWarning(
+                'The cart (id: "' . $cart->id . '") amount ("' . $orderTotalInMinorUnits . '") or currency ("' .
+                $cartCurrencyIso . '") has changed during the payment process from amount ("' . $amount .
+                '") or currency ("' . $currency . '"). The order has not been placed but the customer was shown an ' .
+                'error message'
+            );
+            return false;
+        }
+
+        return true;
     }
 }

@@ -47,16 +47,36 @@ class AdyenOfficialPaymentsDetailsModuleFrontController extends FrontController
         $payload = $_REQUEST;
 
         $cart = $this->getCurrentCart();
-        $paymentResponse = $this->adyenPaymentResponseModel->getPaymentResponseByCartId($cart->id);
+        $payment = $this->adyenPaymentResponseModel->getPaymentByCartId($cart->id);
 
-        if (empty($paymentResponse) ||
-            empty($paymentResponse['paymentData'])
-        ) {
+        // Validate if paymentData is available for the payments/details request
+        if (empty($payment['response']['paymentData'])) {
             $this->ajaxRender(
                 $this->helperData->buildControllerResponseJson(
                     'error',
                     array(
-                        'message' => "Payment data not found"
+                        'message' => "Something went wrong. Please place the order again!"
+                    )
+                )
+            );
+        }
+
+        // Validate if cart amount or currency hasn't changed
+        if (!$this->validateCartOrderTotalAndCurrency(
+            $cart,
+            $payment['request_amount'],
+            $payment['request_currency']
+        )) {
+            $this->logger->addWarning(
+                'The cart (id: "' . $cart->id . '") amount or currency has changed during the payment ' .
+                'details request with the previous warning log details for this cart'
+            );
+            $this->ajaxRender(
+                $this->helperData->buildControllerResponseJson(
+                    'error',
+                    array(
+                        'message' => 'Something went wrong. Please refresh your page, check your cart and place the ' .
+                            'order again!'
                     )
                 )
             );
@@ -66,7 +86,7 @@ class AdyenOfficialPaymentsDetailsModuleFrontController extends FrontController
         $request = $this->getValidatedAdditionalData($payload);
 
         // Add payment data into the request object
-        $request["paymentData"] = $paymentResponse['paymentData'];
+        $request["paymentData"] = $payment['response']['paymentData'];
 
         // Send the payments details request
         try {
