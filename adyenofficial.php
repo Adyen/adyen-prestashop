@@ -115,7 +115,7 @@ class AdyenOfficial extends PaymentModule
         $this->author = 'Adyen';
         $this->bootstrap = true;
         $this->display = 'view';
-        $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
+        $this->ps_versions_compliancy = array('min' => '1.6.1', 'max' => _PS_VERSION_);
         $this->currencies = true;
 
         $this->helper_data = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
