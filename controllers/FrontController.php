@@ -217,7 +217,6 @@ abstract class FrontController extends \ModuleFrontController
         // Based on the result code start different payment flows
         switch ($resultCode) {
             case 'Authorised':
-
                 $orderStatus = \Configuration::get('PS_OS_PAYMENT');
                 if ($orderNeedsAttention) {
                     $orderStatus = \Configuration::get('ADYEN_OS_PAYMENT_NEEDS_ATTENTION');
@@ -283,12 +282,15 @@ abstract class FrontController extends \ModuleFrontController
 
                 break;
             case 'RedirectShopper':
+                // Create an ordder for each redirectShopper payments with the state of ADYEN_OS_WAITING_FOR_PAYMENT
                 $this->createOrUpdateOrder(
                     $cart,
                     $extraVars,
                     $customer,
                     \Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT')
                 );
+
+                // Handle the rest the same way as the cases below
             case 'IdentifyShopper':
             case 'ChallengeShopper':
             case 'Pending':
@@ -323,7 +325,6 @@ abstract class FrontController extends \ModuleFrontController
                 );
 
                 if (\Validate::isLoadedObject($customer)) {
-
                     $orderStatus = \Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT');
                     if ($orderNeedsAttention) {
                         $orderStatus = \Configuration::get('ADYEN_OS_PAYMENT_NEEDS_ATTENTION');

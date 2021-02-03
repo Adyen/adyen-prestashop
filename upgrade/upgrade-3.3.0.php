@@ -50,7 +50,8 @@ function alterAdyenPaymentResponseTable()
     $db = Db::getInstance();
     $query = 'ALTER TABLE `' . _DB_PREFIX_ . 'adyen_payment_response`
             ADD COLUMN `request_amount` int NOT NULL COMMENT \'Payment amount in the request\' AFTER `id_cart`,
-            ADD COLUMN `request_currency` varchar(3) NOT NULL COMMENT \'Payment currency in the request\' AFTER `request_amount`';
+            ADD COLUMN `request_currency` varchar(3) NOT NULL COMMENT \'Payment currency in the request\'
+                AFTER `request_amount`';
 
     return $db->execute($query);
 }

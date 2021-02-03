@@ -37,8 +37,13 @@ class AdyenPaymentResponse extends AbstractModel
      * @param null $requestCurrency
      * @return bool
      */
-    public function insertOrUpdatePaymentResponse($cartId, $resultCode, $response, $requestAmount = null, $requestCurrency = null)
-    {
+    public function insertOrUpdatePaymentResponse(
+        $cartId,
+        $resultCode,
+        $response,
+        $requestAmount = null,
+        $requestCurrency = null
+    ) {
         $data = array(
             'result_code' => pSQL($resultCode),
             'response' => pSQL($this->jsonEncodeIfArray($response))
@@ -81,8 +86,8 @@ class AdyenPaymentResponse extends AbstractModel
      */
     public function getPaymentByCartId($cartId)
     {
-        $sql = 'SELECT `request_amount`, `request_currency`, `result_code`, `response` FROM ' . _DB_PREFIX_ . self::$tableName
-            . ' WHERE `id_cart` = "' . (int)$cartId . '"';
+        $sql = 'SELECT `request_amount`, `request_currency`, `result_code`, `response` FROM ' .
+            _DB_PREFIX_ . self::$tableName . ' WHERE `id_cart` = "' . (int)$cartId . '"';
 
         $row = $this->dbInstance->getRow($sql, false);
 
