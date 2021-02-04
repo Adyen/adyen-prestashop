@@ -108,7 +108,7 @@ jQuery(document).ready(function() {
         var placeOrderAllowed;
         var popupModal;
 
-        var notSupportedComponents = ['giropay'];
+        var skipComponents = ['giropay'];
         const handleActionComponents = ['paypal'];
 
         var componentBillingAddress = selectedInvoiceAddress;
@@ -235,7 +235,7 @@ jQuery(document).ready(function() {
         function renderPaymentComponent(
             paymentMethod, paymentMethodContainer, paymentForm) {
 
-            if (notSupportedComponents.includes(paymentMethod.type)) {
+            if (skipComponents.includes(paymentMethod.type)) {
                 return;
             }
 
