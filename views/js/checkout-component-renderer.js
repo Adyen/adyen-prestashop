@@ -518,6 +518,7 @@ jQuery(document).ready(function() {
         }
 
         function handleOnCancel(state, component) {
+            // TODO: Stop creating details manually when FOC-42190 is released
             processPaymentsDetails({
                 'details': { 'orderID': state.orderID },
             }).done(function(responseJSON) {
