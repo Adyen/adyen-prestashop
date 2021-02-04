@@ -517,23 +517,13 @@ jQuery(document).ready(function() {
             }
         }
 
-        function handleOnCancel(state) {
-            hidePopup();
-            const component = getFormComponent(this.paymentForm);
+        function handleOnCancel(state, component) {
             processPaymentsDetails({
                 'details': { 'orderID': state.orderID },
                 'cancelled': true,
             }).done(function(responseJSON) {
                 processControllerResponse(responseJSON, getSelectedPaymentMethod(), component);
             });
-        }
-
-        function getFormComponent(paymentForm) {
-            const paymentMethodContainer = getFormPaymentMethodContainer(paymentForm);
-            const paymentMethodType = paymentMethodContainer.data('local-payment-method');
-            const paymentMethod = paymentMethods.find((paymentMethod) => paymentMethod.type === paymentMethodType);
-            return renderPaymentComponent(paymentMethod, paymentMethodContainer,
-                paymentForm);
         }
 
         function getFormPaymentMethodContainer(paymentForm) {
