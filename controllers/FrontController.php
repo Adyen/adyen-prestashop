@@ -173,7 +173,7 @@ abstract class FrontController extends \ModuleFrontController
      * @param $cancelled
      * @throws AdyenException
      */
-    protected function handlePaymentsResponse($response, $cart, $customer, $isAjax, $cancelled = false)
+    protected function handlePaymentsResponse($response, $cart, $customer, $isAjax)
     {
         $resultCode = $response['resultCode'];
 
@@ -228,11 +228,11 @@ abstract class FrontController extends \ModuleFrontController
                 $this->adyenPaymentResponseModel->deletePaymentResponseByCartId($cart->id);
 
                 // In case of refused/cancelled payment there is no order created and the cart needs to be cloned and
-            // reinitiated
+                // reinitiated
                 $this->cartService->cloneCurrentCart($this->context, $cart);
                 $this->logger->error('The payment was ' . strtolower($resultCode) . ', id:  ' . $cart->id);
 
-                if ($cancelled) {
+                if ($resultCode === 'Cancelled') {
                     $message = $this->l('The payment was cancelled by the customer');
                 } else {
                     $message = $this->l('The payment was refused');

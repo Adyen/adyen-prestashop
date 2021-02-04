@@ -520,7 +520,6 @@ jQuery(document).ready(function() {
         function handleOnCancel(state, component) {
             processPaymentsDetails({
                 'details': { 'orderID': state.orderID },
-                'cancelled': true,
             }).done(function(responseJSON) {
                 processControllerResponse(responseJSON, getSelectedPaymentMethod(), component);
             });
