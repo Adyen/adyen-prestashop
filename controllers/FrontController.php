@@ -227,9 +227,10 @@ abstract class FrontController extends \ModuleFrontController
                 // PaymentResponse can be deleted
                 $this->adyenPaymentResponseModel->deletePaymentResponseByCartId($cart->id);
 
-                // In case of refused payment there is no order created and the cart needs to be cloned and reinitiated
+                // In case of refused/cancelled payment there is no order created and the cart needs to be cloned and
+            // reinitiated
                 $this->cartService->cloneCurrentCart($this->context, $cart);
-                $this->logger->error("The payment was refused, id:  " . $cart->id);
+                $this->logger->error('The payment was ' . strtolower($resultCode) . ', id:  ' . $cart->id);
 
                 if ($cancelled) {
                     $message = $this->l('The payment was cancelled by the customer');
