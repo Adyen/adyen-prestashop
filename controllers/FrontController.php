@@ -170,7 +170,6 @@ abstract class FrontController extends \ModuleFrontController
      * @param $cart
      * @param $customer
      * @param $isAjax
-     * @param $cancelled
      * @throws AdyenException
      */
     protected function handlePaymentsResponse($response, $cart, $customer, $isAjax)
