@@ -29,8 +29,10 @@ use Adyen\PrestaShop\model\AdyenNotification;
 use Adyen\PrestaShop\model\AdyenPaymentResponse;
 use Adyen\PrestaShop\service\adapter\classes\CustomerThreadAdapter;
 use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
+use Adyen\Util\Currency;
 use Context;
 use Db;
+use OrderCore;
 use PrestaShopDatabaseException;
 use PrestaShopException;
 use Psr\Log\LoggerInterface;
@@ -92,6 +94,11 @@ class NotificationProcessor
     private $orderService;
 
     /**
+     * @var Currency
+     */
+    private $utilCurrency;
+
+    /**
      * NotificationProcessor constructor.
      *
      * @param AdyenHelper $helperData
@@ -101,6 +108,8 @@ class NotificationProcessor
      * @param LoggerInterface $logger
      * @param Context $context
      * @param AdyenPaymentResponse $adyenPaymentResponse
+     * @param OrderService $orderService
+     * @param Currency $utilCurrency
      */
     public function __construct(
         AdyenHelper $helperData,
@@ -110,7 +119,8 @@ class NotificationProcessor
         LoggerInterface $logger,
         Context $context,
         AdyenPaymentResponse $adyenPaymentResponse,
-        OrderService $orderService
+        OrderService $orderService,
+        Currency $utilCurrency
     ) {
         $this->helperData = $helperData;
         $this->dbInstance = $dbInstance;
@@ -120,11 +130,13 @@ class NotificationProcessor
         $this->context = $context;
         $this->adyenPaymentResponse = $adyenPaymentResponse;
         $this->orderService = $orderService;
+        $this->utilCurrency = $utilCurrency;
     }
 
     /**
      * @param $unprocessedNotification
      * @return bool
+     * @throws \Exception
      */
     public function processNotification($unprocessedNotification)
     {
@@ -165,6 +177,10 @@ class NotificationProcessor
                         // Add additional data to order if there is any (only possible when the notification success is
                         // true
                         $this->orderService->addPaymentDataToOrderFromResponse($order, $unprocessedNotification);
+                    }
+
+                    if (!$this->validateWithCartAndOrder($unprocessedNotification, $order)) {
+                        $order->setCurrentState(\Configuration::get('ADYEN_OS_PAYMENT_NEEDS_ATTENTION'));
                     }
 
                     // In case psp reference is missing from the order_payment add it
@@ -334,5 +350,33 @@ class NotificationProcessor
         }
 
         return false;
+    }
+
+    /**
+     * @param $notification
+     * @param OrderCore $order
+     * @return bool
+     * @throws \Exception
+     */
+    private function validateWithCartAndOrder($notification, OrderCore $order)
+    {
+        $cart = \Cart::getCartByOrderId($order->id);
+        $cartCurrency = \Currency::getCurrency($cart->id_currency);
+        $cartCurrencyIso = $cartCurrency['iso_code'];
+
+        $cartTotalMinorUnits = $this->utilCurrency->sanitize($cart->getOrderTotal(), $cartCurrencyIso);
+        $orderTotalMinorUnits = $this->utilCurrency->sanitize($order->getTotalPaid(), $cartCurrencyIso);
+
+        if ($notification['amount_currency'] !== $cartCurrencyIso ||
+            (int)$notification['amount_value'] !== $cartTotalMinorUnits ||
+            (int)$notification['amount_value'] !== $orderTotalMinorUnits) {
+            $this->logger->addAdyenNotification(
+                sprintf('Notification with id (%s) contains an incompatible amount/currency with ' .
+                    'Order (%s) or Cart (%s)', $notification['entity_id'], $order->id, $cart->id)
+            );
+            return false;
+        }
+
+        return true;
     }
 }
