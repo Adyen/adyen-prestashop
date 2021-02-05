@@ -255,7 +255,6 @@ abstract class FrontController extends \ModuleFrontController
                 if ($cart->OrderExists() !== false) {
                     $order = $this->orderAdapter->getOrderByCartId($cart->id);
                     if (\Validate::isLoadedObject($order)) {
-                        //$orderPayment = \OrderPaymentCore::getByOrderReference($order->reference);
                         $order->setCurrentState(\Configuration::get('PS_OS_CANCELED'));
                     } else {
                         $this->logger->addError('Order cannot be loaded for cart id: ' . $cart->id);
