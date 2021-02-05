@@ -289,7 +289,7 @@ abstract class FrontController extends \ModuleFrontController
 
                 break;
             case 'RedirectShopper':
-                // Create an ordder for each redirectShopper payments with the state of ADYEN_OS_WAITING_FOR_PAYMENT
+                // Create an order for each redirectShopper payments with the state of ADYEN_OS_WAITING_FOR_PAYMENT
                 $this->createOrUpdateOrder(
                     $cart,
                     $extraVars,
