@@ -229,7 +229,7 @@ abstract class FrontController extends \ModuleFrontController
                 // In case of refused/cancelled payment there is no order created and the cart needs to be cloned and
                 // reinitiated
                 $this->cartService->cloneCurrentCart($this->context, $cart);
-                $this->logger->error('The payment was ' . strtolower($resultCode) . ', id:  ' . $cart->id);
+                $this->logger->error('The payment was ' . strtolower($resultCode) . ', with cart id:  ' . $cart->id);
 
                 if ($resultCode === 'Cancelled') {
                     $message = $this->l('The payment was cancelled by the customer');
