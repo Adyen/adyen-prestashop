@@ -395,7 +395,7 @@ class AdyenOfficial extends PaymentModule
     }
 
     /**
-     * Create a new order status: "waiting for payment"
+     * Create a new order status: "payment needs attention"
      *
      * @return mixed
      * @throws PrestaShopDatabaseException
