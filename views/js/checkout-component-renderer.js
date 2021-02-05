@@ -108,7 +108,8 @@ jQuery(document).ready(function() {
         var placeOrderAllowed;
         var popupModal;
 
-        var notSupportedComponents = ['paypal', 'giropay'];
+        var skipComponents = ['giropay'];
+        const handleActionComponents = ['paypal'];
 
         var componentBillingAddress = selectedInvoiceAddress;
 
@@ -234,7 +235,7 @@ jQuery(document).ready(function() {
         function renderPaymentComponent(
             paymentMethod, paymentMethodContainer, paymentForm) {
 
-            if (notSupportedComponents.includes(paymentMethod.type)) {
+            if (skipComponents.includes(paymentMethod.type)) {
                 return;
             }
 
@@ -271,6 +272,7 @@ jQuery(document).ready(function() {
                 onChange: handleOnChange,
                 onSubmit: handleOnSubmit.bind(context),
                 onClick: handleOnClick.bind(context),
+                onCancel: handleOnCancel.bind(context),
             };
 
             // Remove after updating the checkout API to version 64 or above
@@ -378,11 +380,11 @@ jQuery(document).ready(function() {
                     'isAjax': true,
                 });
 
-                processPayment(paymentData, paymentForm);
+                processPayment(paymentData, paymentForm, component);
             });
         }
 
-        function processPayment(data, paymentForm) {
+        function processPayment(data, paymentForm, component) {
             var paymentProcessUrl = paymentForm.attr('action');
 
             $.ajax({
@@ -391,7 +393,7 @@ jQuery(document).ready(function() {
                 data: data,
                 dataType: 'json',
                 success: function(response) {
-                    processControllerResponse(response, paymentForm);
+                    processControllerResponse(response, paymentForm, component);
                 },
                 error: function(response) {
                     paymentForm.find('.error-container').
@@ -413,7 +415,7 @@ jQuery(document).ready(function() {
             });
         }
 
-        function processControllerResponse(response, paymentForm) {
+        function processControllerResponse(response, paymentForm, component) {
             switch (response.action) {
                 case 'error':
                     // show error message
@@ -426,7 +428,7 @@ jQuery(document).ready(function() {
                     window.location.replace(response.redirectUrl);
                     break;
                 case 'action':
-                    renderActionComponent(response.response);
+                    renderActionComponent(response.response, component);
                     break;
                 default:
                     // show error message
@@ -435,7 +437,7 @@ jQuery(document).ready(function() {
             }
         }
 
-        function renderActionComponent(action) {
+        function renderActionComponent(action, component) {
             // TODO remove when fix is rolled out in a new checkout component version
             delete configuration.data;
 
@@ -447,8 +449,11 @@ jQuery(document).ready(function() {
                 configuration);
 
             try {
-                actionComponent.createFromAction(action).
-                    mount('#actionContainer');
+                if (handleActionComponents.includes(action.paymentMethodType)) {
+                    component.handleAction(action);
+                } else {
+                    actionComponent.createFromAction(action).mount('#actionContainer');
+                }
             } catch (e) {
                 console.log(e);
                 hidePopup();
@@ -492,15 +497,37 @@ jQuery(document).ready(function() {
         }
 
         function handleOnClick(resolve, reject) {
-            const paymentMethodContainer = this.paymentForm.closest('.adyen-payment');
+            const paymentMethodContainer = getFormPaymentMethodContainer(this.paymentForm);
+            const paymentMethodType = paymentMethodContainer.data('local-payment-method');
             // Show message if button is disabled else if not in progress, hide and resolve
             if (prestaShopPlaceOrderButton.prop('disabled') && !isPlaceOrderInProgress()) {
                 showRequiredConditionsInfoMessage(paymentMethodContainer);
-                reject(new Error('Terms of service not agreed'));
+                if (paymentMethodType === 'paypal') {
+                    return false;
+                } else {
+                    reject(new Error('Terms of service not agreed'));
+                }
             } else if (!isPlaceOrderInProgress()) {
                 hideInfoMessage(paymentMethodContainer);
-                resolve();
+                if (paymentMethodType === 'paypal') {
+                    return true;
+                } else {
+                    resolve();
+                }
             }
+        }
+
+        function handleOnCancel(state, component) {
+            // TODO: Stop creating details manually when FOC-42190 is released
+            processPaymentsDetails({
+                'details': { 'orderID': state.orderID },
+            }).done(function(responseJSON) {
+                processControllerResponse(responseJSON, getSelectedPaymentMethod(), component);
+            });
+        }
+
+        function getFormPaymentMethodContainer(paymentForm) {
+            return paymentForm.closest('.adyen-payment');
         }
 
         function getSelectedPaymentMethod() {
