@@ -248,6 +248,7 @@ abstract class FrontController extends \ModuleFrontController
 
                 break;
             case 'Refused':
+            case 'Cancelled':
                 // PaymentResponse can be deleted
                 $this->adyenPaymentResponseModel->deletePaymentResponseByCartId($cart->id);
 
@@ -261,16 +262,23 @@ abstract class FrontController extends \ModuleFrontController
                     }
                 }
 
-                // In case of refused payment there is no order created and the cart needs to be cloned and reinitiated
+                // In case of refused/cancelled payment there is no order created and the cart needs to be cloned and
+                // reinitiated
                 $this->cartService->cloneCurrentCart($this->context, $cart);
-                $this->logger->error("The payment was refused, id:  " . $cart->id);
+                $this->logger->error('The payment was ' . strtolower($resultCode) . ', with cart id:  ' . $cart->id);
+
+                if ($resultCode === 'Cancelled') {
+                    $message = $this->l('The payment was cancelled by the customer');
+                } else {
+                    $message = $this->l('The payment was refused');
+                }
 
                 if ($isAjax) {
                     $this->ajaxRender(
                         $this->helperData->buildControllerResponseJson(
                             'error',
                             array(
-                                'message' => "The payment was refused"
+                                'message' => $message
                             )
                         )
                     );
@@ -370,13 +378,12 @@ abstract class FrontController extends \ModuleFrontController
                 );
 
                 if ($isAjax) {
+                    $message = $this->l('There was an error with the payment method, please choose another one');
                     $this->ajaxRender(
                         $this->helperData->buildControllerResponseJson(
                             'error',
                             array(
-                                'message' => $this->l(
-                                    "There was an error with the payment method, please choose another one."
-                                )
+                                'message' => $message,
                             )
                         )
                     );
@@ -400,7 +407,7 @@ abstract class FrontController extends \ModuleFrontController
                         $this->helperData->buildControllerResponseJson(
                             'error',
                             array(
-                                'message' => $this->l("Unsupported result code:") . "{" . $response['resultCode'] . "}"
+                                'message' => $this->l('Unsupported result code:') . "{" . $response['resultCode'] . "}"
                             )
                         )
                     );

@@ -1230,7 +1230,7 @@ class AdyenOfficial extends PaymentModule
         );
 
         // List of payment methods that needs to show the pay button from the component
-        $paymentMethodsWithPayButtonFromComponent = json_encode(array('paywithgoogle', 'applepay'));
+        $paymentMethodsWithPayButtonFromComponent = json_encode(array('paywithgoogle', 'applepay', 'paypal'));
 
         // All payment method specific configuration
         $paymentMethodsConfigurations = json_encode(
