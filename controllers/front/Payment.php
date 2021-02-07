@@ -226,7 +226,7 @@ class AdyenOfficialPaymentModuleFrontController extends FrontController
 
         $returnUrl = $this->context->link->getModuleLink(
             $this->module->name,
-            'Result',
+            'Redirect',
             array(
                 self::ADYEN_MERCHANT_REFERENCE => $cart->id
             ),
