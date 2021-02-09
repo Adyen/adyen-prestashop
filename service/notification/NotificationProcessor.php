@@ -362,6 +362,14 @@ class NotificationProcessor
         $cart = \Cart::getCartByOrderId($order->id);
 
         if (!\Validate::isLoadedObject($cart)) {
+            $this->logger->addAdyenNotification(
+                sprintf(
+                    'Unable to load cart object linked to Order (%s) and Notification (%s)',
+                    $order->id,
+                    $notification['entity_id']
+                )
+            );
+
             return false;
         }
 
