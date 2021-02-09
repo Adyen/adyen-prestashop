@@ -362,12 +362,15 @@ class NotificationProcessor
     {
         $cart = \Cart::getCartByOrderId($order->id);
         $cartCurrency = \Currency::getCurrency($cart->id_currency);
+        $orderCurrency = \Currency::getCurrency($order->id_currency);
         $cartCurrencyIso = $cartCurrency['iso_code'];
+        $orderCurrencyIso = $orderCurrency['iso_code'];
 
         $cartTotalMinorUnits = $this->utilCurrency->sanitize($cart->getOrderTotal(), $cartCurrencyIso);
-        $orderTotalMinorUnits = $this->utilCurrency->sanitize($order->getTotalPaid(), $cartCurrencyIso);
+        $orderTotalMinorUnits = $this->utilCurrency->sanitize($order->getTotalPaid(), $orderCurrencyIso);
 
         if ($notification['amount_currency'] !== $cartCurrencyIso ||
+            $notification['amount_currency'] !== $orderCurrencyIso ||
             (int)$notification['amount_value'] !== $cartTotalMinorUnits ||
             (int)$notification['amount_value'] !== $orderTotalMinorUnits) {
             $this->logger->addAdyenNotification(
