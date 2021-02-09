@@ -675,7 +675,8 @@ class AdyenOfficial extends PaymentModule
             'type' => 'password',
             'label' => $this->l('Notification Password'),
             'name' => 'ADYEN_NOTI_PASSWORD',
-            'desc' => $notificationPassword ? 'Notification password saved' : $this->l('Please fill your notification password'),
+            'desc' => $notificationPassword ? 'Notification password saved' :
+                $this->l('Please fill your notification password'),
             'class' => $notificationPassword ? 'adyen-input-green' : '',
             'size' => 20,
             'required' => false,
