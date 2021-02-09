@@ -170,11 +170,15 @@ class NotificationProcessor
             case AdyenNotification::AUTHORISATION:
                 if ('true' === $unprocessedNotification['success']) {
                     // If notification data does not match cart and order, set to PAYMENT_NEEDS_ATTENTION
-                    // Else if not in a final status, set to PAYMENT
                     if (!$this->validateWithCartAndOrder($unprocessedNotification, $order)) {
                         $order->setCurrentState(\Configuration::get('ADYEN_OS_PAYMENT_NEEDS_ATTENTION'));
                         $this->orderService->addPaymentDataToOrderFromResponse($order, $unprocessedNotification);
-                    } elseif ($this->isCurrentOrderStatusANonFinalStatus($order->getCurrentState())) {
+
+                        return true;
+                    }
+
+                    // If not in a final status, set to PAYMENT
+                    if ($this->isCurrentOrderStatusANonFinalStatus($order->getCurrentState())) {
                         $order->setCurrentState(\Configuration::get('PS_OS_PAYMENT'));
 
                         // Add additional data to order if there is any (only possible when the notification success is
