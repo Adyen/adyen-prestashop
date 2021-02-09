@@ -110,12 +110,12 @@ class AdyenOfficial extends PaymentModule
     public function __construct()
     {
         $this->name = 'adyenofficial';
-        $this->version = '3.2.1';
+        $this->version = '3.3.0';
         $this->tab = 'payments_gateways';
         $this->author = 'Adyen';
         $this->bootstrap = true;
         $this->display = 'view';
-        $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
+        $this->ps_versions_compliancy = array('min' => '1.6.1', 'max' => _PS_VERSION_);
         $this->currencies = true;
 
         $this->helper_data = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
@@ -202,7 +202,7 @@ class AdyenOfficial extends PaymentModule
                 $this->registerHook('actionFrontControllerSetMedia') &&
                 $this->installTab() &&
                 $this->updateCronJobToken() &&
-                $this->createWaitingForPaymentOrderStatus() &&
+                $this->createAdyenOrderStatuses() &&
                 $this->createAdyenDatabaseTables()
             ) {
                 return true;
@@ -221,7 +221,7 @@ class AdyenOfficial extends PaymentModule
             $this->registerHook('paymentReturn') &&
             $this->registerHook('actionOrderSlipAdd') &&
             $this->updateCronJobToken() &&
-            $this->createWaitingForPaymentOrderStatus() &&
+            $this->createAdyenOrderStatuses() &&
             $this->createAdyenDatabaseTables()
         ) {
             return true;
@@ -333,6 +333,8 @@ class AdyenOfficial extends PaymentModule
         $query = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'adyen_payment_response` (
             `entity_id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT \'Adyen Payment Entity ID\',
             `id_cart` int(11) DEFAULT NULL COMMENT \'Prestashop cart id\',
+            `request_amount` int COMMENT \'Payment amount in the request\',
+            `request_currency` varchar(3) COMMENT \'Payment currency in the request\',
             `result_code` varchar(255) DEFAULT NULL COMMENT \'Result code\',
             `response` text COMMENT \'Response\',
             `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT \'Created At\',
@@ -343,6 +345,16 @@ class AdyenOfficial extends PaymentModule
             ) ENGINE=' . _MYSQL_ENGINE_ . ' AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT=\'Adyen Payment Action\'';
 
         return $db->execute($query);
+    }
+
+    /**
+     * Creates new order statuses for the Adyen payment methods and returns true in case of success
+     *
+     * @return bool
+     */
+    public function createAdyenOrderStatuses()
+    {
+        return $this->createWaitingForPaymentOrderStatus() && $this->createPaymentNeedsAttentionOrderStatus();
     }
 
     /**
@@ -362,6 +374,7 @@ class AdyenOfficial extends PaymentModule
             }
 
             $order_state->send_email = false;
+            $order_state->module_name = $this->name;
             $order_state->invoice = false;
             $order_state->color = '#4169E1';
             $order_state->logable = true;
@@ -376,6 +389,43 @@ class AdyenOfficial extends PaymentModule
             }
 
             return Configuration::updateValue('ADYEN_OS_WAITING_FOR_PAYMENT', (int)$order_state->id);
+        }
+
+        return true;
+    }
+
+    /**
+     * Create a new order status: "payment needs attention"
+     *
+     * @return mixed
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    public function createPaymentNeedsAttentionOrderStatus()
+    {
+        if (!Configuration::get('ADYEN_OS_PAYMENT_NEEDS_ATTENTION')) {
+            $order_state = new OrderState();
+            $order_state->name = array();
+            foreach (Language::getLanguages() as $language) {
+                $order_state->name[$language['id_lang']] = 'Payment needs attention';
+            }
+
+            $order_state->send_email = false;
+            $order_state->module_name = $this->name;
+            $order_state->invoice = false;
+            $order_state->color = '#d62424';
+            $order_state->logable = true;
+            $order_state->delivery = false;
+            $order_state->hidden = false;
+            $order_state->shipped = false;
+            $order_state->paid = false;
+            if ($order_state->add()) {
+                $source = _PS_ROOT_DIR_ . '/img/os/' . Configuration::get('PS_OS_BANKWIRE') . '.gif';
+                $destination = _PS_ROOT_DIR_ . '/img/os/' . (int)$order_state->id . '.gif';
+                copy($source, $destination);
+            }
+
+            return Configuration::updateValue('ADYEN_OS_PAYMENT_NEEDS_ATTENTION', (int)$order_state->id);
         }
 
         return true;
@@ -1181,7 +1231,7 @@ class AdyenOfficial extends PaymentModule
         );
 
         // List of payment methods that needs to show the pay button from the component
-        $paymentMethodsWithPayButtonFromComponent = json_encode(array('paywithgoogle', 'applepay'));
+        $paymentMethodsWithPayButtonFromComponent = json_encode(array('paywithgoogle', 'applepay', 'paypal'));
 
         // All payment method specific configuration
         $paymentMethodsConfigurations = json_encode(

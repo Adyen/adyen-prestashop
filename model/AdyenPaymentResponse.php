@@ -24,6 +24,7 @@
 
 namespace Adyen\PrestaShop\model;
 
+// TODO Rename database table to AdyenPayment
 class AdyenPaymentResponse extends AbstractModel
 {
     private static $tableName = 'adyen_payment_response';
@@ -32,14 +33,29 @@ class AdyenPaymentResponse extends AbstractModel
      * @param $cartId
      * @param $resultCode
      * @param $response
+     * @param null $requestAmount
+     * @param null $requestCurrency
      * @return bool
      */
-    public function insertOrUpdatePaymentResponse($cartId, $resultCode, $response)
-    {
+    public function insertOrUpdatePaymentResponse(
+        $cartId,
+        $resultCode,
+        $response,
+        $requestAmount = null,
+        $requestCurrency = null
+    ) {
         $data = array(
             'result_code' => pSQL($resultCode),
             'response' => pSQL($this->jsonEncodeIfArray($response))
         );
+
+        if (null !== $requestAmount) {
+            $data['request_amount'] = pSQL((int)$requestAmount);
+        }
+
+        if (null !== $requestCurrency) {
+            $data['request_currency'] = pSQL($requestCurrency);
+        }
 
         if ($this->getPaymentResponseByCartId($cartId)) {
             return $this->updatePaymentResponseByCartId($cartId, $data);
@@ -62,6 +78,24 @@ class AdyenPaymentResponse extends AbstractModel
         return $this->jsonDecodeIfJson(
             $this->dbInstance->getValue($sql)
         );
+    }
+
+    /**
+     * @param $cartId
+     * @return array|bool|object|null
+     */
+    public function getPaymentByCartId($cartId)
+    {
+        $sql = 'SELECT `request_amount`, `request_currency`, `result_code`, `response` FROM ' .
+            _DB_PREFIX_ . self::$tableName . ' WHERE `id_cart` = "' . (int)$cartId . '"';
+
+        $row = $this->dbInstance->getRow($sql, false);
+
+        if (!empty($row)) {
+            $row['response'] = $this->jsonDecodeIfJson($row['response']);
+        }
+
+        return $row;
     }
 
     /**
