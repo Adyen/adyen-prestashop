@@ -168,19 +168,18 @@ class NotificationProcessor
         // Process notifications based on it's event code
         switch ($unprocessedNotification['event_code']) {
             case AdyenNotification::AUTHORISATION:
-                // Notification success is 'true'
                 if ('true' === $unprocessedNotification['success']) {
-                    // Moves order to paid if order status is not paid already
-                    if ($this->isCurrentOrderStatusANonFinalStatus($order->getCurrentState())) {
+                    // If notification data does not match cart and order, set to PAYMENT_NEEDS_ATTENTION
+                    // Else if not in a final status, set to PAYMENT
+                    if (!$this->validateWithCartAndOrder($unprocessedNotification, $order)) {
+                        $order->setCurrentState(\Configuration::get('ADYEN_OS_PAYMENT_NEEDS_ATTENTION'));
+                        $this->orderService->addPaymentDataToOrderFromResponse($order, $unprocessedNotification);
+                    } else if ($this->isCurrentOrderStatusANonFinalStatus($order->getCurrentState())) {
                         $order->setCurrentState(\Configuration::get('PS_OS_PAYMENT'));
 
                         // Add additional data to order if there is any (only possible when the notification success is
                         // true
                         $this->orderService->addPaymentDataToOrderFromResponse($order, $unprocessedNotification);
-                    }
-
-                    if (!$this->validateWithCartAndOrder($unprocessedNotification, $order)) {
-                        $order->setCurrentState(\Configuration::get('ADYEN_OS_PAYMENT_NEEDS_ATTENTION'));
                     }
 
                     // In case psp reference is missing from the order_payment add it
