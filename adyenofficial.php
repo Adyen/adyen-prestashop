@@ -1068,7 +1068,8 @@ class AdyenOfficial extends PaymentModule
                 $oneClickOption->setCallToActionText(
                     sprintf(
                         $this->l('Pay by saved %s ending: %s'),
-                        $storedPaymentMethod['name'], $storedPaymentMethod['lastFour']
+                        $storedPaymentMethod['name'],
+                        $storedPaymentMethod['lastFour']
                     )
                 )
                     ->setForm(
