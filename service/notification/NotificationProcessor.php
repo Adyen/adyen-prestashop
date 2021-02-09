@@ -361,6 +361,11 @@ class NotificationProcessor
     private function validateWithCartAndOrder($notification, OrderCore $order)
     {
         $cart = \Cart::getCartByOrderId($order->id);
+
+        if (!\Validate::isLoadedObject($cart)) {
+            return false;
+        }
+
         $cartCurrency = \Currency::getCurrency($cart->id_currency);
         $orderCurrency = \Currency::getCurrency($order->id_currency);
         $cartCurrencyIso = $cartCurrency['iso_code'];
