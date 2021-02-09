@@ -669,6 +669,7 @@ class AdyenOfficial extends PaymentModule
             'size' => 20,
             'required' => true,
             'lang' => false,
+            // phpcs:ignore Generic.Files.LineLength.TooLong
             'hint' => $this->l('In Adyen backoffice you have a company account with one or more merchantaccounts. Fill in the merchantaccount you want to use for this webshop.')
         );
 
@@ -698,6 +699,7 @@ class AdyenOfficial extends PaymentModule
             'name' => 'ADYEN_NOTI_USERNAME',
             'size' => 20,
             'required' => true,
+            // phpcs:ignore Generic.Files.LineLength.TooLong
             'hint' => $this->l('Must correspond to the notification username in the Adyen Backoffice under Settings => Notifications')
         );
 
@@ -723,6 +725,7 @@ class AdyenOfficial extends PaymentModule
             'class' => $notificationPassword ? 'adyen-input-green' : '',
             'size' => 20,
             'required' => false,
+            // phpcs:ignore Generic.Files.LineLength.TooLong
             'hint' => $this->l('Must correspond to the notification password in the Adyen Backoffice under Settings => Notifications')
         );
 
@@ -744,6 +747,7 @@ class AdyenOfficial extends PaymentModule
             'class' => $notificationHmacKey ? 'adyen-input-green' : '',
             'size' => 20,
             'required' => false,
+            // phpcs:ignore Generic.Files.LineLength.TooLong
             'hint' => $this->l('Must correspond to the notification HMAC Key in the Adyen Backoffice under Settings => Notifications => Additional Settings => HMAC Key (HEX Encoded)')
         );
 
@@ -764,6 +768,7 @@ class AdyenOfficial extends PaymentModule
         $fields_form[0]['form']['input'][] = array(
             'type' => 'text',
             'desc' => $cronjobToken ?
+                // phpcs:ignore Generic.Files.LineLength.TooLong
                 $this->l('Your adyen cron job processor\'s url includes this secure token. Your URL looks like: ') .
                 sprintf(
                     "%s/%s/index.php?fc=module&controller=AdminAdyenOfficialPrestashopCron&token=%s",
@@ -802,6 +807,7 @@ class AdyenOfficial extends PaymentModule
             'class' => $apiKeyTestLastDigits ? 'adyen-input-green' : '',
             'size' => 20,
             'required' => false,
+            // phpcs:ignore Generic.Files.LineLength.TooLong
             'hint' => $this->l('If you don\'t know your Api-Key, log in to your Test Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Checkout token is your API Key.')
         );
 
@@ -828,6 +834,7 @@ class AdyenOfficial extends PaymentModule
             'class' => $apiKeyLiveLastDigits ? 'adyen-input-green' : '',
             'size' => 20,
             'required' => false,
+            // phpcs:ignore Generic.Files.LineLength.TooLong
             'hint' => $this->l('If you don\'t know your Api-Key, log in to your Live Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Checkout token is your API Key.')
         );
 
@@ -839,6 +846,7 @@ class AdyenOfficial extends PaymentModule
             'size' => 50,
             'required' => false,
             'lang' => false,
+            // phpcs:ignore Generic.Files.LineLength.TooLong
             'hint' => $this->l('If you don\'t know your client key, log in to your Test Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Client Key is your Client Key.')
         );
 
@@ -850,6 +858,7 @@ class AdyenOfficial extends PaymentModule
             'size' => 50,
             'required' => false,
             'lang' => false,
+            // phpcs:ignore Generic.Files.LineLength.TooLong
             'hint' => $this->l('If you don\'t know your client key, log in to your Live Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Client Key is your Client Key.')
         );
 
