@@ -174,7 +174,7 @@ class NotificationProcessor
                     if (!$this->validateWithCartAndOrder($unprocessedNotification, $order)) {
                         $order->setCurrentState(\Configuration::get('ADYEN_OS_PAYMENT_NEEDS_ATTENTION'));
                         $this->orderService->addPaymentDataToOrderFromResponse($order, $unprocessedNotification);
-                    } else if ($this->isCurrentOrderStatusANonFinalStatus($order->getCurrentState())) {
+                    } elseif ($this->isCurrentOrderStatusANonFinalStatus($order->getCurrentState())) {
                         $order->setCurrentState(\Configuration::get('PS_OS_PAYMENT'));
 
                         // Add additional data to order if there is any (only possible when the notification success is
