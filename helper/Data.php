@@ -106,11 +106,19 @@ class Data
     public function fetchPaymentMethods(Cart $cart, $language)
     {
         $merchantAccount = \Configuration::get('ADYEN_MERCHANT_ACCOUNT');
+        $customer = new \Customer($cart->id_customer);
 
         if (!$merchantAccount) {
             $this->logger->error(
                 "The merchant account field is empty, check your Adyen configuration in Prestashop."
             );
+
+            return array();
+        } elseif (!\Validate::isLoadedObject($customer)) {
+            $this->logger->error(
+                sprintf('Unable to load customer linked to Cart (%s)', $cart->id)
+            );
+
             return array();
         }
 
@@ -119,7 +127,6 @@ class Data
         $currency = $currencyData['iso_code'];
         $address = new Address($cart->id_address_invoice);
         $countryCode = Country::getIsoById($address->id_country);
-        $shopperReference = str_pad($cart->id_customer, 3, '0', STR_PAD_LEFT);
         $shopperLocale = $this->languageAdapter->getLocaleCode($language);
 
         $adyenFields = array(
@@ -133,9 +140,14 @@ class Data
                     $currency
                 ),
             ),
-            "shopperReference" => $shopperReference,
             "shopperLocale" => $shopperLocale
         );
+
+        // If customer is a guest, do not send shopperReference
+        if (!$customer->isGuest()) {
+            $shopperReference = str_pad($cart->id_customer, 3, '0', STR_PAD_LEFT);
+            $adyenFields['shopperReference'] = $shopperReference;
+        }
 
         $responseData = "";
         try {
