@@ -725,14 +725,15 @@ class AdyenOfficial extends PaymentModule
             'type' => 'password',
             'label' => $this->l('Notification Password'),
             'name' => 'ADYEN_NOTI_PASSWORD',
-            'desc' => $notificationPassword ? '' : $this->l('Please fill your notification password'),
+            'desc' => $notificationPassword ? $this->l('Notification password saved') :
+                $this->l('Please fill your notification password'),
             'class' => $notificationPassword ? 'adyen-input-green' : '',
             'size' => 20,
             'required' => false,
             'hint' => $this->l(
                 'Must correspond to the notification password in the Adyen Backoffice under' .
                 ' Settings => Notifications'
-            )
+            ),
         );
 
         $notificationHmacKey = '';
@@ -749,7 +750,8 @@ class AdyenOfficial extends PaymentModule
             'type' => 'password',
             'label' => $this->l('HMAC key for notifications'),
             'name' => 'ADYEN_NOTI_HMAC',
-            'desc' => $notificationHmacKey ? '' : $this->l('Please fill your notification HMAC key'),
+            'desc' => $notificationHmacKey ? $this->l('HMAC key saved') :
+                $this->l('Please fill your notification HMAC key'),
             'class' => $notificationHmacKey ? 'adyen-input-green' : '',
             'size' => 20,
             'required' => false,
