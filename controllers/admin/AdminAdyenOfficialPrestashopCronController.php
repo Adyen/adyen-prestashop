@@ -93,8 +93,17 @@ class AdminAdyenOfficialPrestashopCronController extends \ModuleAdminController
         $this->context = \Context::getContext();
 
         parent::__construct();
-        $this->postProcess();
-        die();
+        $failedNotifications = $this->postProcess();
+        if (empty($failedNotifications)) {
+            $message = 'Cron job finished successfully';
+        } else {
+            $message = sprintf(
+                'An error occurred during the execution of the following notifications: %s',
+                implode(',', $failedNotifications)
+            );
+        }
+
+        die($message);
     }
 
     /**
@@ -102,6 +111,7 @@ class AdminAdyenOfficialPrestashopCronController extends \ModuleAdminController
      */
     public function postProcess()
     {
+        $failedNotifications = [];
         $notificationProcessor = new NotificationProcessor(
             $this->helperData,
             \Db::getInstance(),
@@ -128,7 +138,10 @@ class AdminAdyenOfficialPrestashopCronController extends \ModuleAdminController
             } else {
                 // processing had some error
                 $notificationModel->updateNotificationAsNew($unprocessedNotification['entity_id']);
+                $failedNotifications[] = $unprocessedNotification['entity_id'];
             }
         }
+
+        return $failedNotifications;
     }
 }
