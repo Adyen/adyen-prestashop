@@ -114,7 +114,9 @@ class Data
             );
 
             return array();
-        } elseif (!\Validate::isLoadedObject($customer)) {
+        }
+
+        if (!\Validate::isLoadedObject($customer)) {
             $this->logger->error(
                 sprintf('Unable to load customer linked to Cart (%s)', $cart->id)
             );
