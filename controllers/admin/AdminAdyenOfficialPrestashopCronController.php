@@ -110,7 +110,8 @@ class AdminAdyenOfficialPrestashopCronController extends \ModuleAdminController
             $this->logger,
             \Context::getContext(),
             new AdyenPaymentResponse(),
-            new OrderService()
+            new OrderService(),
+            new \Adyen\Util\Currency()
         );
 
         $notificationModel = new AdyenNotification();

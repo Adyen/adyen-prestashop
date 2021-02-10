@@ -29,6 +29,7 @@ use Adyen\PrestaShop\model\AdyenPaymentResponse;
 use Adyen\PrestaShop\service\adapter\classes\CustomerThreadAdapter;
 use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
 use Adyen\PrestaShop\service\notification\NotificationProcessor;
+use Adyen\Util\Currency;
 use Context;
 use Db;
 use Mockery as m;
@@ -71,9 +72,14 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
     private $adyenPaymentResponseMock;
 
     /**
-     * @var OrderService|PHPUnit_Framework_MockObject_MockObject orderServiceMock
+     * @var OrderService|PHPUnit_Framework_MockObject_MockObject $orderServiceMock
      */
     private $orderServiceMock;
+
+    /**
+     * @var Currency|PHPUnit_Framework_MockObject_MockObject $utilCurrency
+     */
+    private $utilCurrency;
 
     /**
      *
@@ -115,6 +121,8 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
         $this->orderServiceMock = $this->getMockBuilder(OrderService::class)
             ->disableOriginalConstructor()
             ->getMock();
+
+        $this->utilCurrency = new Currency();
     }
 
     protected function tearDown()
@@ -173,7 +181,8 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
             $this->logger,
             $context,
             $this->adyenPaymentResponseMock,
-            $this->orderServiceMock
+            $this->orderServiceMock,
+            $this->utilCurrency
         );
 
         $this->assertTrue($notificationProcessor->addMessage($notification));
@@ -205,7 +214,8 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
             $this->logger,
             $context,
             $this->adyenPaymentResponseMock,
-            $this->orderServiceMock
+            $this->orderServiceMock,
+            $this->utilCurrency
         );
 
         $this->logger->expects($this->once())
@@ -247,7 +257,8 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
             $this->logger,
             $context,
             $this->adyenPaymentResponseMock,
-            $this->orderServiceMock
+            $this->orderServiceMock,
+            $this->utilCurrency
         );
 
         $this->logger->expects($this->once())
