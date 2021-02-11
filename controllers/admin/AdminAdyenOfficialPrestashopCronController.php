@@ -111,7 +111,7 @@ class AdminAdyenOfficialPrestashopCronController extends \ModuleAdminController
      */
     public function postProcess()
     {
-        $failedNotifications = [];
+        $failedNotifications = array();
         $notificationProcessor = new NotificationProcessor(
             $this->helperData,
             \Db::getInstance(),
