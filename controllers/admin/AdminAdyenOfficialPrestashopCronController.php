@@ -99,7 +99,7 @@ class AdminAdyenOfficialPrestashopCronController extends \ModuleAdminController
         } else {
             $message = sprintf(
                 'An error occurred during the execution of the following notifications: %s',
-                implode(',', $failedNotifications)
+                implode(', ', $failedNotifications)
             );
         }
 
