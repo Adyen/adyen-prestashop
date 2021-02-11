@@ -107,7 +107,8 @@ class AdminAdyenOfficialPrestashopCronController extends \ModuleAdminController
     }
 
     /**
-     *
+     * @return array
+     * @throws Exception
      */
     public function postProcess()
     {
