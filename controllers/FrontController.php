@@ -267,9 +267,9 @@ abstract class FrontController extends \ModuleFrontController
                 $this->logger->error('The payment was ' . strtolower($resultCode) . ', with cart id:  ' . $cart->id);
 
                 if ($resultCode === 'Cancelled') {
-                    $message = $this->l('The payment was cancelled by the customer');
+                    $message = $this->module->l('The payment was cancelled by the customer');
                 } else {
-                    $message = $this->l('The payment was refused');
+                    $message = $this->module->l('The payment was refused');
                 }
 
                 if ($isAjax) {
@@ -377,7 +377,7 @@ abstract class FrontController extends \ModuleFrontController
                 );
 
                 if ($isAjax) {
-                    $message = $this->l('There was an error with the payment method, please choose another one');
+                    $message = $this->module->l('There was an error with the payment method, please choose another one');
                     $this->ajaxRender(
                         $this->helperData->buildControllerResponseJson(
                             'error',
@@ -406,7 +406,7 @@ abstract class FrontController extends \ModuleFrontController
                         $this->helperData->buildControllerResponseJson(
                             'error',
                             array(
-                                'message' => $this->l('Unsupported result code:') . "{" . $response['resultCode'] . "}"
+                                'message' => $this->module->l('Unsupported result code:') . "{" . $response['resultCode'] . "}"
                             )
                         )
                     );
