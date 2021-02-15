@@ -1069,7 +1069,7 @@ class AdyenOfficial extends PaymentModule
                 $oneClickOption = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
                 $oneClickOption->setCallToActionText(
                     sprintf(
-                        $this->l('Pay by saved') . '%s' . $this->l('ending') . '%s',
+                        $this->l('Pay by saved') . ' %s ' . $this->l('ending') . ': %s',
                         $storedPaymentMethod['name'],
                         $storedPaymentMethod['lastFour']
                     )
