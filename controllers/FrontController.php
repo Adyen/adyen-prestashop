@@ -378,6 +378,7 @@ abstract class FrontController extends \ModuleFrontController
                 );
 
                 if ($isAjax) {
+                    // phpcs:ignore Generic.Files.LineLength.TooLong
                     $message = $this->module->l('There was an error with the payment method, please choose another one');
                     $this->ajaxRender(
                         $this->helperData->buildControllerResponseJson(
@@ -407,7 +408,8 @@ abstract class FrontController extends \ModuleFrontController
                         $this->helperData->buildControllerResponseJson(
                             'error',
                             array(
-                                'message' => $this->module->l('Unsupported result code:') . "{" . $response['resultCode'] . "}"
+                                'message' => $this->module->l('Unsupported result code:') .
+                                    "{" . $response['resultCode'] . "}"
                             )
                         )
                     );
