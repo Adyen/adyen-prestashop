@@ -63,7 +63,7 @@ class Client extends \Adyen\Client
         $this->setXApiKey($apiKey);
         $this->setAdyenPaymentSource($configuration->moduleName, $configuration->moduleVersion);
         $this->setMerchantApplication($configuration->moduleName, $configuration->moduleVersion);
-        $this->setExternalPlatform("PrestaShop", _PS_VERSION_);
+        $this->setExternalPlatform("PrestaShop", _PS_VERSION_, $configuration->integratorName);
         $this->setEnvironment($configuration->adyenMode, $configuration->liveEndpointPrefix);
 
         $this->setLogger($logger);

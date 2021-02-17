@@ -110,12 +110,12 @@ class AdyenOfficial extends PaymentModule
     public function __construct()
     {
         $this->name = 'adyenofficial';
-        $this->version = '3.2.1';
+        $this->version = '3.3.0';
         $this->tab = 'payments_gateways';
         $this->author = 'Adyen';
         $this->bootstrap = true;
         $this->display = 'view';
-        $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
+        $this->ps_versions_compliancy = array('min' => '1.6.1', 'max' => _PS_VERSION_);
         $this->currencies = true;
 
         $this->helper_data = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
@@ -202,7 +202,7 @@ class AdyenOfficial extends PaymentModule
                 $this->registerHook('actionFrontControllerSetMedia') &&
                 $this->installTab() &&
                 $this->updateCronJobToken() &&
-                $this->createWaitingForPaymentOrderStatus() &&
+                $this->createAdyenOrderStatuses() &&
                 $this->createAdyenDatabaseTables()
             ) {
                 return true;
@@ -221,7 +221,7 @@ class AdyenOfficial extends PaymentModule
             $this->registerHook('paymentReturn') &&
             $this->registerHook('actionOrderSlipAdd') &&
             $this->updateCronJobToken() &&
-            $this->createWaitingForPaymentOrderStatus() &&
+            $this->createAdyenOrderStatuses() &&
             $this->createAdyenDatabaseTables()
         ) {
             return true;
@@ -333,6 +333,8 @@ class AdyenOfficial extends PaymentModule
         $query = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'adyen_payment_response` (
             `entity_id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT \'Adyen Payment Entity ID\',
             `id_cart` int(11) DEFAULT NULL COMMENT \'Prestashop cart id\',
+            `request_amount` int COMMENT \'Payment amount in the request\',
+            `request_currency` varchar(3) COMMENT \'Payment currency in the request\',
             `result_code` varchar(255) DEFAULT NULL COMMENT \'Result code\',
             `response` text COMMENT \'Response\',
             `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT \'Created At\',
@@ -343,6 +345,16 @@ class AdyenOfficial extends PaymentModule
             ) ENGINE=' . _MYSQL_ENGINE_ . ' AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT=\'Adyen Payment Action\'';
 
         return $db->execute($query);
+    }
+
+    /**
+     * Creates new order statuses for the Adyen payment methods and returns true in case of success
+     *
+     * @return bool
+     */
+    public function createAdyenOrderStatuses()
+    {
+        return $this->createWaitingForPaymentOrderStatus() && $this->createPaymentNeedsAttentionOrderStatus();
     }
 
     /**
@@ -362,6 +374,7 @@ class AdyenOfficial extends PaymentModule
             }
 
             $order_state->send_email = false;
+            $order_state->module_name = $this->name;
             $order_state->invoice = false;
             $order_state->color = '#4169E1';
             $order_state->logable = true;
@@ -376,6 +389,43 @@ class AdyenOfficial extends PaymentModule
             }
 
             return Configuration::updateValue('ADYEN_OS_WAITING_FOR_PAYMENT', (int)$order_state->id);
+        }
+
+        return true;
+    }
+
+    /**
+     * Create a new order status: "payment needs attention"
+     *
+     * @return mixed
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    public function createPaymentNeedsAttentionOrderStatus()
+    {
+        if (!Configuration::get('ADYEN_OS_PAYMENT_NEEDS_ATTENTION')) {
+            $order_state = new OrderState();
+            $order_state->name = array();
+            foreach (Language::getLanguages() as $language) {
+                $order_state->name[$language['id_lang']] = 'Payment needs attention';
+            }
+
+            $order_state->send_email = false;
+            $order_state->module_name = $this->name;
+            $order_state->invoice = false;
+            $order_state->color = '#d62424';
+            $order_state->logable = true;
+            $order_state->delivery = false;
+            $order_state->hidden = false;
+            $order_state->shipped = false;
+            $order_state->paid = false;
+            if ($order_state->add()) {
+                $source = _PS_ROOT_DIR_ . '/img/os/' . Configuration::get('PS_OS_BANKWIRE') . '.gif';
+                $destination = _PS_ROOT_DIR_ . '/img/os/' . (int)$order_state->id . '.gif';
+                copy($source, $destination);
+            }
+
+            return Configuration::updateValue('ADYEN_OS_PAYMENT_NEEDS_ATTENTION', (int)$order_state->id);
         }
 
         return true;
@@ -402,6 +452,7 @@ class AdyenOfficial extends PaymentModule
     {
         $adyenConfigurationNames = array(
             'ADYEN_MERCHANT_ACCOUNT',
+            'ADYEN_INTEGRATOR_NAME',
             'ADYEN_MODE',
             'ADYEN_NOTI_USERNAME',
             'ADYEN_NOTI_PASSWORD',
@@ -484,6 +535,7 @@ class AdyenOfficial extends PaymentModule
         if (Tools::isSubmit('submit' . $this->name)) {
             // get post values
             $merchant_account = (string)Tools::getValue('ADYEN_MERCHANT_ACCOUNT');
+            $integrator_name = (string)Tools::getValue('ADYEN_INTEGRATOR_NAME');
             $mode = (string)Tools::getValue('ADYEN_MODE');
             $notification_username = (string)Tools::getValue('ADYEN_NOTI_USERNAME');
             $notification_password = (string)Tools::getValue('ADYEN_NOTI_PASSWORD');
@@ -504,12 +556,17 @@ class AdyenOfficial extends PaymentModule
                 $output .= $this->displayError($this->l('Invalid Configuration value for Merchant Account'));
             }
 
+            if (!Validate::isGenericName($integrator_name) || preg_match('/[^A-Za-z0-9]/', $integrator_name)) {
+                $output .= $this->displayError($this->l('Invalid Configuration value for Integrator Name'));
+            }
+
             if (empty($notification_username) || !Validate::isGenericName($notification_username)) {
                 $output .= $this->displayError($this->l('Invalid Configuration value for Notification Username'));
             }
 
             if ($output == null) {
                 Configuration::updateValue('ADYEN_MERCHANT_ACCOUNT', $merchant_account);
+                Configuration::updateValue('ADYEN_INTEGRATOR_NAME', $integrator_name);
                 Configuration::updateValue('ADYEN_MODE', $mode);
                 Configuration::updateValue('ADYEN_NOTI_USERNAME', $notification_username);
                 Configuration::updateValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX', $live_endpoint_url_prefix);
@@ -612,10 +669,8 @@ class AdyenOfficial extends PaymentModule
             'size' => 20,
             'required' => true,
             'lang' => false,
-            'hint' => $this->l(
-                'In Adyen backoffice you have a company account with one or more merchantaccounts.' .
-                ' Fill in the merchantaccount you want to use for this webshop.'
-            )
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            'hint' => $this->l('In Adyen backoffice you have a company account with one or more merchantaccounts. Fill in the merchantaccount you want to use for this webshop.')
         );
 
         // Test/Production mode
@@ -644,10 +699,8 @@ class AdyenOfficial extends PaymentModule
             'name' => 'ADYEN_NOTI_USERNAME',
             'size' => 20,
             'required' => true,
-            'hint' => $this->l(
-                'Must correspond to the notification username in the Adyen Backoffice under' .
-                ' Settings => Notifications'
-            )
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            'hint' => $this->l('Must correspond to the notification username in the Adyen Backoffice under Settings => Notifications')
         );
 
         $notificationPassword = '';
@@ -668,14 +721,13 @@ class AdyenOfficial extends PaymentModule
             'type' => 'password',
             'label' => $this->l('Notification Password'),
             'name' => 'ADYEN_NOTI_PASSWORD',
-            'desc' => $notificationPassword ? '' : $this->l('Please fill your notification password'),
+            'desc' => $notificationPassword ? $this->l('Notification password saved') :
+                $this->l('Please fill your notification password'),
             'class' => $notificationPassword ? 'adyen-input-green' : '',
             'size' => 20,
             'required' => false,
-            'hint' => $this->l(
-                'Must correspond to the notification password in the Adyen Backoffice under' .
-                ' Settings => Notifications'
-            )
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            'hint' => $this->l('Must correspond to the notification password in the Adyen Backoffice under Settings => Notifications')
         );
 
         $notificationHmacKey = '';
@@ -692,14 +744,13 @@ class AdyenOfficial extends PaymentModule
             'type' => 'password',
             'label' => $this->l('HMAC key for notifications'),
             'name' => 'ADYEN_NOTI_HMAC',
-            'desc' => $notificationHmacKey ? '' : $this->l('Please fill your notification HMAC key'),
+            'desc' => $notificationHmacKey ? $this->l('HMAC key saved') :
+                $this->l('Please fill your notification HMAC key'),
             'class' => $notificationHmacKey ? 'adyen-input-green' : '',
             'size' => 20,
             'required' => false,
-            'hint' => $this->l(
-                'Must correspond to the notification HMAC Key in the Adyen Backoffice under' .
-                ' Settings => Notifications => Additional Settings => HMAC Key (HEX Encoded)'
-            )
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            'hint' => $this->l('Must correspond to the notification HMAC Key in the Adyen Backoffice under Settings => Notifications => Additional Settings => HMAC Key (HEX Encoded)')
         );
 
         $cronjobToken = '';
@@ -719,7 +770,8 @@ class AdyenOfficial extends PaymentModule
         $fields_form[0]['form']['input'][] = array(
             'type' => 'text',
             'desc' => $cronjobToken ?
-                $this->l("Your adyen cron job processor's url includes this secure token . Your URL looks like: ") .
+                // phpcs:ignore Generic.Files.LineLength.TooLong
+                $this->l('Your adyen cron job processor\'s url includes this secure token. Your URL looks like: ') .
                 sprintf(
                     "%s/%s/index.php?fc=module&controller=AdminAdyenOfficialPrestashopCron&token=%s",
                     Tools::getShopDomainSsl(),
@@ -752,17 +804,13 @@ class AdyenOfficial extends PaymentModule
             'type' => 'password',
             'label' => $this->l('API key for Test'),
             'name' => 'ADYEN_APIKEY_TEST',
-            'desc' => $apiKeyTestLastDigits ? $this->l('Saved key ends in: ') . $apiKeyTestLastDigits : $this->l(
-                'Please fill your API key for Test'
-            ),
+            'desc' => $apiKeyTestLastDigits ? $this->l('Saved key ends in: ') . $apiKeyTestLastDigits :
+                $this->l('Please fill your API key for Test'),
             'class' => $apiKeyTestLastDigits ? 'adyen-input-green' : '',
             'size' => 20,
             'required' => false,
-            'hint' => $this->l(
-                'If you don\'t know your Api-Key, log in to your Test Customer Area. Navigate to' .
-                ' Settings > Users > System, and click on your webservice user, normally this will be' .
-                ' ws@Company.YourCompanyAccount. Under Checkout token is your API Key.'
-            )
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            'hint' => $this->l('If you don\'t know your Api-Key, log in to your Test Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Checkout token is your API Key.')
         );
 
         $apiKeyLive = '';
@@ -783,17 +831,13 @@ class AdyenOfficial extends PaymentModule
             'type' => 'password',
             'label' => $this->l('API key for Live'),
             'name' => 'ADYEN_APIKEY_LIVE',
-            'desc' => $apiKeyLiveLastDigits ? $this->l('Saved key ends in: ') . $apiKeyLiveLastDigits : $this->l(
-                'Please fill your API key for Live'
-            ),
+            'desc' => $apiKeyLiveLastDigits ? $this->l('Saved key ends in: ') . $apiKeyLiveLastDigits :
+                $this->l('Please fill your API key for Live'),
             'class' => $apiKeyLiveLastDigits ? 'adyen-input-green' : '',
             'size' => 20,
             'required' => false,
-            'hint' => $this->l(
-                'If you don\'t know your Api-Key, log in to your Live Customer Area. Navigate to' .
-                ' Settings > Users > System, and click on your webservice user, normally this will be' .
-                ' ws@Company.YourCompanyAccount. Under Checkout token is your API Key.'
-            )
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            'hint' => $this->l('If you don\'t know your Api-Key, log in to your Live Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Checkout token is your API Key.')
         );
 
         // Client key input test
@@ -804,11 +848,8 @@ class AdyenOfficial extends PaymentModule
             'size' => 50,
             'required' => false,
             'lang' => false,
-            'hint' => $this->l(
-                'If you don\'t know your client key, log in to your Test Customer Area. Navigate to' .
-                ' Settings > Users > System, and click on your webservice user, normally this will be' .
-                ' ws@Company.YourCompanyAccount. Under Client Key is your Client Key.'
-            )
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            'hint' => $this->l('If you don\'t know your client key, log in to your Test Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Client Key is your Client Key.')
         );
 
         // Client key input live
@@ -819,11 +860,8 @@ class AdyenOfficial extends PaymentModule
             'size' => 50,
             'required' => false,
             'lang' => false,
-            'hint' => $this->l(
-                'If you don\'t know your client key, log in to your Live Customer Area. Navigate to' .
-                ' Settings > Users > System, and click on your webservice user, normally this will be' .
-                ' ws@Company.YourCompanyAccount. Under Client Key is your Client Key.'
-            )
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            'hint' => $this->l('If you don\'t know your client key, log in to your Live Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Client Key is your Client Key.')
         );
 
         // Live endpoint prefix
@@ -833,9 +871,7 @@ class AdyenOfficial extends PaymentModule
             'name' => 'ADYEN_LIVE_ENDPOINT_URL_PREFIX',
             'size' => 20,
             'required' => false,
-            'hint' => $this->l(
-                'The URL prefix [random]-[company name] from your Adyen live > Account > API URLs.'
-            )
+            'hint' => $this->l('The URL prefix [random]-[company name] from your Adyen live > Account > API URLs.')
         );
 
         $fields_form[1]['form'] = array(
@@ -858,9 +894,7 @@ class AdyenOfficial extends PaymentModule
             'size' => 50,
             'required' => false,
             'lang' => false,
-            'hint' => $this->l(
-                ''
-            )
+            'hint' => $this->l('')
         );
 
         // Apple pay merchant identifier input
@@ -871,9 +905,7 @@ class AdyenOfficial extends PaymentModule
             'size' => 50,
             'required' => false,
             'lang' => false,
-            'hint' => $this->l(
-                ''
-            )
+            'hint' => $this->l('')
         );
 
         // Google pay gateway merchant id
@@ -884,9 +916,7 @@ class AdyenOfficial extends PaymentModule
             'size' => 50,
             'required' => false,
             'lang' => false,
-            'hint' => $this->l(
-                ''
-            )
+            'hint' => $this->l('')
         );
 
         // Google pay merchant identifier input
@@ -897,9 +927,30 @@ class AdyenOfficial extends PaymentModule
             'size' => 50,
             'required' => false,
             'lang' => false,
-            'hint' => $this->l(
-                ''
+            'hint' => $this->l('')
+        );
+
+        $fields_form[2]['form'] = array(
+            'legend' => array(
+                'title' => $this->l('Developer settings'),
+                'image' => '../img/admin/edit.gif'
+            ),
+            'input' => array(),
+            'submit' => array(
+                'title' => $this->l('Save'),
+                'class' => 'btn btn-default pull-right'
             )
+        );
+
+        // Integrator name input
+        $fields_form[2]['form']['input'][] = array(
+            'type' => 'text',
+            'label' => $this->l('Integrator Name'),
+            'name' => 'ADYEN_INTEGRATOR_NAME',
+            'size' => 20,
+            'required' => false,
+            'lang' => false,
+            'hint' => $this->l('Name of the integrator used. Leave blank if no integrator was utilised.')
         );
 
         $helper = new HelperForm();
@@ -939,6 +990,7 @@ class AdyenOfficial extends PaymentModule
         if (Tools::isSubmit('submit' . $this->name)) {
             // get settings from post because post can give errors and you want to keep values
             $merchant_account = (string)Tools::getValue('ADYEN_MERCHANT_ACCOUNT');
+            $integrator_name = (string)Tools::getValue('ADYEN_INTEGRATOR_NAME');
             $mode = (string)Tools::getValue('ADYEN_MODE');
             $notification_username = (string)Tools::getValue('ADYEN_NOTI_USERNAME');
             $cron_job_token = Tools::getValue('ADYEN_CRONJOB_TOKEN');
@@ -951,6 +1003,7 @@ class AdyenOfficial extends PaymentModule
             $google_pay_merchant_identifier = Tools::getValue('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER');
         } else {
             $merchant_account = Configuration::get('ADYEN_MERCHANT_ACCOUNT');
+            $integrator_name = Configuration::get('ADYEN_INTEGRATOR_NAME');
             $mode = Configuration::get('ADYEN_MODE');
             $notification_username = Configuration::get('ADYEN_NOTI_USERNAME');
             $cron_job_token = $cronjobToken;
@@ -966,6 +1019,7 @@ class AdyenOfficial extends PaymentModule
 
         // Load current value
         $helper->fields_value['ADYEN_MERCHANT_ACCOUNT'] = $merchant_account;
+        $helper->fields_value['ADYEN_INTEGRATOR_NAME'] = $integrator_name;
         $helper->fields_value['ADYEN_MODE'] = $mode;
         $helper->fields_value['ADYEN_NOTI_USERNAME'] = $notification_username;
         $helper->fields_value['ADYEN_CRONJOB_TOKEN'] = $cron_job_token;
@@ -1014,8 +1068,10 @@ class AdyenOfficial extends PaymentModule
 
                 $oneClickOption = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
                 $oneClickOption->setCallToActionText(
-                    $this->l(
-                        'Pay by saved ' . $storedPaymentMethod['name'] . " ending: " . $storedPaymentMethod['lastFour']
+                    sprintf(
+                        $this->l('Pay by saved') . ' %s ' . $this->l('ending') . ': %s',
+                        $storedPaymentMethod['name'],
+                        $storedPaymentMethod['lastFour']
                     )
                 )
                     ->setForm(
@@ -1145,7 +1201,7 @@ class AdyenOfficial extends PaymentModule
         );
 
         // List of payment methods that needs to show the pay button from the component
-        $paymentMethodsWithPayButtonFromComponent = json_encode(array('paywithgoogle', 'applepay'));
+        $paymentMethodsWithPayButtonFromComponent = json_encode(array('paywithgoogle', 'applepay', 'paypal'));
 
         // All payment method specific configuration
         $paymentMethodsConfigurations = json_encode(

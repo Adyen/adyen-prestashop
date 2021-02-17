@@ -29,8 +29,10 @@ use Adyen\PrestaShop\model\AdyenNotification;
 use Adyen\PrestaShop\model\AdyenPaymentResponse;
 use Adyen\PrestaShop\service\adapter\classes\CustomerThreadAdapter;
 use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
+use Adyen\Util\Currency;
 use Context;
 use Db;
+use OrderCore;
 use PrestaShopDatabaseException;
 use PrestaShopException;
 use Psr\Log\LoggerInterface;
@@ -92,6 +94,11 @@ class NotificationProcessor
     private $orderService;
 
     /**
+     * @var Currency
+     */
+    private $utilCurrency;
+
+    /**
      * NotificationProcessor constructor.
      *
      * @param AdyenHelper $helperData
@@ -101,6 +108,8 @@ class NotificationProcessor
      * @param LoggerInterface $logger
      * @param Context $context
      * @param AdyenPaymentResponse $adyenPaymentResponse
+     * @param OrderService $orderService
+     * @param Currency $utilCurrency
      */
     public function __construct(
         AdyenHelper $helperData,
@@ -110,7 +119,8 @@ class NotificationProcessor
         LoggerInterface $logger,
         Context $context,
         AdyenPaymentResponse $adyenPaymentResponse,
-        OrderService $orderService
+        OrderService $orderService,
+        Currency $utilCurrency
     ) {
         $this->helperData = $helperData;
         $this->dbInstance = $dbInstance;
@@ -120,11 +130,13 @@ class NotificationProcessor
         $this->context = $context;
         $this->adyenPaymentResponse = $adyenPaymentResponse;
         $this->orderService = $orderService;
+        $this->utilCurrency = $utilCurrency;
     }
 
     /**
      * @param $unprocessedNotification
      * @return bool
+     * @throws \Exception
      */
     public function processNotification($unprocessedNotification)
     {
@@ -156,9 +168,16 @@ class NotificationProcessor
         // Process notifications based on it's event code
         switch ($unprocessedNotification['event_code']) {
             case AdyenNotification::AUTHORISATION:
-                // Notification success is 'true'
                 if ('true' === $unprocessedNotification['success']) {
-                    // Moves order to paid if order status is not paid already
+                    // If notification data does not match cart and order, set to PAYMENT_NEEDS_ATTENTION
+                    if (!$this->validateWithCartAndOrder($unprocessedNotification, $order)) {
+                        $order->setCurrentState(\Configuration::get('ADYEN_OS_PAYMENT_NEEDS_ATTENTION'));
+                        $this->orderService->addPaymentDataToOrderFromResponse($order, $unprocessedNotification);
+
+                        return true;
+                    }
+
+                    // If not in a final status, set to PAYMENT
                     if ($this->isCurrentOrderStatusANonFinalStatus($order->getCurrentState())) {
                         $order->setCurrentState(\Configuration::get('PS_OS_PAYMENT'));
 
@@ -181,10 +200,8 @@ class NotificationProcessor
                 } else { // Notification success is 'false'
                     // Order state is not canceled yet
                     if ($order->getCurrentState() !== \Configuration::get('PS_OS_CANCELED')) {
-                        // No previous authorisation notification was processed before
-                        if (!$this->hasProcessedAuthorisationSuccessNotification(
-                            $unprocessedNotification['merchant_reference']
-                        )) {
+                        // If order has a non final status, set to cancelled
+                        if ($this->isCurrentOrderStatusANonFinalStatus($order->getCurrentState())) {
                             // Moves order to canceled
                             $order->setCurrentState(\Configuration::get('PS_OS_CANCELED'));
                         } else {
@@ -192,9 +209,8 @@ class NotificationProcessor
                             // notification has already been processed for the same order
                             $this->logger->addAdyenNotification(
                                 'Notification with entity_id (' .
-                                $unprocessedNotification['entity_id'] . ') was ignored during processing the ' .
-                                'notifications because another Authorisation success = true notification has already ' .
-                                'been processed for the same order.'
+                                $unprocessedNotification['entity_id'] . ') was ignored during processing ' .
+                                'because the order status is already in a final state.'
                             );
                         }
                     }
@@ -206,7 +222,7 @@ class NotificationProcessor
                 
                 break;
             case AdyenNotification::OFFER_CLOSED:
-                // Notification success is 'true'
+                // Notification success is 'true' AND current status is ADYEN_OS_WAITING_FOR_PAYMENT
                 if ('true' === $unprocessedNotification['success']) {
                     // Moves order to canceled if order status is waiting for payment
                     if ($order->getCurrentState() === \Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT')) {
@@ -323,34 +339,6 @@ class NotificationProcessor
     }
 
     /**
-     * Returns true if an Authorisation notification with success = true has already been processed before for the same
-     * merchant_reference
-     *
-     * @param $merchantReference
-     * @return bool
-     */
-    private function hasProcessedAuthorisationSuccessNotification($merchantReference)
-    {
-        $notificationModel = new AdyenNotification();
-
-        $processedNotifications = $notificationModel->getProcessedNotificationsByMerchantReference($merchantReference);
-
-        if (empty($processedNotifications)) {
-            return false;
-        }
-
-        foreach ($processedNotifications as $processedNotification) {
-            if (AdyenNotification::AUTHORISATION === $processedNotification['event_code'] &&
-                'true' === $processedNotification['success']
-            ) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Checks if the current order status is in the self::$nonFinalOrderStatuses list
      *
      * @param string $currentOrderStatus
@@ -365,5 +353,49 @@ class NotificationProcessor
         }
 
         return false;
+    }
+
+    /**
+     * @param $notification
+     * @param OrderCore $order
+     * @return bool
+     * @throws \Exception
+     */
+    private function validateWithCartAndOrder($notification, OrderCore $order)
+    {
+        $cart = \Cart::getCartByOrderId($order->id);
+
+        if (!\Validate::isLoadedObject($cart)) {
+            $this->logger->addAdyenNotification(
+                sprintf(
+                    'Unable to load cart object linked to Order (%s) and Notification (%s)',
+                    $order->id,
+                    $notification['entity_id']
+                )
+            );
+
+            return false;
+        }
+
+        $cartCurrency = \Currency::getCurrency($cart->id_currency);
+        $orderCurrency = \Currency::getCurrency($order->id_currency);
+        $cartCurrencyIso = $cartCurrency['iso_code'];
+        $orderCurrencyIso = $orderCurrency['iso_code'];
+
+        $cartTotalMinorUnits = $this->utilCurrency->sanitize($cart->getOrderTotal(), $cartCurrencyIso);
+        $orderTotalMinorUnits = $this->utilCurrency->sanitize($order->getTotalPaid(), $orderCurrencyIso);
+
+        if ($notification['amount_currency'] !== $cartCurrencyIso ||
+            $notification['amount_currency'] !== $orderCurrencyIso ||
+            (int)$notification['amount_value'] !== $cartTotalMinorUnits ||
+            (int)$notification['amount_value'] !== $orderTotalMinorUnits) {
+            $this->logger->addAdyenNotification(
+                sprintf('Notification with id (%s) contains an incompatible amount/currency with ' .
+                    'Order (%s) or Cart (%s)', $notification['entity_id'], $order->id, $cart->id)
+            );
+            return false;
+        }
+
+        return true;
     }
 }

@@ -74,6 +74,6 @@ class AdyenOfficialResultModuleFrontController extends FrontController
         $this->adyenPaymentResponseModel->deletePaymentResponseByCartId($cart->id);
 
         $customer = new \Customer($cart->id_customer);
-        $this->handlePaymentsResponse($response, $cart, $customer, false);
+        $this->handleAdyenApiResponse($response, $cart, $customer, false);
     }
 }

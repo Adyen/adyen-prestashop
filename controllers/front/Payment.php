@@ -203,7 +203,7 @@ class AdyenOfficialPaymentModuleFrontController extends FrontController
             );
         }
 
-        $this->handlePaymentsResponse($response, $cart, $customer, $isAjax);
+        $this->handleAdyenApiResponse($response, $cart, $customer, $isAjax, $request);
     }
 
     /**
