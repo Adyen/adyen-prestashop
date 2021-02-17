@@ -502,6 +502,7 @@ jQuery(document).ready(function() {
             // Show message if button is disabled else if not in progress, hide and resolve
             if (prestaShopPlaceOrderButton.prop('disabled') && !isPlaceOrderInProgress()) {
                 showRequiredConditionsInfoMessage(paymentMethodContainer);
+                // TODO: Remove these paypal specific checks when the component issues are fixed
                 if (paymentMethodType === 'paypal') {
                     return false;
                 } else {
