@@ -26,6 +26,7 @@ namespace Adyen\PrestaShop\service\modification;
 
 use Adyen\AdyenException;
 use Adyen\PrestaShop\infra\NotificationRetriever;
+use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
 use Adyen\PrestaShop\service\modification\exception\NotificationNotFoundException;
 use Adyen\Service\Modification;
 use Adyen\Util\Currency;
@@ -56,22 +57,30 @@ class Refund
     private $logger;
 
     /**
+     * @var OrderAdapter
+     */
+    private $orderAdapter;
+
+    /**
      * Refund constructor.
      *
      * @param Modification $modificationClient
      * @param NotificationRetriever $notificationRetriever
      * @param $merchantAccount
-     * @param LoggerInterface $logger
+     * @param OrderAdapter $orderAdapter
+     * @param LoggerInterface|null $logger
      */
     public function __construct(
         Modification $modificationClient,
         NotificationRetriever $notificationRetriever,
         $merchantAccount,
+        OrderAdapter $orderAdapter,
         LoggerInterface $logger = null
     ) {
         $this->modificationClient = $modificationClient;
         $this->notificationRetriever = $notificationRetriever;
         $this->merchantAccount = $merchantAccount;
+        $this->orderAdapter = $orderAdapter;
         $this->logger = $logger;
     }
 
@@ -90,6 +99,15 @@ class Refund
         // In case shipping cost amount is not empty add shipping costs to the order slip amount
         if (!empty($orderSlip->shipping_cost)) {
             $fullRefundAmount += $orderSlip->shipping_cost_amount;
+        }
+
+        $order = $this->orderAdapter->getOrderByOrderSlipId($orderSlip->id);
+
+        // Cap the amount to be refunded due to an issue on prestashop which may cause the refund amount to exceed
+        // the total paid amount
+        // TODO: Remove this check once https://github.com/PrestaShop/PrestaShop/issues/18319 has been fixed
+        if ($fullRefundAmount > $order->total_paid) {
+            $fullRefundAmount = $order->total_paid;
         }
 
         $amount = $currencyConverter->sanitize($fullRefundAmount, $currency);

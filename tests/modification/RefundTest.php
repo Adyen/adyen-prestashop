@@ -25,6 +25,7 @@
 namespace Adyen\PrestaShop\service\modification;
 
 use Adyen\PrestaShop\infra\NotificationRetriever;
+use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
 use Adyen\Service\Modification;
 use OrderSlip;
 use PHPUnit\Framework\TestCase;
@@ -102,7 +103,13 @@ class RefundTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $refund = new Refund($modificationClient, $notificationRetriever, $merchantAccount, $logger);
+        $refund = new Refund(
+            $modificationClient,
+            $notificationRetriever,
+            $merchantAccount,
+            new OrderAdapter(),
+            $logger
+        );
 
         $this->assertEquals(true, $refund->request($orderSlip, $currency));
     }
