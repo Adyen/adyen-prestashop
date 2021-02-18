@@ -88,7 +88,7 @@ class Refund
         $fullRefundAmount = $orderSlip->amount;
 
         // In case shipping cost amount is not empty add shipping costs to the order slip amount
-        if (!empty($orderSlip->shipping_cost_amount)) {
+        if (!empty($orderSlip->shipping_cost)) {
             $fullRefundAmount += $orderSlip->shipping_cost_amount;
         }
 
