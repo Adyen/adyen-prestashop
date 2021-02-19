@@ -27,6 +27,7 @@ namespace Adyen\PrestaShop\service\modification;
 use Adyen\PrestaShop\infra\NotificationRetriever;
 use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
 use Adyen\Service\Modification;
+use Order;
 use OrderSlip;
 use PHPUnit\Framework\TestCase;
 use PHPUnit_Framework_MockObject_MockObject;
@@ -81,6 +82,13 @@ class RefundTest extends TestCase
                            )
                            ->willReturn(true);
 
+        // Mock order
+        /** @var PHPUnit_Framework_MockObject_MockObject|Order $orderMock */
+        $orderMock = $this->getMockBuilder(Order::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock->total_paid = $amount;
+
         /** @var PHPUnit_Framework_MockObject_MockObject|OrderSlip $orderSlip */
         $orderSlip = $this->getMockBuilder('OrderSlip')
                           ->disableOriginalConstructor()
@@ -98,6 +106,15 @@ class RefundTest extends TestCase
                               ->with($orderId)
                               ->willReturn($pspReference);
 
+        /** @var PHPUnit_Framework_MockObject_MockObject|OrderAdapter $orderAdapter */
+        $orderAdapter = $this->getMockBuilder(OrderAdapter::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $orderAdapter->expects($this->once())
+            ->method('getOrderByOrderSlipId')
+            ->with($orderSlip->id)
+            ->willReturn($orderMock);
 
         $logger = $this->getMockBuilder(\Adyen\PrestaShop\service\Logger::class)
             ->disableOriginalConstructor()
@@ -107,7 +124,7 @@ class RefundTest extends TestCase
             $modificationClient,
             $notificationRetriever,
             $merchantAccount,
-            new OrderAdapter(),
+            $orderAdapter,
             $logger
         );
 
