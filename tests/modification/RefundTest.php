@@ -95,6 +95,7 @@ class RefundTest extends TestCase
                           ->getMock();
         $orderSlip->id_order = $orderId;
         $orderSlip->amount = $amount;
+        $orderSlip->shipping_cost = '0';
         $orderSlip->id = 1;
 
         /** @var PHPUnit_Framework_MockObject_MockObject|NotificationRetriever $notificationRetriever */
