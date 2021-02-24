@@ -25,6 +25,7 @@
 namespace Adyen\PrestaShop\service;
 
 use Adyen\PrestaShop\infra\NotificationRetriever;
+use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
 use Adyen\PrestaShop\service\modification\Refund;
 use Configuration as PrestaShopConfiguration;
 use Currency;
@@ -79,6 +80,7 @@ class RefundService
             $this->modificationService,
             $this->notificationRetriever,
             PrestaShopConfiguration::get('ADYEN_MERCHANT_ACCOUNT'),
+            new OrderAdapter(),
             $this->logger
         );
 
