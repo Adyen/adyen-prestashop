@@ -287,7 +287,9 @@ abstract class FrontController extends \ModuleFrontController
                     $this->redirectUserToPageLink(
                         $this->context->link->getPageLink(
                             'order',
-                            $this->ssl
+                            $this->ssl,
+                            null,
+                            sprintf('message=%s', $message)
                         ),
                         $isAjax
                     );
