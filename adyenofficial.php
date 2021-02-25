@@ -564,6 +564,10 @@ class AdyenOfficial extends PaymentModule
                 $output .= $this->displayError($this->l('Invalid Configuration value for Notification Username'));
             }
 
+            if (empty($live_endpoint_url_prefix)) {
+                $output .= $this->displayError($this->l('Invalid Configuration value for live endpoint url prefix'));
+            }
+
             if ($output == null) {
                 Configuration::updateValue('ADYEN_MERCHANT_ACCOUNT', $merchant_account);
                 Configuration::updateValue('ADYEN_INTEGRATOR_NAME', $integrator_name);
@@ -870,7 +874,7 @@ class AdyenOfficial extends PaymentModule
             'label' => $this->l('Live endpoint prefix'),
             'name' => 'ADYEN_LIVE_ENDPOINT_URL_PREFIX',
             'size' => 20,
-            'required' => false,
+            'required' => true,
             'hint' => $this->l('The URL prefix [random]-[company name] from your Adyen live > Account > API URLs.')
         );
 
