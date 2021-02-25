@@ -283,8 +283,13 @@ abstract class FrontController extends \ModuleFrontController
                         )
                     );
                 } else {
-                    $this->setTemplate(
-                        $this->helperData->getTemplateFromModulePath('views/templates/front/error.tpl')
+
+                    $this->redirectUserToPageLink(
+                        $this->context->link->getPageLink(
+                            'order',
+                            $this->ssl
+                        ),
+                        $isAjax
                     );
                 }
 

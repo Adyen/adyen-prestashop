@@ -61,6 +61,16 @@ class Cart
             $guest = new \Guest($context->cookie->id_guest);
             $context->cart->mobile_theme = $guest->mobile_theme;
         }
+
+        $checkoutSessionData = \Db::getInstance()->getValue(
+            'SELECT checkout_session_data FROM ' . _DB_PREFIX_ . 'cart WHERE id_cart = ' . (int) $cart->id
+        );
+
+        \Db::getInstance()->execute(
+            'UPDATE ' . _DB_PREFIX_ . 'cart SET checkout_session_data = "' . pSQL($checkoutSessionData) . '"
+        WHERE id_cart = ' . (int) $context->cart->id
+        );
+
         // to map the new cart with the customer
         $context->cart->id_customer = $old_cart_customer_id;
         // to save the new cart
