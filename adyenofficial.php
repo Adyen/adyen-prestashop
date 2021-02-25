@@ -565,7 +565,7 @@ class AdyenOfficial extends PaymentModule
             }
 
             if (empty($live_endpoint_url_prefix)) {
-                $output .= $this->displayError($this->l('Invalid Configuration value for live endpoint url prefix'));
+                $output .= $this->displayError($this->l('Invalid Configuration value for live endpoint URL prefix'));
             }
 
             if ($output == null) {
