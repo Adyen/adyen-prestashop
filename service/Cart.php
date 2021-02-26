@@ -73,6 +73,7 @@ class Cart
 
         // to map the new cart with the customer
         $context->cart->id_customer = $old_cart_customer_id;
+        $context->cart->id_guest = $cart->id_guest;
         // to save the new cart
         $context->cart->save();
         if ($context->cart->id) {
