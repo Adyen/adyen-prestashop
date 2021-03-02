@@ -49,6 +49,7 @@ class Cart
         $context->cart->secure_key = $old_cart_secure_key;
         // to add new cart
         $context->cart->add();
+        $newCartId  = $context->cart->id;
         // to update the new cart
         foreach ($cart_products as $product) {
             $context->cart->updateQty(
@@ -62,13 +63,15 @@ class Cart
             $context->cart->mobile_theme = $guest->mobile_theme;
         }
 
+        // Get the checkout_session_data field of the previous cart
         $checkoutSessionData = \Db::getInstance()->getValue(
             'SELECT checkout_session_data FROM ' . _DB_PREFIX_ . 'cart WHERE id_cart = ' . (int) $cart->id
         );
 
+        // Update the checkout_session_data field of the new cart
         \Db::getInstance()->execute(
             'UPDATE ' . _DB_PREFIX_ . 'cart SET checkout_session_data = "' . pSQL($checkoutSessionData) . '"
-        WHERE id_cart = ' . (int) $context->cart->id
+        WHERE id_cart = ' . (int) $newCartId
         );
 
         // to map the new cart with the customer
