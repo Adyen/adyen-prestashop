@@ -1118,7 +1118,7 @@ class AdyenOfficial extends PaymentModule
                 }
 
                 $localPaymentMethod = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
-                $localPaymentMethod->setCallToActionText($this->l('Pay by ' . $paymentMethod['name']))
+                $localPaymentMethod->setCallToActionText(sprintf($this->l('Pay by %s'), $paymentMethod['name']))
                     ->setForm(
                         $this->context->smarty->fetch(
                             _PS_MODULE_DIR_ . $this->name .
