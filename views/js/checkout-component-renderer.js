@@ -321,12 +321,12 @@ jQuery(document).ready(function() {
                     }).catch(e => {
                         if (IS_PRESTA_SHOP_16) {
                             const paymentRow = paymentForm.closest('.adyen-payment');
-                            paymentRow.remove();
+                            paymentRow.hide();
                         } else {
                             const payWithOption = paymentForm.closest('.js-payment-option-form');
                             const paymentOption = payWithOption.prev();
-                            paymentOption.remove();
-                            payWithOption.remove();
+                            paymentOption.hide();
+                            payWithOption.hide();
                         }
                     });
                 } else {
