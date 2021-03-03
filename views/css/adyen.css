@@ -29,15 +29,6 @@
     margin-top: -13px;
 }
 
-.payment_module input {
-    border: 0;
-    background: none;
-}
-
-.payment_module input:hover {
-    text-decoration: underline;
-}
-
 ul.adyen-hpp-options {
     list-style-type: none;
     margin-left: 10px;

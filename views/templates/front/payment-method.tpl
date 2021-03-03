@@ -30,21 +30,23 @@
          data-local-payment-method="{$paymentMethodType|escape:'html':'UTF-8'}"
     >
         <div class="col-xs-12 col-md-6">
-            <div class="adyen-payment-method-label">{l s='Pay with ' mod='adyenofficial'}{$paymentMethodName|escape:'html':'UTF-8'}</div>
-            <form action="{$paymentProcessUrl|escape:'html':'UTF-8'}"
-                  class="adyen-payment-form-{$paymentMethodType|escape:'html':'UTF-8'}" method="post">
-                <div data-adyen-payment-container></div>
-                <!-- Display payment extra info -->
-                <div class="alert alert-info info-container" role="alert"></div>
-                <!-- Display payment errors -->
-                <div class="alert alert-danger error-container" role="alert"></div>
-                <div data-adyen-payment-error-container role="alert"></div>
-                {if $isPrestaShop16 AND !in_array($paymentMethodType, $paymentMethodsWithPayButtonFromComponent|json_decode:1)}
-                    <button type="submit" class="button btn btn-default standard-checkout button-medium">
-                        <span>{l s='Pay' mod='adyenofficial'} <i class="icon-chevron-right right"></i> </span>
-                    </button>
-                {/if}
-            </form>
+            <div class="payment_module">
+                <form action="{$paymentProcessUrl|escape:'html':'UTF-8'}"
+                      class="adyen-payment-form-{$paymentMethodType|escape:'html':'UTF-8'}" method="post">
+                    <div class="adyen-payment-method-label">{l s='Pay with ' mod='adyenofficial'}{$paymentMethodName|escape:'html':'UTF-8'}</div>
+                    <div data-adyen-payment-container></div>
+                    <!-- Display payment extra info -->
+                    <div class="alert alert-info info-container" role="alert"></div>
+                    <!-- Display payment errors -->
+                    <div class="alert alert-danger error-container" role="alert"></div>
+                    <div data-adyen-payment-error-container role="alert"></div>
+                    {if $isPrestaShop16 AND !in_array($paymentMethodType, $paymentMethodsWithPayButtonFromComponent|json_decode:1)}
+                        <button type="submit" class="button btn btn-default standard-checkout button-medium">
+                            <span>{l s='Pay' mod='adyenofficial'} <i class="icon-chevron-right right"></i> </span>
+                        </button>
+                    {/if}
+                </form>
+            </div>
         </div>
     </div>
 {/if}
