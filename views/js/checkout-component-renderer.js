@@ -76,6 +76,11 @@ jQuery(document).ready(function() {
             // observer exception
         }
     } else {
+        const queryParams = new URLSearchParams(window.location.search);
+        if (queryParams.has('message')) {
+            showRedirectErrorMessage(queryParams.get('message'));
+        }
+
         $('input[name="payment-option"]').on('change', function(event) {
 
             let selectedPaymentForm = $(
@@ -101,6 +106,12 @@ jQuery(document).ready(function() {
                 }
             }
         });
+    }
+
+    function showRedirectErrorMessage(message) {
+        const errorDiv = $('<div class="alert alert-danger error-container" role="alert"></div>');
+        errorDiv.text(message);
+        $('.payment-options').append(errorDiv);
     }
 
     function renderPaymentMethods() {

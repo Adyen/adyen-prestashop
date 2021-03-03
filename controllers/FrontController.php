@@ -283,9 +283,21 @@ abstract class FrontController extends \ModuleFrontController
                         )
                     );
                 } else {
-                    $this->setTemplate(
-                        $this->helperData->getTemplateFromModulePath('views/templates/front/error.tpl')
-                    );
+                    if ($this->versionChecker->isPrestaShop16()) {
+                        $this->setTemplate(
+                            $this->helperData->getTemplateFromModulePath('views/templates/front/error.tpl')
+                        );
+                    } else {
+                        $this->redirectUserToPageLink(
+                            $this->context->link->getPageLink(
+                                'order',
+                                $this->ssl,
+                                null,
+                                sprintf('message=%s', $message)
+                            ),
+                            $isAjax
+                        );
+                    }
                 }
 
                 break;
