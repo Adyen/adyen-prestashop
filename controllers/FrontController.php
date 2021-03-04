@@ -263,7 +263,7 @@ abstract class FrontController extends \ModuleFrontController
 
                 // In case of refused/cancelled payment there is no order created and the cart needs to be cloned and
                 // reinitiated
-                $this->cartService->cloneCurrentCart($this->context, $cart);
+                $this->cartService->cloneCurrentCart($this->context, $cart, $this->versionChecker->isPrestaShop16());
                 $this->logger->error('The payment was ' . \Tools::strtolower($resultCode) . ', with cart id:  ' .
                     $cart->id);
 
