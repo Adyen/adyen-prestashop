@@ -564,6 +564,14 @@ class AdyenOfficial extends PaymentModule
                 $output .= $this->displayError($this->l('Invalid Configuration value for Notification Username'));
             }
 
+            if (empty($client_key_test)) {
+                $output .= $this->displayError($this->l('Invalid Configuration value for test client key'));
+            }
+
+            if (empty($client_key_live)) {
+                $output .= $this->displayError($this->l('Invalid Configuration value for live client key'));
+            }
+
             if (empty($live_endpoint_url_prefix)) {
                 $output .= $this->displayError($this->l('Invalid Configuration value for live endpoint URL prefix'));
             }
@@ -694,6 +702,8 @@ class AdyenOfficial extends PaymentModule
                     'label' => $this->l('Test')
                 )
             ),
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            'hint' => $this->l('Indicates whether the plugin can process live or test transactions. Please always test the payment methods in test mode before switching to live!'),
             'required' => true
         );
 
@@ -812,7 +822,7 @@ class AdyenOfficial extends PaymentModule
                 $this->l('Please fill your API key for Test'),
             'class' => $apiKeyTestLastDigits ? 'adyen-input-green' : '',
             'size' => 20,
-            'required' => false,
+            'required' => true,
             // phpcs:ignore Generic.Files.LineLength.TooLong
             'hint' => $this->l('If you don\'t know your Api-Key, log in to your Test Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Checkout token is your API Key.')
         );
@@ -839,7 +849,7 @@ class AdyenOfficial extends PaymentModule
                 $this->l('Please fill your API key for Live'),
             'class' => $apiKeyLiveLastDigits ? 'adyen-input-green' : '',
             'size' => 20,
-            'required' => false,
+            'required' => true,
             // phpcs:ignore Generic.Files.LineLength.TooLong
             'hint' => $this->l('If you don\'t know your Api-Key, log in to your Live Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Checkout token is your API Key.')
         );
@@ -850,7 +860,7 @@ class AdyenOfficial extends PaymentModule
             'label' => $this->l('Client key test'),
             'name' => 'ADYEN_CLIENTKEY_TEST',
             'size' => 50,
-            'required' => false,
+            'required' => true,
             'lang' => false,
             // phpcs:ignore Generic.Files.LineLength.TooLong
             'hint' => $this->l('If you don\'t know your client key, log in to your Test Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Client Key is your Client Key.')
@@ -862,7 +872,7 @@ class AdyenOfficial extends PaymentModule
             'label' => $this->l('Client key live'),
             'name' => 'ADYEN_CLIENTKEY_LIVE',
             'size' => 50,
-            'required' => false,
+            'required' => true,
             'lang' => false,
             // phpcs:ignore Generic.Files.LineLength.TooLong
             'hint' => $this->l('If you don\'t know your client key, log in to your Live Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Client Key is your Client Key.')
