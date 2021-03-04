@@ -702,6 +702,8 @@ class AdyenOfficial extends PaymentModule
                     'label' => $this->l('Test')
                 )
             ),
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            'hint' => $this->l('Indicates weather the plugin can process live or test transactions. Please always test the payment methods in test mode before switching to live!'),
             'required' => true
         );
 
@@ -820,7 +822,7 @@ class AdyenOfficial extends PaymentModule
                 $this->l('Please fill your API key for Test'),
             'class' => $apiKeyTestLastDigits ? 'adyen-input-green' : '',
             'size' => 20,
-            'required' => false,
+            'required' => true,
             // phpcs:ignore Generic.Files.LineLength.TooLong
             'hint' => $this->l('If you don\'t know your Api-Key, log in to your Test Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Checkout token is your API Key.')
         );
@@ -847,7 +849,7 @@ class AdyenOfficial extends PaymentModule
                 $this->l('Please fill your API key for Live'),
             'class' => $apiKeyLiveLastDigits ? 'adyen-input-green' : '',
             'size' => 20,
-            'required' => false,
+            'required' => true,
             // phpcs:ignore Generic.Files.LineLength.TooLong
             'hint' => $this->l('If you don\'t know your Api-Key, log in to your Live Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Checkout token is your API Key.')
         );
