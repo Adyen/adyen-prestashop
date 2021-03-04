@@ -703,7 +703,7 @@ class AdyenOfficial extends PaymentModule
                 )
             ),
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('Indicates weather the plugin can process live or test transactions. Please always test the payment methods in test mode before switching to live!'),
+            'hint' => $this->l('Indicates whether the plugin can process live or test transactions. Please always test the payment methods in test mode before switching to live!'),
             'required' => true
         );
 
