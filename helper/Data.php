@@ -154,7 +154,7 @@ class Data
         $responseData = "";
         try {
             $responseData = $this->adyenCheckoutService->paymentMethods($adyenFields);
-        } catch (AdyenException $e) {
+        } catch (\Exception $e) {
             $this->logger->error("There was an error retrieving the payment methods. message: " . $e->getMessage());
         }
         return $responseData;

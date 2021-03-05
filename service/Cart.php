@@ -31,8 +31,9 @@ class Cart
      *
      * @param \Context $context
      * @param \Cart $cart
+     * @param bool $isPrestashop16
      */
-    public function cloneCurrentCart(\Context $context, \Cart $cart)
+    public function cloneCurrentCart(\Context $context, \Cart $cart, $isPrestashop16)
     {
         // To save the secure key of current cart id and reassign the same to new cart
         $old_cart_secure_key = $cart->secure_key;
@@ -49,6 +50,7 @@ class Cart
         $context->cart->secure_key = $old_cart_secure_key;
         // to add new cart
         $context->cart->add();
+        $newCartId  = $context->cart->id;
         // to update the new cart
         foreach ($cart_products as $product) {
             $context->cart->updateQty(
@@ -61,8 +63,24 @@ class Cart
             $guest = new \Guest($context->cookie->id_guest);
             $context->cart->mobile_theme = $guest->mobile_theme;
         }
+
+        // Field does not exist in prestashop 16
+        if (!$isPrestashop16) {
+            // Get the checkout_session_data field of the previous cart
+            $checkoutSessionData = \Db::getInstance()->getValue(
+                'SELECT checkout_session_data FROM ' . _DB_PREFIX_ . 'cart WHERE id_cart = ' . (int)$cart->id
+            );
+
+            // Update the checkout_session_data field of the new cart
+            \Db::getInstance()->execute(
+                'UPDATE ' . _DB_PREFIX_ . 'cart SET checkout_session_data = "' . pSQL($checkoutSessionData) . '"
+        WHERE id_cart = ' . (int)$newCartId
+            );
+        }
+
         // to map the new cart with the customer
         $context->cart->id_customer = $old_cart_customer_id;
+        $context->cart->id_guest = $cart->id_guest;
         // to save the new cart
         $context->cart->save();
         if ($context->cart->id) {

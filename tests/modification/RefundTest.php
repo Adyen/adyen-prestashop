@@ -25,7 +25,9 @@
 namespace Adyen\PrestaShop\service\modification;
 
 use Adyen\PrestaShop\infra\NotificationRetriever;
+use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
 use Adyen\Service\Modification;
+use Order;
 use OrderSlip;
 use PHPUnit\Framework\TestCase;
 use PHPUnit_Framework_MockObject_MockObject;
@@ -80,12 +82,20 @@ class RefundTest extends TestCase
                            )
                            ->willReturn(true);
 
+        // Mock order
+        /** @var PHPUnit_Framework_MockObject_MockObject|Order $orderMock */
+        $orderMock = $this->getMockBuilder(Order::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock->total_paid = $amount;
+
         /** @var PHPUnit_Framework_MockObject_MockObject|OrderSlip $orderSlip */
         $orderSlip = $this->getMockBuilder('OrderSlip')
                           ->disableOriginalConstructor()
                           ->getMock();
         $orderSlip->id_order = $orderId;
         $orderSlip->amount = $amount;
+        $orderSlip->shipping_cost = '0';
         $orderSlip->id = 1;
 
         /** @var PHPUnit_Framework_MockObject_MockObject|NotificationRetriever $notificationRetriever */
@@ -97,12 +107,27 @@ class RefundTest extends TestCase
                               ->with($orderId)
                               ->willReturn($pspReference);
 
+        /** @var PHPUnit_Framework_MockObject_MockObject|OrderAdapter $orderAdapter */
+        $orderAdapter = $this->getMockBuilder(OrderAdapter::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $orderAdapter->expects($this->once())
+            ->method('getOrderByOrderSlipId')
+            ->with($orderSlip->id)
+            ->willReturn($orderMock);
 
         $logger = $this->getMockBuilder(\Adyen\PrestaShop\service\Logger::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $refund = new Refund($modificationClient, $notificationRetriever, $merchantAccount, $logger);
+        $refund = new Refund(
+            $modificationClient,
+            $notificationRetriever,
+            $merchantAccount,
+            $orderAdapter,
+            $logger
+        );
 
         $this->assertEquals(true, $refund->request($orderSlip, $currency));
     }
