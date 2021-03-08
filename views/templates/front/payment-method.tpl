@@ -27,13 +27,14 @@
     </form>
 {else}
     <div class="row adyen-payment {$paymentMethodType|escape:'html':'UTF-8'}"
-         data-local-payment-method="{$paymentMethodType|escape:'html':'UTF-8'}"
-    >
+         data-local-payment-method="{$paymentMethodType|escape:'html':'UTF-8'}">
         <div class="col-xs-12 col-md-6">
             <div class="payment_module">
                 <form action="{$paymentProcessUrl|escape:'html':'UTF-8'}"
                       class="adyen-payment-form-{$paymentMethodType|escape:'html':'UTF-8'}" method="post">
-                    <div class="adyen-payment-method-label">{l s='Pay with ' mod='adyenofficial'}{$paymentMethodName|escape:'html':'UTF-8'}</div>
+                    <div class="adyen-payment-method-label">
+                        {l s='Pay with %s' sprintf=[{$paymentMethodName|escape:'html':'UTF-8'}] mod='adyenofficial'}
+                    </div>
                     <div data-adyen-payment-container></div>
                     <!-- Display payment extra info -->
                     <div class="alert alert-info info-container" role="alert"></div>
