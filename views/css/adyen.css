@@ -89,3 +89,7 @@ div.adyen-additional-data-line {
         -webkit-appearance: -apple-pay-button;
     }
 }
+
+.adyen-payment .additional-information {
+    margin-bottom: 1rem;
+}

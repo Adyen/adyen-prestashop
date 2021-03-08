@@ -32,10 +32,7 @@
             <div class="payment_module">
                 <form action="{$paymentProcessUrl|escape:'html':'UTF-8'}"
                       class="adyen-payment-form-{$paymentMethodType|escape:'html':'UTF-8'}" method="post">
-                    <div class="adyen-payment-method-label">
-                        {l s='Pay with %s' sprintf=[{$paymentMethodName|escape:'html':'UTF-8'}] mod='adyenofficial'}
-                    </div>
-                    <div data-adyen-payment-container></div>
+                    <div data-adyen-payment-container class="additional-information"></div>
                     <!-- Display payment extra info -->
                     <div class="alert alert-info info-container" role="alert"></div>
                     <!-- Display payment errors -->
