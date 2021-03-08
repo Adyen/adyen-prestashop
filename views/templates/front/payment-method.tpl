@@ -31,8 +31,8 @@
         <div class="col-xs-12 col-md-6">
             <div class="payment_module">
                 <form action="{$paymentProcessUrl|escape:'html':'UTF-8'}"
-                      class="adyen-payment-form-{$paymentMethodType|escape:'html':'UTF-8'}" method="post">
-                    <div data-adyen-payment-container class="additional-information"></div>
+                      class="adyen-payment-form-{$paymentMethodType|escape:'html':'UTF-8'} additional-information" method="post">
+                    <div data-adyen-payment-container></div>
                     <!-- Display payment extra info -->
                     <div class="alert alert-info info-container" role="alert"></div>
                     <!-- Display payment errors -->

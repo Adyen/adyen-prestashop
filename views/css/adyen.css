@@ -93,3 +93,13 @@ div.adyen-additional-data-line {
 .adyen-payment .additional-information {
     margin-bottom: 1rem;
 }
+
+.custom-radio.float-xs-left {
+    float: none !important;
+    display: inline-block;
+}
+
+body#checkout section.checkout-step .payment-options label {
+    display: inline-block;
+    margin-bottom: 0;
+}
