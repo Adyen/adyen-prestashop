@@ -74,7 +74,7 @@ div.adyen-payment .error-container, div.adyen-payment .info-container {
     display: none;
 }
 
-div.adyen-payment-method-label {
+div.adyen-payment-method-label, span.adyen-payment-method-label {
     display: inline-block;
     margin: 6px 0;
     font-size: 16px;
@@ -101,5 +101,24 @@ div.adyen-additional-data-line {
 
 body#checkout section.checkout-step .payment-options label {
     display: inline-block;
+    margin-bottom: 0;
+}
+
+#HOOK_PAYMENT .adyen-payment .payment_module {
+    border: 1px solid #d6d4d4;
+    margin-bottom: 9px;
+    padding: 33px 40px 34px 99px;
+    background: #fbfbfb;
+}
+
+#HOOK_PAYMENT .collapser {
+    cursor: pointer;
+}
+
+#HOOK_PAYMENT .collapser:hover {
+    background: #f6f6f6;
+}
+
+#HOOK_PAYMENT .adyen-payment .additional-information {
     margin-bottom: 0;
 }

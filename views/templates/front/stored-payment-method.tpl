@@ -28,26 +28,43 @@
 {else}
     <div class="row adyen-payment"
          data-stored-payment-api-id="{$storedPaymentApiId|escape:'html':'UTF-8'}">
-        <div class="col-xs-12 col-md-6">
-            <div class="payment_module">
-                <form action="{$paymentProcessUrl|escape:'html':'UTF-8'}"
-                      class="adyen-payment-form-{$storedPaymentApiId|escape:'html':'UTF-8'} additional-information" method="post">
-                    {if $isPrestaShop16}
-                        <div class="adyen-payment-method-label">
-                            {l s='Pay with saved ' mod='adyenofficial'} {$name|escape:'html':'UTF-8'}
-                            {l s=' ending: ' mod='adyenofficial'} {$number|escape:'html':'UTF-8'}
-                        </div>
-                    {/if}
-                    <!-- Display payment errors -->
-                    <div class="alert alert-danger error-container" role="alert"></div>
-                    <div data-adyen-payment-container></div>
-                    <div data-adyen-payment-error-container role="alert"></div>
-                    {if $isPrestaShop16}
-                        <button type="submit" class="button btn btn-default standard-checkout button-medium"><span>
+        {if $isPrestaShop16}
+            <div class="col-xs-12 col-md-12">
+                <div class="payment_module collapser" data-toggle="collapse"
+                     data-target="#collapse{$storedPaymentApiId|escape:'html':'UTF-8'}" aria-expanded="true" aria-controls="collapseOne">
+                    <span class="adyen-payment-method-label">
+                        {l s='Pay with saved ' mod='adyenofficial'}{$name|escape:'html':'UTF-8'}
+                        {l s=' ending: ' mod='adyenofficial'} {$number|escape:'html':'UTF-8'}
+                    </span>
+                    <form action="{$paymentProcessUrl|escape:'html':'UTF-8'}"
+                          class="adyen-payment-form-{$storedPaymentApiId|escape:'html':'UTF-8'} additional-information" method="post">
+                        <!-- Collapsable section -->
+                        <div id="collapse{$storedPaymentApiId|escape:'html':'UTF-8'}" class="collapse">
+                            <!-- Display payment errors -->
+                            <div class="alert alert-danger error-container" role="alert"></div>
+                            <!-- Display payment container -->
+                            <div data-adyen-payment-container  class="adyen-payment-container"></div>
+                            <div data-adyen-payment-error-container role="alert"></div>
+
+                            <button type="submit" class="button btn btn-default standard-checkout button-medium"><span>
                              {l s='Pay' mod='adyenofficial'} <i class="icon-chevron-right right"></i> </span></button>
-                    {/if}
-                </form>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </div>
+        {else}
+            <div class="col-xs-12 col-md-6">
+                <div class="payment_module">
+                    <form action="{$paymentProcessUrl|escape:'html':'UTF-8'}"
+                          class="adyen-payment-form-{$storedPaymentApiId|escape:'html':'UTF-8'} additional-information" method="post">
+                        <!-- Display payment errors -->
+                        <div class="alert alert-danger error-container" role="alert"></div>
+                        <!-- Display payment container -->
+                        <div data-adyen-payment-container class="adyen-payment-container"></div>
+                        <div data-adyen-payment-error-container role="alert"></div>
+                    </form>
+                </div>
+            </div>
+        {/if}
     </div>
 {/if}
