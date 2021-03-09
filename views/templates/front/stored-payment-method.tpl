@@ -30,7 +30,7 @@
          data-stored-payment-api-id="{$storedPaymentApiId|escape:'html':'UTF-8'}">
         {if $isPrestaShop16}
             <div class="col-xs-12 col-md-12">
-                <div class="payment_module collapser" data-toggle="collapse"
+                <div class="payment_module adyen-collapser collapsed" data-toggle="collapse"
                      data-target="#collapse{$storedPaymentApiId|escape:'html':'UTF-8'}" aria-expanded="true" aria-controls="collapseOne"
                      style="background-image: url(https://checkoutshopper-live.adyen.com/checkoutshopper/images/logos/medium/{$brand|escape:'html':'UTF-8'}.png)">
                     <span class="adyen-payment-method-label">
@@ -40,7 +40,8 @@
                     <div class="row">
                         <div class="col-xs-12 col-md-6">
                             <form action="{$paymentProcessUrl|escape:'html':'UTF-8'}"
-                                  class="adyen-payment-form-{$storedPaymentApiId|escape:'html':'UTF-8'} additional-information" method="post">
+                                  class="adyen-payment-form-{$storedPaymentApiId|escape:'html':'UTF-8'}
+                                  additional-information mb-0" method="post">
                                 <!-- Collapsable section -->
                                 <div id="collapse{$storedPaymentApiId|escape:'html':'UTF-8'}" class="collapse">
                                     <!-- Display payment errors -->

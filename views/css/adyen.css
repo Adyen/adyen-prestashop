@@ -90,6 +90,10 @@ div.adyen-additional-data-line {
     }
 }
 
+.adyen-payment .additional-information.mb-0 {
+    margin-bottom: 0;
+}
+
 .adyen-payment .additional-information {
     margin-bottom: 1rem;
 }
@@ -104,7 +108,7 @@ body#checkout section.checkout-step .payment-options label {
     margin-bottom: 0;
 }
 
-#HOOK_PAYMENT .adyen-payment .payment_module {
+.adyen-payment .payment_module.adyen-collapser {
     border: 1px solid #d6d4d4;
     margin-bottom: 9px;
     padding: 33px 40px 34px 99px;
@@ -112,16 +116,27 @@ body#checkout section.checkout-step .payment-options label {
     background-repeat: no-repeat;
     background-position-y: 25px;
     background-position-x: 15px;
-}
-
-#HOOK_PAYMENT .collapser {
     cursor: pointer;
 }
 
-#HOOK_PAYMENT .collapser:hover {
+.adyen-collapser:hover {
     background-color: #f6f6f6;
 }
 
-#HOOK_PAYMENT .adyen-payment .additional-information {
-    margin-bottom: 0;
+.adyen-payment .payment_module.adyen-collapser:after {
+    display: block;
+    content: "\f077";
+    position: absolute;
+    right: 40px;
+    margin-top: -11px;
+    top: 30px;
+    font-family: "FontAwesome";
+    font-size: 25px;
+    height: 22px;
+    width: 14px;
+    color: #777;
+}
+
+.adyen-payment .payment_module.adyen-collapser.collapsed:after {
+    content: "\f078";
 }

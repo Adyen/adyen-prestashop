@@ -75,6 +75,10 @@ jQuery(document).ready(function() {
         } catch (e) {
             // observer exception
         }
+
+        $('.adyen-payment .standard-checkout, .adyen-payment .error-container').on('click', function (e) {
+            e.stopPropagation();
+        });
     } else {
         const queryParams = new URLSearchParams(window.location.search);
         if (queryParams.has('message')) {
