@@ -1529,6 +1529,7 @@ class AdyenOfficial extends PaymentModule
                 $smartyVariables = array(
                     'storedPaymentApiId' => $storedPayment['id'],
                     'name' => $storedPayment['name'],
+                    'brand' => $storedPayment['brand'],
                     'number' => $storedPayment['lastFour']
                 );
 
@@ -1558,8 +1559,14 @@ class AdyenOfficial extends PaymentModule
 
             $smartyVariables = array(
                 'paymentMethodType' => $paymentMethod['type'],
-                'paymentMethodName' => $paymentMethod['name']
+                'paymentMethodName' => $paymentMethod['name'],
+                'paymentMethodBrand' => $paymentMethod['type']
             );
+
+            // If brand is scheme, logo will not be displayed correctly unless it is set to card
+            if ($paymentMethod['type'] === 'scheme') {
+                $smartyVariables['paymentMethodBrand'] = 'card';
+            }
 
             // Add checkout component default configuration parameters for smarty variables
             $smartyVariables = array_merge($smartyVariables, $this->getCheckoutComponentInitData());

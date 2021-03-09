@@ -108,7 +108,10 @@ body#checkout section.checkout-step .payment-options label {
     border: 1px solid #d6d4d4;
     margin-bottom: 9px;
     padding: 33px 40px 34px 99px;
-    background: #fbfbfb;
+    background-color: #fbfbfb;
+    background-repeat: no-repeat;
+    background-position-y: 25px;
+    background-position-x: 15px;
 }
 
 #HOOK_PAYMENT .collapser {
@@ -116,7 +119,7 @@ body#checkout section.checkout-step .payment-options label {
 }
 
 #HOOK_PAYMENT .collapser:hover {
-    background: #f6f6f6;
+    background-color: #f6f6f6;
 }
 
 #HOOK_PAYMENT .adyen-payment .additional-information {
