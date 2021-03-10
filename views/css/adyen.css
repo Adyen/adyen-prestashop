@@ -119,7 +119,7 @@ body#checkout section.checkout-step .payment-options label {
     cursor: pointer;
 }
 
-.adyen-collapser:hover {
+.adyen-payment .payment_module.adyen-collapser:hover {
     background-color: #f6f6f6;
 }
 
