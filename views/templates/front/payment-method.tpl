@@ -42,7 +42,7 @@
                         <form action="{$paymentProcessUrl|escape:'html':'UTF-8'}"
                               class="adyen-payment-form-{$paymentMethodType|escape:'html':'UTF-8'} additional-information" method="post">
                             {* Collapsable section *}
-                            <div id="collapse{$paymentMethodType|escape:'html':'UTF-8'}" class="collapse">
+                            <div id="collapse{$paymentMethodType|escape:'html':'UTF-8'}" class="adyen-collapsable collapse">
                                 <div data-adyen-payment-container></div>
                                 {* Display payment extra info *}
                                 <div class="alert alert-info info-container" role="alert"></div>

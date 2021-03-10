@@ -44,7 +44,7 @@
                                   class="adyen-payment-form-{$storedPaymentApiId|escape:'html':'UTF-8'}
                                   additional-information mb-0" method="post">
                                 {* Collapsable section *}
-                                <div id="collapse{$number|escape:'html':'UTF-8'}" class="collapse">
+                                <div id="collapse{$number|escape:'html':'UTF-8'}" class="adyen-collapsable collapse">
                                     {* Display payment errors *}
                                     <div class="alert alert-danger error-container" role="alert"></div>
                                     {* Display payment container *}

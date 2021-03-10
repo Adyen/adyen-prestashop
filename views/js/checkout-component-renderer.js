@@ -76,7 +76,7 @@ jQuery(document).ready(function() {
             // observer exception
         }
 
-        stopPayButtonCollapse();
+        stopPaymentMethodDivCollapse();
     } else {
         const queryParams = new URLSearchParams(window.location.search);
         if (queryParams.has('message')) {
@@ -637,8 +637,10 @@ jQuery(document).ready(function() {
         return placeOrderInProgress;
     }
 
-    function stopPayButtonCollapse() {
-        $('.adyen-payment .standard-checkout, .adyen-payment .error-container').on('click', function (e) {
+    // When these buttons are clicked, do not close the payment method div
+    function stopPaymentMethodDivCollapse() {
+        $('body').on('click', '.adyen-collapsable button, .adyen-collapsable input, .adyen-collapsable' +
+            ' .error-container, .adyen-collapsable .adyen-checkout__checkbox', function (e) {
             e.stopPropagation();
         });
     }
