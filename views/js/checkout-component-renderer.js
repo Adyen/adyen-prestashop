@@ -640,7 +640,7 @@ jQuery(document).ready(function() {
     // When these buttons are clicked, do not close the payment method div
     function stopPaymentMethodDivCollapse() {
         $('body').on('click', '.adyen-collapsable button, .adyen-collapsable input, .adyen-collapsable' +
-            ' .error-container, .adyen-collapsable .adyen-checkout__checkbox', function (e) {
+            ' ul, .adyen-collapsable .error-container, .adyen-collapsable .adyen-checkout__checkbox', function (e) {
             e.stopPropagation();
         });
     }
