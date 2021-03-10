@@ -76,9 +76,7 @@ jQuery(document).ready(function() {
             // observer exception
         }
 
-        $('.adyen-payment .standard-checkout, .adyen-payment .error-container').on('click', function (e) {
-            e.stopPropagation();
-        });
+        stopPayButtonCollapse();
     } else {
         const queryParams = new URLSearchParams(window.location.search);
         if (queryParams.has('message')) {
@@ -637,5 +635,11 @@ jQuery(document).ready(function() {
 
     function isPlaceOrderInProgress() {
         return placeOrderInProgress;
+    }
+
+    function stopPayButtonCollapse() {
+        $('.adyen-payment .standard-checkout, .adyen-payment .error-container').on('click', function (e) {
+            e.stopPropagation();
+        });
     }
 });
