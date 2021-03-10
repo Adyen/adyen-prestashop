@@ -31,7 +31,8 @@
         {if $isPrestaShop16}
         <div class="col-xs-12 col-md-12">
             <div class="payment_module adyen-collapser collapsed" data-toggle="collapse"
-                 data-target="#collapse{$paymentMethodType|escape:'html':'UTF-8'}" aria-expanded="true" aria-controls="collapseOne"
+                 data-target="#collapse{$paymentMethodType|escape:'html':'UTF-8'}" aria-expanded="false"
+                 aria-controls="collapse{$paymentMethodType|escape:'html':'UTF-8'}"
                  style="background-image: url(https://checkoutshopper-live.adyen.com/checkoutshopper/images/logos/medium/{$paymentMethodBrand|escape:'html':'UTF-8'}.png)">
                 <span class="adyen-payment-method-label">
                     {l s='Pay with %s' sprintf=[{$paymentMethodName|escape:'html':'UTF-8'}] mod='adyenofficial'}
