@@ -43,11 +43,11 @@
                             <form action="{$paymentProcessUrl|escape:'html':'UTF-8'}"
                                   class="adyen-payment-form-{$storedPaymentApiId|escape:'html':'UTF-8'}
                                   additional-information mb-0" method="post">
-                                <!-- Collapsable section -->
+                                {* Collapsable section *}
                                 <div id="collapse{$number|escape:'html':'UTF-8'}" class="collapse">
-                                    <!-- Display payment errors -->
+                                    {* Display payment errors *}
                                     <div class="alert alert-danger error-container" role="alert"></div>
-                                    <!-- Display payment container -->
+                                    {* Display payment container *}
                                     <div data-adyen-payment-container  class="adyen-payment-container"></div>
                                     <div data-adyen-payment-error-container role="alert"></div>
 
@@ -64,9 +64,9 @@
                 <div class="payment_module">
                     <form action="{$paymentProcessUrl|escape:'html':'UTF-8'}"
                           class="adyen-payment-form-{$storedPaymentApiId|escape:'html':'UTF-8'} additional-information" method="post">
-                        <!-- Display payment errors -->
+                        {* Display payment errors *}
                         <div class="alert alert-danger error-container" role="alert"></div>
-                        <!-- Display payment container -->
+                        {* Display payment container *}
                         <div data-adyen-payment-container class="adyen-payment-container"></div>
                         <div data-adyen-payment-error-container role="alert"></div>
                     </form>

@@ -41,11 +41,12 @@
                     <div class="col-xs-12 col-md-6">
                         <form action="{$paymentProcessUrl|escape:'html':'UTF-8'}"
                               class="adyen-payment-form-{$paymentMethodType|escape:'html':'UTF-8'} additional-information" method="post">
+                            {* Collapsable section *}
                             <div id="collapse{$paymentMethodType|escape:'html':'UTF-8'}" class="collapse">
                                 <div data-adyen-payment-container></div>
-                                <!-- Display payment extra info -->
+                                {* Display payment extra info *}
                                 <div class="alert alert-info info-container" role="alert"></div>
-                                <!-- Display payment errors -->
+                                {* Display payment errors *}
                                 <div class="alert alert-danger error-container" role="alert"></div>
                                 <div data-adyen-payment-error-container role="alert"></div>
                                 {if !in_array($paymentMethodType, $paymentMethodsWithPayButtonFromComponent|json_decode:1)}
@@ -65,9 +66,9 @@
                 <form action="{$paymentProcessUrl|escape:'html':'UTF-8'}"
                       class="adyen-payment-form-{$paymentMethodType|escape:'html':'UTF-8'} additional-information" method="post">
                     <div data-adyen-payment-container></div>
-                    <!-- Display payment extra info -->
+                    {* Display payment extra info *}
                     <div class="alert alert-info info-container" role="alert"></div>
-                    <!-- Display payment errors -->
+                    {* Display payment errors *}
                     <div class="alert alert-danger error-container" role="alert"></div>
                     <div data-adyen-payment-error-container role="alert"></div>
                 </form>
