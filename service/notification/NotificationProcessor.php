@@ -390,9 +390,22 @@ class NotificationProcessor
             (int)$notification['amount_value'] !== $cartTotalMinorUnits ||
             (int)$notification['amount_value'] !== $orderTotalMinorUnits) {
             $this->logger->addAdyenNotification(
-                sprintf('Notification with id (%s) contains an incompatible amount/currency with ' .
-                    'Order (%s) or Cart (%s)', $notification['entity_id'], $order->id, $cart->id)
+                sprintf(
+                    'Notification with id (%s), amount (%s) and currency (%s) contains an incompatible ' .
+                    'amount/currency with Order with id (%s), amount (%s) and currency (%s) OR Cart with id (%s), ' .
+                    'amount (%s) and currency (%s).',
+                    $notification['entity_id'],
+                    $notification['amount_value'],
+                    $notification['amount_currency'],
+                    $order->id,
+                    $orderTotalMinorUnits,
+                    $orderCurrencyIso,
+                    $cart->id,
+                    $cartTotalMinorUnits,
+                    $cartCurrencyIso
+                )
             );
+
             return false;
         }
 
