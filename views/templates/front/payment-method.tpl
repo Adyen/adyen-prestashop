@@ -35,7 +35,7 @@
                  aria-controls="collapse{$paymentMethodType|escape:'html':'UTF-8'}"
                  style="background-image: url(https://checkoutshopper-live.adyen.com/checkoutshopper/images/logos/medium/{$paymentMethodBrand|escape:'html':'UTF-8'}.png)">
                 <span class="adyen-payment-method-label">
-                    {l s='Pay with %s' sprintf=[{$paymentMethodName|escape:'html':'UTF-8'}] mod='adyenofficial'}
+                    {l s='Pay by %s' sprintf=[{$paymentMethodName|escape:'html':'UTF-8'}] mod='adyenofficial'}
                 </span>
                 <div class="row">
                     <div class="col-xs-12 col-md-6">
