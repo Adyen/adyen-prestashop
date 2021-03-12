@@ -33,7 +33,7 @@
                 <div class="payment_module adyen-collapser collapsed" data-toggle="collapse"
                      data-target="#collapse{$number|escape:'html':'UTF-8'}" aria-expanded="false"
                      aria-controls="collapse{$number|escape:'html':'UTF-8'}"
-                     style="background-image: url(https://checkoutshopper-live.adyen.com/checkoutshopper/images/logos/medium/{$brand|escape:'html':'UTF-8'}.png)">
+                     style="background-image: url(https://checkoutshopper-live.adyen.com/checkoutshopper/images/logos/medium/{$logoBrand|escape:'html':'UTF-8'}.png)">
                     <span class="adyen-payment-method-label">
                         {l s='Pay with saved ' mod='adyenofficial'}{$name|escape:'html':'UTF-8'}
                         {l s=' ending: ' mod='adyenofficial'} {$number|escape:'html':'UTF-8'}

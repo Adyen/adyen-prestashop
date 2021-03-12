@@ -1529,7 +1529,7 @@ class AdyenOfficial extends PaymentModule
                 $smartyVariables = array(
                     'storedPaymentApiId' => $storedPayment['id'],
                     'name' => $storedPayment['name'],
-                    'brand' => $storedPayment['brand'],
+                    'logoBrand' => $storedPayment['brand'],
                     'number' => $storedPayment['lastFour']
                 );
 
