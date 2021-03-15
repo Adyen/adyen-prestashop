@@ -75,8 +75,6 @@ jQuery(document).ready(function() {
         } catch (e) {
             // observer exception
         }
-
-        stopPaymentMethodDivCollapse();
     } else {
         const queryParams = new URLSearchParams(window.location.search);
         if (queryParams.has('message')) {
@@ -635,13 +633,5 @@ jQuery(document).ready(function() {
 
     function isPlaceOrderInProgress() {
         return placeOrderInProgress;
-    }
-
-    // When these buttons are clicked, do not close the payment method div
-    function stopPaymentMethodDivCollapse() {
-        $('body').on('click', '.adyen-collapsable button, .adyen-collapsable input, .adyen-collapsable' +
-            ' ul, .adyen-collapsable .error-container, .adyen-collapsable .adyen-checkout__checkbox', function (e) {
-            e.stopPropagation();
-        });
     }
 });

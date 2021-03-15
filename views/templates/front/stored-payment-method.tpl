@@ -30,11 +30,10 @@
          data-stored-payment-api-id="{$storedPaymentApiId|escape:'html':'UTF-8'}">
         {if $isPrestaShop16}
             <div class="col-xs-12 col-md-12">
-                <div class="payment_module adyen-collapser collapsed" data-toggle="collapse"
-                     data-target="#collapse{$number|escape:'html':'UTF-8'}" aria-expanded="false"
-                     aria-controls="collapse{$number|escape:'html':'UTF-8'}"
-                     style="background-image: url(https://checkoutshopper-live.adyen.com/checkoutshopper/images/logos/medium/{$logoBrand|escape:'html':'UTF-8'}.png)">
-                    <span class="adyen-payment-method-label">
+                <div class="payment_module" style="background-image: url(https://checkoutshopper-live.adyen.com/checkoutshopper/images/logos/medium/{$logoBrand|escape:'html':'UTF-8'}.png)">
+                    <span class="adyen-collapser adyen-payment-method-label collapsed" data-toggle="collapse"
+                          data-target="#collapse{$number|escape:'html':'UTF-8'}" aria-expanded="false"
+                          aria-controls="collapse{$number|escape:'html':'UTF-8'}">
                         {l s='Pay by saved' mod='adyenofficial'} {$name|escape:'html':'UTF-8'}
                         {l s=' ending: ' mod='adyenofficial'} {$number|escape:'html':'UTF-8'}
                     </span>
