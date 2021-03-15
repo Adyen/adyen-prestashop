@@ -31,9 +31,9 @@
         {if $isPrestaShop16}
             <div class="col-xs-12 col-md-12">
                 <div class="payment_module" style="background-image: url(https://checkoutshopper-live.adyen.com/checkoutshopper/images/logos/medium/{$logoBrand|escape:'html':'UTF-8'}.png)">
-                    <span class="adyen-collapser adyen-payment-method-label collapsed" data-toggle="collapse"
-                          data-target="#collapse{$number|escape:'html':'UTF-8'}" aria-expanded="false"
-                          aria-controls="collapse{$number|escape:'html':'UTF-8'}">
+                    {* If collapsing is NOT disabled due to config *}
+                    <span {if empty($removeCollapse)} class="adyen-collapser adyen-payment-method-label collapsed" data-toggle="collapse" data-target="#collapse{$number|escape:'html':'UTF-8'}" aria-expanded="false" aria-controls="collapse{$number|escape:'html':'UTF-8'}"
+                            {else} class="adyen-payment-method-label" {/if}>
                         {l s='Pay by saved' mod='adyenofficial'} {$name|escape:'html':'UTF-8'}
                         {l s=' ending: ' mod='adyenofficial'} {$number|escape:'html':'UTF-8'}
                     </span>
@@ -42,8 +42,8 @@
                             <form action="{$paymentProcessUrl|escape:'html':'UTF-8'}"
                                   class="adyen-payment-form-{$storedPaymentApiId|escape:'html':'UTF-8'}
                                   additional-information mb-0" method="post">
-                                {* Collapsable section *}
-                                <div id="collapse{$number|escape:'html':'UTF-8'}" class="adyen-collapsable collapse">
+                                {* If collapsing is NOT disabled due to config *}
+                                <div {if empty($removeCollapse)} id="collapse{$number|escape:'html':'UTF-8'}" class="adyen-collapsable collapse" {/if}>
                                     {* Display payment errors *}
                                     <div class="alert alert-danger error-container" role="alert"></div>
                                     {* Display payment container *}
