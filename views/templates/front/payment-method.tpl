@@ -31,8 +31,8 @@
         {if $isPrestaShop16}
         <div class="col-xs-12 col-md-12">
             <div class="payment_module" style="background-image: url(https://checkoutshopper-live.adyen.com/checkoutshopper/images/logos/medium/{$paymentMethodBrand|escape:'html':'UTF-8'}.png)">
-                {* If collapsing is NOT disabled due to config *}
-                <span {if empty($removeCollapse)} class="adyen-payment-method-label adyen-collapser collapsed" data-toggle="collapse" data-target="#collapse{$paymentMethodType|escape:'html':'UTF-8'}" aria-expanded="false" aria-controls="collapse{$paymentMethodType|escape:'html':'UTF-8'}"
+                {* If collapsing is enabled by config *}
+                <span {if $collapsePayments} class="adyen-payment-method-label adyen-collapser collapsed" data-toggle="collapse" data-target="#collapse{$paymentMethodType|escape:'html':'UTF-8'}" aria-expanded="false" aria-controls="collapse{$paymentMethodType|escape:'html':'UTF-8'}"
                         {else} class="adyen-payment-method-label" {/if}>
                     {l s='Pay by %s' sprintf=[{$paymentMethodName|escape:'html':'UTF-8'}] mod='adyenofficial'}
                 </span>
@@ -40,8 +40,8 @@
                     <div class="col-xs-12 col-md-6">
                         <form action="{$paymentProcessUrl|escape:'html':'UTF-8'}"
                               class="adyen-payment-form-{$paymentMethodType|escape:'html':'UTF-8'} additional-information" method="post">
-                            {* If collapsing is NOT disabled due to config *}
-                            <div {if empty($removeCollapse)} id="collapse{$paymentMethodType|escape:'html':'UTF-8'}" class="adyen-collapsable collapse" {/if}>
+                            {* If collapsing is enabled by config *}
+                            <div {if $collapsePayments} id="collapse{$paymentMethodType|escape:'html':'UTF-8'}" class="adyen-collapsable collapse" {/if}>
                                 <div data-adyen-payment-container></div>
                                 {* Display payment extra info *}
                                 <div class="alert alert-info info-container" role="alert"></div>
