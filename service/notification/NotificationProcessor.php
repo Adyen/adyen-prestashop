@@ -378,21 +378,25 @@ class NotificationProcessor
         }
 
         $cartCurrency = \Currency::getCurrency($cart->id_currency);
-        $orderCurrency = \Currency::getCurrency($order->id_currency);
         $cartCurrencyIso = $cartCurrency['iso_code'];
-        $orderCurrencyIso = $orderCurrency['iso_code'];
 
         $cartTotalMinorUnits = $this->utilCurrency->sanitize($cart->getOrderTotal(), $cartCurrencyIso);
-        $orderTotalMinorUnits = $this->utilCurrency->sanitize($order->getTotalPaid(), $orderCurrencyIso);
 
         if ($notification['amount_currency'] !== $cartCurrencyIso ||
-            $notification['amount_currency'] !== $orderCurrencyIso ||
-            (int)$notification['amount_value'] !== $cartTotalMinorUnits ||
-            (int)$notification['amount_value'] !== $orderTotalMinorUnits) {
+            (int)$notification['amount_value'] !== $cartTotalMinorUnits) {
             $this->logger->addAdyenNotification(
-                sprintf('Notification with id (%s) contains an incompatible amount/currency with ' .
-                    'Order (%s) or Cart (%s)', $notification['entity_id'], $order->id, $cart->id)
+                sprintf(
+                    'Notification: id (%s), amount (%s) and currency (%s) contains an incompatible ' .
+                    'amount/currency with Cart: id (%s), amount (%s) and currency (%s).',
+                    $notification['entity_id'],
+                    $notification['amount_value'],
+                    $notification['amount_currency'],
+                    $cart->id,
+                    $cartTotalMinorUnits,
+                    $cartCurrencyIso
+                )
             );
+
             return false;
         }
 
