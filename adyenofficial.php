@@ -969,7 +969,7 @@ class AdyenOfficial extends PaymentModule
                 // phpcs:ignore Generic.Files.LineLength.TooLong
                 'hint' => 'Indicates whether the payment methods should be rendered in a list of collapsable items,
                  during checkout',
-                'required' => true
+                'required' => false
             );
         }
 
