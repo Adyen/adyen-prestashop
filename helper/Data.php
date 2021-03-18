@@ -28,6 +28,7 @@ use Address;
 use Adyen;
 use Adyen\AdyenException;
 use Adyen\Environment;
+use Adyen\PrestaShop\application\VersionChecker;
 use Adyen\PrestaShop\infra\Crypto;
 use Adyen\PrestaShop\service\adapter\classes\Configuration;
 use Adyen\PrestaShop\service\adapter\classes\Language;
@@ -73,6 +74,11 @@ class Data
     private $crypto;
 
     /**
+     * @var VersionChecker
+     */
+    private $versionChecker;
+
+    /**
      * Data constructor.
      *
      * @param Configuration $configuration
@@ -80,13 +86,15 @@ class Data
      * @param Logger $logger
      * @param Language $languageAdapter
      * @param Crypto $crypto
+     * @param VersionChecker $versionChecker
      */
     public function __construct(
         Configuration $configuration,
         Checkout $adyenCheckoutService,
         Logger $logger,
         Language $languageAdapter,
-        Crypto $crypto
+        Crypto $crypto,
+        VersionChecker $versionChecker
     ) {
         $this->sslEncryptionKey = $configuration->sslEncryptionKey;
         $this->adyenCheckoutService = $adyenCheckoutService;
@@ -94,6 +102,7 @@ class Data
         $this->logger = $logger;
         $this->languageAdapter = $languageAdapter;
         $this->crypto = $crypto;
+        $this->versionChecker = $versionChecker;
     }
 
     /**
@@ -199,22 +208,6 @@ class Data
     }
 
     /**
-     * Determine if PrestaShop is 1.6
-     *
-     * @return bool
-     * @deprecated use Adyen\PrestaShop\application\VersionChecker instead
-     */
-    public function isPrestashop16()
-    {
-        if (version_compare(_PS_VERSION_, '1.6', '>=') &&
-            version_compare(_PS_VERSION_, '1.7', '<')
-        ) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * @param $action
      * @param array $details
      * @return false|string
@@ -314,7 +307,7 @@ class Data
     public function getLocale($language)
     {
         // no locale in PrestaShop1.6 only languageCode that is en-en but we need en_EN
-        if ($this->isPrestashop16()) {
+        if ($this->versionChecker->isPrestashop16()) {
             return $language->iso_code;
         } else {
             return $language->locale;
@@ -330,7 +323,7 @@ class Data
      */
     public function getTemplateFromModulePath($templatePath)
     {
-        if ($this->isPrestashop16()) {
+        if ($this->versionChecker->isPrestashop16()) {
             return basename($templatePath);
         }
 
