@@ -451,6 +451,10 @@ class AdyenOfficial extends PaymentModule
     private function removeConfigurationsFromDatabase()
     {
         $adyenConfigurationNames = array(
+            'CONF_ADYENOFFICIAL_FIXED',
+            'CONF_ADYENOFFICIAL_VAR',
+            'CONF_ADYENOFFICIAL_FIXED_FOREIGN',
+            'CONF_ADYENOFFICIAL_VAR_FOREIGN',
             'ADYEN_MERCHANT_ACCOUNT',
             'ADYEN_INTEGRATOR_NAME',
             'ADYEN_MODE',
