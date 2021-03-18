@@ -466,7 +466,8 @@ class AdyenOfficial extends PaymentModule
             'ADYEN_APPLE_PAY_MERCHANT_NAME',
             'ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER',
             'ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID',
-            'ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER'
+            'ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER',
+            'ADYEN_PAYMENT_DISPLAY_COLLAPSE'
         );
 
         $result = true;
@@ -550,6 +551,8 @@ class AdyenOfficial extends PaymentModule
             $apple_pay_merchant_identifier = Tools::getValue('ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER');
             $google_pay_gateway_merchant_id = Tools::getValue('ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID');
             $google_pay_merchant_identifier = Tools::getValue('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER');
+            $payment_display_collapse = Tools::getValue('ADYEN_PAYMENT_DISPLAY_COLLAPSE');
+
 
             // validating the input
             if (empty($merchant_account) || !Validate::isGenericName($merchant_account)) {
@@ -588,6 +591,7 @@ class AdyenOfficial extends PaymentModule
                 Configuration::updateValue('ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER', $apple_pay_merchant_identifier);
                 Configuration::updateValue('ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID', $google_pay_gateway_merchant_id);
                 Configuration::updateValue('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER', $google_pay_merchant_identifier);
+                Configuration::updateValue('ADYEN_PAYMENT_DISPLAY_COLLAPSE', $payment_display_collapse);
 
                 if (!empty($notification_password)) {
                     Configuration::updateValue('ADYEN_NOTI_PASSWORD', $this->crypto->encrypt($notification_password));
@@ -944,6 +948,31 @@ class AdyenOfficial extends PaymentModule
             'hint' => $this->l('')
         );
 
+        if ($this->versionChecker->isPrestaShop16()) {
+            $fields_form[1]['form']['input'][] = array(
+                'type' => 'radio',
+                'label' => $this->l('Collapsable payment display'),
+                'name' => 'ADYEN_PAYMENT_DISPLAY_COLLAPSE',
+                'values' => array(
+                    array(
+                        'id' => 'enable',
+                        'value' => 1,
+                        'label' => $this->l('Enable')
+                    ),
+                    array(
+                        'id' => 'disable',
+                        'value' => 0,
+                        'label' => $this->l('Disable')
+                    )
+                ),
+                'is_bool' => true,
+                // phpcs:ignore Generic.Files.LineLength.TooLong
+                'hint' => 'Indicates whether the payment methods should be rendered in a list of collapsable items,
+                 during checkout',
+                'required' => false
+            );
+        }
+
         $fields_form[2]['form'] = array(
             'legend' => array(
                 'title' => $this->l('Developer settings'),
@@ -1015,6 +1044,7 @@ class AdyenOfficial extends PaymentModule
             $apple_pay_merchant_identifier = Tools::getValue('ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER');
             $google_pay_gateway_merchant_id = Tools::getValue('ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID');
             $google_pay_merchant_identifier = Tools::getValue('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER');
+            $payment_display_collapse = Tools::getValue('ADYEN_PAYMENT_DISPLAY_COLLAPSE');
         } else {
             $merchant_account = Configuration::get('ADYEN_MERCHANT_ACCOUNT');
             $integrator_name = Configuration::get('ADYEN_INTEGRATOR_NAME');
@@ -1029,6 +1059,7 @@ class AdyenOfficial extends PaymentModule
             $apple_pay_merchant_identifier = Configuration::get('ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER');
             $google_pay_gateway_merchant_id = Configuration::get('ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID');
             $google_pay_merchant_identifier = Configuration::get('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER');
+            $payment_display_collapse = Tools::getValue('ADYEN_PAYMENT_DISPLAY_COLLAPSE');
         }
 
         // Load current value
@@ -1044,6 +1075,7 @@ class AdyenOfficial extends PaymentModule
         $helper->fields_value['ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER'] = $apple_pay_merchant_identifier;
         $helper->fields_value['ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID'] = $google_pay_gateway_merchant_id;
         $helper->fields_value['ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER'] = $google_pay_merchant_identifier;
+        $helper->fields_value['ADYEN_PAYMENT_DISPLAY_COLLAPSE'] = $payment_display_collapse;
 
         return $helper->generateForm($fields_form);
     }
@@ -1526,10 +1558,14 @@ class AdyenOfficial extends PaymentModule
                     continue;
                 }
 
+                $collapsePayments = \Configuration::get('ADYEN_PAYMENT_DISPLAY_COLLAPSE');
+
                 $smartyVariables = array(
                     'storedPaymentApiId' => $storedPayment['id'],
                     'name' => $storedPayment['name'],
-                    'number' => $storedPayment['lastFour']
+                    'logoBrand' => $storedPayment['brand'],
+                    'number' => $storedPayment['lastFour'],
+                    'collapsePayments' => $collapsePayments === false ? '0' : $collapsePayments
                 );
 
                 // Add checkout component default configuration parameters for smarty variables
@@ -1556,10 +1592,19 @@ class AdyenOfficial extends PaymentModule
                 continue;
             }
 
+            $collapsePayments = \Configuration::get('ADYEN_PAYMENT_DISPLAY_COLLAPSE');
+
             $smartyVariables = array(
                 'paymentMethodType' => $paymentMethod['type'],
-                'paymentMethodName' => $paymentMethod['name']
+                'paymentMethodName' => $paymentMethod['name'],
+                'paymentMethodBrand' => $paymentMethod['type'],
+                'collapsePayments' => $collapsePayments === false ? '0' : $collapsePayments
             );
+
+            // If brand is scheme, logo will not be displayed correctly unless it is set to card
+            if ($paymentMethod['type'] === 'scheme') {
+                $smartyVariables['paymentMethodBrand'] = 'card';
+            }
 
             // Add checkout component default configuration parameters for smarty variables
             $smartyVariables = array_merge($smartyVariables, $this->getCheckoutComponentInitData());

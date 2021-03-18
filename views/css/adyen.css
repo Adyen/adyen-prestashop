@@ -29,15 +29,6 @@
     margin-top: -13px;
 }
 
-.payment_module input {
-    border: 0;
-    background: none;
-}
-
-.payment_module input:hover {
-    text-decoration: underline;
-}
-
 ul.adyen-hpp-options {
     list-style-type: none;
     margin-left: 10px;
@@ -83,7 +74,7 @@ div.adyen-payment .error-container, div.adyen-payment .info-container {
     display: none;
 }
 
-div.adyen-payment-method-label {
+div.adyen-payment-method-label, span.adyen-payment-method-label {
     display: inline-block;
     margin: 6px 0;
     font-size: 16px;
@@ -97,4 +88,58 @@ div.adyen-additional-data-line {
     html [type=button].adyen-checkout__applepay__button {
         -webkit-appearance: -apple-pay-button;
     }
+}
+
+.adyen-payment .additional-information.mb-0 {
+    margin-bottom: 0;
+}
+
+.adyen-payment .additional-information {
+    margin-bottom: 1rem;
+}
+
+.custom-radio.float-xs-left {
+    float: none !important;
+    display: inline-block;
+}
+
+body#checkout section.checkout-step .payment-options label {
+    display: inline-block;
+    margin-bottom: 0;
+}
+
+.adyen-payment .payment_module {
+    border: 1px solid #d6d4d4;
+    margin-bottom: 9px;
+    padding: 33px 40px 34px 99px;
+    background-color: #fbfbfb;
+    background-repeat: no-repeat;
+    background-position-y: 25px;
+    background-position-x: 15px;
+}
+
+.adyen-payment .payment_module:hover {
+    background-color: #f6f6f6;
+}
+
+.adyen-payment .adyen-collapser:after {
+    display: block;
+    content: "\f077";
+    position: absolute;
+    right: 40px;
+    margin-top: -11px;
+    top: 30px;
+    font-family: "FontAwesome";
+    font-size: 25px;
+    height: 22px;
+    width: 14px;
+    color: #777;
+}
+
+.adyen-payment .adyen-collapser.collapsed:after {
+    content: "\f078";
+}
+
+.adyen-payment .adyen-collapser.adyen-payment-method-label {
+    cursor: pointer;
 }
