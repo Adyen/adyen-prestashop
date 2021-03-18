@@ -413,11 +413,6 @@ class AdyenOfficial extends PaymentModule
             }
         }
 
-        // Configuration was removed while the order state still exists in the db
-        if (!$orderStateConfigurationId) {
-            return Configuration::updateValue('ADYEN_OS_WAITING_FOR_PAYMENT', (int)$orderState['id_order_state']);
-        }
-
         // Both configuration and order state exists
         return true;
     }
@@ -467,11 +462,6 @@ class AdyenOfficial extends PaymentModule
 
                 return false;
             }
-        }
-
-        // Configuration was removed while the order state still exists in the db
-        if (!$orderStateConfigurationId) {
-            return Configuration::updateValue('ADYEN_OS_PAYMENT_NEEDS_ATTENTION', (int)$orderState['id_order_state']);
         }
 
         // Both configuration and order state exists
