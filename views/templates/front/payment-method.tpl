@@ -30,7 +30,7 @@
          data-local-payment-method="{$paymentMethodType|escape:'html':'UTF-8'}">
         {if $isPrestaShop16}
         <div class="col-xs-12 col-md-12">
-            <div class="payment_module adyen-collapse" style="background-image: url(https://checkoutshopper-live.adyen.com/checkoutshopper/images/logos/medium/{$paymentMethodBrand|escape:'html':'UTF-8'}.png)">
+            <div class="payment_module adyen-collapse-styling" style="background-image: url(https://checkoutshopper-live.adyen.com/checkoutshopper/images/logos/medium/{$paymentMethodBrand|escape:'html':'UTF-8'}.png)">
                 {* If collapsing is enabled by config *}
                 <span {if $collapsePayments} class="adyen-payment-method-label adyen-collapser collapsed" data-toggle="collapse" data-target="#collapse{$paymentMethodType|escape:'html':'UTF-8'}" aria-expanded="false" aria-controls="collapse{$paymentMethodType|escape:'html':'UTF-8'}"
                         {else} class="adyen-payment-method-label" {/if}>

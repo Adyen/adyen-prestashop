@@ -30,7 +30,7 @@
          data-stored-payment-api-id="{$storedPaymentApiId|escape:'html':'UTF-8'}">
         {if $isPrestaShop16}
             <div class="col-xs-12 col-md-12">
-                <div class="payment_module adyen-collapse" style="background-image: url(https://checkoutshopper-live.adyen.com/checkoutshopper/images/logos/medium/{$logoBrand|escape:'html':'UTF-8'}.png)">
+                <div class="payment_module adyen-collapse-styling" style="background-image: url(https://checkoutshopper-live.adyen.com/checkoutshopper/images/logos/medium/{$logoBrand|escape:'html':'UTF-8'}.png)">
                     {* If collapsing is enabled by config *}
                     <span {if $collapsePayments} class="adyen-collapser adyen-payment-method-label collapsed" data-toggle="collapse" data-target="#collapse{$number|escape:'html':'UTF-8'}" aria-expanded="false" aria-controls="collapse{$number|escape:'html':'UTF-8'}"
                             {else} class="adyen-payment-method-label" {/if}>
