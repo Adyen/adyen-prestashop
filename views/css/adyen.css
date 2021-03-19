@@ -108,7 +108,7 @@ body#checkout section.checkout-step .payment-options label {
     margin-bottom: 0;
 }
 
-.adyen-payment .payment_module {
+.adyen-payment .payment_module.adyen-collapse-styling {
     border: 1px solid #d6d4d4;
     margin-bottom: 9px;
     padding: 33px 40px 34px 99px;
@@ -118,7 +118,7 @@ body#checkout section.checkout-step .payment-options label {
     background-position-x: 15px;
 }
 
-.adyen-payment .payment_module:hover {
+.adyen-payment .payment_module.adyen-collapse-styling:hover {
     background-color: #f6f6f6;
 }
 
