@@ -24,6 +24,7 @@
 
 namespace Adyen\PrestaShop\service\adapter\classes\order;
 
+use Adyen\PrestaShop\application\VersionChecker;
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use Order;
 use OrderSlip;
@@ -33,13 +34,18 @@ use PrestaShopException;
 class OrderAdapter
 {
     /**
+     * @var VersionChecker
+     */
+    protected $versionChecker;
+
+    /**
      * OrderAdapter constructor.
      *
      * @throws \Adyen\AdyenException
      */
     public function __construct()
     {
-        $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
+        $this->versionChecker = ServiceLocator::get('Adyen\PrestaShop\application\VersionChecker');
     }
 
     /**
@@ -52,7 +58,7 @@ class OrderAdapter
     {
         $order = null;
 
-        if ($this->helperData->isPrestashop16()) {
+        if ($this->versionChecker->isPrestashop16()) {
             $orderId = \Order::getOrderByCartId($cartId);
             if ($orderId) {
                 $order = new \Order($orderId);
