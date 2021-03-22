@@ -33,7 +33,7 @@ use Adyen\PrestaShop\service\OrderPaymentService;
 use Adyen\Util\Currency;
 use Context;
 use Db;
-use OrderCore;
+use Order;
 use PrestaShopDatabaseException;
 use PrestaShopException;
 use Psr\Log\LoggerInterface;
@@ -150,7 +150,7 @@ class NotificationProcessor
     public function processNotification($unprocessedNotification)
     {
         // Validate if order is available by merchant reference
-        /* @var \OrderCore $order */
+        /* @var Order $order */
         $order = $this->orderAdapter->getOrderByCartId($unprocessedNotification['merchant_reference']);
 
         if (!\Validate::isLoadedObject($order)) {
@@ -365,11 +365,11 @@ class NotificationProcessor
 
     /**
      * @param $notification
-     * @param OrderCore $order
+     * @param Order $order
      * @return bool
      * @throws \Exception
      */
-    private function validateWithCartAndOrder($notification, OrderCore $order)
+    private function validateWithCartAndOrder($notification, Order $order)
     {
         $cart = \Cart::getCartByOrderId($order->id);
 
