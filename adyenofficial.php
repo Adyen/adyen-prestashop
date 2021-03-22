@@ -103,6 +103,11 @@ class AdyenOfficial extends PaymentModule
     private $currencyUtil;
 
     /**
+     * @var Adyen\PrestaShop\service\adapter\classes\order\OrderStateAdapter
+     */
+    private $orderStateAdapter;
+
+    /**
      * Adyen constructor.
      *
      * @throws \PrestaShop\PrestaShop\Adapter\CoreException
@@ -156,6 +161,10 @@ class AdyenOfficial extends PaymentModule
 
         $this->currencyUtil = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
             '\Adyen\Util\Currency'
+        );
+
+        $this->orderStateAdapter = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
+            'Adyen\PrestaShop\service\adapter\classes\order\OrderStateAdapter'
         );
 
         // start for 1.6
@@ -366,31 +375,45 @@ class AdyenOfficial extends PaymentModule
      */
     public function createWaitingForPaymentOrderStatus()
     {
-        if (!Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT')) {
-            $order_state = new OrderState();
-            $order_state->name = array();
-            foreach (Language::getLanguages() as $language) {
-                $order_state->name[$language['id_lang']] = 'Waiting for payment';
-            }
+        $orderStateConfigurationId = Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT');
 
-            $order_state->send_email = false;
-            $order_state->module_name = $this->name;
-            $order_state->invoice = false;
-            $order_state->color = '#4169E1';
-            $order_state->logable = true;
-            $order_state->delivery = false;
-            $order_state->hidden = false;
-            $order_state->shipped = false;
-            $order_state->paid = false;
-            if ($order_state->add()) {
-                $source = _PS_ROOT_DIR_ . '/img/os/' . Configuration::get('PS_OS_BANKWIRE') . '.gif';
-                $destination = _PS_ROOT_DIR_ . '/img/os/' . (int)$order_state->id . '.gif';
-                copy($source, $destination);
-            }
-
-            return Configuration::updateValue('ADYEN_OS_WAITING_FOR_PAYMENT', (int)$order_state->id);
+        $orderState = false;
+        if ($orderStateConfigurationId) {
+            $orderState = $this->orderStateAdapter->getOrderStateById($orderStateConfigurationId);
         }
 
+        // In case order state does not exist in the database anymore
+        if (empty($orderState)) {
+            $newOrderState = new OrderState();
+            $newOrderState->name = array();
+            foreach (Language::getLanguages() as $language) {
+                $newOrderState->name[$language['id_lang']] = 'Waiting for payment';
+            }
+
+            $newOrderState->send_email = false;
+            $newOrderState->module_name = $this->name;
+            $newOrderState->invoice = false;
+            $newOrderState->color = '#4169E1';
+            $newOrderState->logable = true;
+            $newOrderState->delivery = false;
+            $newOrderState->hidden = false;
+            $newOrderState->shipped = false;
+            $newOrderState->paid = false;
+
+            if ($newOrderState->add()) {
+                $source = _PS_ROOT_DIR_ . '/img/os/' . Configuration::get('PS_OS_BANKWIRE') . '.gif';
+                $destination = _PS_ROOT_DIR_ . '/img/os/' . (int)$newOrderState->id . '.gif';
+                copy($source, $destination);
+
+                return Configuration::updateValue('ADYEN_OS_WAITING_FOR_PAYMENT', (int)$newOrderState->id);
+            } else {
+                $this->logger->addError('ADYEN_OS_WAITING_FOR_PAYMENT Order status was not created!');
+
+                return false;
+            }
+        }
+
+        // Both configuration and order state exists
         return true;
     }
 
@@ -403,31 +426,45 @@ class AdyenOfficial extends PaymentModule
      */
     public function createPaymentNeedsAttentionOrderStatus()
     {
-        if (!Configuration::get('ADYEN_OS_PAYMENT_NEEDS_ATTENTION')) {
-            $order_state = new OrderState();
-            $order_state->name = array();
-            foreach (Language::getLanguages() as $language) {
-                $order_state->name[$language['id_lang']] = 'Payment needs attention';
-            }
+        $orderStateConfigurationId = Configuration::get('ADYEN_OS_PAYMENT_NEEDS_ATTENTION');
 
-            $order_state->send_email = false;
-            $order_state->module_name = $this->name;
-            $order_state->invoice = false;
-            $order_state->color = '#d62424';
-            $order_state->logable = true;
-            $order_state->delivery = false;
-            $order_state->hidden = false;
-            $order_state->shipped = false;
-            $order_state->paid = false;
-            if ($order_state->add()) {
-                $source = _PS_ROOT_DIR_ . '/img/os/' . Configuration::get('PS_OS_BANKWIRE') . '.gif';
-                $destination = _PS_ROOT_DIR_ . '/img/os/' . (int)$order_state->id . '.gif';
-                copy($source, $destination);
-            }
-
-            return Configuration::updateValue('ADYEN_OS_PAYMENT_NEEDS_ATTENTION', (int)$order_state->id);
+        $orderState = false;
+        if ($orderStateConfigurationId) {
+            $orderState = $this->orderStateAdapter->getOrderStateById($orderStateConfigurationId);
         }
 
+        // In case order state does not exist in the database anymore
+        if (empty($orderState)) {
+            $newOrderState = new OrderState();
+            $newOrderState->name = array();
+            foreach (Language::getLanguages() as $language) {
+                $newOrderState->name[$language['id_lang']] = 'Payment needs attention';
+            }
+
+            $newOrderState->send_email = false;
+            $newOrderState->module_name = $this->name;
+            $newOrderState->invoice = false;
+            $newOrderState->color = '#d62424';
+            $newOrderState->logable = true;
+            $newOrderState->delivery = false;
+            $newOrderState->hidden = false;
+            $newOrderState->shipped = false;
+            $newOrderState->paid = false;
+
+            if ($newOrderState->add()) {
+                $source = _PS_ROOT_DIR_ . '/img/os/' . Configuration::get('PS_OS_BANKWIRE') . '.gif';
+                $destination = _PS_ROOT_DIR_ . '/img/os/' . (int)$newOrderState->id . '.gif';
+                copy($source, $destination);
+
+                return Configuration::updateValue('ADYEN_OS_PAYMENT_NEEDS_ATTENTION', (int)$newOrderState->id);
+            } else {
+                $this->logger->addError('ADYEN_OS_PAYMENT_NEEDS_ATTENTION Order status was not created!');
+
+                return false;
+            }
+        }
+
+        // Both configuration and order state exists
         return true;
     }
 
@@ -451,6 +488,10 @@ class AdyenOfficial extends PaymentModule
     private function removeConfigurationsFromDatabase()
     {
         $adyenConfigurationNames = array(
+            'CONF_ADYENOFFICIAL_FIXED',
+            'CONF_ADYENOFFICIAL_VAR',
+            'CONF_ADYENOFFICIAL_FIXED_FOREIGN',
+            'CONF_ADYENOFFICIAL_VAR_FOREIGN',
             'ADYEN_MERCHANT_ACCOUNT',
             'ADYEN_INTEGRATOR_NAME',
             'ADYEN_MODE',
