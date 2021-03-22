@@ -26,8 +26,10 @@ namespace Adyen\PrestaShop\service\modification;
 
 use Adyen\PrestaShop\infra\NotificationRetriever;
 use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
+use Adyen\PrestaShop\service\OrderPaymentService;
 use Adyen\Service\Modification;
 use Order;
+use OrderPayment;
 use OrderSlip;
 use PHPUnit\Framework\TestCase;
 use PHPUnit_Framework_MockObject_MockObject;
@@ -98,14 +100,20 @@ class RefundTest extends TestCase
         $orderSlip->shipping_cost = '0';
         $orderSlip->id = 1;
 
-        /** @var PHPUnit_Framework_MockObject_MockObject|NotificationRetriever $notificationRetriever */
-        $notificationRetriever = $this->getMockBuilder('Adyen\PrestaShop\infra\NotificationRetriever')
-                                      ->disableOriginalConstructor()
-                                      ->getMock();
-        $notificationRetriever->expects($this->once())
-                              ->method('getPSPReferenceByOrderId')
-                              ->with($orderId)
-                              ->willReturn($pspReference);
+        $orderPayment = $this->getMockBuilder('OrderPayment')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $orderPayment->transaction_id = $pspReference;
+
+        /** @var PHPUnit_Framework_MockObject_MockObject|OrderPaymentService $orderPaymentService */
+        $orderPaymentService = $this->getMockBuilder(OrderPaymentService::class)
+            ->getMock();
+
+        $orderPaymentService->expects($this->once())
+            ->method('getLatestOrderPayment')
+            ->with($orderMock)
+            ->willReturn($orderPayment);
 
         /** @var PHPUnit_Framework_MockObject_MockObject|OrderAdapter $orderAdapter */
         $orderAdapter = $this->getMockBuilder(OrderAdapter::class)
@@ -123,9 +131,9 @@ class RefundTest extends TestCase
 
         $refund = new Refund(
             $modificationClient,
-            $notificationRetriever,
             $merchantAccount,
             $orderAdapter,
+            $orderPaymentService,
             $logger
         );
 
