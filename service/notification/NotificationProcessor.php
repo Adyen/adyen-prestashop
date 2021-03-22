@@ -29,6 +29,7 @@ use Adyen\PrestaShop\model\AdyenNotification;
 use Adyen\PrestaShop\model\AdyenPaymentResponse;
 use Adyen\PrestaShop\service\adapter\classes\CustomerThreadAdapter;
 use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
+use Adyen\PrestaShop\service\OrderPaymentService;
 use Adyen\Util\Currency;
 use Context;
 use Db;
@@ -99,6 +100,11 @@ class NotificationProcessor
     private $utilCurrency;
 
     /**
+     * @var OrderPaymentService
+     */
+    private $orderPaymentService;
+
+    /**
      * NotificationProcessor constructor.
      *
      * @param AdyenHelper $helperData
@@ -110,6 +116,7 @@ class NotificationProcessor
      * @param AdyenPaymentResponse $adyenPaymentResponse
      * @param OrderService $orderService
      * @param Currency $utilCurrency
+     * @param OrderPaymentService $orderPaymentService
      */
     public function __construct(
         AdyenHelper $helperData,
@@ -120,7 +127,8 @@ class NotificationProcessor
         Context $context,
         AdyenPaymentResponse $adyenPaymentResponse,
         OrderService $orderService,
-        Currency $utilCurrency
+        Currency $utilCurrency,
+        OrderPaymentService $orderPaymentService
     ) {
         $this->helperData = $helperData;
         $this->dbInstance = $dbInstance;
@@ -131,6 +139,7 @@ class NotificationProcessor
         $this->adyenPaymentResponse = $adyenPaymentResponse;
         $this->orderService = $orderService;
         $this->utilCurrency = $utilCurrency;
+        $this->orderPaymentService = $orderPaymentService;
     }
 
     /**
@@ -195,7 +204,7 @@ class NotificationProcessor
                             $pspReference = $unprocessedNotification['pspreference'];
                         }
 
-                        $this->orderService->addPspReferenceForOrderPayment($order, $pspReference);
+                        $this->orderPaymentService->addPspReferenceForOrderPayment($order, $pspReference);
                     }
                 } else { // Notification success is 'false'
                     // Order state is not canceled yet
