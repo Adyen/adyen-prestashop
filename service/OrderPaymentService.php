@@ -64,6 +64,6 @@ class OrderPaymentService
             return $paymentCollection->getFirst();
         }
 
-        return false;
+        return null;
     }
 }
