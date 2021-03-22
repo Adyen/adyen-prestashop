@@ -195,16 +195,15 @@ class NotificationProcessor
                         $this->orderService->addPaymentDataToOrderFromResponse($order, $unprocessedNotification);
                     }
 
-                    // In case psp reference is missing from the order_payment add it
-                    $storedPspReference = $this->orderService->getPspReferenceForOrderPayment($order);
-                    if (empty($storedPspReference)) {
+                    $latestOrderPayment = $this->orderPaymentService->getLatestOrderPayment($order);
+                    if ($latestOrderPayment) {
                         if (!empty($unprocessedNotification['original_reference'])) {
                             $pspReference = $unprocessedNotification['original_reference'];
                         } else {
                             $pspReference = $unprocessedNotification['pspreference'];
                         }
 
-                        $this->orderPaymentService->addPspReferenceForOrderPayment($order, $pspReference);
+                        $this->orderPaymentService->addPspReferenceForOrderPayment($latestOrderPayment, $pspReference);
                     }
                 } else { // Notification success is 'false'
                     // Order state is not canceled yet

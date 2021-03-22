@@ -54,21 +54,4 @@ class Order
             }
         }
     }
-
-    /**
-     * @param \OrderCore $order
-     * @return mixed|null
-     */
-    public function getPspReferenceForOrderPayment($order)
-    {
-        if (\Validate::isLoadedObject($order)) {
-            $paymentCollection = $order->getOrderPaymentCollection();
-
-            // get first transaction
-            $payment = $paymentCollection[0];
-            return $payment->transaction_id;
-        }
-
-        return null;
-    }
 }
