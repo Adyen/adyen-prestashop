@@ -493,7 +493,8 @@ abstract class FrontController extends \ModuleFrontController
                 $latestOrderPayment = $this->orderPaymentService->getLatestOrderPayment($order);
                 if ($latestOrderPayment && array_key_exists('transaction_id', $extraVars)) {
                     $this->orderPaymentService->addPspReferenceForOrderPayment(
-                        $latestOrderPayment, $extraVars['transaction_id']
+                        $latestOrderPayment,
+                        $extraVars['transaction_id']
                     );
                 }
             } else {

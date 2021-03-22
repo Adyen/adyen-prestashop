@@ -29,6 +29,7 @@ use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
 use Adyen\PrestaShop\service\OrderPaymentService;
 use Adyen\Service\Modification;
 use Order;
+use OrderCore;
 use OrderPayment;
 use OrderSlip;
 use PHPUnit\Framework\TestCase;
@@ -86,7 +87,7 @@ class RefundTest extends TestCase
 
         // Mock order
         /** @var PHPUnit_Framework_MockObject_MockObject|Order $orderMock */
-        $orderMock = $this->getMockBuilder(Order::class)
+        $orderMock = $this->getMockBuilder(OrderCore::class)
             ->disableOriginalConstructor()
             ->getMock();
         $orderMock->total_paid = $amount;

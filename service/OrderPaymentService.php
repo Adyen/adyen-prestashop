@@ -24,7 +24,7 @@
 
 namespace Adyen\PrestaShop\service;
 
-use Order;
+use OrderCore;
 use OrderPayment;
 
 class OrderPaymentService
@@ -35,7 +35,7 @@ class OrderPaymentService
      * @param OrderPayment $orderPayment
      * @param string $pspReference
      *
-     * @return Order
+     * @return OrderCore
      * @throws \PrestaShopException
      */
     public function addPspReferenceForOrderPayment(OrderPayment $orderPayment, $pspReference)
@@ -51,11 +51,11 @@ class OrderPaymentService
     }
 
     /**
-     * @param Order $order
+     * @param OrderCore $order
      * @return false|OrderPayment
      * @throws \PrestaShopException
      */
-    public function getLatestOrderPayment(Order $order)
+    public function getLatestOrderPayment(OrderCore $order)
     {
         if (\Validate::isLoadedObject($order)) {
             $paymentCollection = $order->getOrderPaymentCollection()->orderBy('date_add', 'desc');
