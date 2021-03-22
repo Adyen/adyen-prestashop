@@ -792,7 +792,7 @@ class AdyenOfficial extends PaymentModule
             'type' => 'text',
             'desc' => $cronjobToken ?
                 // phpcs:ignore Generic.Files.LineLength.TooLong
-                $this->l('Your adyen cron job processor\'s url includes this secure token. Your URL is: ') .
+                $this->l('Your adyen cron job processor\'s URL includes this secure token. Your URL is: ') .
                 sprintf(
                     "%s/%s/index.php?fc=module&controller=AdminAdyenOfficialPrestashopCron&token=%s",
                     Tools::getShopDomainSsl(),
