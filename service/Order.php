@@ -140,7 +140,7 @@ class Order
         }
 
         $orderPaymentCollection = $order->getOrderPaymentCollection();
-        // TODO check if order payment is Adyen $orderPaymentCollection->where('payment_method', '=', 'Adyen');
+        $orderPaymentCollection->where('payment_method', '=', 'Adyen');
 
         /** @var \OrderPayment[] $orderPayments */
         $orderPayments = $orderPaymentCollection->getAll();
