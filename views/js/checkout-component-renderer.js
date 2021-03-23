@@ -88,9 +88,12 @@ jQuery(document).ready(function() {
 
             // Adyen payment method
             if (selectedPaymentForm.length > 0) {
+
+                // not local payment method
                 if (!('localPaymentMethod' in
                     selectedPaymentForm.get(0).dataset)) {
-                    // not local payment method
+
+                    resetPrestaShopPlaceOrderButtonVisibility();
                     return;
                 }
 
@@ -104,8 +107,17 @@ jQuery(document).ready(function() {
                         prestaShopPlaceOrderButton.show();
                     }
                 }
+            } else {
+                // In 1.7 in case the pay button is hidden and the customer selects a non adyen method
+                resetPrestaShopPlaceOrderButtonVisibility();
             }
         });
+    }
+
+    function resetPrestaShopPlaceOrderButtonVisibility() {
+        if (!IS_PRESTA_SHOP_16 && !prestaShopPlaceOrderButton.is(":visible")) {
+            prestaShopPlaceOrderButton.show();
+        }
     }
 
     function showRedirectErrorMessage(message) {
