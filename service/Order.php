@@ -113,7 +113,7 @@ class Order
     public function updateOrderState($order, $orderStateId, $extraVars)
     {
         // check if the new order state is the same as the current state
-        $currentOrderStateId = (int) $order->getCurrentState();
+        $currentOrderStateId = (int)$order->getCurrentState();
 
         if ($currentOrderStateId === $orderStateId) {
             // duplicate order state handling, no need to update the order
@@ -133,7 +133,10 @@ class Order
         );
 
         if (!$orderHistory->addWithemail()) {
-            $this->logger->addError('Email was not sent upon order state update', ["order id" => $order->id, "new state id" => $orderStateId]);
+            $this->logger->addError(
+                'Email was not sent upon order state update',
+                array("order id" => $order->id, "new state id" => $orderStateId)
+            );
         }
 
         $orderPaymentCollection = $order->getOrderPaymentCollection();
