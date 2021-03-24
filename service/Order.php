@@ -24,8 +24,23 @@
 
 namespace Adyen\PrestaShop\service;
 
+use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
+
 class Order
 {
+    /**
+     * @var Logger
+     */
+    private $logger;
+
+    /**
+     * Order constructor.
+     */
+    public function __construct()
+    {
+        $this->logger = ServiceLocator::get('Adyen\PrestaShop\service\Logger');
+    }
+
     public function addPaymentDataToOrderFromResponse($order, $response)
     {
         if (\Validate::isLoadedObject($order)) {
@@ -86,5 +101,56 @@ class Order
         }
 
         return null;
+    }
+
+    /**
+     * @param $order
+     * @param $orderStateId
+     * @param $extraVars
+     *
+     * @return bool
+     */
+    public function updateOrderState($order, $orderStateId, $extraVars)
+    {
+        // check if the new order state is the same as the current state
+        $currentOrderStateId = (int)$order->getCurrentState();
+
+        if ($currentOrderStateId === $orderStateId) {
+            // duplicate order state handling, no need to update the order
+            return false;
+        }
+
+        // Change order history in case the order updates to a new order state
+        $orderHistory = new \OrderHistory();
+        $orderHistory->id_order = $order->id;
+
+        $useExistingPayment = !$order->hasInvoice();
+
+        $orderHistory->changeIdOrderState(
+            $orderStateId,
+            $order->id,
+            $useExistingPayment
+        );
+
+        if (!$orderHistory->addWithemail()) {
+            $this->logger->addError(
+                'Email was not sent upon order state update',
+                array("order id" => $order->id, "new state id" => $orderStateId)
+            );
+        }
+
+        $orderPaymentCollection = $order->getOrderPaymentCollection();
+        $orderPaymentCollection->where('payment_method', '=', 'Adyen');
+
+        /** @var \OrderPayment[] $orderPayments */
+        $orderPayments = $orderPaymentCollection->getAll();
+        foreach ($orderPayments as $orderPayment) {
+            if (\Validate::isLoadedObject($orderPayment)) {
+                if (empty($orderPayment->transaction_id) && !empty($extraVars['transaction_id'])) {
+                    $orderPayment->transaction_id = $extraVars['transaction_id'];
+                    $orderPayment->save();
+                }
+            }
+        }
     }
 }

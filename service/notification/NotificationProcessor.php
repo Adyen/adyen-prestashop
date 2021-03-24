@@ -165,13 +165,25 @@ class NotificationProcessor
             return true;
         }
 
+        // Update transaction_id with the original psp reference if available in the notification
+        $extraVars = array();
+        if (!empty($unprocessedNotification['original_reference'])) {
+            $extraVars['transaction_id'] = $unprocessedNotification['original_reference'];
+        } else {
+            $extraVars['transaction_id'] = $unprocessedNotification['pspreference'];
+        }
+
         // Process notifications based on it's event code
         switch ($unprocessedNotification['event_code']) {
             case AdyenNotification::AUTHORISATION:
                 if ('true' === $unprocessedNotification['success']) {
                     // If notification data does not match cart and order, set to PAYMENT_NEEDS_ATTENTION
                     if (!$this->validateWithCartAndOrder($unprocessedNotification, $order)) {
-                        $order->setCurrentState(\Configuration::get('ADYEN_OS_PAYMENT_NEEDS_ATTENTION'));
+                        $this->orderService->updateOrderState(
+                            $order,
+                            \Configuration::get('ADYEN_OS_PAYMENT_NEEDS_ATTENTION'),
+                            $extraVars
+                        );
                         $this->orderService->addPaymentDataToOrderFromResponse($order, $unprocessedNotification);
 
                         return true;
@@ -179,23 +191,10 @@ class NotificationProcessor
 
                     // If not in a final status, set to PAYMENT
                     if ($this->isCurrentOrderStatusANonFinalStatus($order->getCurrentState())) {
-                        $order->setCurrentState(\Configuration::get('PS_OS_PAYMENT'));
-
+                        $this->orderService->updateOrderState($order, \Configuration::get('PS_OS_PAYMENT'), $extraVars);
                         // Add additional data to order if there is any (only possible when the notification success is
                         // true
                         $this->orderService->addPaymentDataToOrderFromResponse($order, $unprocessedNotification);
-                    }
-
-                    // In case psp reference is missing from the order_payment add it
-                    $storedPspReference = $this->orderService->getPspReferenceForOrderPayment($order);
-                    if (empty($storedPspReference)) {
-                        if (!empty($unprocessedNotification['original_reference'])) {
-                            $pspReference = $unprocessedNotification['original_reference'];
-                        } else {
-                            $pspReference = $unprocessedNotification['pspreference'];
-                        }
-
-                        $this->orderService->addPspReferenceForOrderPayment($order, $pspReference);
                     }
                 } else { // Notification success is 'false'
                     // Order state is not canceled yet
@@ -203,7 +202,11 @@ class NotificationProcessor
                         // If order has a non final status, set to cancelled
                         if ($this->isCurrentOrderStatusANonFinalStatus($order->getCurrentState())) {
                             // Moves order to canceled
-                            $order->setCurrentState(\Configuration::get('PS_OS_CANCELED'));
+                            $this->orderService->updateOrderState(
+                                $order,
+                                \Configuration::get('PS_OS_CANCELED'),
+                                $extraVars
+                            );
                         } else {
                             // Add this log when the notification is ignore because an authorisation success true
                             // notification has already been processed for the same order
@@ -219,17 +222,20 @@ class NotificationProcessor
                 $this->adyenPaymentResponse->deletePaymentResponseByCartId(
                     $unprocessedNotification['merchant_reference']
                 );
-                
+
                 break;
             case AdyenNotification::OFFER_CLOSED:
                 // Notification success is 'true' AND current status is ADYEN_OS_WAITING_FOR_PAYMENT
                 if ('true' === $unprocessedNotification['success']) {
                     // Moves order to canceled if order status is waiting for payment
                     if ($order->getCurrentState() === \Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT')) {
-                        $order->setCurrentState(\Configuration::get('PS_OS_CANCELED'));
+                        $this->orderService->updateOrderState(
+                            $order,
+                            \Configuration::get('PS_OS_CANCELED'),
+                            $extraVars
+                        );
                     }
                 }
-
 
                 $this->adyenPaymentResponse->deletePaymentResponseByCartId(
                     $unprocessedNotification['merchant_reference']
