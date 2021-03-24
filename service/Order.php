@@ -45,31 +45,32 @@ class Order
      * Add the payment data received from a response to the order_payments linked to the order
      *
      * @param $order
-     * @param $response
+     * @param $additionalData
      * @return mixed
      *
      * TODO: Refactor/modify this function w/OrderPaymentService::addPspReferenceForOrderPayment since they are related
+     * TODO: Create AdditionalData class to be passed instead of an array
      */
-    public function addPaymentDataToOrderFromResponse($order, $response)
+    public function addPaymentDataToOrderFromResponse($order, $additionalData)
     {
         if (\Validate::isLoadedObject($order)) {
             // Save available data into the order_payment table
             $paymentCollection = $order->getOrderPaymentCollection();
             foreach ($paymentCollection as $payment) {
-                $cardSummary = !empty($response['additionalData']['cardSummary'])
-                    ? pSQL($response['additionalData']['cardSummary'])
+                $cardSummary = !empty($additionalData['cardSummary'])
+                    ? pSQL($additionalData['cardSummary'])
                     : '****';
-                $cardBin = !empty($response['additionalData']['cardBin'])
-                    ? pSQL($response['additionalData']['cardBin'])
+                $cardBin = !empty($additionalData['cardBin'])
+                    ? pSQL($additionalData['cardBin'])
                     : '******';
-                $paymentMethod = !empty($response['additionalData']['paymentMethod'])
-                    ? pSQL($response['additionalData']['paymentMethod'])
-                    : 'Adyen';
-                $expiryDate = !empty($response['additionalData']['expiryDate'])
-                    ? pSQL($response['additionalData']['expiryDate'])
+                $paymentMethod = !empty($additionalData['paymentMethod'])
+                    ? pSQL($additionalData['paymentMethod'])
                     : '';
-                $cardHolderName = !empty($response['additionalData']['cardHolderName'])
-                    ? pSQL($response['additionalData']['cardHolderName']) : '';
+                $expiryDate = !empty($additionalData['expiryDate'])
+                    ? pSQL($additionalData['expiryDate'])
+                    : '';
+                $cardHolderName = !empty($additionalData['cardHolderName'])
+                    ? pSQL($additionalData['cardHolderName']) : '';
                 $payment->card_number = $cardBin . ' *** ' . $cardSummary;
                 $payment->card_brand = $paymentMethod;
                 $payment->card_expiration = $expiryDate;

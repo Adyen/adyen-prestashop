@@ -184,7 +184,10 @@ class NotificationProcessor
                             $order,
                             \Configuration::get('ADYEN_OS_PAYMENT_NEEDS_ATTENTION')
                         );
-                        $this->orderService->addPaymentDataToOrderFromResponse($order, $unprocessedNotification);
+                        $this->orderService->addPaymentDataToOrderFromResponse(
+                            $order,
+                            unserialize($unprocessedNotification['additional_data'])
+                        );
 
                         return true;
                     }
@@ -209,7 +212,10 @@ class NotificationProcessor
 
                     // Add additional data to order if there is any (only possible when the notification success is
                     // true
-                    $this->orderService->addPaymentDataToOrderFromResponse($order, $unprocessedNotification);
+                    $this->orderService->addPaymentDataToOrderFromResponse(
+                        $order,
+                        unserialize($unprocessedNotification['additional_data'])
+                    );
                 } else { // Notification success is 'false'
                     // Order state is not canceled yet
                     if ($order->getCurrentState() !== \Configuration::get('PS_OS_CANCELED')) {
