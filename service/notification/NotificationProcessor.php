@@ -224,8 +224,7 @@ class NotificationProcessor
                             // Moves order to canceled
                             $this->orderService->updateOrderState(
                                 $order,
-                                \Configuration::get('PS_OS_CANCELED'),
-                                $extraVars
+                                \Configuration::get('PS_OS_CANCELED')
                             );
                         } else {
                             // Add this log when the notification is ignore because an authorisation success true
@@ -251,8 +250,7 @@ class NotificationProcessor
                     if ($order->getCurrentState() === \Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT')) {
                         $this->orderService->updateOrderState(
                             $order,
-                            \Configuration::get('PS_OS_CANCELED'),
-                            $extraVars
+                            \Configuration::get('PS_OS_CANCELED')
                         );
                     }
                 }

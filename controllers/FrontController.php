@@ -233,7 +233,10 @@ abstract class FrontController extends \ModuleFrontController
 
                 $newOrder = new \Order((int)$this->module->currentOrder);
 
-                $this->orderService->addPaymentDataToOrderFromResponse($newOrder, $response['additionalData']);
+                if (array_key_exists('additionalData', $response)) {
+                    $this->orderService->addPaymentDataToOrderFromResponse($newOrder, $response['additionalData']);
+                }
+
                 // PaymentResponse can be deleted
                 $this->adyenPaymentResponseModel->deletePaymentResponseByCartId($cart->id);
 
