@@ -29,6 +29,8 @@ use OrderPayment;
 
 class OrderPaymentService
 {
+    const PAYMENT_METHOD_ADYEN = 'Adyen';
+
     /**
      * Set the transaction_id field of the orderPayment IFF the current value is empty
      *
@@ -55,10 +57,12 @@ class OrderPaymentService
      * @return false|OrderPayment
      * @throws \PrestaShopException
      */
-    public function getLatestOrderPayment(OrderCore $order)
+    public function getLatestAdyenOrderPayment(OrderCore $order)
     {
         if (\Validate::isLoadedObject($order)) {
-            $paymentCollection = $order->getOrderPaymentCollection()->orderBy('date_add', 'desc');
+            $paymentCollection = $order->getOrderPaymentCollection()
+                ->where('payment_method', '=', self::PAYMENT_METHOD_ADYEN)
+                ->orderBy('date_add', 'desc');
 
             // Get the latest transaction
             return $paymentCollection->getFirst();

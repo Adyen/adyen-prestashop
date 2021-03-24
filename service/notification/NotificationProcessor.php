@@ -197,7 +197,7 @@ class NotificationProcessor
                         $this->orderService->addPaymentDataToOrderFromResponse($order, $unprocessedNotification);
                     }
 
-                    $latestOrderPayment = $this->orderPaymentService->getLatestOrderPayment($order);
+                    $latestOrderPayment = $this->orderPaymentService->getLatestAdyenOrderPayment($order);
 
                     // Update transaction_id with the original psp reference if available in the notification
                     if ($latestOrderPayment) {
