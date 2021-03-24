@@ -192,9 +192,6 @@ class NotificationProcessor
                     // If not in a final status, set to PAYMENT
                     if ($this->isCurrentOrderStatusANonFinalStatus($order->getCurrentState())) {
                         $this->orderService->updateOrderState($order, \Configuration::get('PS_OS_PAYMENT'));
-                        // Add additional data to order if there is any (only possible when the notification success is
-                        // true
-                        $this->orderService->addPaymentDataToOrderFromResponse($order, $unprocessedNotification);
                     }
 
                     $latestOrderPayment = $this->orderPaymentService->getLatestAdyenOrderPayment($order);
@@ -209,6 +206,10 @@ class NotificationProcessor
 
                         $this->orderPaymentService->addPspReferenceForOrderPayment($latestOrderPayment, $pspReference);
                     }
+
+                    // Add additional data to order if there is any (only possible when the notification success is
+                    // true
+                    $this->orderService->addPaymentDataToOrderFromResponse($order, $unprocessedNotification);
                 } else { // Notification success is 'false'
                     // Order state is not canceled yet
                     if ($order->getCurrentState() !== \Configuration::get('PS_OS_CANCELED')) {

@@ -41,6 +41,15 @@ class Order
         $this->logger = ServiceLocator::get('Adyen\PrestaShop\service\Logger');
     }
 
+    /**
+     * Add the payment data received from a response to the order_payments linked to the order
+     *
+     * @param $order
+     * @param $response
+     * @return mixed
+     *
+     * TODO: Refactor/modify this function w/OrderPaymentService::addPspReferenceForOrderPayment since they are related
+     */
     public function addPaymentDataToOrderFromResponse($order, $response)
     {
         if (\Validate::isLoadedObject($order)) {
@@ -68,6 +77,8 @@ class Order
                 $payment->save();
             }
         }
+
+        return $order;
     }
 
     /**
