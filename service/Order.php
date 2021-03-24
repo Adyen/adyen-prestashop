@@ -24,8 +24,23 @@
 
 namespace Adyen\PrestaShop\service;
 
+use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
+
 class Order
 {
+    /**
+     * @var Logger
+     */
+    private $logger;
+
+    /**
+     * Order constructor.
+     */
+    public function __construct()
+    {
+        $this->logger = ServiceLocator::get('Adyen\PrestaShop\service\Logger');
+    }
+
     public function addPaymentDataToOrderFromResponse($order, $response)
     {
         if (\Validate::isLoadedObject($order)) {
@@ -53,5 +68,43 @@ class Order
                 $payment->save();
             }
         }
+    }
+
+    /**
+     * @param $order
+     * @param $orderStateId
+     *
+     * @return bool
+     */
+    public function updateOrderState($order, $orderStateId)
+    {
+        // check if the new order state is the same as the current state
+        $currentOrderStateId = (int)$order->getCurrentState();
+
+        if ($currentOrderStateId === $orderStateId) {
+            // duplicate order state handling, no need to update the order
+            return false;
+        }
+
+        // Change order history in case the order updates to a new order state
+        $orderHistory = new \OrderHistory();
+        $orderHistory->id_order = $order->id;
+
+        $useExistingPayment = !$order->hasInvoice();
+
+        $orderHistory->changeIdOrderState(
+            $orderStateId,
+            $order->id,
+            $useExistingPayment
+        );
+
+        if (!$orderHistory->addWithemail()) {
+            $this->logger->addError(
+                'Email was not sent upon order state update',
+                array("order id" => $order->id, "new state id" => $orderStateId)
+            );
+        }
+
+        return $order;
     }
 }

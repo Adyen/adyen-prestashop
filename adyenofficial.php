@@ -293,7 +293,8 @@ class AdyenOfficial extends PaymentModule
     public function updateCronJobToken($token = '')
     {
         if (empty($token)) {
-            $token = $this->crypto->encrypt(Tools::getShopDomainSsl() . time());
+            // generate random string upon installation or in case the input token is empty
+            $token = hash('sha256', Tools::getShopDomainSsl() . rand() . time());
         }
 
         return Configuration::updateValue('ADYEN_CRONJOB_TOKEN', $this->crypto->encrypt($token));
@@ -644,6 +645,8 @@ class AdyenOfficial extends PaymentModule
 
                 if (!empty($cron_job_token)) {
                     Configuration::updateValue('ADYEN_CRONJOB_TOKEN', $this->crypto->encrypt($cron_job_token));
+                } else {
+                    $this->updateCronJobToken();
                 }
 
                 if (!empty($api_key_test)) {
@@ -830,7 +833,7 @@ class AdyenOfficial extends PaymentModule
             'type' => 'text',
             'desc' => $cronjobToken ?
                 // phpcs:ignore Generic.Files.LineLength.TooLong
-                $this->l('Your adyen cron job processor\'s url includes this secure token. Your URL looks like: ') .
+                $this->l('Your adyen cron job processor\'s URL includes this secure token. Your URL is: ') .
                 sprintf(
                     "%s/%s/index.php?fc=module&controller=AdminAdyenOfficialPrestashopCron&token=%s",
                     Tools::getShopDomainSsl(),
@@ -838,11 +841,12 @@ class AdyenOfficial extends PaymentModule
                     $cronjobToken
                 ) :
                 $this->l('Please fill your cron job token'),
-            'class' => $cronjobToken ? 'adyen-input-green' : '',
             'label' => $this->l('Secure token for cron job'),
             'name' => 'ADYEN_CRONJOB_TOKEN',
             'size' => 20,
-            'required' => false
+            'hint' => $this->l('To regenerate the token, simply save this field with no value.') .
+                $this->l('In case of filling this field manually please only use numbers and a-z or A-Z characters'),
+            'required' => true
         );
 
         $apiKeyTest = '';
@@ -1077,7 +1081,7 @@ class AdyenOfficial extends PaymentModule
             $integrator_name = (string)Tools::getValue('ADYEN_INTEGRATOR_NAME');
             $mode = (string)Tools::getValue('ADYEN_MODE');
             $notification_username = (string)Tools::getValue('ADYEN_NOTI_USERNAME');
-            $cron_job_token = Tools::getValue('ADYEN_CRONJOB_TOKEN');
+            $cron_job_token = $cronjobToken;
             $client_key_test = Tools::getValue('ADYEN_CLIENTKEY_TEST');
             $client_key_live = Tools::getValue('ADYEN_CLIENTKEY_LIVE');
             $live_endpoint_url_prefix = (string)Tools::getValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX');

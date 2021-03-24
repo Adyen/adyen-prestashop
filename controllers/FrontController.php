@@ -262,7 +262,7 @@ abstract class FrontController extends \ModuleFrontController
                 if ($cart->OrderExists() !== false) {
                     $order = $this->orderAdapter->getOrderByCartId($cart->id);
                     if (\Validate::isLoadedObject($order)) {
-                        $order->setCurrentState(\Configuration::get('PS_OS_CANCELED'));
+                        $this->createOrUpdateOrder($cart, $extraVars, $customer, \Configuration::get('PS_OS_CANCELED'));
                     } else {
                         $this->logger->addError('Order cannot be loaded for cart id: ' . $cart->id);
                     }
@@ -482,6 +482,7 @@ abstract class FrontController extends \ModuleFrontController
      * @param $extraVars
      * @param $customer
      * @param $orderStatus
+     * @throws \PrestaShopException
      */
     private function createOrUpdateOrder($cart, $extraVars, $customer, $orderStatus)
     {
@@ -489,7 +490,7 @@ abstract class FrontController extends \ModuleFrontController
         if ($cart->OrderExists() !== false) {
             $order = $this->orderAdapter->getOrderByCartId($cart->id);
             if (\Validate::isLoadedObject($order)) {
-                $order->setCurrentState($orderStatus);
+               $this->orderService->updateOrderState($order, $orderStatus);
                 $latestOrderPayment = $this->orderPaymentService->getLatestOrderPayment($order);
                 if ($latestOrderPayment && array_key_exists('transaction_id', $extraVars)) {
                     $this->orderPaymentService->addPspReferenceForOrderPayment(
