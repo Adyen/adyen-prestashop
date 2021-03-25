@@ -112,7 +112,7 @@ class RefundTest extends TestCase
             ->getMock();
 
         $orderPaymentService->expects($this->once())
-            ->method('getLatestOrderPayment')
+            ->method('getLatestAdyenOrderPayment')
             ->with($orderMock)
             ->willReturn($orderPayment);
 
