@@ -429,22 +429,22 @@ class NotificationProcessor
      */
     private function setPspReferenceUsingNotificationData(OrderCore $order, $notification)
     {
-        $latestOrderPayment = $this->orderPaymentService->getLatestAdyenOrderPayment($order);
+        $orderPayment = $this->orderPaymentService->getAdyenOrderPayment($order);
 
         // Update transaction_id with the original psp reference if available in the notification
-        if ($latestOrderPayment) {
+        if ($orderPayment) {
             if (!empty($notification['original_reference'])) {
                 $pspReference = $notification['original_reference'];
             } else {
                 $pspReference = $notification['pspreference'];
             }
 
-            $latestOrderPayment = $this->orderPaymentService->addPspReferenceForOrderPayment(
-                $latestOrderPayment,
+            $orderPayment = $this->orderPaymentService->addPspReferenceForOrderPayment(
+                $orderPayment,
                 $pspReference
             );
         }
 
-        return $latestOrderPayment;
+        return $orderPayment;
     }
 }

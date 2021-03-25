@@ -111,14 +111,14 @@ class Refund
 
         $amount = $currencyConverter->sanitize($fullRefundAmount, $currency);
 
-        $latestOrderPayment = $this->orderPaymentService->getLatestAdyenOrderPayment($order);
-        if (!$latestOrderPayment || empty($latestOrderPayment->transaction_id)) {
-            $this->logger->error(sprintf('Unable to get latest order payment linked to order (%s) OR latest
+        $orderPayment = $this->orderPaymentService->getAdyenOrderPayment($order);
+        if (!$orderPayment || empty($orderPayment->transaction_id)) {
+            $this->logger->error(sprintf('Unable to get order payment linked to order (%s) OR
              order payment has an empty transaction_id', $order->id));
             return false;
         }
 
-        $pspReference = $latestOrderPayment->transaction_id;
+        $pspReference = $orderPayment->transaction_id;
         try {
             $this->modificationClient->refund(
                 array(

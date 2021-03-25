@@ -53,18 +53,18 @@ class OrderPaymentService
     }
 
     /**
+     * Get the first order_payment linked to the order
+     *
      * @param OrderCore $order
      * @return false|OrderPayment
      * @throws \PrestaShopException
      */
-    public function getLatestAdyenOrderPayment(OrderCore $order)
+    public function getAdyenOrderPayment(OrderCore $order)
     {
         if (\Validate::isLoadedObject($order)) {
             $paymentCollection = $order->getOrderPaymentCollection()
-                ->where('payment_method', '=', self::PAYMENT_METHOD_ADYEN)
-                ->orderBy('date_add', 'desc');
+                ->where('payment_method', '=', self::PAYMENT_METHOD_ADYEN);
 
-            // Get the latest transaction
             return $paymentCollection->getFirst();
         }
 
