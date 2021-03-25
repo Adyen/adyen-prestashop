@@ -244,6 +244,8 @@ class NotificationProcessor
                             $order,
                             \Configuration::get('PS_OS_CANCELED')
                         );
+
+                        $this->setPspReferenceUsingNotificationData($order, $unprocessedNotification);
                     }
                 }
 
@@ -431,7 +433,7 @@ class NotificationProcessor
 
         // Update transaction_id with the original psp reference if available in the notification
         if ($latestOrderPayment) {
-            if (!empty($unprocessedNotification['original_reference'])) {
+            if (!empty($notification['original_reference'])) {
                 $pspReference = $notification['original_reference'];
             } else {
                 $pspReference = $notification['pspreference'];
