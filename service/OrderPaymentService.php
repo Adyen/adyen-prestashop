@@ -43,7 +43,7 @@ class OrderPaymentService
     public function addPspReferenceForOrderPayment(OrderPayment $orderPayment, $pspReference)
     {
         if (\Validate::isLoadedObject($orderPayment)) {
-            if ($orderPayment !== false && empty($orderPayment->transaction_id)) {
+            if (empty($orderPayment->transaction_id)) {
                 $orderPayment->transaction_id = $pspReference;
                 $orderPayment->save();
             }
