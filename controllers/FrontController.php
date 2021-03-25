@@ -493,7 +493,7 @@ abstract class FrontController extends \ModuleFrontController
         if ($cart->OrderExists() !== false) {
             $order = $this->orderAdapter->getOrderByCartId($cart->id);
             if (\Validate::isLoadedObject($order)) {
-               $this->orderService->updateOrderState($order, $orderStatus);
+                $this->orderService->updateOrderState($order, $orderStatus);
                 $latestOrderPayment = $this->orderPaymentService->getLatestAdyenOrderPayment($order);
                 if ($latestOrderPayment && array_key_exists('transaction_id', $extraVars)) {
                     $this->orderPaymentService->addPspReferenceForOrderPayment(
