@@ -37,7 +37,7 @@ class OrderPaymentService
      * @param OrderPayment $orderPayment
      * @param string $pspReference
      *
-     * @return OrderCore
+     * @return OrderPayment
      * @throws \PrestaShopException
      */
     public function addPspReferenceForOrderPayment(OrderPayment $orderPayment, $pspReference)

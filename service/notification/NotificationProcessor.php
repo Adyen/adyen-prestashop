@@ -34,6 +34,7 @@ use Adyen\Util\Currency;
 use Context;
 use Db;
 use OrderCore;
+use OrderPayment;
 use PrestaShopDatabaseException;
 use PrestaShopException;
 use Psr\Log\LoggerInterface;
@@ -197,18 +198,7 @@ class NotificationProcessor
                         $this->orderService->updateOrderState($order, \Configuration::get('PS_OS_PAYMENT'));
                     }
 
-                    $latestOrderPayment = $this->orderPaymentService->getLatestAdyenOrderPayment($order);
-
-                    // Update transaction_id with the original psp reference if available in the notification
-                    if ($latestOrderPayment) {
-                        if (!empty($unprocessedNotification['original_reference'])) {
-                            $pspReference = $unprocessedNotification['original_reference'];
-                        } else {
-                            $pspReference = $unprocessedNotification['pspreference'];
-                        }
-
-                        $this->orderPaymentService->addPspReferenceForOrderPayment($latestOrderPayment, $pspReference);
-                    }
+                    $this->setPspReferenceUsingNotificationData($order, $unprocessedNotification);
 
                     // Add additional data to order if there is any (only possible when the notification success is
                     // true
@@ -226,6 +216,8 @@ class NotificationProcessor
                                 $order,
                                 \Configuration::get('PS_OS_CANCELED')
                             );
+
+                            $this->setPspReferenceUsingNotificationData($order, $unprocessedNotification);
                         } else {
                             // Add this log when the notification is ignore because an authorisation success true
                             // notification has already been processed for the same order
@@ -425,5 +417,32 @@ class NotificationProcessor
         }
 
         return true;
+    }
+
+    /**
+     * @param OrderCore $order
+     * @param $notification
+     * @return false|OrderPayment|null
+     * @throws PrestaShopException
+     */
+    private function setPspReferenceUsingNotificationData(OrderCore $order, $notification)
+    {
+        $latestOrderPayment = $this->orderPaymentService->getLatestAdyenOrderPayment($order);
+
+        // Update transaction_id with the original psp reference if available in the notification
+        if ($latestOrderPayment) {
+            if (!empty($unprocessedNotification['original_reference'])) {
+                $pspReference = $notification['original_reference'];
+            } else {
+                $pspReference = $notification['pspreference'];
+            }
+
+            $latestOrderPayment = $this->orderPaymentService->addPspReferenceForOrderPayment(
+                $latestOrderPayment,
+                $pspReference
+            );
+        }
+
+        return $latestOrderPayment;
     }
 }
