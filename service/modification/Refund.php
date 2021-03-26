@@ -16,7 +16,7 @@
  * Adyen PrestaShop plugin
  *
  * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2020 Adyen B.V.
+ * @copyright (c) 2021 Adyen B.V.
  * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
@@ -25,13 +25,11 @@
 namespace Adyen\PrestaShop\service\modification;
 
 use Adyen\AdyenException;
-use Adyen\PrestaShop\infra\NotificationRetriever;
 use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
-use Adyen\PrestaShop\service\modification\exception\NotificationNotFoundException;
+use Adyen\PrestaShop\service\OrderPaymentService;
 use Adyen\Service\Modification;
 use Adyen\Util\Currency;
 use OrderSlip;
-use PrestaShopDatabaseException;
 use Psr\Log\LoggerInterface;
 
 class Refund
@@ -47,11 +45,6 @@ class Refund
     private $merchantAccount;
 
     /**
-     * @var NotificationRetriever
-     */
-    private $notificationRetriever;
-
-    /**
      * @var LoggerInterface
      */
     private $logger;
@@ -62,26 +55,31 @@ class Refund
     private $orderAdapter;
 
     /**
+     * @var OrderPaymentService
+     */
+    private $orderPaymentService;
+
+    /**
      * Refund constructor.
      *
      * @param Modification $modificationClient
-     * @param NotificationRetriever $notificationRetriever
      * @param $merchantAccount
      * @param OrderAdapter $orderAdapter
+     * @param OrderPaymentService $orderPaymentService
      * @param LoggerInterface|null $logger
      */
     public function __construct(
         Modification $modificationClient,
-        NotificationRetriever $notificationRetriever,
         $merchantAccount,
         OrderAdapter $orderAdapter,
+        OrderPaymentService $orderPaymentService,
         LoggerInterface $logger = null
     ) {
         $this->modificationClient = $modificationClient;
-        $this->notificationRetriever = $notificationRetriever;
         $this->merchantAccount = $merchantAccount;
         $this->orderAdapter = $orderAdapter;
         $this->logger = $logger;
+        $this->orderPaymentService = $orderPaymentService;
     }
 
     /**
@@ -89,6 +87,7 @@ class Refund
      * @param string $currency
      *
      * @return bool
+     * @throws \PrestaShopException
      */
     public function request(OrderSlip $orderSlip, $currency)
     {
@@ -112,15 +111,14 @@ class Refund
 
         $amount = $currencyConverter->sanitize($fullRefundAmount, $currency);
 
-        try {
-            $pspReference = $this->notificationRetriever->getPSPReferenceByOrderId($orderSlip->id_order);
-        } catch (NotificationNotFoundException $e) {
-            $this->logger->error($e->getMessage());
-            return false;
-        } catch (PrestaShopDatabaseException $e) {
-            $this->logger->error($e->getMessage());
+        $orderPayment = $this->orderPaymentService->getAdyenOrderPayment($order);
+        if (!$orderPayment || empty($orderPayment->transaction_id)) {
+            $this->logger->error(sprintf('Unable to get order payment linked to order (%s) OR
+             order payment has an empty transaction_id', $order->id));
             return false;
         }
+
+        $pspReference = $orderPayment->transaction_id;
         try {
             $this->modificationClient->refund(
                 array(

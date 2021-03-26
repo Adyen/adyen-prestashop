@@ -29,10 +29,12 @@ use Adyen\PrestaShop\model\AdyenNotification;
 use Adyen\PrestaShop\model\AdyenPaymentResponse;
 use Adyen\PrestaShop\service\adapter\classes\CustomerThreadAdapter;
 use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
+use Adyen\PrestaShop\service\OrderPaymentService;
 use Adyen\Util\Currency;
 use Context;
 use Db;
 use OrderCore;
+use OrderPayment;
 use PrestaShopDatabaseException;
 use PrestaShopException;
 use Psr\Log\LoggerInterface;
@@ -99,6 +101,11 @@ class NotificationProcessor
     private $utilCurrency;
 
     /**
+     * @var OrderPaymentService
+     */
+    private $orderPaymentService;
+
+    /**
      * NotificationProcessor constructor.
      *
      * @param AdyenHelper $helperData
@@ -110,6 +117,7 @@ class NotificationProcessor
      * @param AdyenPaymentResponse $adyenPaymentResponse
      * @param OrderService $orderService
      * @param Currency $utilCurrency
+     * @param OrderPaymentService $orderPaymentService
      */
     public function __construct(
         AdyenHelper $helperData,
@@ -120,7 +128,8 @@ class NotificationProcessor
         Context $context,
         AdyenPaymentResponse $adyenPaymentResponse,
         OrderService $orderService,
-        Currency $utilCurrency
+        Currency $utilCurrency,
+        OrderPaymentService $orderPaymentService
     ) {
         $this->helperData = $helperData;
         $this->dbInstance = $dbInstance;
@@ -131,6 +140,7 @@ class NotificationProcessor
         $this->adyenPaymentResponse = $adyenPaymentResponse;
         $this->orderService = $orderService;
         $this->utilCurrency = $utilCurrency;
+        $this->orderPaymentService = $orderPaymentService;
     }
 
     /**
@@ -141,7 +151,7 @@ class NotificationProcessor
     public function processNotification($unprocessedNotification)
     {
         // Validate if order is available by merchant reference
-        /* @var \OrderCore $order */
+        /* @var OrderCore $order */
         $order = $this->orderAdapter->getOrderByCartId($unprocessedNotification['merchant_reference']);
 
         if (!\Validate::isLoadedObject($order)) {
@@ -165,14 +175,6 @@ class NotificationProcessor
             return true;
         }
 
-        // Update transaction_id with the original psp reference if available in the notification
-        $extraVars = array();
-        if (!empty($unprocessedNotification['original_reference'])) {
-            $extraVars['transaction_id'] = $unprocessedNotification['original_reference'];
-        } else {
-            $extraVars['transaction_id'] = $unprocessedNotification['pspreference'];
-        }
-
         // Process notifications based on it's event code
         switch ($unprocessedNotification['event_code']) {
             case AdyenNotification::AUTHORISATION:
@@ -181,21 +183,29 @@ class NotificationProcessor
                     if (!$this->validateWithCartAndOrder($unprocessedNotification, $order)) {
                         $this->orderService->updateOrderState(
                             $order,
-                            \Configuration::get('ADYEN_OS_PAYMENT_NEEDS_ATTENTION'),
-                            $extraVars
+                            \Configuration::get('ADYEN_OS_PAYMENT_NEEDS_ATTENTION')
                         );
-                        $this->orderService->addPaymentDataToOrderFromResponse($order, $unprocessedNotification);
+                        $this->orderService->addPaymentDataToOrderFromResponse(
+                            $order,
+                            unserialize($unprocessedNotification['additional_data'])
+                        );
 
                         return true;
                     }
 
                     // If not in a final status, set to PAYMENT
                     if ($this->isCurrentOrderStatusANonFinalStatus($order->getCurrentState())) {
-                        $this->orderService->updateOrderState($order, \Configuration::get('PS_OS_PAYMENT'), $extraVars);
-                        // Add additional data to order if there is any (only possible when the notification success is
-                        // true
-                        $this->orderService->addPaymentDataToOrderFromResponse($order, $unprocessedNotification);
+                        $this->orderService->updateOrderState($order, \Configuration::get('PS_OS_PAYMENT'));
                     }
+
+                    $this->setPspReferenceUsingNotificationData($order, $unprocessedNotification);
+
+                    // Add additional data to order if there is any (only possible when the notification success is
+                    // true
+                    $this->orderService->addPaymentDataToOrderFromResponse(
+                        $order,
+                        unserialize($unprocessedNotification['additional_data'])
+                    );
                 } else { // Notification success is 'false'
                     // Order state is not canceled yet
                     if ($order->getCurrentState() !== \Configuration::get('PS_OS_CANCELED')) {
@@ -204,9 +214,10 @@ class NotificationProcessor
                             // Moves order to canceled
                             $this->orderService->updateOrderState(
                                 $order,
-                                \Configuration::get('PS_OS_CANCELED'),
-                                $extraVars
+                                \Configuration::get('PS_OS_CANCELED')
                             );
+
+                            $this->setPspReferenceUsingNotificationData($order, $unprocessedNotification);
                         } else {
                             // Add this log when the notification is ignore because an authorisation success true
                             // notification has already been processed for the same order
@@ -231,9 +242,10 @@ class NotificationProcessor
                     if ($order->getCurrentState() === \Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT')) {
                         $this->orderService->updateOrderState(
                             $order,
-                            \Configuration::get('PS_OS_CANCELED'),
-                            $extraVars
+                            \Configuration::get('PS_OS_CANCELED')
                         );
+
+                        $this->setPspReferenceUsingNotificationData($order, $unprocessedNotification);
                     }
                 }
 
@@ -407,5 +419,32 @@ class NotificationProcessor
         }
 
         return true;
+    }
+
+    /**
+     * @param OrderCore $order
+     * @param $notification
+     * @return false|OrderPayment|null
+     * @throws PrestaShopException
+     */
+    private function setPspReferenceUsingNotificationData(OrderCore $order, $notification)
+    {
+        $orderPayment = $this->orderPaymentService->getAdyenOrderPayment($order);
+
+        // Update transaction_id with the original psp reference if available in the notification
+        if ($orderPayment) {
+            if (!empty($notification['original_reference'])) {
+                $pspReference = $notification['original_reference'];
+            } else {
+                $pspReference = $notification['pspreference'];
+            }
+
+            $orderPayment = $this->orderPaymentService->addPspReferenceForOrderPayment(
+                $orderPayment,
+                $pspReference
+            );
+        }
+
+        return $orderPayment;
     }
 }
