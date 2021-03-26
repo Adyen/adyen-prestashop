@@ -16,7 +16,7 @@
  * Adyen PrestaShop plugin
  *
  * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2020 Adyen B.V.
+ * @copyright (c) 2021 Adyen B.V.
  * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
@@ -508,7 +508,9 @@ class AdyenOfficial extends PaymentModule
             'ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER',
             'ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID',
             'ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER',
-            'ADYEN_PAYMENT_DISPLAY_COLLAPSE'
+            'ADYEN_PAYMENT_DISPLAY_COLLAPSE',
+            'ADYEN_AUTO_CRONJOB_RUNNER',
+            'ADYEN_ADMIN_PATH'
         );
 
         $result = true;
@@ -633,6 +635,10 @@ class AdyenOfficial extends PaymentModule
                 Configuration::updateValue('ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID', $google_pay_gateway_merchant_id);
                 Configuration::updateValue('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER', $google_pay_merchant_identifier);
                 Configuration::updateValue('ADYEN_PAYMENT_DISPLAY_COLLAPSE', $payment_display_collapse);
+                Configuration::updateValue(
+                    'ADYEN_ADMIN_PATH',
+                    $this->crypto->encrypt(basename(_PS_ADMIN_DIR_))
+                );
 
                 if (!empty($notification_password)) {
                     Configuration::updateValue('ADYEN_NOTI_PASSWORD', $this->crypto->encrypt($notification_password));
