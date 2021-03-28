@@ -299,15 +299,17 @@ jQuery(document).ready(function() {
             };
 
             // Remove after updating the checkout API to version 64 or above
-            if (paymentMethod.type === 'applepay') {
+            if (paymentMethod.type.includes('applepay')) {
                 paymentMethodExtraConfiguration.configuration = {
                     merchantName: paymentMethodsConfigurations.applePayMerchantName,
                     merchantIdentifier: paymentMethodsConfigurations.applePayMerchantIdentifier,
                 };
+                
+                paymentMethodExtraConfiguration.totalPriceLabel = totalText;
             }
 
             // Remove after updating the checkout API to version 64 or above
-            if (paymentMethod.type === 'paywithgoogle') {
+            if (paymentMethod.type.includes('paywithgoogle')) {
                 paymentMethodExtraConfiguration.configuration = {
                     gatewayMerchantId: paymentMethodsConfigurations.googlePayGatewayMerchantId,
                     merchantIdentifier: paymentMethodsConfigurations.googlePayMerchantIdentifier,
