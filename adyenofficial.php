@@ -890,7 +890,7 @@ class AdyenOfficial extends PaymentModule
                 )
             ),
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('This is an EXPERIMENTAL feature and was created to replace the need to initiate a cron job that to process our notifications. In case it\'s enabled you don\'t need to set up a cron job as described in our documentation.'),
+            'hint' => $this->l('This EXPERIMENTAL feature was created to replace the requirement to initiate a cron job in order to process our notifications. When enabled, a cron job setup (as described in the documentation) is not required.'),
             // phpcs:ignore Generic.Files.LineLength.TooLong
             'desc' => $this->l('Only enable this experimental feature after you disabled your cron job processing the notifications.'),
             'label' => $this->l('Process notifications upon receiving them'),
