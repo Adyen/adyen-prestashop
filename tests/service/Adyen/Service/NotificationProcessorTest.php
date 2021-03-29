@@ -82,6 +82,11 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
     private $utilCurrency;
 
     /**
+     * @var OrderPaymentService|PHPUnit_Framework_MockObject_MockObject $orderPaymentService
+     */
+    private $orderPaymentService;
+
+    /**
      *
      */
     protected function setUp()
@@ -123,6 +128,7 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
             ->getMock();
 
         $this->utilCurrency = new Currency();
+        $this->orderPaymentService = new OrderPaymentService();
     }
 
     protected function tearDown()
@@ -182,7 +188,8 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
             $context,
             $this->adyenPaymentResponseMock,
             $this->orderServiceMock,
-            $this->utilCurrency
+            $this->utilCurrency,
+            $this->orderPaymentService
         );
 
         $this->assertTrue($notificationProcessor->addMessage($notification));
@@ -215,7 +222,8 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
             $context,
             $this->adyenPaymentResponseMock,
             $this->orderServiceMock,
-            $this->utilCurrency
+            $this->utilCurrency,
+            $this->orderPaymentService
         );
 
         $this->logger->expects($this->once())
@@ -258,7 +266,8 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
             $context,
             $this->adyenPaymentResponseMock,
             $this->orderServiceMock,
-            $this->utilCurrency
+            $this->utilCurrency,
+            $this->orderPaymentService
         );
 
         $this->logger->expects($this->once())

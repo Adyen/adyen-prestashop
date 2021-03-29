@@ -33,6 +33,7 @@ use Adyen\AdyenException;
 use Adyen\PrestaShop\service\Cart as CartService;
 use Adyen\PrestaShop\model\AdyenPaymentResponse;
 use Adyen\PrestaShop\service\Order as OrderService;
+use Adyen\PrestaShop\service\OrderPaymentService;
 
 abstract class FrontController extends \ModuleFrontController
 {
@@ -113,6 +114,11 @@ abstract class FrontController extends \ModuleFrontController
     private $utilCurrency;
 
     /**
+     * @var OrderPaymentService
+     */
+    private $orderPaymentService;
+
+    /**
      * FrontController constructor.
      */
     public function __construct()
@@ -126,6 +132,7 @@ abstract class FrontController extends \ModuleFrontController
         $this->orderService = ServiceLocator::get('Adyen\PrestaShop\service\Order');
         $this->orderAdapter = ServiceLocator::get('Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter');
         $this->utilCurrency = ServiceLocator::get('Adyen\Util\Currency');
+        $this->orderPaymentService = ServiceLocator::get('Adyen\PrestaShop\service\OrderPaymentService');
     }
 
     /**
@@ -226,7 +233,10 @@ abstract class FrontController extends \ModuleFrontController
 
                 $newOrder = new \Order((int)$this->module->currentOrder);
 
-                $this->orderService->addPaymentDataToOrderFromResponse($newOrder, $response);
+                if (array_key_exists('additionalData', $response)) {
+                    $this->orderService->addPaymentDataToOrderFromResponse($newOrder, $response['additionalData']);
+                }
+
                 // PaymentResponse can be deleted
                 $this->adyenPaymentResponseModel->deletePaymentResponseByCartId($cart->id);
 
@@ -255,7 +265,7 @@ abstract class FrontController extends \ModuleFrontController
                 if ($cart->OrderExists() !== false) {
                     $order = $this->orderAdapter->getOrderByCartId($cart->id);
                     if (\Validate::isLoadedObject($order)) {
-                        $order->setCurrentState(\Configuration::get('PS_OS_CANCELED'));
+                        $this->createOrUpdateOrder($cart, $extraVars, $customer, \Configuration::get('PS_OS_CANCELED'));
                     } else {
                         $this->logger->addError('Order cannot be loaded for cart id: ' . $cart->id);
                     }
@@ -475,6 +485,7 @@ abstract class FrontController extends \ModuleFrontController
      * @param $extraVars
      * @param $customer
      * @param $orderStatus
+     * @throws \PrestaShopException
      */
     private function createOrUpdateOrder($cart, $extraVars, $customer, $orderStatus)
     {
@@ -482,7 +493,14 @@ abstract class FrontController extends \ModuleFrontController
         if ($cart->OrderExists() !== false) {
             $order = $this->orderAdapter->getOrderByCartId($cart->id);
             if (\Validate::isLoadedObject($order)) {
-                $order->setCurrentState($orderStatus);
+                $this->orderService->updateOrderState($order, $orderStatus);
+                $orderPayment = $this->orderPaymentService->getAdyenOrderPayment($order);
+                if ($orderPayment && array_key_exists('transaction_id', $extraVars)) {
+                    $this->orderPaymentService->addPspReferenceForOrderPayment(
+                        $orderPayment,
+                        $extraVars['transaction_id']
+                    );
+                }
             } else {
                 $this->logger->addError('Order cannot be loaded for cart id: ' . $cart->id);
             }

@@ -27,6 +27,7 @@
 // phpcs:disable PSR1.Files.SideEffects, PSR1.Classes.ClassDeclaration
 
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
+use Adyen\PrestaShop\service\OrderPaymentService;
 use PrestaShop\PrestaShop\Adapter\CoreException;
 use Adyen\PrestaShop\exception\GenericLoggedException;
 use Adyen\PrestaShop\exception\MissingDataException;
@@ -122,7 +123,8 @@ class AdminAdyenOfficialPrestashopCronController extends \ModuleAdminController
             \Context::getContext(),
             new AdyenPaymentResponse(),
             new OrderService(),
-            new \Adyen\Util\Currency()
+            new \Adyen\Util\Currency(),
+            new OrderPaymentService()
         );
 
         $notificationModel = new AdyenNotification();
