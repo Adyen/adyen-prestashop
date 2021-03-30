@@ -29,6 +29,7 @@ use Tools;
 
 class AsyncNotificationTrigger
 {
+    const WAIT_TIME_MICROSECONDS = 16000;
     /**
      * @var Logger
      */
@@ -79,8 +80,8 @@ class AsyncNotificationTrigger
             return;
         }
 
-        $bytes = fwrite($socket, $request);
-        usleep(16000);
+        fwrite($socket, $request);
+        usleep(self::WAIT_TIME_MICROSECONDS);
         fclose($socket);
     }
 }
