@@ -1166,7 +1166,10 @@ class AdyenOfficial extends PaymentModule
         //retrieve payment methods
         $paymentMethods = $this->helper_data->fetchPaymentMethods($this->context->cart, $this->context->language);
 
-        if (!$this->context->customer->is_guest && !empty($paymentMethods['storedPaymentMethods'])) {
+        if (!$this->context->customer->is_guest &&
+            !empty($paymentMethods['storedPaymentMethods']) &&
+            Configuration::get('ADYEN_ENABLE_STORED_PAYMENT_METHODS')
+        ) {
             $storedPaymentMethods = $paymentMethods['storedPaymentMethods'];
             foreach ($storedPaymentMethods as $storedPaymentMethod) {
                 if (!empty($storedPaymentMethod)) {
@@ -1270,7 +1273,10 @@ class AdyenOfficial extends PaymentModule
 
         $payments = "";
         $paymentMethods = $this->helper_data->fetchPaymentMethods($this->context->cart, $this->context->language);
-        if (!$this->context->customer->is_guest && !empty($paymentMethods['storedPaymentMethods'])) {
+        if (!$this->context->customer->is_guest &&
+            !empty($paymentMethods['storedPaymentMethods']) &&
+            Configuration::get('ADYEN_ENABLE_STORED_PAYMENT_METHODS')
+        ) {
             $payments .= $this->getOneClickPaymentMethods($paymentMethods);
         }
 
