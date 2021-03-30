@@ -240,6 +240,8 @@ class AdyenOfficial extends PaymentModule
         }
     }
 
+    // TODO set default value 1 for ADYEN_ENABLE_STORED_PAYMENT_METHODS and 0 for ADYEN_PAYMENT_DISPLAY_COLLAPSE as soon as the PW-4366 is merged
+
     /**
      * @return bool
      */
@@ -509,7 +511,8 @@ class AdyenOfficial extends PaymentModule
             'ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER',
             'ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID',
             'ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER',
-            'ADYEN_PAYMENT_DISPLAY_COLLAPSE'
+            'ADYEN_PAYMENT_DISPLAY_COLLAPSE',
+            'ADYEN_ENABLE_STORED_PAYMENT_METHODS',
         );
 
         $result = true;
@@ -594,7 +597,7 @@ class AdyenOfficial extends PaymentModule
             $google_pay_gateway_merchant_id = Tools::getValue('ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID');
             $google_pay_merchant_identifier = Tools::getValue('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER');
             $payment_display_collapse = Tools::getValue('ADYEN_PAYMENT_DISPLAY_COLLAPSE');
-
+            $enable_stored_payment_methods = Tools::getValue('ADYEN_ENABLE_STORED_PAYMENT_METHODS');
 
             // validating the input
             if (empty($merchant_account) || !Validate::isGenericName($merchant_account)) {
@@ -634,6 +637,7 @@ class AdyenOfficial extends PaymentModule
                 Configuration::updateValue('ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID', $google_pay_gateway_merchant_id);
                 Configuration::updateValue('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER', $google_pay_merchant_identifier);
                 Configuration::updateValue('ADYEN_PAYMENT_DISPLAY_COLLAPSE', $payment_display_collapse);
+                Configuration::updateValue('ADYEN_ENABLE_STORED_PAYMENT_METHODS', $enable_stored_payment_methods);
 
                 if (!empty($notification_password)) {
                     Configuration::updateValue('ADYEN_NOTI_PASSWORD', $this->crypto->encrypt($notification_password));
@@ -949,6 +953,27 @@ class AdyenOfficial extends PaymentModule
             )
         );
 
+        $fields_form[1]['form']['input'][] = array(
+            'type' => 'radio',
+            'label' => $this->l('Enable stored payment methods'),
+            'name' => 'ADYEN_ENABLE_STORED_PAYMENT_METHODS',
+            'values' => array(
+                array(
+                    'id' => 'enable',
+                    'value' => 1,
+                    'label' => $this->l('Enable')
+                ),
+                array(
+                    'id' => 'disable',
+                    'value' => 0,
+                    'label' => $this->l('Disable')
+                )
+            ),
+            'is_bool' => true,
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            'hint' => 'Indicates whether the customers can store and use payment methods during checkout for one click checkout purposes'
+        );
+
         // Apple pay merchant name input
         $fields_form[1]['form']['input'][] = array(
             'type' => 'text',
@@ -1090,6 +1115,7 @@ class AdyenOfficial extends PaymentModule
             $google_pay_gateway_merchant_id = Tools::getValue('ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID');
             $google_pay_merchant_identifier = Tools::getValue('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER');
             $payment_display_collapse = Tools::getValue('ADYEN_PAYMENT_DISPLAY_COLLAPSE');
+            $enable_stored_payment_methods = Tools::getValue('ADYEN_ENABLE_STORED_PAYMENT_METHODS');
         } else {
             $merchant_account = Configuration::get('ADYEN_MERCHANT_ACCOUNT');
             $integrator_name = Configuration::get('ADYEN_INTEGRATOR_NAME');
@@ -1104,7 +1130,8 @@ class AdyenOfficial extends PaymentModule
             $apple_pay_merchant_identifier = Configuration::get('ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER');
             $google_pay_gateway_merchant_id = Configuration::get('ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID');
             $google_pay_merchant_identifier = Configuration::get('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER');
-            $payment_display_collapse = Tools::getValue('ADYEN_PAYMENT_DISPLAY_COLLAPSE');
+            $payment_display_collapse = Configuration::get('ADYEN_PAYMENT_DISPLAY_COLLAPSE');
+            $enable_stored_payment_methods = Configuration::get('ADYEN_ENABLE_STORED_PAYMENT_METHODS');
         }
 
         // Load current value
@@ -1121,6 +1148,7 @@ class AdyenOfficial extends PaymentModule
         $helper->fields_value['ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID'] = $google_pay_gateway_merchant_id;
         $helper->fields_value['ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER'] = $google_pay_merchant_identifier;
         $helper->fields_value['ADYEN_PAYMENT_DISPLAY_COLLAPSE'] = $payment_display_collapse;
+        $helper->fields_value['ADYEN_ENABLE_STORED_PAYMENT_METHODS'] = $enable_stored_payment_methods;
 
         return $helper->generateForm($fields_form);
     }
