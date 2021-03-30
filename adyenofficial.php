@@ -1349,7 +1349,8 @@ class AdyenOfficial extends PaymentModule
             'currencyIsoCode' => $currencyIsoCode,
             'totalAmountInMinorUnits' => $totalAmountInMinorUnits,
             'paymentMethodsConfigurations' => $paymentMethodsConfigurations,
-            'paymentMethodsWithPayButtonFromComponent' => $paymentMethodsWithPayButtonFromComponent
+            'paymentMethodsWithPayButtonFromComponent' => $paymentMethodsWithPayButtonFromComponent,
+            'enableStoredPaymentMethods' => Configuration::get('ADYEN_ENABLE_STORED_PAYMENT_METHODS') ? true : false
         );
     }
 
