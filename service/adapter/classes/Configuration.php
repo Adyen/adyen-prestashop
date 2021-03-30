@@ -149,6 +149,6 @@ class Configuration
      */
     public function isAutoCronjobRunnerEnabled()
     {
-        return !!\Configuration::get('ADYEN_AUTO_CRONJOB_RUNNER');
+        return !!\Configuration::get('ADYEN_AUTO_CRON_JOB_RUNNER');
     }
 }

@@ -483,7 +483,7 @@ class AdyenOfficial extends PaymentModule
      */
     public function setDefaultConfigurationForAutoCronjobRunner()
     {
-        return Configuration::updateValue('ADYEN_AUTO_CRON_JOB_RUNNER', 'false');
+        return Configuration::updateValue('ADYEN_AUTO_CRON_JOB_RUNNER', 0);
     }
 
     /**
@@ -884,12 +884,12 @@ class AdyenOfficial extends PaymentModule
             'values' => array(
                 array(
                     'id' => 'enabled',
-                    'value' => 'true',
+                    'value' => 1,
                     'label' => $this->l('Enabled')
                 ),
                 array(
                     'id' => 'disabled',
-                    'value' => 'false',
+                    'value' => 0,
                     'label' => $this->l('Disabled')
                 )
             ),
