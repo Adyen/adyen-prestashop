@@ -16,7 +16,7 @@
  * Adyen PrestaShop plugin
  *
  * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2020 Adyen B.V.
+ * @copyright (c) 2021 Adyen B.V.
  * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
@@ -210,7 +210,7 @@ class AdyenOfficial extends PaymentModule
                 $this->registerHook('actionOrderSlipAdd') &&
                 $this->registerHook('actionFrontControllerSetMedia') &&
                 $this->installTab() &&
-                $this->updateCronJobToken() &&
+                $this->createDefaultConfigurations() &&
                 $this->createAdyenOrderStatuses() &&
                 $this->createAdyenDatabaseTables()
             ) {
@@ -229,7 +229,7 @@ class AdyenOfficial extends PaymentModule
             $this->registerHook('paymentOptions') &&
             $this->registerHook('paymentReturn') &&
             $this->registerHook('actionOrderSlipAdd') &&
-            $this->updateCronJobToken() &&
+            $this->createDefaultConfigurations() &&
             $this->createAdyenOrderStatuses() &&
             $this->createAdyenDatabaseTables()
         ) {
@@ -238,6 +238,15 @@ class AdyenOfficial extends PaymentModule
             $this->logger->debug('Adyen module: installation failed!');
             return false;
         }
+    }
+
+    /**
+     * @return bool
+     */
+    private function createDefaultConfigurations()
+    {
+        return $this->updateCronJobToken() &&
+            $this->setDefaultConfigurationForAutoCronjobRunner();
     }
 
     // TODO set default value 1 for ADYEN_ENABLE_STORED_PAYMENT_METHODS and 0 for ADYEN_PAYMENT_DISPLAY_COLLAPSE as soon as the PW-4366 is merged
@@ -472,6 +481,14 @@ class AdyenOfficial extends PaymentModule
     }
 
     /**
+     * @return bool
+     */
+    public function setDefaultConfigurationForAutoCronjobRunner()
+    {
+        return Configuration::updateValue('ADYEN_AUTO_CRON_JOB_RUNNER', 0);
+    }
+
+    /**
      * Drop all Adyen related database tables
      *
      * @return bool
@@ -512,7 +529,9 @@ class AdyenOfficial extends PaymentModule
             'ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID',
             'ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER',
             'ADYEN_PAYMENT_DISPLAY_COLLAPSE',
-            'ADYEN_ENABLE_STORED_PAYMENT_METHODS',
+            'ADYEN_AUTO_CRON_JOB_RUNNER',
+            'ADYEN_ADMIN_PATH',
+            'ADYEN_ENABLE_STORED_PAYMENT_METHODS'
         );
 
         $result = true;
@@ -587,6 +606,7 @@ class AdyenOfficial extends PaymentModule
             $notification_password = (string)Tools::getValue('ADYEN_NOTI_PASSWORD');
             $notification_hmac = (string)Tools::getValue('ADYEN_NOTI_HMAC');
             $cron_job_token = Tools::getValue('ADYEN_CRONJOB_TOKEN');
+            $auto_cron_job_runner = Tools::getValue('ADYEN_AUTO_CRON_JOB_RUNNER');
             $api_key_test = Tools::getValue('ADYEN_APIKEY_TEST');
             $api_key_live = Tools::getValue('ADYEN_APIKEY_LIVE');
             $client_key_test = Tools::getValue('ADYEN_CLIENTKEY_TEST');
@@ -638,6 +658,10 @@ class AdyenOfficial extends PaymentModule
                 Configuration::updateValue('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER', $google_pay_merchant_identifier);
                 Configuration::updateValue('ADYEN_PAYMENT_DISPLAY_COLLAPSE', $payment_display_collapse);
                 Configuration::updateValue('ADYEN_ENABLE_STORED_PAYMENT_METHODS', $enable_stored_payment_methods);
+                Configuration::updateValue(
+                    'ADYEN_ADMIN_PATH',
+                    $this->crypto->encrypt(basename(_PS_ADMIN_DIR_))
+                );
 
                 if (!empty($notification_password)) {
                     Configuration::updateValue('ADYEN_NOTI_PASSWORD', $this->crypto->encrypt($notification_password));
@@ -651,6 +675,12 @@ class AdyenOfficial extends PaymentModule
                     Configuration::updateValue('ADYEN_CRONJOB_TOKEN', $this->crypto->encrypt($cron_job_token));
                 } else {
                     $this->updateCronJobToken();
+                }
+
+                if (!empty($auto_cron_job_runner)) {
+                    Configuration::updateValue('ADYEN_AUTO_CRON_JOB_RUNNER', $auto_cron_job_runner);
+                } else {
+                    $this->setDefaultConfigurationForAutoCronjobRunner();
                 }
 
                 if (!empty($api_key_test)) {
@@ -850,6 +880,29 @@ class AdyenOfficial extends PaymentModule
             'size' => 20,
             'hint' => $this->l('To regenerate the token, simply save this field with no value.') .
                 $this->l('In case of filling this field manually please only use numbers and a-z or A-Z characters'),
+            'required' => true
+        );
+
+        $fields_form[0]['form']['input'][] = array(
+            'type' => 'radio',
+            'values' => array(
+                array(
+                    'id' => 'enabled',
+                    'value' => 1,
+                    'label' => $this->l('Enabled')
+                ),
+                array(
+                    'id' => 'disabled',
+                    'value' => 0,
+                    'label' => $this->l('Disabled')
+                )
+            ),
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            'hint' => $this->l('This EXPERIMENTAL feature was created to replace the requirement to initiate a cron job in order to process our notifications. When enabled, a cron job setup (as described in the documentation) is not required.'),
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            'desc' => $this->l('Only enable this experimental feature after you disabled your cron job processing the notifications.'),
+            'label' => $this->l('Process notifications upon receiving them'),
+            'name' => 'ADYEN_AUTO_CRON_JOB_RUNNER',
             'required' => true
         );
 
@@ -1107,6 +1160,7 @@ class AdyenOfficial extends PaymentModule
             $mode = (string)Tools::getValue('ADYEN_MODE');
             $notification_username = (string)Tools::getValue('ADYEN_NOTI_USERNAME');
             $cron_job_token = $cronjobToken;
+            $auto_cron_job_runner = Tools::getValue('ADYEN_AUTO_CRON_JOB_RUNNER');
             $client_key_test = Tools::getValue('ADYEN_CLIENTKEY_TEST');
             $client_key_live = Tools::getValue('ADYEN_CLIENTKEY_LIVE');
             $live_endpoint_url_prefix = (string)Tools::getValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
@@ -1122,10 +1176,10 @@ class AdyenOfficial extends PaymentModule
             $mode = Configuration::get('ADYEN_MODE');
             $notification_username = Configuration::get('ADYEN_NOTI_USERNAME');
             $cron_job_token = $cronjobToken;
+            $auto_cron_job_runner = Configuration::get('ADYEN_AUTO_CRON_JOB_RUNNER');
             $client_key_test = Configuration::get('ADYEN_CLIENTKEY_TEST');
             $client_key_live = Configuration::get('ADYEN_CLIENTKEY_LIVE');
             $live_endpoint_url_prefix = Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
-
             $apple_pay_merchant_name = Configuration::get('ADYEN_APPLE_PAY_MERCHANT_NAME');
             $apple_pay_merchant_identifier = Configuration::get('ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER');
             $google_pay_gateway_merchant_id = Configuration::get('ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID');
@@ -1140,6 +1194,7 @@ class AdyenOfficial extends PaymentModule
         $helper->fields_value['ADYEN_MODE'] = $mode;
         $helper->fields_value['ADYEN_NOTI_USERNAME'] = $notification_username;
         $helper->fields_value['ADYEN_CRONJOB_TOKEN'] = $cron_job_token;
+        $helper->fields_value['ADYEN_AUTO_CRON_JOB_RUNNER'] = $auto_cron_job_runner;
         $helper->fields_value['ADYEN_CLIENTKEY_TEST'] = $client_key_test;
         $helper->fields_value['ADYEN_CLIENTKEY_LIVE'] = $client_key_live;
         $helper->fields_value['ADYEN_LIVE_ENDPOINT_URL_PREFIX'] = $live_endpoint_url_prefix;
