@@ -246,10 +246,10 @@ class AdyenOfficial extends PaymentModule
     private function createDefaultConfigurations()
     {
         return $this->updateCronJobToken() &&
-            $this->setDefaultConfigurationForAutoCronjobRunner();
+            $this->setDefaultConfigurationForAutoCronjobRunner() &&
+            $this->setDefaultConfigurationForEnableStoredPaymentMethods() &&
+            $this->setDefaultConfigurationForPaymentDisplayCollapse();
     }
-
-    // TODO set default value 1 for ADYEN_ENABLE_STORED_PAYMENT_METHODS and 0 for ADYEN_PAYMENT_DISPLAY_COLLAPSE as soon as the PW-4366 is merged
 
     /**
      * @return bool
@@ -486,6 +486,22 @@ class AdyenOfficial extends PaymentModule
     public function setDefaultConfigurationForAutoCronjobRunner()
     {
         return Configuration::updateValue('ADYEN_AUTO_CRON_JOB_RUNNER', 0);
+    }
+
+    /**
+     * @return bool
+     */
+    public function setDefaultConfigurationForEnableStoredPaymentMethods()
+    {
+        return Configuration::updateValue('ADYEN_ENABLE_STORED_PAYMENT_METHODS', 1);
+    }
+
+    /**
+     * @return bool
+     */
+    public function setDefaultConfigurationForPaymentDisplayCollapse()
+    {
+        return Configuration::updateValue('ADYEN_PAYMENT_DISPLAY_COLLAPSE', 0);
     }
 
     /**
