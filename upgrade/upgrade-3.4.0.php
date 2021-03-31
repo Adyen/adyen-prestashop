@@ -39,5 +39,6 @@ if (!defined('_PS_VERSION_')) {
  */
 function upgrade_module_3_4_0(AdyenOfficial $module)
 {
-    return $module->setDefaultConfigurationForAutoCronjobRunner();
+    return $module->setDefaultConfigurationForAutoCronjobRunner() &&
+        $module->setDefaultConfigurationForEnableStoredPaymentMethods();
 }

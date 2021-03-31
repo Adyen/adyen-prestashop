@@ -37,6 +37,7 @@
          data-currency-iso-code="{$currencyIsoCode|escape:'html':'UTF-8'}"
          data-total-amount-in-minor-units="{$totalAmountInMinorUnits|escape:'html':'UTF-8'}"
          data-payment-methods-with-pay-button-from-component="{$paymentMethodsWithPayButtonFromComponent|escape:'html':'UTF-8'}"
+         data-enable-stored-payment-methods="{$enableStoredPaymentMethods|escape:'html':'UTF-8'}"
 
             {if isset($selectedDeliveryAddressId)}
                 data-selected-delivery-address-id="{$selectedDeliveryAddressId|escape:'html':'UTF-8'}"
@@ -79,6 +80,7 @@
         var selectedInvoiceAddress = JSON.parse(adyenCheckoutConfiguration.selectedInvoiceAddress);
         var paymentMethodsConfigurations = JSON.parse(adyenCheckoutConfiguration.paymentMethodsConfigurations);
         var paymentMethodsWithPayButtonFromComponent = JSON.parse(adyenCheckoutConfiguration.paymentMethodsWithPayButtonFromComponent);
+        const enableStoredPaymentMethods = adyenCheckoutConfiguration.enableStoredPaymentMethods;
 
         var currencyIsoCode = adyenCheckoutConfiguration.currencyIsoCode;
         var totalAmountInMinorUnits = adyenCheckoutConfiguration.totalAmountInMinorUnits;
