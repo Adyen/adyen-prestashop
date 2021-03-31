@@ -95,7 +95,7 @@ class Configuration
         $this->encryptedApiKey = $this->getEncryptedAPIKey();
         $this->clientKey = $this->getClientKey();
         $this->liveEndpointPrefix = \Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
-        $this->moduleVersion = '3.3.2';
+        $this->moduleVersion = '3.4.0';
         $this->moduleName = 'adyen-prestashop';
         $this->integratorName = \Configuration::get('ADYEN_INTEGRATOR_NAME', null, null, null, "");
     }
