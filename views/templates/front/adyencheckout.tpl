@@ -37,19 +37,18 @@
          data-currency-iso-code="{$currencyIsoCode|escape:'html':'UTF-8'}"
          data-total-amount-in-minor-units="{$totalAmountInMinorUnits|escape:'html':'UTF-8'}"
          data-payment-methods-with-pay-button-from-component="{$paymentMethodsWithPayButtonFromComponent|escape:'html':'UTF-8'}"
+         data-enable-stored-payment-methods="{$enableStoredPaymentMethods|escape:'html':'UTF-8'}"
 
             {if isset($selectedDeliveryAddressId)}
-         data-selected-delivery-address-id="{$selectedDeliveryAddressId|escape:'html':'UTF-8'}"
+                data-selected-delivery-address-id="{$selectedDeliveryAddressId|escape:'html':'UTF-8'}"
             {/if}
             {if isset($selectedInvoiceAddressId)}
-         data-selected-invoice-address-id="{$selectedInvoiceAddressId|escape:'html':'UTF-8'}"
+                data-selected-invoice-address-id="{$selectedInvoiceAddressId|escape:'html':'UTF-8'}"
             {/if}
             {if isset($selectedInvoiceAddress)}
                 data-selected-invoice-address="{$selectedInvoiceAddress|escape:'html':'UTF-8'}"
             {/if}
     ></div>
-
-
     {if $isPrestaShop16}
         <div style="display:none">
             <div id="actionModal">
@@ -70,7 +69,6 @@
             </div>
         </div>
     {/if}
-
     <script>
         var adyenCheckoutConfiguration = document.querySelector('#adyen-checkout-configuration').dataset;
 
@@ -82,6 +80,7 @@
         var selectedInvoiceAddress = JSON.parse(adyenCheckoutConfiguration.selectedInvoiceAddress);
         var paymentMethodsConfigurations = JSON.parse(adyenCheckoutConfiguration.paymentMethodsConfigurations);
         var paymentMethodsWithPayButtonFromComponent = JSON.parse(adyenCheckoutConfiguration.paymentMethodsWithPayButtonFromComponent);
+        const enableStoredPaymentMethods = adyenCheckoutConfiguration.enableStoredPaymentMethods;
 
         var currencyIsoCode = adyenCheckoutConfiguration.currencyIsoCode;
         var totalAmountInMinorUnits = adyenCheckoutConfiguration.totalAmountInMinorUnits;
@@ -98,6 +97,7 @@
         const isNotAvailableText = "{l s=' is not available' js=1 mod='adyenofficial'}";
         const placeOrderErrorRequiredConditionsText = "{l s='The order cannot be placed. Please make sure you accepted all the required conditions.' js=1 mod='adyenofficial'}";
         const placeOrderInfoRequiredConditionsText = "{l s='Accept the required conditions which may be visible at the bottom of the page.' js=1 mod='adyenofficial'}";
-        const placeOrderInfoInProgressText ="{l s='Placing order is in progress' js=1 mod='adyenofficial'}";
+        const placeOrderInfoInProgressText = "{l s='Placing order is in progress' js=1 mod='adyenofficial'}";
+        const totalText = "{l s='total' js=1 mod='adyenofficial'}";
     </script>
 {/if}

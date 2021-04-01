@@ -88,9 +88,12 @@ jQuery(document).ready(function() {
 
             // Adyen payment method
             if (selectedPaymentForm.length > 0) {
+
+                // not local payment method
                 if (!('localPaymentMethod' in
                     selectedPaymentForm.get(0).dataset)) {
-                    // not local payment method
+
+                    resetPrestaShopPlaceOrderButtonVisibility();
                     return;
                 }
 
@@ -104,8 +107,17 @@ jQuery(document).ready(function() {
                         prestaShopPlaceOrderButton.show();
                     }
                 }
+            } else {
+                // In 1.7 in case the pay button is hidden and the customer selects a non adyen method
+                resetPrestaShopPlaceOrderButtonVisibility();
             }
         });
+    }
+
+    function resetPrestaShopPlaceOrderButtonVisibility() {
+        if (!IS_PRESTA_SHOP_16 && !prestaShopPlaceOrderButton.is(":visible")) {
+            prestaShopPlaceOrderButton.show();
+        }
     }
 
     function showRedirectErrorMessage(message) {
@@ -174,12 +186,14 @@ jQuery(document).ready(function() {
             };
         }
 
+        const enableStoreDetails = !!isUserLoggedIn && !!enableStoredPaymentMethods;
+
         var configuration = Object.assign(
             ADYEN_CHECKOUT_CONFIG,
             {
                 hasHolderName: true,
                 holderNameRequired: false,
-                enableStoreDetails: !!isUserLoggedIn,
+                enableStoreDetails: enableStoreDetails,
                 countryCode: countryCode,
                 data: {
                     billingAddress: componentBillingAddress,
@@ -287,15 +301,17 @@ jQuery(document).ready(function() {
             };
 
             // Remove after updating the checkout API to version 64 or above
-            if (paymentMethod.type === 'applepay') {
+            if (paymentMethod.type.includes('applepay')) {
                 paymentMethodExtraConfiguration.configuration = {
                     merchantName: paymentMethodsConfigurations.applePayMerchantName,
                     merchantIdentifier: paymentMethodsConfigurations.applePayMerchantIdentifier,
                 };
+                
+                paymentMethodExtraConfiguration.totalPriceLabel = totalText;
             }
 
             // Remove after updating the checkout API to version 64 or above
-            if (paymentMethod.type === 'paywithgoogle') {
+            if (paymentMethod.type.includes('paywithgoogle')) {
                 paymentMethodExtraConfiguration.configuration = {
                     gatewayMerchantId: paymentMethodsConfigurations.googlePayGatewayMerchantId,
                     merchantIdentifier: paymentMethodsConfigurations.googlePayMerchantIdentifier,

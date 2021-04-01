@@ -16,7 +16,7 @@
  * Adyen PrestaShop plugin
  *
  * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2020 Adyen B.V.
+ * @copyright (c) 2021 Adyen B.V.
  * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
@@ -103,6 +103,11 @@ class AdyenOfficial extends PaymentModule
     private $currencyUtil;
 
     /**
+     * @var Adyen\PrestaShop\service\adapter\classes\order\OrderStateAdapter
+     */
+    private $orderStateAdapter;
+
+    /**
      * Adyen constructor.
      *
      * @throws \PrestaShop\PrestaShop\Adapter\CoreException
@@ -110,7 +115,7 @@ class AdyenOfficial extends PaymentModule
     public function __construct()
     {
         $this->name = 'adyenofficial';
-        $this->version = '3.3.2';
+        $this->version = '3.4.0';
         $this->tab = 'payments_gateways';
         $this->author = 'Adyen';
         $this->bootstrap = true;
@@ -158,6 +163,10 @@ class AdyenOfficial extends PaymentModule
             '\Adyen\Util\Currency'
         );
 
+        $this->orderStateAdapter = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
+            'Adyen\PrestaShop\service\adapter\classes\order\OrderStateAdapter'
+        );
+
         // start for 1.6
         $this->is_eu_compatible = 1;
         // The need_instance flag indicates whether to load the module's class
@@ -201,7 +210,7 @@ class AdyenOfficial extends PaymentModule
                 $this->registerHook('actionOrderSlipAdd') &&
                 $this->registerHook('actionFrontControllerSetMedia') &&
                 $this->installTab() &&
-                $this->updateCronJobToken() &&
+                $this->createDefaultConfigurations() &&
                 $this->createAdyenOrderStatuses() &&
                 $this->createAdyenDatabaseTables()
             ) {
@@ -220,7 +229,7 @@ class AdyenOfficial extends PaymentModule
             $this->registerHook('paymentOptions') &&
             $this->registerHook('paymentReturn') &&
             $this->registerHook('actionOrderSlipAdd') &&
-            $this->updateCronJobToken() &&
+            $this->createDefaultConfigurations() &&
             $this->createAdyenOrderStatuses() &&
             $this->createAdyenDatabaseTables()
         ) {
@@ -229,6 +238,17 @@ class AdyenOfficial extends PaymentModule
             $this->logger->debug('Adyen module: installation failed!');
             return false;
         }
+    }
+
+    /**
+     * @return bool
+     */
+    private function createDefaultConfigurations()
+    {
+        return $this->updateCronJobToken() &&
+            $this->setDefaultConfigurationForAutoCronjobRunner() &&
+            $this->setDefaultConfigurationForEnableStoredPaymentMethods() &&
+            $this->setDefaultConfigurationForPaymentDisplayCollapse();
     }
 
     /**
@@ -284,7 +304,8 @@ class AdyenOfficial extends PaymentModule
     public function updateCronJobToken($token = '')
     {
         if (empty($token)) {
-            $token = $this->crypto->encrypt(Tools::getShopDomainSsl() . time());
+            // generate random string upon installation or in case the input token is empty
+            $token = hash('sha256', Tools::getShopDomainSsl() . rand() . time());
         }
 
         return Configuration::updateValue('ADYEN_CRONJOB_TOKEN', $this->crypto->encrypt($token));
@@ -366,31 +387,45 @@ class AdyenOfficial extends PaymentModule
      */
     public function createWaitingForPaymentOrderStatus()
     {
-        if (!Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT')) {
-            $order_state = new OrderState();
-            $order_state->name = array();
-            foreach (Language::getLanguages() as $language) {
-                $order_state->name[$language['id_lang']] = 'Waiting for payment';
-            }
+        $orderStateConfigurationId = Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT');
 
-            $order_state->send_email = false;
-            $order_state->module_name = $this->name;
-            $order_state->invoice = false;
-            $order_state->color = '#4169E1';
-            $order_state->logable = true;
-            $order_state->delivery = false;
-            $order_state->hidden = false;
-            $order_state->shipped = false;
-            $order_state->paid = false;
-            if ($order_state->add()) {
-                $source = _PS_ROOT_DIR_ . '/img/os/' . Configuration::get('PS_OS_BANKWIRE') . '.gif';
-                $destination = _PS_ROOT_DIR_ . '/img/os/' . (int)$order_state->id . '.gif';
-                copy($source, $destination);
-            }
-
-            return Configuration::updateValue('ADYEN_OS_WAITING_FOR_PAYMENT', (int)$order_state->id);
+        $orderState = false;
+        if ($orderStateConfigurationId) {
+            $orderState = $this->orderStateAdapter->getOrderStateById($orderStateConfigurationId);
         }
 
+        // In case order state does not exist in the database anymore
+        if (empty($orderState)) {
+            $newOrderState = new OrderState();
+            $newOrderState->name = array();
+            foreach (Language::getLanguages() as $language) {
+                $newOrderState->name[$language['id_lang']] = 'Waiting for payment';
+            }
+
+            $newOrderState->send_email = false;
+            $newOrderState->module_name = $this->name;
+            $newOrderState->invoice = false;
+            $newOrderState->color = '#4169E1';
+            $newOrderState->logable = true;
+            $newOrderState->delivery = false;
+            $newOrderState->hidden = false;
+            $newOrderState->shipped = false;
+            $newOrderState->paid = false;
+
+            if ($newOrderState->add()) {
+                $source = _PS_ROOT_DIR_ . '/img/os/' . Configuration::get('PS_OS_BANKWIRE') . '.gif';
+                $destination = _PS_ROOT_DIR_ . '/img/os/' . (int)$newOrderState->id . '.gif';
+                copy($source, $destination);
+
+                return Configuration::updateValue('ADYEN_OS_WAITING_FOR_PAYMENT', (int)$newOrderState->id);
+            } else {
+                $this->logger->addError('ADYEN_OS_WAITING_FOR_PAYMENT Order status was not created!');
+
+                return false;
+            }
+        }
+
+        // Both configuration and order state exists
         return true;
     }
 
@@ -403,32 +438,70 @@ class AdyenOfficial extends PaymentModule
      */
     public function createPaymentNeedsAttentionOrderStatus()
     {
-        if (!Configuration::get('ADYEN_OS_PAYMENT_NEEDS_ATTENTION')) {
-            $order_state = new OrderState();
-            $order_state->name = array();
-            foreach (Language::getLanguages() as $language) {
-                $order_state->name[$language['id_lang']] = 'Payment needs attention';
-            }
+        $orderStateConfigurationId = Configuration::get('ADYEN_OS_PAYMENT_NEEDS_ATTENTION');
 
-            $order_state->send_email = false;
-            $order_state->module_name = $this->name;
-            $order_state->invoice = false;
-            $order_state->color = '#d62424';
-            $order_state->logable = true;
-            $order_state->delivery = false;
-            $order_state->hidden = false;
-            $order_state->shipped = false;
-            $order_state->paid = false;
-            if ($order_state->add()) {
-                $source = _PS_ROOT_DIR_ . '/img/os/' . Configuration::get('PS_OS_BANKWIRE') . '.gif';
-                $destination = _PS_ROOT_DIR_ . '/img/os/' . (int)$order_state->id . '.gif';
-                copy($source, $destination);
-            }
-
-            return Configuration::updateValue('ADYEN_OS_PAYMENT_NEEDS_ATTENTION', (int)$order_state->id);
+        $orderState = false;
+        if ($orderStateConfigurationId) {
+            $orderState = $this->orderStateAdapter->getOrderStateById($orderStateConfigurationId);
         }
 
+        // In case order state does not exist in the database anymore
+        if (empty($orderState)) {
+            $newOrderState = new OrderState();
+            $newOrderState->name = array();
+            foreach (Language::getLanguages() as $language) {
+                $newOrderState->name[$language['id_lang']] = 'Payment needs attention';
+            }
+
+            $newOrderState->send_email = false;
+            $newOrderState->module_name = $this->name;
+            $newOrderState->invoice = false;
+            $newOrderState->color = '#d62424';
+            $newOrderState->logable = true;
+            $newOrderState->delivery = false;
+            $newOrderState->hidden = false;
+            $newOrderState->shipped = false;
+            $newOrderState->paid = false;
+
+            if ($newOrderState->add()) {
+                $source = _PS_ROOT_DIR_ . '/img/os/' . Configuration::get('PS_OS_BANKWIRE') . '.gif';
+                $destination = _PS_ROOT_DIR_ . '/img/os/' . (int)$newOrderState->id . '.gif';
+                copy($source, $destination);
+
+                return Configuration::updateValue('ADYEN_OS_PAYMENT_NEEDS_ATTENTION', (int)$newOrderState->id);
+            } else {
+                $this->logger->addError('ADYEN_OS_PAYMENT_NEEDS_ATTENTION Order status was not created!');
+
+                return false;
+            }
+        }
+
+        // Both configuration and order state exists
         return true;
+    }
+
+    /**
+     * @return bool
+     */
+    public function setDefaultConfigurationForAutoCronjobRunner()
+    {
+        return Configuration::updateValue('ADYEN_AUTO_CRON_JOB_RUNNER', 0);
+    }
+
+    /**
+     * @return bool
+     */
+    public function setDefaultConfigurationForEnableStoredPaymentMethods()
+    {
+        return Configuration::updateValue('ADYEN_ENABLE_STORED_PAYMENT_METHODS', 1);
+    }
+
+    /**
+     * @return bool
+     */
+    public function setDefaultConfigurationForPaymentDisplayCollapse()
+    {
+        return Configuration::updateValue('ADYEN_PAYMENT_DISPLAY_COLLAPSE', 0);
     }
 
     /**
@@ -451,6 +524,10 @@ class AdyenOfficial extends PaymentModule
     private function removeConfigurationsFromDatabase()
     {
         $adyenConfigurationNames = array(
+            'CONF_ADYENOFFICIAL_FIXED',
+            'CONF_ADYENOFFICIAL_VAR',
+            'CONF_ADYENOFFICIAL_FIXED_FOREIGN',
+            'CONF_ADYENOFFICIAL_VAR_FOREIGN',
             'ADYEN_MERCHANT_ACCOUNT',
             'ADYEN_INTEGRATOR_NAME',
             'ADYEN_MODE',
@@ -466,7 +543,11 @@ class AdyenOfficial extends PaymentModule
             'ADYEN_APPLE_PAY_MERCHANT_NAME',
             'ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER',
             'ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID',
-            'ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER'
+            'ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER',
+            'ADYEN_PAYMENT_DISPLAY_COLLAPSE',
+            'ADYEN_AUTO_CRON_JOB_RUNNER',
+            'ADYEN_ADMIN_PATH',
+            'ADYEN_ENABLE_STORED_PAYMENT_METHODS'
         );
 
         $result = true;
@@ -541,6 +622,7 @@ class AdyenOfficial extends PaymentModule
             $notification_password = (string)Tools::getValue('ADYEN_NOTI_PASSWORD');
             $notification_hmac = (string)Tools::getValue('ADYEN_NOTI_HMAC');
             $cron_job_token = Tools::getValue('ADYEN_CRONJOB_TOKEN');
+            $auto_cron_job_runner = Tools::getValue('ADYEN_AUTO_CRON_JOB_RUNNER');
             $api_key_test = Tools::getValue('ADYEN_APIKEY_TEST');
             $api_key_live = Tools::getValue('ADYEN_APIKEY_LIVE');
             $client_key_test = Tools::getValue('ADYEN_CLIENTKEY_TEST');
@@ -550,6 +632,8 @@ class AdyenOfficial extends PaymentModule
             $apple_pay_merchant_identifier = Tools::getValue('ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER');
             $google_pay_gateway_merchant_id = Tools::getValue('ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID');
             $google_pay_merchant_identifier = Tools::getValue('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER');
+            $payment_display_collapse = Tools::getValue('ADYEN_PAYMENT_DISPLAY_COLLAPSE');
+            $enable_stored_payment_methods = Tools::getValue('ADYEN_ENABLE_STORED_PAYMENT_METHODS');
 
             // validating the input
             if (empty($merchant_account) || !Validate::isGenericName($merchant_account)) {
@@ -588,6 +672,12 @@ class AdyenOfficial extends PaymentModule
                 Configuration::updateValue('ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER', $apple_pay_merchant_identifier);
                 Configuration::updateValue('ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID', $google_pay_gateway_merchant_id);
                 Configuration::updateValue('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER', $google_pay_merchant_identifier);
+                Configuration::updateValue('ADYEN_PAYMENT_DISPLAY_COLLAPSE', $payment_display_collapse);
+                Configuration::updateValue('ADYEN_ENABLE_STORED_PAYMENT_METHODS', $enable_stored_payment_methods);
+                Configuration::updateValue(
+                    'ADYEN_ADMIN_PATH',
+                    $this->crypto->encrypt(basename(_PS_ADMIN_DIR_))
+                );
 
                 if (!empty($notification_password)) {
                     Configuration::updateValue('ADYEN_NOTI_PASSWORD', $this->crypto->encrypt($notification_password));
@@ -599,6 +689,14 @@ class AdyenOfficial extends PaymentModule
 
                 if (!empty($cron_job_token)) {
                     Configuration::updateValue('ADYEN_CRONJOB_TOKEN', $this->crypto->encrypt($cron_job_token));
+                } else {
+                    $this->updateCronJobToken();
+                }
+
+                if (!empty($auto_cron_job_runner)) {
+                    Configuration::updateValue('ADYEN_AUTO_CRON_JOB_RUNNER', $auto_cron_job_runner);
+                } else {
+                    $this->setDefaultConfigurationForAutoCronjobRunner();
                 }
 
                 if (!empty($api_key_test)) {
@@ -785,7 +883,7 @@ class AdyenOfficial extends PaymentModule
             'type' => 'text',
             'desc' => $cronjobToken ?
                 // phpcs:ignore Generic.Files.LineLength.TooLong
-                $this->l('Your adyen cron job processor\'s url includes this secure token. Your URL looks like: ') .
+                $this->l('Your adyen cron job processor\'s URL includes this secure token. Your URL is: ') .
                 sprintf(
                     "%s/%s/index.php?fc=module&controller=AdminAdyenOfficialPrestashopCron&token=%s",
                     Tools::getShopDomainSsl(),
@@ -793,11 +891,35 @@ class AdyenOfficial extends PaymentModule
                     $cronjobToken
                 ) :
                 $this->l('Please fill your cron job token'),
-            'class' => $cronjobToken ? 'adyen-input-green' : '',
             'label' => $this->l('Secure token for cron job'),
             'name' => 'ADYEN_CRONJOB_TOKEN',
             'size' => 20,
-            'required' => false
+            'hint' => $this->l('To regenerate the token, simply save this field with no value.') .
+                $this->l('In case of filling this field manually please only use numbers and a-z or A-Z characters'),
+            'required' => true
+        );
+
+        $fields_form[0]['form']['input'][] = array(
+            'type' => 'radio',
+            'values' => array(
+                array(
+                    'id' => 'enabled',
+                    'value' => 1,
+                    'label' => $this->l('Enabled')
+                ),
+                array(
+                    'id' => 'disabled',
+                    'value' => 0,
+                    'label' => $this->l('Disabled')
+                )
+            ),
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            'hint' => $this->l('This EXPERIMENTAL feature was created to replace the requirement to initiate a cron job in order to process our notifications. When enabled, a cron job setup (as described in the documentation) is not required.'),
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            'desc' => $this->l('Only enable this experimental feature after you disabled your cron job processing the notifications.'),
+            'label' => $this->l('Process notifications upon receiving them'),
+            'name' => 'ADYEN_AUTO_CRON_JOB_RUNNER',
+            'required' => true
         );
 
         $apiKeyTest = '';
@@ -900,6 +1022,27 @@ class AdyenOfficial extends PaymentModule
             )
         );
 
+        $fields_form[1]['form']['input'][] = array(
+            'type' => 'radio',
+            'label' => $this->l('Enable stored payment methods'),
+            'name' => 'ADYEN_ENABLE_STORED_PAYMENT_METHODS',
+            'values' => array(
+                array(
+                    'id' => 'enable',
+                    'value' => 1,
+                    'label' => $this->l('Enable')
+                ),
+                array(
+                    'id' => 'disable',
+                    'value' => 0,
+                    'label' => $this->l('Disable')
+                )
+            ),
+            'is_bool' => true,
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            'hint' => 'Indicates whether the customers can store and use payment methods during checkout for one click checkout purposes'
+        );
+
         // Apple pay merchant name input
         $fields_form[1]['form']['input'][] = array(
             'type' => 'text',
@@ -943,6 +1086,31 @@ class AdyenOfficial extends PaymentModule
             'lang' => false,
             'hint' => $this->l('')
         );
+
+        if ($this->versionChecker->isPrestaShop16()) {
+            $fields_form[1]['form']['input'][] = array(
+                'type' => 'radio',
+                'label' => $this->l('Collapsable payment display'),
+                'name' => 'ADYEN_PAYMENT_DISPLAY_COLLAPSE',
+                'values' => array(
+                    array(
+                        'id' => 'enable',
+                        'value' => 1,
+                        'label' => $this->l('Enable')
+                    ),
+                    array(
+                        'id' => 'disable',
+                        'value' => 0,
+                        'label' => $this->l('Disable')
+                    )
+                ),
+                'is_bool' => true,
+                // phpcs:ignore Generic.Files.LineLength.TooLong
+                'hint' => 'Indicates whether the payment methods should be rendered in a list of collapsable items,
+                 during checkout',
+                'required' => false
+            );
+        }
 
         $fields_form[2]['form'] = array(
             'legend' => array(
@@ -1007,7 +1175,8 @@ class AdyenOfficial extends PaymentModule
             $integrator_name = (string)Tools::getValue('ADYEN_INTEGRATOR_NAME');
             $mode = (string)Tools::getValue('ADYEN_MODE');
             $notification_username = (string)Tools::getValue('ADYEN_NOTI_USERNAME');
-            $cron_job_token = Tools::getValue('ADYEN_CRONJOB_TOKEN');
+            $cron_job_token = $cronjobToken;
+            $auto_cron_job_runner = Tools::getValue('ADYEN_AUTO_CRON_JOB_RUNNER');
             $client_key_test = Tools::getValue('ADYEN_CLIENTKEY_TEST');
             $client_key_live = Tools::getValue('ADYEN_CLIENTKEY_LIVE');
             $live_endpoint_url_prefix = (string)Tools::getValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
@@ -1015,20 +1184,24 @@ class AdyenOfficial extends PaymentModule
             $apple_pay_merchant_identifier = Tools::getValue('ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER');
             $google_pay_gateway_merchant_id = Tools::getValue('ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID');
             $google_pay_merchant_identifier = Tools::getValue('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER');
+            $payment_display_collapse = Tools::getValue('ADYEN_PAYMENT_DISPLAY_COLLAPSE');
+            $enable_stored_payment_methods = Tools::getValue('ADYEN_ENABLE_STORED_PAYMENT_METHODS');
         } else {
             $merchant_account = Configuration::get('ADYEN_MERCHANT_ACCOUNT');
             $integrator_name = Configuration::get('ADYEN_INTEGRATOR_NAME');
             $mode = Configuration::get('ADYEN_MODE');
             $notification_username = Configuration::get('ADYEN_NOTI_USERNAME');
             $cron_job_token = $cronjobToken;
+            $auto_cron_job_runner = Configuration::get('ADYEN_AUTO_CRON_JOB_RUNNER');
             $client_key_test = Configuration::get('ADYEN_CLIENTKEY_TEST');
             $client_key_live = Configuration::get('ADYEN_CLIENTKEY_LIVE');
             $live_endpoint_url_prefix = Configuration::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
-
             $apple_pay_merchant_name = Configuration::get('ADYEN_APPLE_PAY_MERCHANT_NAME');
             $apple_pay_merchant_identifier = Configuration::get('ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER');
             $google_pay_gateway_merchant_id = Configuration::get('ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID');
             $google_pay_merchant_identifier = Configuration::get('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER');
+            $payment_display_collapse = Configuration::get('ADYEN_PAYMENT_DISPLAY_COLLAPSE');
+            $enable_stored_payment_methods = Configuration::get('ADYEN_ENABLE_STORED_PAYMENT_METHODS');
         }
 
         // Load current value
@@ -1037,6 +1210,7 @@ class AdyenOfficial extends PaymentModule
         $helper->fields_value['ADYEN_MODE'] = $mode;
         $helper->fields_value['ADYEN_NOTI_USERNAME'] = $notification_username;
         $helper->fields_value['ADYEN_CRONJOB_TOKEN'] = $cron_job_token;
+        $helper->fields_value['ADYEN_AUTO_CRON_JOB_RUNNER'] = $auto_cron_job_runner;
         $helper->fields_value['ADYEN_CLIENTKEY_TEST'] = $client_key_test;
         $helper->fields_value['ADYEN_CLIENTKEY_LIVE'] = $client_key_live;
         $helper->fields_value['ADYEN_LIVE_ENDPOINT_URL_PREFIX'] = $live_endpoint_url_prefix;
@@ -1044,6 +1218,8 @@ class AdyenOfficial extends PaymentModule
         $helper->fields_value['ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER'] = $apple_pay_merchant_identifier;
         $helper->fields_value['ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID'] = $google_pay_gateway_merchant_id;
         $helper->fields_value['ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER'] = $google_pay_merchant_identifier;
+        $helper->fields_value['ADYEN_PAYMENT_DISPLAY_COLLAPSE'] = $payment_display_collapse;
+        $helper->fields_value['ADYEN_ENABLE_STORED_PAYMENT_METHODS'] = $enable_stored_payment_methods;
 
         return $helper->generateForm($fields_form);
     }
@@ -1061,7 +1237,10 @@ class AdyenOfficial extends PaymentModule
         //retrieve payment methods
         $paymentMethods = $this->helper_data->fetchPaymentMethods($this->context->cart, $this->context->language);
 
-        if (!$this->context->customer->is_guest && !empty($paymentMethods['storedPaymentMethods'])) {
+        if (!$this->context->customer->is_guest &&
+            !empty($paymentMethods['storedPaymentMethods']) &&
+            Configuration::get('ADYEN_ENABLE_STORED_PAYMENT_METHODS')
+        ) {
             $storedPaymentMethods = $paymentMethods['storedPaymentMethods'];
             foreach ($storedPaymentMethods as $storedPaymentMethod) {
                 if (!empty($storedPaymentMethod)) {
@@ -1165,7 +1344,10 @@ class AdyenOfficial extends PaymentModule
 
         $payments = "";
         $paymentMethods = $this->helper_data->fetchPaymentMethods($this->context->cart, $this->context->language);
-        if (!$this->context->customer->is_guest && !empty($paymentMethods['storedPaymentMethods'])) {
+        if (!$this->context->customer->is_guest &&
+            !empty($paymentMethods['storedPaymentMethods']) &&
+            Configuration::get('ADYEN_ENABLE_STORED_PAYMENT_METHODS')
+        ) {
             $payments .= $this->getOneClickPaymentMethods($paymentMethods);
         }
 
@@ -1238,7 +1420,8 @@ class AdyenOfficial extends PaymentModule
             'currencyIsoCode' => $currencyIsoCode,
             'totalAmountInMinorUnits' => $totalAmountInMinorUnits,
             'paymentMethodsConfigurations' => $paymentMethodsConfigurations,
-            'paymentMethodsWithPayButtonFromComponent' => $paymentMethodsWithPayButtonFromComponent
+            'paymentMethodsWithPayButtonFromComponent' => $paymentMethodsWithPayButtonFromComponent,
+            'enableStoredPaymentMethods' => Configuration::get('ADYEN_ENABLE_STORED_PAYMENT_METHODS') ? true : false
         );
     }
 
@@ -1526,10 +1709,14 @@ class AdyenOfficial extends PaymentModule
                     continue;
                 }
 
+                $collapsePayments = \Configuration::get('ADYEN_PAYMENT_DISPLAY_COLLAPSE');
+
                 $smartyVariables = array(
                     'storedPaymentApiId' => $storedPayment['id'],
                     'name' => $storedPayment['name'],
-                    'number' => $storedPayment['lastFour']
+                    'logoBrand' => $storedPayment['brand'],
+                    'number' => $storedPayment['lastFour'],
+                    'collapsePayments' => $collapsePayments === false ? '0' : $collapsePayments
                 );
 
                 // Add checkout component default configuration parameters for smarty variables
@@ -1556,10 +1743,19 @@ class AdyenOfficial extends PaymentModule
                 continue;
             }
 
+            $collapsePayments = \Configuration::get('ADYEN_PAYMENT_DISPLAY_COLLAPSE');
+
             $smartyVariables = array(
                 'paymentMethodType' => $paymentMethod['type'],
-                'paymentMethodName' => $paymentMethod['name']
+                'paymentMethodName' => $paymentMethod['name'],
+                'paymentMethodBrand' => $paymentMethod['type'],
+                'collapsePayments' => $collapsePayments === false ? '0' : $collapsePayments
             );
+
+            // If brand is scheme, logo will not be displayed correctly unless it is set to card
+            if ($paymentMethod['type'] === 'scheme') {
+                $smartyVariables['paymentMethodBrand'] = 'card';
+            }
 
             // Add checkout component default configuration parameters for smarty variables
             $smartyVariables = array_merge($smartyVariables, $this->getCheckoutComponentInitData());

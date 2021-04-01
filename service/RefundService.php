@@ -42,11 +42,6 @@ class RefundService
     private $modificationService;
 
     /**
-     * @var NotificationRetriever
-     */
-    private $notificationRetriever;
-
-    /**
      * @var Logger
      */
     private $logger;
@@ -55,16 +50,13 @@ class RefundService
      * RefundService constructor.
      *
      * @param Modification $modificationService
-     * @param NotificationRetriever $notificationRetriever
      * @param Logger $logger
      */
     public function __construct(
         Modification $modificationService,
-        NotificationRetriever $notificationRetriever,
         Logger $logger
     ) {
         $this->modificationService = $modificationService;
-        $this->notificationRetriever = $notificationRetriever;
         $this->logger = $logger;
     }
 
@@ -78,9 +70,9 @@ class RefundService
     {
         $refundService = new Refund(
             $this->modificationService,
-            $this->notificationRetriever,
             PrestaShopConfiguration::get('ADYEN_MERCHANT_ACCOUNT'),
             new OrderAdapter(),
+            new OrderPaymentService(),
             $this->logger
         );
 

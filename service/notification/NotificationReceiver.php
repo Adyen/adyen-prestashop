@@ -16,7 +16,7 @@
  * Adyen PrestaShop plugin
  *
  * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2020 Adyen B.V.
+ * @copyright (c) 2021 Adyen B.V.
  * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
@@ -26,8 +26,11 @@ namespace Adyen\PrestaShop\service\notification;
 
 use Adyen\AdyenException;
 use Adyen\PrestaShop\helper\Data as AdyenHelper;
+use Adyen\PrestaShop\infra\AsyncNotificationTrigger;
+use Adyen\PrestaShop\infra\Crypto;
 use Adyen\PrestaShop\model\AdyenNotification;
 use Adyen\PrestaShop\service\adapter\classes\Configuration;
+use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use Adyen\Util\HmacSignature;
 use Db;
 use Psr\Log\LoggerInterface;
@@ -162,6 +165,10 @@ class NotificationReceiver
                 if ($unprocessedNotifications > 0) {
                     $acceptedMessage .= "\nYou have $unprocessedNotifications unprocessed notifications.";
                 }
+            }
+
+            if ($this->configuration->isAutoCronjobRunnerEnabled()) {
+                $this->callAsyncCronRunner();
             }
 
             $this->logger->addAdyenNotification('The result is accepted');
@@ -341,5 +348,24 @@ class NotificationReceiver
             $acceptedMessage = '[accepted]';
         }
         return $acceptedMessage;
+    }
+
+    private function callAsyncCronRunner()
+    {
+        try {
+            /** @var Crypto $crypto */
+            $crypto = ServiceLocator::get('Adyen\PrestaShop\infra\Crypto');
+            /** @var AsyncNotificationTrigger $asyncNotificationTrigger */
+            $asyncNotificationTrigger = ServiceLocator::get('Adyen\PrestaShop\infra\AsyncNotificationTrigger');
+            $asyncNotificationTrigger->trigger(
+                $crypto->decrypt(\Configuration::get('ADYEN_ADMIN_PATH')),
+                $crypto->decrypt(\Configuration::get('ADYEN_CRONJOB_TOKEN'))
+            );
+        } catch (\Exception $e) {
+            $this->logger->addAdyenNotification(
+                'Could not call the cron service',
+                array('exception' => $e, 'type' => get_class($e))
+            );
+        }
     }
 }
