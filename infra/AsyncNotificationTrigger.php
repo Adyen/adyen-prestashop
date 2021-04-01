@@ -59,7 +59,7 @@ class AsyncNotificationTrigger
         $request = "GET {$endpointParts['path']}?{$endpointParts['query']} HTTP/1.1\r\n";
         $request .= "Host: {$endpointParts['host']}\r\n\r\n";
 
-        $prefix = substr($endpoint, 0, 8) === 'https://' ? 'tls://' : '';
+        $prefix = Tools::substr($endpoint, 0, 8) === 'https://' ? 'tls://' : '';
 
         $socket = fsockopen(
             $prefix . $endpointParts['host'],
