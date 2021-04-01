@@ -209,7 +209,7 @@ class AdyenOfficial extends PaymentModule
                 $this->registerHook('paymentReturn') &&
                 $this->registerHook('actionOrderSlipAdd') &&
                 $this->registerHook('actionFrontControllerSetMedia') &&
-                $this->installTab() &&
+                $this->installTabs() &&
                 $this->createDefaultConfigurations() &&
                 $this->createAdyenOrderStatuses() &&
                 $this->createAdyenDatabaseTables()
@@ -224,7 +224,7 @@ class AdyenOfficial extends PaymentModule
         // Version 1.7 or higher
         if (parent::install() &&
             $this->registerHook('displayPaymentTop') &&
-            $this->installTab() &&
+            $this->installTabs() &&
             $this->registerHook('actionFrontControllerSetMedia') &&
             $this->registerHook('paymentOptions') &&
             $this->registerHook('paymentReturn') &&
@@ -272,7 +272,7 @@ class AdyenOfficial extends PaymentModule
     public function uninstall()
     {
         return parent::uninstall() &&
-            $this->uninstallTab() &&
+            $this->uninstallTabs() &&
             $this->removeAdyenDatabaseTables() &&
             $this->removeConfigurationsFromDatabase();
     }
@@ -565,7 +565,7 @@ class AdyenOfficial extends PaymentModule
     /**
      * @return bool true if tab is installed
      */
-    public function installTab()
+    public function installTabs()
     {
         try {
             $cronTab = new Tab();
@@ -605,13 +605,19 @@ class AdyenOfficial extends PaymentModule
     /**
      * @return bool
      */
-    public function uninstallTab()
+    public function uninstallTabs()
     {
         try {
-            $id_tab = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashopCron');
-            if ($id_tab) {
-                $tab = new Tab($id_tab);
-                return $tab->delete();
+            $cronTabId = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashopCron');
+            $logFetcherTabId = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashopLogFetcher');
+            if ($cronTabId) {
+                $cronTab = new Tab($cronTabId);
+                return $cronTab->delete();
+            }
+
+            if ($logFetcherTabId) {
+                $logFetcherTab = new Tab($logFetcherTabId);
+                return $logFetcherTab->delete();
             }
         } catch (PrestaShopDatabaseException $e) {
             return false;
