@@ -186,12 +186,14 @@ jQuery(document).ready(function() {
             };
         }
 
+        const enableStoreDetails = !!isUserLoggedIn && !!enableStoredPaymentMethods;
+
         var configuration = Object.assign(
             ADYEN_CHECKOUT_CONFIG,
             {
                 hasHolderName: true,
                 holderNameRequired: false,
-                enableStoreDetails: !!isUserLoggedIn,
+                enableStoreDetails: enableStoreDetails,
                 countryCode: countryCode,
                 data: {
                     billingAddress: componentBillingAddress,
