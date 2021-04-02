@@ -15,7 +15,7 @@
  * Adyen PrestaShop plugin
  *
  * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2020 Adyen B.V.
+ * @copyright (c) 2021 Adyen B.V.
  * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
@@ -128,7 +128,7 @@ jQuery(document).ready(function() {
 
     function renderPaymentMethods() {
         var selectedPaymentMethod;
-        var placeOrderAllowed;
+        var placeOrderAllowed = {};
         var popupModal;
 
         var skipComponents = ['giropay'];
@@ -373,15 +373,15 @@ jQuery(document).ready(function() {
                 e.preventDefault();
 
                 if (!paymentMethod.details) {
-                    placeOrderAllowed = true;
+                    placeOrderAllowed[paymentMethod.type] = true;
                 }
 
-                if (!placeOrderAllowed) {
-                  if (!!component && 'showValidation' in component) {
-                    component.showValidation();
-                  }
-                  
-                  return;
+                if (!placeOrderAllowed[paymentMethod.type]) {
+                    if (!!component && 'showValidation' in component) {
+                        component.showValidation();
+                    }
+
+                    return;
                 }
 
                 if (isPlaceOrderInProgress()) {
@@ -495,19 +495,19 @@ jQuery(document).ready(function() {
          * @param state
          */
         function handleOnChange(state) {
-            placeOrderAllowed = state.isValid;
+            placeOrderAllowed[state.data.paymentMethod.type] = state.isValid;
         }
 
         function handleOnAdditionalDetails(state) {
             hidePopup();
-            processPaymentsDetails(state.data).done(function(responseJSON) {
+            processPaymentsDetails(state.data).done(function (responseJSON) {
                 processControllerResponse(responseJSON,
                     getSelectedPaymentMethod());
             });
         }
 
-        function handleOnSubmit(state, component) {
-            placeOrderAllowed = state.isValid;
+        function handleOnSubmit(state/*, component*/) {
+            placeOrderAllowed[state.data.paymentMethod.type] = state.isValid;
 
             if (IS_PRESTA_SHOP_16) {
                 this.paymentForm.find('button').prop('disabled', true);
@@ -516,8 +516,7 @@ jQuery(document).ready(function() {
                 if (!prestaShopPlaceOrderButton.prop('disabled')) {
                     prestaShopPlaceOrderButton.click();
                 } else {
-                    this.paymentForm.find('.error-container').
-                        text(placeOrderErrorRequiredConditionsText).
+                    this.paymentForm.find('.error-container').text(placeOrderErrorRequiredConditionsText).
                         fadeIn(1000);
                 }
             }
