@@ -506,7 +506,7 @@ jQuery(document).ready(function() {
             });
         }
 
-        function handleOnSubmit(state/*, component*/) {
+        function handleOnSubmit(state) {
             placeOrderAllowed[state.data.paymentMethod.type] = state.isValid;
 
             if (IS_PRESTA_SHOP_16) {
