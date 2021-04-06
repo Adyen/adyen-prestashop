@@ -26,36 +26,44 @@
 // Controllers, which breaks a PSR1 element.
 // phpcs:disable PSR1.Files.SideEffects, PSR1.Classes.ClassDeclaration
 
+use Adyen\PrestaShop\application\VersionChecker;
 use Adyen\PrestaShop\exception\GenericLoggedException;
 use Adyen\PrestaShop\exception\MissingDataException;
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use PrestaShop\PrestaShop\Adapter\CoreException;
 use PrestaShopBundle\Utils\ZipManager;
 
+require_once _PS_ROOT_DIR_ . '/modules/adyenofficial/vendor/autoload.php';
 
 class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminController
 {
-    /** @var ZipManager $zipManager */
-    private $zipManager;
-
     /** @var \Adyen\PrestaShop\service\adapter\classes\Configuration $configuration */
     private $configuration;
 
-    /**
-     * @var Adyen\PrestaShop\infra\Crypto
-     */
+    /** @var Adyen\PrestaShop\infra\Crypto */
     private $crypto;
+
+    /** @var VersionChecker */
+    private $versionChecker;
+
+    /** @var string $logsDirectory */
+    private $logsDirectory;
 
     /**
      * AdminAdyenPrestashopCronController constructor.
      *
-     * @throws CoreException
+     * @throws CoreException|PrestaShopException
      */
     public function __construct()
     {
-        $this->zipManager = ServiceLocator::get('PrestaShopBundle\Utils\ZipManager');
         $this->configuration = ServiceLocator::get('Adyen\PrestaShop\service\adapter\classes\Configuration');
         $this->crypto = ServiceLocator::get('Adyen\PrestaShop\infra\Crypto');
+        $this->versionChecker = ServiceLocator::get('Adyen\PrestaShop\application\VersionChecker');
+        if ($this->versionChecker->isPrestaShop16()) {
+            $this->logsDirectory = _PS_ROOT_DIR_ . '/log/adyen';
+        } else {
+            $this->logsDirectory = _PS_ROOT_DIR_ . '/var/logs/adyen';
+        }
 
         // Required in order to automatically call the renderView function
         $this->display = 'view';
@@ -81,14 +89,11 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
      */
     private function zipAndDownload()
     {
-        $dir = _PS_ROOT_DIR_ . '/var/logs/adyen';
         $zip_file = Configuration::get('PS_SHOP_NAME') . '_' . date('Y-m-d') . '_' . 'Adyen_Logs.zip';
 
         // Get real path for our folder
-        $rootPath = realpath($dir);
-
-        $this->zipManager->createArchive($zip_file, $rootPath);
-
+        $rootPath = realpath($this->logsDirectory);
+        $this->createArchive($zip_file, $rootPath);
 
         header('Content-Description: File Transfer');
         header('Content-Type: application/octet-stream');
@@ -99,6 +104,36 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
         header('Pragma: public');
         header('Content-Length: ' . filesize($zip_file));
         readfile($zip_file);
+    }
+
+    /**
+     * Create the archive file. Function is a copy of ZipManager::createArchive, used in 1.7
+     * TODO: Remove this and use ZipManager::createArchive when 1.6 support is dropped
+     *
+     * @param $filename
+     * @param $folder
+     */
+    public function createArchive($filename, $folder)
+    {
+        $zip = new ZipArchive();
+
+        $zip->open($filename, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+
+        $files = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($folder),
+            RecursiveIteratorIterator::LEAVES_ONLY
+        );
+
+        foreach ($files as $filename => $file) {
+            if (!$file->isDir()) {
+                $filePath = $file->getRealPath();
+                $relativePath = substr($filename, strlen($folder) + 1);
+
+                $zip->addFile($filePath, $relativePath);
+            }
+        }
+
+        $zip->close();
     }
 
     /**
@@ -125,13 +160,13 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
 
         $content = $adyenPaymentSource . $prestashopVersion . $environment . $this->getConfigurationValues();
 
-        $filePath = fopen(_PS_ROOT_DIR_ . '/var/logs/adyen' . "/applicationInfo","wb");
+        $filePath = fopen($this->logsDirectory . "/applicationInfo","wb");
         fwrite($filePath,$content);
         fclose($filePath);
     }
 
     /**
-     * Get all remaining config values
+     * Get all remaining adyen config values
      *
      * @return string
      * @throws GenericLoggedException
@@ -140,18 +175,51 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
     private function getConfigurationValues()
     {
         $configValues = "\n\nConfiguration values: \n";
-        $configs['autoCronJobRunner'] = sprintf("\nAuto cronjob runner: %s", Configuration::get('ADYEN_AUTO_CRON_JOB_RUNNER'));
-        $configs['storedPaymentMethods'] = sprintf("\nStored payment methods: %s", Configuration::get('ADYEN_ENABLE_STORED_PAYMENT_METHODS'));
-        $configs['displayCollapse'] = sprintf("\nPayment display collapse: %s", Configuration::get('ADYEN_PAYMENT_DISPLAY_COLLAPSE'));
-        $configs['merchantAccount'] = sprintf("\nMerchant account: %s", Configuration::get('ADYEN_MERCHANT_ACCOUNT'));
+        $configs['autoCronJobRunner'] = sprintf(
+            "\nAuto cronjob runner: %s",
+            Configuration::get('ADYEN_AUTO_CRON_JOB_RUNNER')
+        );
+        $configs['storedPaymentMethods'] = sprintf(
+            "\nStored payment methods: %s",
+            Configuration::get('ADYEN_ENABLE_STORED_PAYMENT_METHODS')
+        );
+        $configs['displayCollapse'] = sprintf(
+            "\nPayment display collapse: %s",
+            Configuration::get('ADYEN_PAYMENT_DISPLAY_COLLAPSE')
+        );
+        $configs['merchantAccount'] = sprintf(
+            "\nMerchant account: %s",
+            Configuration::get('ADYEN_MERCHANT_ACCOUNT')
+        );
         $configs['mode'] = sprintf("\nMode: %s", Configuration::get('ADYEN_MODE'));
-        $configs['notificationUser'] = sprintf("\nNotification user: %s", Configuration::get('ADYEN_NOTI_USERNAME'));
-        $configs['clientKeyTest'] = sprintf("\nClient key test: %s", Configuration::get('ADYEN_CLIENTKEY_TEST'));
-        $configs['clientKeyLive'] = sprintf("\nClient key live: %s", Configuration::get('ADYEN_CLIENTKEY_LIVE'));
-        $configs['appleName'] = sprintf("\nApple pay merchant name: %s", Configuration::get('ADYEN_APPLE_PAY_MERCHANT_NAME'));
-        $configs['appleIdentifier'] = sprintf("\nApple pay merchant identifier: %s", Configuration::get('ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER'));
-        $configs['googleGatewayMerchant'] = sprintf("\nGoogle pay merchant gateway id: %s", Configuration::get('ADYEN_APPLE_PAY_MERCHANT_NAME'));
-        $configs['googleIdentifier'] = sprintf("\nGoogle pay merchant identifier: %s", Configuration::get('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER'));
+        $configs['notificationUser'] = sprintf(
+            "\nNotification user: %s",
+            Configuration::get('ADYEN_NOTI_USERNAME')
+        );
+        $configs['clientKeyTest'] = sprintf(
+            "\nClient key test: %s",
+            Configuration::get('ADYEN_CLIENTKEY_TEST')
+        );
+        $configs['clientKeyLive'] = sprintf(
+            "\nClient key live: %s",
+            Configuration::get('ADYEN_CLIENTKEY_LIVE')
+        );
+        $configs['appleName'] = sprintf(
+            "\nApple pay merchant name: %s",
+            Configuration::get('ADYEN_APPLE_PAY_MERCHANT_NAME')
+        );
+        $configs['appleIdentifier'] = sprintf(
+            "\nApple pay merchant identifier: %s",
+            Configuration::get('ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER')
+        );
+        $configs['googleGatewayMerchant'] = sprintf(
+            "\nGoogle pay merchant gateway id: %s",
+            Configuration::get('ADYEN_APPLE_PAY_MERCHANT_NAME')
+        );
+        $configs['googleIdentifier'] = sprintf(
+            "\nGoogle pay merchant identifier: %s",
+            Configuration::get('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER')
+        );
 
         $configs['notificationPass'] = sprintf(
             "\nNotification password last 4: %s",
