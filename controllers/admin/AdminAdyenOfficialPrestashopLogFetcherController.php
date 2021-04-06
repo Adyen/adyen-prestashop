@@ -73,6 +73,7 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
 
         $this->createCurrentApplicationInfoFile();
         $this->zipAndDownload();
+        die;
     }
 
     public function renderView()
@@ -160,8 +161,8 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
 
         $content = $adyenPaymentSource . $prestashopVersion . $environment . $this->getConfigurationValues();
 
-        $filePath = fopen($this->logsDirectory . "/applicationInfo","wb");
-        fwrite($filePath,$content);
+        $filePath = fopen($this->logsDirectory . "/applicationInfo", "wb");
+        fwrite($filePath, $content);
         fclose($filePath);
     }
 
@@ -221,25 +222,33 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
             Configuration::get('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER')
         );
 
-        $configs['notificationPass'] = sprintf(
-            "\nNotification password last 4: %s",
-            substr($this->crypto->decrypt(Configuration::get('ADYEN_NOTI_PASSWORD')), -4)
-        );
+        if (!empty(Configuration::get('ADYEN_NOTI_PASSWORD'))) {
+            $configs['notificationPass'] = sprintf(
+                "\nNotification password last 4: %s",
+                substr($this->crypto->decrypt(Configuration::get('ADYEN_NOTI_PASSWORD')), -4)
+            );
+        }
 
-        $configs['notificationHmac'] = sprintf(
-            "\nNotification HMAC last 4: %s",
-            substr($this->crypto->decrypt(Configuration::get('ADYEN_NOTI_HMAC')), -4)
-        );
+        if (!empty(Configuration::get('ADYEN_NOTI_HMAC'))) {
+            $configs['notificationHmac'] = sprintf(
+                "\nNotification HMAC last 4: %s",
+                substr($this->crypto->decrypt(Configuration::get('ADYEN_NOTI_HMAC')), -4)
+            );
+        }
 
-        $configs['apiKeyTest'] = sprintf(
-            "\nApi key test last 4: %s",
-            substr($this->crypto->decrypt(Configuration::get('ADYEN_APIKEY_TEST')), -4)
-        );
+        if (!empty(Configuration::get('ADYEN_APIKEY_TEST'))) {
+            $configs['apiKeyTest'] = sprintf(
+                "\nApi key test last 4: %s",
+                substr($this->crypto->decrypt(Configuration::get('ADYEN_APIKEY_TEST')), -4)
+            );
+        }
 
-        $configs['apiKeyLive'] = sprintf(
-            "\nApi key live last 4: %s",
-            substr($this->crypto->decrypt(Configuration::get('ADYEN_APIKEY_LIVE')), -4)
-        );
+        if (!empty(Configuration::get('ADYEN_APIKEY_LIVE'))) {
+            $configs['apiKeyLive'] = sprintf(
+                "\nApi key live last 4: %s",
+                substr($this->crypto->decrypt(Configuration::get('ADYEN_APIKEY_LIVE')), -4)
+            );
+        }
 
         foreach ($configs as $config) {
             $configValues .= $config;
