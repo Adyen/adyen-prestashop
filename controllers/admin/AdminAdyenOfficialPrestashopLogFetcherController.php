@@ -222,31 +222,35 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
             Configuration::get('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER')
         );
 
-        if (!empty(Configuration::get('ADYEN_NOTI_PASSWORD'))) {
+        $notificationPass = Configuration::get('ADYEN_NOTI_PASSWORD');
+        if (!empty($notificationPass)) {
             $configs['notificationPass'] = sprintf(
                 "\nNotification password last 4: %s",
-                substr($this->crypto->decrypt(Configuration::get('ADYEN_NOTI_PASSWORD')), -4)
+                substr($this->crypto->decrypt($notificationPass), -4)
             );
         }
 
-        if (!empty(Configuration::get('ADYEN_NOTI_HMAC'))) {
+        $notificationHmac = Configuration::get('ADYEN_NOTI_HMAC');
+        if (!empty($notificationHmac)) {
             $configs['notificationHmac'] = sprintf(
                 "\nNotification HMAC last 4: %s",
-                substr($this->crypto->decrypt(Configuration::get('ADYEN_NOTI_HMAC')), -4)
+                substr($this->crypto->decrypt($notificationHmac), -4)
             );
         }
 
-        if (!empty(Configuration::get('ADYEN_APIKEY_TEST'))) {
+        $apiKeyTest = Configuration::get('ADYEN_APIKEY_TEST');
+        if (!empty($apiKeyTest)) {
             $configs['apiKeyTest'] = sprintf(
                 "\nApi key test last 4: %s",
-                substr($this->crypto->decrypt(Configuration::get('ADYEN_APIKEY_TEST')), -4)
+                substr($this->crypto->decrypt($apiKeyTest), -4)
             );
         }
 
-        if (!empty(Configuration::get('ADYEN_APIKEY_LIVE'))) {
+        $apiKeyLive = Configuration::get('ADYEN_APIKEY_LIVE');
+        if (!empty($apiKeyLive)) {
             $configs['apiKeyLive'] = sprintf(
                 "\nApi key live last 4: %s",
-                substr($this->crypto->decrypt(Configuration::get('ADYEN_APIKEY_LIVE')), -4)
+                substr($this->crypto->decrypt($apiKeyLive), -4)
             );
         }
 
