@@ -22,7 +22,7 @@
  *}
 <div class="container">
     <div class="row">
-        <div class="col-lg-4 col-lg-offset-4">
+        <div class="col-lg-5 col-lg-offset-3">
             <div class="log-container adyen">
                 <img class="img-responsive logo" src="{$logo|escape:'html':'UTF-8'}" alt="logo">
                 <p>

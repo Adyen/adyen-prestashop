@@ -175,7 +175,12 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
             $this->configuration->liveEndpointPrefix
         );
 
-        $content = $adyenPaymentSource . $prestashopVersion . $environment . $this->getConfigurationValues();
+        $time = sprintf(
+            "\nDate and time: %s",
+            date('Y-m-d H:i:s')
+        );
+
+        $content = $adyenPaymentSource . $prestashopVersion . $environment . $time . $this->getConfigurationValues();
 
         $filePath = fopen($this->logsDirectory . "/applicationInfo", "wb");
         fwrite($filePath, $content);
