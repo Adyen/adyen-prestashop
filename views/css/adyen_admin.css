@@ -21,6 +21,37 @@
  * See the LICENSE file for more info.
  */
 
-.form-group input.adyen-input-green{
+.form-group input.adyen-input-green {
     border-color: rgba(20,255,20);
+}
+
+.log-container {
+    background-color: white;
+    text-align: center;
+}
+
+.log-container .logo {
+    margin: auto;
+    max-width: 30%;
+}
+
+.adyen .btn-outline-primary {
+    color: #25b9d7;
+    background-color: transparent;
+    background-image: none;
+    border-color: #25b9d7;
+}
+
+.adyen .btn-outline-primary:hover {
+    color: #fff;
+    background-color: #3ed2f0;
+    border-color: #3ed2f0;
+}
+
+.adyen .btn {
+    border-width: 1px;
+    font-weight: 600;
+    border-radius: .063rem;
+    white-space: nowrap;
+    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
 }

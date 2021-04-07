@@ -71,13 +71,21 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
         $this->toolbar_title[] = 'Adyen Logs';
         parent::__construct();
 
-        $this->createCurrentApplicationInfoFile();
-        $this->zipAndDownload();
-        die;
+        if ((string)Tools::getValue('download')) {
+            $this->createCurrentApplicationInfoFile();
+            $this->zipAndDownload();
+            die;
+        }
     }
 
     public function renderView()
     {
+        $smartyVariables = array(
+            'logo' => Media::getMediaPath(_PS_MODULE_DIR_ . $this->module->name . '/views/img/adyen.png'),
+            'downloadUrl' => '//' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . '&download=1'
+        );
+        $this->addCSS('modules/' . $this->module->name . '/views/css/adyen_admin.css', 'all');
+        $this->context->smarty->assign($smartyVariables);
         $tpl = $this->context->smarty->createTemplate(
             _PS_MODULE_DIR_ . $this->module->name . '/views/templates/admin/log-fetcher.tpl'
         );
