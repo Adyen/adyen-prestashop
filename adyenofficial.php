@@ -596,8 +596,16 @@ class AdyenOfficial extends PaymentModule
 
             return $cronTabResult && $logTabResult;
         } catch (PrestaShopDatabaseException $e) {
+            $this->logger->error(
+                'Database exception thrown during tab installation: ' . $e->getMessage()
+            );
+
             return false;
         } catch (PrestaShopException $e) {
+            $this->logger->error(
+                'PrestaShop exception thrown during tab installation: ' . $e->getMessage()
+            );
+
             return false;
         }
     }
@@ -612,19 +620,28 @@ class AdyenOfficial extends PaymentModule
             $logFetcherTabId = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashopLogFetcher');
             if ($cronTabId) {
                 $cronTab = new Tab($cronTabId);
-                return $cronTab->delete();
+                $cronTabDelete = $cronTab->delete();
             }
 
             if ($logFetcherTabId) {
                 $logFetcherTab = new Tab($logFetcherTabId);
-                return $logFetcherTab->delete();
+                $logFetcherTabDelete = $logFetcherTab->delete();
             }
+
+            return $cronTabDelete && $logFetcherTabDelete;
         } catch (PrestaShopDatabaseException $e) {
+            $this->logger->error(
+                'Database exception thrown during tab uninstall: ' . $e->getMessage()
+            );
+
             return false;
         } catch (PrestaShopException $e) {
+            $this->logger->error(
+                'PrestaShop exception thrown during tab uninstall: ' . $e->getMessage()
+            );
+
             return false;
         }
-        return false;
     }
 
 
