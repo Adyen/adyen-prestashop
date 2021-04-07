@@ -115,13 +115,10 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
         $rootPath = realpath($this->logsDirectory);
         $this->createArchive($zip_file, $rootPath);
 
-        header('Content-Description: File Transfer');
-        header('Content-Type: application/octet-stream');
-        header('Content-Disposition: attachment; filename='.basename($zip_file));
-        header('Content-Transfer-Encoding: binary');
+        header('Content-Type: application/zip');
+        header('Content-Disposition: attachment; filename=' . basename($zip_file));
         header('Expires: 0');
-        header('Cache-Control: no-cache');
-        header('Pragma: public');
+        header('Cache-Control: must-revalidate');
         header('Content-Length: ' . filesize($zip_file));
         readfile($zip_file);
     }
