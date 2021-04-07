@@ -91,10 +91,9 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
             'logo' => Media::getMediaPath(_PS_MODULE_DIR_ . $this->module->name . '/views/img/adyen.png'),
             'downloadUrl' => '//' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . '&download=1'
         );
-        $this->context->smarty->assign($smartyVariables);
         $this->addCSS('modules/' . $this->module->name . '/views/css/adyen_admin.css');
 
-        // Passing variables in this call required for 1.6
+        // Passing variables in this call (instead of assign()) required for 1.6
         $tpl = $this->context->smarty->createTemplate(
             _PS_MODULE_DIR_ . $this->module->name . '/views/templates/admin/log-fetcher.tpl',
             null,
