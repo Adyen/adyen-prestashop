@@ -28,11 +28,12 @@
 .log-container {
     background-color: white;
     text-align: center;
+    padding: 20px;
 }
 
 .log-container .logo {
     margin: auto;
-    max-width: 30%;
+    margin-bottom: 20px;
 }
 
 .adyen .btn-outline-primary {

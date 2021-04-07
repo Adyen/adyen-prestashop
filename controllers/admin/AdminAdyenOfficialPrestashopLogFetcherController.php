@@ -16,7 +16,7 @@
  * Adyen PrestaShop plugin
  *
  * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2020 Adyen B.V.
+ * @copyright (c) 2021 Adyen B.V.
  * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
@@ -65,12 +65,13 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
             $this->logsDirectory = _PS_ROOT_DIR_ . '/var/logs/adyen';
         }
 
-        // Required in order to automatically call the renderView function
+        // Required to automatically call the renderView function
         $this->display = 'view';
         $this->bootstrap = true;
         $this->toolbar_title[] = 'Adyen Logs';
         parent::__construct();
 
+        // Zip download is triggered when queryParameter contains the download string
         if ((string)Tools::getValue('download')) {
             $this->createCurrentApplicationInfoFile();
             $this->zipAndDownload();
@@ -78,16 +79,27 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
         }
     }
 
+    /**
+     * Render the log-fetcher template
+     *
+     * @return false|string
+     * @throws SmartyException
+     */
     public function renderView()
     {
         $smartyVariables = array(
             'logo' => Media::getMediaPath(_PS_MODULE_DIR_ . $this->module->name . '/views/img/adyen.png'),
             'downloadUrl' => '//' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . '&download=1'
         );
-        $this->addCSS('modules/' . $this->module->name . '/views/css/adyen_admin.css', 'all');
         $this->context->smarty->assign($smartyVariables);
+        $this->addCSS('modules/' . $this->module->name . '/views/css/adyen_admin.css');
+
+        // Passing variables in this call required for 1.6
         $tpl = $this->context->smarty->createTemplate(
-            _PS_MODULE_DIR_ . $this->module->name . '/views/templates/admin/log-fetcher.tpl'
+            _PS_MODULE_DIR_ . $this->module->name . '/views/templates/admin/log-fetcher.tpl',
+            null,
+            null,
+            $smartyVariables
         );
 
         return $tpl->fetch();
