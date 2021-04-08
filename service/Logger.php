@@ -97,6 +97,19 @@ class Logger extends \Monolog\Logger
     );
 
     /**
+     * Levels which should also be logged via PrestaShop, mapped to their PrestaShop severity
+     *
+     * @var array
+     */
+    protected static $prestashopLoggable = array(
+        self::EMERGENCY => 4,
+        self::CRITICAL => 4,
+        self::ERROR => 3,
+        self::WARNING => 2,
+        self::ADYEN_NOTIFICATION => 3
+    );
+
+    /**
      * @var VersionChecker
      */
     private $versionChecker;
@@ -202,6 +215,10 @@ class Logger extends \Monolog\Logger
     public function addRecord($level, $message, array $context = array())
     {
         $context['is_exception'] = $message instanceof \Exception;
+        if (array_key_exists($level, self::$prestashopLoggable)) {
+            \PrestaShopLogger::addLog($message, self::$prestashopLoggable[$level]);
+        }
+
         return parent::addRecord($level, $message, $context);
     }
 
