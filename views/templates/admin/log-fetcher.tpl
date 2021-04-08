@@ -22,13 +22,13 @@
  *}
 <div class="container">
     <div class="row">
-        <div class="col-lg-5 col-lg-offset-3">
+        <div class="col-lg-4 col-lg-offset-4">
             <div class="log-container adyen">
                 <img class="img-responsive logo" src="{$logo|escape:'html':'UTF-8'}" alt="logo">
                 <p>
                     Download all adyen related log files. For more information, checkout <a target="_blank" href="https://docs.adyen.com/plugins/prestashop#finding-the-logs">our docs</a>.
                 </p>
-                <a href="{$downloadUrl}" class="btn btn-primary-reverse btn-outline-primary">Download Logs</a>
+                <a href="{$downloadUrl}" class="btn btn-primary-reverse btn-outline-primary">Download</a>
             </div>
         </div>
     </div>
