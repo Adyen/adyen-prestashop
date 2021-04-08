@@ -106,7 +106,6 @@ class Logger extends \Monolog\Logger
         self::CRITICAL => 4,
         self::ERROR => 3,
         self::WARNING => 2,
-        self::ADYEN_NOTIFICATION => 3
     );
 
     /**
@@ -205,7 +204,7 @@ class Logger extends \Monolog\Logger
     }
 
     /**
-     * Adds a log record.
+     * Adds a log record and depending on the level, also add it to the prestashop logs
      *
      * @param integer $level The logging level
      * @param string $message The log message
@@ -216,7 +215,14 @@ class Logger extends \Monolog\Logger
     {
         $context['is_exception'] = $message instanceof \Exception;
         if (array_key_exists($level, self::$prestashopLoggable)) {
-            \PrestaShopLogger::addLog($message, self::$prestashopLoggable[$level]);
+            \PrestaShopLogger::addLog(
+                $message,
+                self::$prestashopLoggable[$level],
+                null,
+                null,
+                null,
+                true
+            );
         }
 
         return parent::addRecord($level, $message, $context);
