@@ -26,7 +26,7 @@
             <div class="log-container adyen">
                 <img class="img-responsive logo" src="{$logo|escape:'html':'UTF-8'}" alt="logo">
                 <p>
-                    Download all adyen related log files and optionally include other prestashop logs. For more information, checkout <a target="_blank" href="https://docs.adyen.com/plugins/prestashop#finding-the-logs">our docs</a>.
+                    Download all Adyen-related log files and optionally include other Prestashop logs. For more information, check out <a target="_blank" href="https://docs.adyen.com/plugins/prestashop#finding-the-logs">our docs</a>.
                 </p>
                 <form id="downloadForm" action="{$downloadUrl}" method="POST">
                     <div class="checkbox">
