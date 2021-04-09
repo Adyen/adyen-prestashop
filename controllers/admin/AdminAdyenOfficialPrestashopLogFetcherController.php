@@ -75,7 +75,7 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
         if ((string)Tools::getValue('download')) {
             $this->createCurrentApplicationInfoFile();
             $this->zipAndDownload();
-            die;
+            exit;
         }
     }
 
@@ -242,22 +242,6 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
             "\nGoogle pay merchant identifier: %s",
             Configuration::get('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER')
         );
-
-        $notificationPass = Configuration::get('ADYEN_NOTI_PASSWORD');
-        if (!empty($notificationPass)) {
-            $configs['notificationPass'] = sprintf(
-                "\nNotification password last 4: %s",
-                substr($this->crypto->decrypt($notificationPass), -4)
-            );
-        }
-
-        $notificationHmac = Configuration::get('ADYEN_NOTI_HMAC');
-        if (!empty($notificationHmac)) {
-            $configs['notificationHmac'] = sprintf(
-                "\nNotification HMAC last 4: %s",
-                substr($this->crypto->decrypt($notificationHmac), -4)
-            );
-        }
 
         $apiKeyTest = Configuration::get('ADYEN_APIKEY_TEST');
         if (!empty($apiKeyTest)) {
