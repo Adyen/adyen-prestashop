@@ -958,7 +958,7 @@ class AdyenOfficial extends PaymentModule
                 'For configuration "ADYEN_APIKEY_LIVE" an exception was thrown: ' . $e->getMessage()
             );
         } catch (\Adyen\PrestaShop\exception\MissingDataException $e) {
-            $this->logger->error('The configuration "ADYEN_APIKEY_LIVE" has no value set.');
+            $this->logger->warning('The configuration "ADYEN_APIKEY_LIVE" has no value set.');
         }
 
         $apiKeyLiveLastDigits = Tools::substr($apiKeyLive, -4);
