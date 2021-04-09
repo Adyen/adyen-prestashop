@@ -615,6 +615,9 @@ class AdyenOfficial extends PaymentModule
      */
     public function uninstallTabs()
     {
+        $cronTabDelete = false;
+        $logFetcherTabDelete = false;
+
         try {
             $cronTabId = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashopCron');
             $logFetcherTabId = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashopLogFetcher');
