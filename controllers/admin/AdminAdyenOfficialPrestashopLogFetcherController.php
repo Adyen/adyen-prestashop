@@ -89,7 +89,7 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
     {
         $smartyVariables = array(
             'logo' => Media::getMediaPath(_PS_MODULE_DIR_ . $this->module->name . '/views/img/adyen.png'),
-            'downloadUrl' => '//' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . '&download=1'
+            'downloadUrl' => $this->getDownloadUrl()
         );
         $this->addCSS('modules/' . $this->module->name . '/views/css/adyen_admin.css');
 
@@ -130,7 +130,7 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
      * @param $filename
      * @param $folder
      */
-    public function createArchive($filename, $folder)
+    private function createArchive($filename, $folder)
     {
         $zip = new ZipArchive();
 
@@ -264,5 +264,18 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
         }
 
         return $configValues;
+    }
+
+    /**
+     * Get the url accessed when the button is clicked, to download the url
+     *
+     * @return string
+     */
+    private function getDownloadUrl()
+    {
+        $adminUrl = Tools::getAdminUrl('admin-dev/index.php?controller=AdminAdyenOfficialPrestashopLogFetcher&token=');
+        $token = Tools::getAdminTokenLite('AdminAdyenOfficialPrestashopLogFetcher');
+
+        return $adminUrl . $token . '&download=1';
     }
 }
