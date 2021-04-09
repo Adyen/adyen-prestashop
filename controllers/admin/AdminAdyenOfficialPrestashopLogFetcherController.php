@@ -74,7 +74,7 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
         // Zip download is triggered when queryParameter contains the download string
         if ((string)Tools::getValue('download')) {
             $this->createCurrentApplicationInfoFile();
-            $this->zipAndDownload();
+            $this->zipAndDownload(Tools::getValue('include-all'));
             exit;
         }
     }
@@ -105,12 +105,17 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
     }
 
     /**
-     * Zip all files in the adyen log directory and download
+     * Zip all files in the adyen log directory and download. If includeAll is set, zip all logs
+     *
+     * @param $includeAll
      */
-    private function zipAndDownload()
+    private function zipAndDownload($includeAll)
     {
-        $zip_file = Configuration::get('PS_SHOP_NAME') . '_' . date('Y-m-d') . '_' . 'Adyen_Logs.zip';
+        if ($includeAll) {
+            $this->logsDirectory = substr($this->logsDirectory, 0, strrpos($this->logsDirectory, '/'));
+        }
 
+        $zip_file = Configuration::get('PS_SHOP_NAME') . '_' . date('Y-m-d') . '_' . 'Adyen_Logs.zip';
         // Get real path for our folder
         $rootPath = realpath($this->logsDirectory);
         $this->createArchive($zip_file, $rootPath);
