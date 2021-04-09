@@ -60,9 +60,9 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
         $this->crypto = ServiceLocator::get('Adyen\PrestaShop\infra\Crypto');
         $this->versionChecker = ServiceLocator::get('Adyen\PrestaShop\application\VersionChecker');
         if ($this->versionChecker->isPrestaShop16()) {
-            $this->logsDirectory = _PS_ROOT_DIR_ . '/log/adyen';
+            $this->logsDirectory = _PS_ROOT_DIR_ . '/log';
         } else {
-            $this->logsDirectory = _PS_ROOT_DIR_ . '/var/logs/adyen';
+            $this->logsDirectory = _PS_ROOT_DIR_ . '/var/logs';
         }
 
         // Required to automatically call the renderView function
@@ -105,14 +105,14 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
     }
 
     /**
-     * Zip all files in the adyen log directory and download. If includeAll is set, zip all logs
+     * Zip all log files. If includeAll is false, zip only the adyen log files
      *
      * @param $includeAll
      */
     private function zipAndDownload($includeAll)
     {
-        if ($includeAll) {
-            $this->logsDirectory = substr($this->logsDirectory, 0, strrpos($this->logsDirectory, '/'));
+        if (!$includeAll) {
+            $this->logsDirectory = $this->logsDirectory . '/adyen';
         }
 
         $zip_file = Configuration::get('PS_SHOP_NAME') . '_' . date('Y-m-d') . '_' . 'Adyen_Logs.zip';
