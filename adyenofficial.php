@@ -216,7 +216,7 @@ class AdyenOfficial extends PaymentModule
             ) {
                 return true;
             } else {
-                $this->logger->debug('Adyen module: installation failed!');
+                $this->logger->critical('Adyen module: installation failed!');
                 return false;
             }
         }
@@ -235,7 +235,7 @@ class AdyenOfficial extends PaymentModule
         ) {
             return true;
         } else {
-            $this->logger->debug('Adyen module: installation failed!');
+            $this->logger->critical('Adyen module: installation failed!');
             return false;
         }
     }
@@ -290,7 +290,7 @@ class AdyenOfficial extends PaymentModule
             $this->updateCronJobToken()) {
             return true;
         } else {
-            $this->logger->debug('Adyen module: reset failed!');
+            $this->logger->error('Adyen module: reset failed!');
             return false;
         }
     }
@@ -554,7 +554,7 @@ class AdyenOfficial extends PaymentModule
 
         foreach ($adyenConfigurationNames as $adyenConfigurationName) {
             if (!Configuration::deleteByName($adyenConfigurationName)) {
-                $this->logger->debug("Configuration couldn't be deleted by name: " . $adyenConfigurationName);
+                $this->logger->warning("Configuration couldn't be deleted by name: " . $adyenConfigurationName);
                 $result = false;
             }
         }
@@ -867,7 +867,7 @@ class AdyenOfficial extends PaymentModule
                 'For configuration "ADYEN_NOTI_PASSWORD" an exception was thrown: ' . $e->getMessage()
             );
         } catch (\Adyen\PrestaShop\exception\MissingDataException $e) {
-            $this->logger->debug(
+            $this->logger->error(
                 'The configuration "ADYEN_NOTI_PASSWORD" has no value set, please add the notification password!'
             );
         }
@@ -892,7 +892,7 @@ class AdyenOfficial extends PaymentModule
         } catch (\Adyen\PrestaShop\exception\GenericLoggedException $e) {
             $this->logger->error('For configuration "ADYEN_NOTI_HMAC" an exception was thrown: ' . $e->getMessage());
         } catch (\Adyen\PrestaShop\exception\MissingDataException $e) {
-            $this->logger->debug('The configuration "ADYEN_NOTI_HMAC" has no value set, please add the HMAC key!');
+            $this->logger->error('The configuration "ADYEN_NOTI_HMAC" has no value set, please add the HMAC key!');
         }
 
         $fields_form[0]['form']['input'][] = array(
@@ -917,7 +917,7 @@ class AdyenOfficial extends PaymentModule
                 'For configuration "ADYEN_CRONJOB_TOKEN" an exception was thrown: ' . $e->getMessage()
             );
         } catch (\Adyen\PrestaShop\exception\MissingDataException $e) {
-            $this->logger->debug(
+            $this->logger->warning(
                 'The configuration "ADYEN_CRONJOB_TOKEN" has no value set, please add a secure token!'
             );
         }
@@ -974,7 +974,7 @@ class AdyenOfficial extends PaymentModule
                 'For configuration "ADYEN_APIKEY_TEST" an exception was thrown: ' . $e->getMessage()
             );
         } catch (\Adyen\PrestaShop\exception\MissingDataException $e) {
-            $this->logger->debug('The configuration "ADYEN_APIKEY_TEST" has no value set.');
+            $this->logger->warning('The configuration "ADYEN_APIKEY_TEST" has no value set.');
         }
 
         $apiKeyTestLastDigits = Tools::substr($apiKeyTest, -4);
@@ -1001,7 +1001,7 @@ class AdyenOfficial extends PaymentModule
                 'For configuration "ADYEN_APIKEY_LIVE" an exception was thrown: ' . $e->getMessage()
             );
         } catch (\Adyen\PrestaShop\exception\MissingDataException $e) {
-            $this->logger->debug('The configuration "ADYEN_APIKEY_LIVE" has no value set.');
+            $this->logger->warning('The configuration "ADYEN_APIKEY_LIVE" has no value set.');
         }
 
         $apiKeyLiveLastDigits = Tools::substr($apiKeyLive, -4);
