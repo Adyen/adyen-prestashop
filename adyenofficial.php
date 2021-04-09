@@ -209,7 +209,7 @@ class AdyenOfficial extends PaymentModule
                 $this->registerHook('paymentReturn') &&
                 $this->registerHook('actionOrderSlipAdd') &&
                 $this->registerHook('actionFrontControllerSetMedia') &&
-                $this->installTab() &&
+                $this->installTabs() &&
                 $this->createDefaultConfigurations() &&
                 $this->createAdyenOrderStatuses() &&
                 $this->createAdyenDatabaseTables()
@@ -224,7 +224,7 @@ class AdyenOfficial extends PaymentModule
         // Version 1.7 or higher
         if (parent::install() &&
             $this->registerHook('displayPaymentTop') &&
-            $this->installTab() &&
+            $this->installTabs() &&
             $this->registerHook('actionFrontControllerSetMedia') &&
             $this->registerHook('paymentOptions') &&
             $this->registerHook('paymentReturn') &&
@@ -272,7 +272,7 @@ class AdyenOfficial extends PaymentModule
     public function uninstall()
     {
         return parent::uninstall() &&
-            $this->uninstallTab() &&
+            $this->uninstallTabs() &&
             $this->removeAdyenDatabaseTables() &&
             $this->removeConfigurationsFromDatabase();
     }
@@ -565,22 +565,47 @@ class AdyenOfficial extends PaymentModule
     /**
      * @return bool true if tab is installed
      */
-    public function installTab()
+    public function installTabs()
     {
         try {
-            $tab = new Tab();
-            $tab->id_parent = -1; // invisible tab
-            $tab->active = 1;
-            $tab->name = array();
+            $cronTab = new Tab();
+            $cronTab->id_parent = -1; // invisible tab
+            $cronTab->active = 1;
+            $cronTab->name = array();
             foreach (Language::getLanguages(true) as $lang) {
-                $tab->name[$lang['id_lang']] = 'Adyen Prestashop Cron';
+                $cronTab->name[$lang['id_lang']] = 'Adyen Prestashop Cron';
             }
-            $tab->class_name = 'AdminAdyenOfficialPrestashopCron';
-            $tab->module = $this->name;
-            return $tab->add();
+            $cronTab->class_name = 'AdminAdyenOfficialPrestashopCron';
+            $cronTab->module = $this->name;
+            $cronTabResult = $cronTab->add();
+
+            $logTab = new Tab();
+            if ($this->versionChecker->isPrestaShop16()) {
+                $logTab->id_parent = (int) Tab::getIdFromClassName('AdminTools');
+            } else {
+                $logTab->id_parent = (int) Tab::getIdFromClassName('AdminAdvancedParameters');
+            }
+            $logTab->active = 1;
+            $logTab->name = array();
+            foreach (Language::getLanguages() as $lang) {
+                $logTab->name[$lang['id_lang']] = 'Adyen Logs';
+            }
+            $logTab->class_name = 'AdminAdyenOfficialPrestashopLogFetcher';
+            $logTab->module = $this->name;
+            $logTabResult = $logTab->add();
+
+            return $cronTabResult && $logTabResult;
         } catch (PrestaShopDatabaseException $e) {
+            $this->logger->error(
+                'Database exception thrown during tab installation: ' . $e->getMessage()
+            );
+
             return false;
         } catch (PrestaShopException $e) {
+            $this->logger->error(
+                'PrestaShop exception thrown during tab installation: ' . $e->getMessage()
+            );
+
             return false;
         }
     }
@@ -588,20 +613,38 @@ class AdyenOfficial extends PaymentModule
     /**
      * @return bool
      */
-    public function uninstallTab()
+    public function uninstallTabs()
     {
+        $cronTabDelete = false;
+        $logFetcherTabDelete = false;
+
         try {
-            $id_tab = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashopCron');
-            if ($id_tab) {
-                $tab = new Tab($id_tab);
-                return $tab->delete();
+            $cronTabId = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashopCron');
+            $logFetcherTabId = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashopLogFetcher');
+            if ($cronTabId) {
+                $cronTab = new Tab($cronTabId);
+                $cronTabDelete = $cronTab->delete();
             }
+
+            if ($logFetcherTabId) {
+                $logFetcherTab = new Tab($logFetcherTabId);
+                $logFetcherTabDelete = $logFetcherTab->delete();
+            }
+
+            return $cronTabDelete && $logFetcherTabDelete;
         } catch (PrestaShopDatabaseException $e) {
+            $this->logger->error(
+                'Database exception thrown during tab uninstall: ' . $e->getMessage()
+            );
+
             return false;
         } catch (PrestaShopException $e) {
+            $this->logger->error(
+                'PrestaShop exception thrown during tab uninstall: ' . $e->getMessage()
+            );
+
             return false;
         }
-        return false;
     }
 
 
