@@ -267,7 +267,7 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
     }
 
     /**
-     * Get the url accessed when the button is clicked, to download the url
+     * Get the url accessed when the button is clicked, to download the zip file
      *
      * @return string
      */
@@ -276,6 +276,6 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
         $adminUrl = Tools::getAdminUrl('admin-dev/index.php?controller=AdminAdyenOfficialPrestashopLogFetcher&token=');
         $token = Tools::getAdminTokenLite('AdminAdyenOfficialPrestashopLogFetcher');
 
-        return $adminUrl . $token . '&download=1';
+        return $adminUrl . $token;
     }
 }
