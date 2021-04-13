@@ -27,14 +27,16 @@
 // phpcs:disable PSR1.Files.SideEffects, PSR1.Classes.ClassDeclaration
 
 use Adyen\PrestaShop\application\VersionChecker;
+use Adyen\PrestaShop\helper\Data;
+use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use PrestaShop\PrestaShop\Adapter\CoreException;
 
 require_once _PS_ROOT_DIR_ . '/modules/adyenofficial/vendor/autoload.php';
 
 class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminController
 {
-    /** @var \Adyen\PrestaShop\service\adapter\classes\Configuration $configuration */
-    private $configuration;
+    /** @var Data $helperData */
+    private $helperData;
 
     /** @var Adyen\PrestaShop\infra\Crypto */
     private $crypto;
@@ -52,6 +54,8 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
      */
     public function __construct()
     {
+        $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
+
         // Required to automatically call the renderView function
         $this->display = 'view';
         $this->bootstrap = true;
@@ -59,8 +63,11 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
         parent::__construct();
 
         if ((string)Tools::getValue('validate')) {
-            $this->validateModule();
-            exit;
+            if (!$this->validateModule()) {
+                return $this->helperData->buildControllerResponseJson('error', ['message' => 'Error']);
+            } else {
+                return $this->helperData->buildControllerResponseJson('action', ['response' => 'Validation succesful']);
+            }
         }
     }
 
@@ -74,6 +81,7 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
     {
         $smartyVariables = array(
             'logo' => Media::getMediaPath(_PS_MODULE_DIR_ . $this->module->name . '/views/img/adyen.png'),
+            'validateUrl' => $this->getValidateUrl()
         );
         $this->addCSS('modules/' . $this->module->name . '/views/css/adyen_admin.css');
 
@@ -88,8 +96,32 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
         return $tpl->fetch();
     }
 
+    /**
+     * @return bool
+     */
     private function validateModule()
     {
+        $invalidConfigs = array();
+        foreach (AdyenOfficial::ADYEN_CONFIG_NAMES as $key) {
+            // TODO: Check using shop id
+            if (!Configuration::hasKey($key)) {
+                $invalidConfigs[] = $key;
+            }
+        }
 
+        return empty($invalidConfigs);
+    }
+
+    /**
+     * Get the url accessed when the button is clicked, to download the zip file
+     *
+     * @return string
+     */
+    private function getValidateUrl()
+    {
+        $adminUrl = Tools::getAdminUrl('admin-dev/index.php?controller=AdminAdyenOfficialPrestashopValidator&token=');
+        $token = Tools::getAdminTokenLite('AdminAdyenOfficialPrestashopValidator');
+
+        return $adminUrl . $token;
     }
 }

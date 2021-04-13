@@ -37,6 +37,33 @@ require_once _PS_ROOT_DIR_ . '/modules/adyenofficial/vendor/autoload.php';
 // this file cannot contain the `use` operator for PrestaShop 1.6
 class AdyenOfficial extends PaymentModule
 {
+    const ADYEN_CONFIG_NAMES = array(
+        'CONF_ADYENOFFICIAL_FIXED',
+        'CONF_ADYENOFFICIAL_VAR',
+        'CONF_ADYENOFFICIAL_FIXED_FOREIGN',
+        'CONF_ADYENOFFICIAL_VAR_FOREIGN',
+        'ADYEN_MERCHANT_ACCOUNT',
+        'ADYEN_INTEGRATOR_NAME',
+        'ADYEN_MODE',
+        'ADYEN_NOTI_USERNAME',
+        'ADYEN_NOTI_PASSWORD',
+        'ADYEN_APIKEY_TEST',
+        'ADYEN_APIKEY_LIVE',
+        'ADYEN_CLIENTKEY_TEST',
+        'ADYEN_CLIENTKEY_LIVE',
+        'ADYEN_NOTI_HMAC',
+        'ADYEN_LIVE_ENDPOINT_URL_PREFIX',
+        'ADYEN_CRONJOB_TOKEN',
+        'ADYEN_APPLE_PAY_MERCHANT_NAME',
+        'ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER',
+        'ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID',
+        'ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER',
+        'ADYEN_PAYMENT_DISPLAY_COLLAPSE',
+        'ADYEN_AUTO_CRON_JOB_RUNNER',
+        'ADYEN_ADMIN_PATH',
+        'ADYEN_ENABLE_STORED_PAYMENT_METHODS'
+    );
+
     /**
      * @var string
      */
@@ -523,36 +550,9 @@ class AdyenOfficial extends PaymentModule
      */
     private function removeConfigurationsFromDatabase()
     {
-        $adyenConfigurationNames = array(
-            'CONF_ADYENOFFICIAL_FIXED',
-            'CONF_ADYENOFFICIAL_VAR',
-            'CONF_ADYENOFFICIAL_FIXED_FOREIGN',
-            'CONF_ADYENOFFICIAL_VAR_FOREIGN',
-            'ADYEN_MERCHANT_ACCOUNT',
-            'ADYEN_INTEGRATOR_NAME',
-            'ADYEN_MODE',
-            'ADYEN_NOTI_USERNAME',
-            'ADYEN_NOTI_PASSWORD',
-            'ADYEN_APIKEY_TEST',
-            'ADYEN_APIKEY_LIVE',
-            'ADYEN_CLIENTKEY_TEST',
-            'ADYEN_CLIENTKEY_LIVE',
-            'ADYEN_NOTI_HMAC',
-            'ADYEN_LIVE_ENDPOINT_URL_PREFIX',
-            'ADYEN_CRONJOB_TOKEN',
-            'ADYEN_APPLE_PAY_MERCHANT_NAME',
-            'ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER',
-            'ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID',
-            'ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER',
-            'ADYEN_PAYMENT_DISPLAY_COLLAPSE',
-            'ADYEN_AUTO_CRON_JOB_RUNNER',
-            'ADYEN_ADMIN_PATH',
-            'ADYEN_ENABLE_STORED_PAYMENT_METHODS'
-        );
-
         $result = true;
 
-        foreach ($adyenConfigurationNames as $adyenConfigurationName) {
+        foreach (self::ADYEN_CONFIG_NAMES as $adyenConfigurationName) {
             if (!Configuration::deleteByName($adyenConfigurationName)) {
                 $this->logger->warning("Configuration couldn't be deleted by name: " . $adyenConfigurationName);
                 $result = false;

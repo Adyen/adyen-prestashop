@@ -28,7 +28,7 @@
                 <p>
                     Validate module installation. For more information, check out <a target="_blank" href="https://docs.adyen.com/plugins/prestashop#finding-the-logs">our docs</a>.
                 </p>
-                <form id="validateForm" action="#" method="POST">
+                <form id="validateForm" action="{$validateUrl}" method="POST">
                     <input type="hidden" name="validate" value="1">
                     <button type="submit" class="btn btn-primary-reverse btn-outline-primary">Validate</button>
                 </form>
