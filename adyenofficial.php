@@ -568,8 +568,9 @@ class AdyenOfficial extends PaymentModule
     public function installTabs()
     {
         try {
+            // Invisible cron tab
             $cronTab = new Tab();
-            $cronTab->id_parent = -1; // invisible tab
+            $cronTab->id_parent = -1;
             $cronTab->active = 1;
             $cronTab->name = array();
             foreach (Language::getLanguages(true) as $lang) {
@@ -579,6 +580,7 @@ class AdyenOfficial extends PaymentModule
             $cronTab->module = $this->name;
             $cronTabResult = $cronTab->add();
 
+            // Parent adyen tab
             $adyenTab = new Tab();
             if ($this->versionChecker->isPrestaShop16()) {
                 $adyenTab->id_parent = (int) Tab::getIdFromClassName('AdminParentModulesSf');
@@ -594,18 +596,31 @@ class AdyenOfficial extends PaymentModule
             $adyenTab->module = $this->name;
             $adyenTabResult = $adyenTab->add();
 
+            // Log tab
             $logTab = new Tab();
             $logTab->id_parent = (int) Tab::getIdFromClassName('AdminAdyenOfficialPrestashop');
             $logTab->active = 1;
             $logTab->name = array();
             foreach (Language::getLanguages() as $lang) {
-                $logTab->name[$lang['id_lang']] = 'Adyen Logs';
+                $logTab->name[$lang['id_lang']] = 'Logs';
             }
             $logTab->class_name = 'AdminAdyenOfficialPrestashopLogFetcher';
             $logTab->module = $this->name;
             $logTabResult = $logTab->add();
 
-            return $cronTabResult && $logTabResult && $adyenTabResult;
+            // Validator tab
+            $validatorTab = new Tab();
+            $validatorTab->id_parent = (int) Tab::getIdFromClassName('AdminAdyenOfficialPrestashop');
+            $validatorTab->active = 1;
+            $validatorTab->name = array();
+            foreach (Language::getLanguages() as $lang) {
+                $validatorTab->name[$lang['id_lang']] = 'Validator';
+            }
+            $validatorTab->class_name = 'AdminAdyenOfficialPrestashopValidator';
+            $validatorTab->module = $this->name;
+            $validatorTabResult = $validatorTab->add();
+
+            return $cronTabResult && $logTabResult && $adyenTabResult && $validatorTabResult;
         } catch (PrestaShopDatabaseException $e) {
             $this->logger->error(
                 'Database exception thrown during tab installation: ' . $e->getMessage()

@@ -68,7 +68,7 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
         // Required to automatically call the renderView function
         $this->display = 'view';
         $this->bootstrap = true;
-        $this->toolbar_title[] = 'Adyen Logs';
+        $this->toolbar_title[] = 'Logs';
         parent::__construct();
 
         // Zip download is triggered when queryParameter contains the download string
