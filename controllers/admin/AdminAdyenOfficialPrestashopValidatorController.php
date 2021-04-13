@@ -27,6 +27,7 @@
 // phpcs:disable PSR1.Files.SideEffects, PSR1.Classes.ClassDeclaration
 
 use Adyen\PrestaShop\application\VersionChecker;
+use Adyen\PrestaShop\exception\ModuleValidationException;
 use Adyen\PrestaShop\helper\Data;
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use PrestaShop\PrestaShop\Adapter\CoreException;
@@ -35,9 +36,6 @@ require_once _PS_ROOT_DIR_ . '/modules/adyenofficial/vendor/autoload.php';
 
 class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminController
 {
-    /** @var Data $helperData */
-    private $helperData;
-
     /** @var Adyen\PrestaShop\infra\Crypto */
     private $crypto;
 
@@ -54,8 +52,6 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
      */
     public function __construct()
     {
-        $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
-
         // Required to automatically call the renderView function
         $this->display = 'view';
         $this->bootstrap = true;
@@ -64,9 +60,8 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
 
         if ((string)Tools::getValue('validate')) {
             if (!$this->validateModule()) {
-                return $this->helperData->buildControllerResponseJson('error', ['message' => 'Error']);
-            } else {
-                return $this->helperData->buildControllerResponseJson('action', ['response' => 'Validation succesful']);
+                // Exception must be thrown since any other return value will be overrided by prestashop
+                throw new ModuleValidationException();
             }
         }
     }
