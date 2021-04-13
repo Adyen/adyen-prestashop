@@ -52,7 +52,16 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
      */
     public function __construct()
     {
+        // Required to automatically call the renderView function
+        $this->display = 'view';
+        $this->bootstrap = true;
+        $this->toolbar_title[] = 'Validator';
         parent::__construct();
+
+        if ((string)Tools::getValue('validate')) {
+            $this->validateModule();
+            exit;
+        }
     }
 
     /**
@@ -63,5 +72,24 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
      */
     public function renderView()
     {
+        $smartyVariables = array(
+            'logo' => Media::getMediaPath(_PS_MODULE_DIR_ . $this->module->name . '/views/img/adyen.png'),
+        );
+        $this->addCSS('modules/' . $this->module->name . '/views/css/adyen_admin.css');
+
+        // Passing variables in this call (instead of assign()) required for 1.6
+        $tpl = $this->context->smarty->createTemplate(
+            _PS_MODULE_DIR_ . $this->module->name . '/views/templates/admin/validator.tpl',
+            null,
+            null,
+            $smartyVariables
+        );
+
+        return $tpl->fetch();
+    }
+
+    private function validateModule()
+    {
+
     }
 }
