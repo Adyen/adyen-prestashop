@@ -580,29 +580,35 @@ class AdyenOfficial extends PaymentModule
             $cronTab->module = $this->name;
             $cronTabResult = $cronTab->add();
 
-            // Parent adyen tab
-            $adyenTab = new Tab();
-            if ($this->versionChecker->isPrestaShop16()) {
-                $adyenTab->id_parent = (int) Tab::getIdFromClassName('AdminParentModulesSf');
+
+            // If presta v1.7 create new empty parent tab
+            if (!$this->versionChecker->isPrestaShop16()) {
+                // Parent adyen tab
+                $adyenTab = new Tab();
+                $adyenTab->id_parent = (int)Tab::getIdFromClassName('AdminParentModulesSf');
+                $adyenTab->active = 1;
+                $adyenTab->name = array();
+                foreach (Language::getLanguages() as $lang) {
+                    $adyenTab->name[$lang['id_lang']] = 'Adyen Module';
+                }
+                $adyenTab->class_name = 'AdminAdyenOfficialPrestashop';
+                $adyenTab->module = $this->name;
+                $adyenTabResult = $adyenTab->add();
+                $parentTab = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashop');
+                $namePrefix = '';
             } else {
-                $adyenTab->id_parent = (int) Tab::getIdFromClassName('AdminParentModulesSf');
+                $adyenTabResult = true;
+                $parentTab = (int)Tab::getIdFromClassName('AdminParentModules');
+                $namePrefix = 'Adyen ';
             }
-            $adyenTab->active = 1;
-            $adyenTab->name = array();
-            foreach (Language::getLanguages() as $lang) {
-                $adyenTab->name[$lang['id_lang']] = 'Adyen Module';
-            }
-            $adyenTab->class_name = 'AdminAdyenOfficialPrestashop';
-            $adyenTab->module = $this->name;
-            $adyenTabResult = $adyenTab->add();
 
             // Log tab
             $logTab = new Tab();
-            $logTab->id_parent = (int) Tab::getIdFromClassName('AdminAdyenOfficialPrestashop');
+            $logTab->id_parent = $parentTab;
             $logTab->active = 1;
             $logTab->name = array();
             foreach (Language::getLanguages() as $lang) {
-                $logTab->name[$lang['id_lang']] = 'Logs';
+                $logTab->name[$lang['id_lang']] = $namePrefix . 'Logs';
             }
             $logTab->class_name = 'AdminAdyenOfficialPrestashopLogFetcher';
             $logTab->module = $this->name;
@@ -610,11 +616,11 @@ class AdyenOfficial extends PaymentModule
 
             // Validator tab
             $validatorTab = new Tab();
-            $validatorTab->id_parent = (int) Tab::getIdFromClassName('AdminAdyenOfficialPrestashop');
+            $validatorTab->id_parent = $parentTab;
             $validatorTab->active = 1;
             $validatorTab->name = array();
             foreach (Language::getLanguages() as $lang) {
-                $validatorTab->name[$lang['id_lang']] = 'Validator';
+                $validatorTab->name[$lang['id_lang']] = $namePrefix . 'Validator';
             }
             $validatorTab->class_name = 'AdminAdyenOfficialPrestashopValidator';
             $validatorTab->module = $this->name;

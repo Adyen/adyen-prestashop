@@ -48,15 +48,4 @@ class AdminAdyenOfficialPrestashopController extends ModuleAdminController
 
     /** @var string $logsDirectory */
     private $logsDirectory;
-
-    /**
-     * Render the log-fetcher template
-     *
-     * @return false|string
-     * @throws SmartyException
-     */
-    public function renderView()
-    {
-
-    }
 }
