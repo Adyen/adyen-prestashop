@@ -29,7 +29,8 @@
                     Validate module installation. For more information, check out <a target="_blank" href="https://docs.adyen.com/plugins/prestashop#finding-the-logs">our docs</a>.
                 </p>
                 <form id="validateForm" action="{$validateUrl}" method="GET">
-                    <button type="submit" class="btn btn-primary-reverse btn-outline-primary">Validate</button>
+                    <button id="validateButton" type="submit" class="btn btn-primary-reverse btn-outline-primary">Validate</button>
+                    <button id="loadingSpinner" class="btn-primary-reverse spinner"></button>
                 </form>
             </div>
         </div>
@@ -39,13 +40,20 @@
     jQuery(document).ready(function () {
         $('#validateForm').submit(function (e) {
             e.preventDefault();
+            const spinner = $('#loadingSpinner');
+            const button = $('#validateButton');
+            button.hide();
+            spinner.show();
             $.get($(e.target).attr('action'), { validate: 1 })
                 .done(function(e) {
-                    console.log(e);
                     $.growl.notice({ title: "Success", message: "Adyen module successfully validated", duration: 5000});
                 })
                 .error(function () {
                     $.growl.error({ title: "Error", message: "Please check the logs for more information.", duration: 5000});
+                })
+                .always(function () {
+                    spinner.hide();
+                    button.show();
                 });
         })
     });
