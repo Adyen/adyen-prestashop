@@ -26,9 +26,7 @@
 // Controllers, which breaks a PSR1 element.
 // phpcs:disable PSR1.Files.SideEffects, PSR1.Classes.ClassDeclaration
 
-use Adyen\PrestaShop\application\VersionChecker;
 use Adyen\PrestaShop\exception\ModuleValidationException;
-use Adyen\PrestaShop\helper\Data;
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use PrestaShop\PrestaShop\Adapter\CoreException;
 
@@ -36,14 +34,10 @@ require_once _PS_ROOT_DIR_ . '/modules/adyenofficial/vendor/autoload.php';
 
 class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminController
 {
-    /** @var Adyen\PrestaShop\infra\Crypto */
-    private $crypto;
-
-    /** @var VersionChecker */
-    private $versionChecker;
-
-    /** @var string $logsDirectory */
-    private $logsDirectory;
+    /**
+     * @var Adyen\PrestaShop\service\Logger
+     */
+    private $logger;
 
     /**
      * AdminAdyenPrestashopCronController constructor.
@@ -52,6 +46,8 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
      */
     public function __construct()
     {
+        $this->logger = ServiceLocator::get('Adyen\PrestaShop\service\Logger');
+
         // Required to automatically call the renderView function
         $this->display = 'view';
         $this->bootstrap = true;
@@ -101,6 +97,7 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
             // TODO: Check using shop id
             if (!Configuration::hasKey($key)) {
                 $invalidConfigs[] = $key;
+                $this->logger->error(sprintf('%s configuration not found in ps_configuration table', $key));
             }
         }
 
