@@ -27,6 +27,7 @@
 // phpcs:disable PSR1.Files.SideEffects, PSR1.Classes.ClassDeclaration
 
 use Adyen\PrestaShop\exception\ModuleValidationException;
+use Adyen\PrestaShop\helper\Data;
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use PrestaShop\PrestaShop\Adapter\CoreException;
 
@@ -40,6 +41,11 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
     private $logger;
 
     /**
+     * @var Data
+     */
+    private $helperData;
+
+    /**
      * AdminAdyenPrestashopCronController constructor.
      *
      * @throws CoreException|PrestaShopException
@@ -47,6 +53,7 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
     public function __construct()
     {
         $this->logger = ServiceLocator::get('Adyen\PrestaShop\service\Logger');
+        $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
 
         // Required to automatically call the renderView function
         $this->display = 'view';
@@ -55,7 +62,7 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
         parent::__construct();
 
         if ((string)Tools::getValue('validate')) {
-            if (!$this->validateModule()) {
+            if (!$this->validateModuleConfigs() || !$this->validateModuleTables()) {
                 // Exception must be thrown since any other return value will be overrided by prestashop
                 throw new ModuleValidationException();
             }
@@ -88,9 +95,11 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
     }
 
     /**
+     * Validate that all adyen module configurations exist in the db
+     *
      * @return bool
      */
-    private function validateModule()
+    private function validateModuleConfigs()
     {
         $invalidConfigs = array();
         foreach (AdyenOfficial::ADYEN_CONFIG_NAMES as $key) {
@@ -102,6 +111,19 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
         }
 
         return empty($invalidConfigs);
+    }
+
+    /**
+     * Validate that all adyen module tables have been created in the db
+     *
+     * @return bool
+     */
+    private function validateModuleTables()
+    {
+        $notificationTable = $this->helperData->tableExists('adyen_notification');
+        $responseTable = $this->helperData->tableExists('adyen_payment_response');
+
+        return $notificationTable && $responseTable;
     }
 
     /**
