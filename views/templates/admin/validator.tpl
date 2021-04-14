@@ -29,6 +29,16 @@
                     Validate module installation. For more information, check out <a target="_blank" href="https://docs.adyen.com/plugins/prestashop#finding-the-logs">our docs</a>.
                 </p>
                 <form id="validateForm" action="{$validateUrl}" method="GET">
+                    {if {$shops|@count > 1}}
+                        <div class="form-group">
+                            <label for="shop" class="control-label">Select shop</label>
+                            <select id="shop" class="form-control">
+                                {foreach from=$shops key=id item=name}
+                                    <option value="{$id}">{$name}</option>
+                                {/foreach}
+                            </select>
+                        </div>
+                    {/if}
                     <button id="validateButton" type="submit" class="btn btn-primary-reverse btn-outline-primary">Validate</button>
                     <button id="loadingSpinner" class="btn-primary-reverse spinner"></button>
                 </form>

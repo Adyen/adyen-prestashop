@@ -79,7 +79,8 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
     {
         $smartyVariables = array(
             'logo' => Media::getMediaPath(_PS_MODULE_DIR_ . $this->module->name . '/views/img/adyen.png'),
-            'validateUrl' => $this->getValidateUrl()
+            'validateUrl' => $this->getValidateUrl(),
+            'shops' => $this->getShops()
         );
         $this->addCSS('modules/' . $this->module->name . '/views/css/adyen_admin.css');
 
@@ -137,5 +138,20 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
         $token = Tools::getAdminTokenLite('AdminAdyenOfficialPrestashopValidator');
 
         return $adminUrl . $token;
+    }
+
+    /**
+     * Get all shops and return them as id => name
+     *
+     * @return array
+     */
+    private function getShops()
+    {
+        $shops = array();
+        foreach (Shop::getShops() as $shop) {
+            $shops[$shop['id_shop']] = $shop['name'];
+        }
+
+        return $shops;
     }
 }
