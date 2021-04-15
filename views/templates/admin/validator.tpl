@@ -32,13 +32,14 @@
                     {if {$shops|@count > 1}}
                         <div class="form-group">
                             <label for="shop" class="control-label">Select shop</label>
-                            <select id="shop" class="form-control">
+                            <select id="shop" name="shop" class="form-control">
                                 {foreach from=$shops key=id item=name}
                                     <option value="{$id}">{$name}</option>
                                 {/foreach}
                             </select>
                         </div>
                     {/if}
+                    <input type="hidden" name="validate" value="1">
                     <button id="validateButton" type="submit" class="btn btn-primary-reverse btn-outline-primary">Validate</button>
                     <button id="loadingSpinner" class="btn-primary-reverse spinner"></button>
                 </form>
@@ -54,8 +55,8 @@
             const button = $('#validateButton');
             button.hide();
             spinner.show();
-            $.get($(e.target).attr('action'), { validate: 1 })
-                .done(function(e) {
+            $.get($(this).attr('action'), $(this).serialize())
+                .done(function() {
                     $.growl.notice({ title: "Success", message: "Adyen module successfully validated", duration: 5000});
                 })
                 .error(function () {

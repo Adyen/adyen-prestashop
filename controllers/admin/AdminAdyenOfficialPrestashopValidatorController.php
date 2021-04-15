@@ -62,7 +62,7 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
         parent::__construct();
 
         if ((string)Tools::getValue('validate')) {
-            if (!$this->validateModuleConfigs() || !$this->validateModuleTables()) {
+            if (!$this->validateModuleConfigs(Tools::getValue('shop')) || !$this->validateModuleTables()) {
                 // Exception must be thrown since any other return value will be overrided by prestashop
                 throw new ModuleValidationException();
             }
@@ -96,16 +96,15 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
     }
 
     /**
-     * Validate that all adyen module configurations exist in the db
+     * Validate that all adyen module configurations exist in the db. If passed, check only for that shop
      *
      * @return bool
      */
-    private function validateModuleConfigs()
+    private function validateModuleConfigs($shopId = null)
     {
         $invalidConfigs = array();
         foreach (AdyenOfficial::ADYEN_CONFIG_NAMES as $key) {
-            // TODO: Check using shop id
-            if (!Configuration::hasKey($key)) {
+            if (!Configuration::hasKey($key, null, null, $shopId)) {
                 $invalidConfigs[] = $key;
                 $this->logger->error(sprintf('%s configuration not found in ps_configuration table', $key));
             }
