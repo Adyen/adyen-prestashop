@@ -26,6 +26,7 @@
 // Controllers, which breaks a PSR1 element.
 // phpcs:disable PSR1.Files.SideEffects, PSR1.Classes.ClassDeclaration
 
+use Adyen\PrestaShop\application\VersionChecker;
 use Adyen\PrestaShop\exception\ModuleValidationException;
 use Adyen\PrestaShop\helper\Data;
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
@@ -46,6 +47,11 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
     private $helperData;
 
     /**
+     * @var VersionChecker
+     */
+    private $versionChecker;
+
+    /**
      * AdminAdyenPrestashopCronController constructor.
      *
      * @throws CoreException|PrestaShopException
@@ -54,6 +60,7 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
     {
         $this->logger = ServiceLocator::get('Adyen\PrestaShop\service\Logger');
         $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
+        $this->versionChecker = ServiceLocator::get('Adyen\PrestaShop\application\VersionChecker');
 
         // Required to automatically call the renderView function
         $this->display = 'view';
@@ -62,7 +69,10 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
         parent::__construct();
 
         if ((string)Tools::getValue('validate')) {
-            if (!$this->validateModuleConfigs(Tools::getValue('shop')) || !$this->validateModuleTables()) {
+            if (!$this->validateModuleConfigs(Tools::getValue('shop')) ||
+                !$this->validateModuleTables() ||
+                !$this->validateModuleHooks()
+            ) {
                 // Exception must be thrown since any other return value will be overrided by prestashop
                 throw new ModuleValidationException();
             }
@@ -124,6 +134,31 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
         $responseTable = $this->helperData->tableExists('adyen_payment_response');
 
         return $notificationTable && $responseTable;
+    }
+
+    /**
+     * Validate that all hooks required by the module are correctly registered
+     *
+     * @return bool
+     */
+    private function validateModuleHooks()
+    {
+        $invalidHooks = array();
+        $version = $this->versionChecker->isPrestaShop16() ? '1.6' : '1.7';
+        $adyenHooks = AdyenOfficial::ADYEN_HOOKS[$version];
+        $moduleHooks = $this->module->getPossibleHooksList();
+
+        foreach ($adyenHooks as $adyenHook) {
+            $registeredAdyenHook = array_filter($moduleHooks, function ($moduleHook) use ($adyenHook) {
+                return $moduleHook['name'] === $adyenHook && $moduleHook['registered'] === true;
+            });
+            if (empty($registeredAdyenHook)) {
+                $invalidHooks[] = $adyenHook;
+                $this->logger->error(sprintf('%s hook is not registered', $adyenHook));
+            }
+        }
+
+        return empty($invalidHooks);
     }
 
     /**

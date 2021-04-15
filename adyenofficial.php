@@ -64,6 +64,24 @@ class AdyenOfficial extends PaymentModule
         'ADYEN_ENABLE_STORED_PAYMENT_METHODS'
     );
 
+    const ADYEN_HOOKS = array(
+        '1.6' => array(
+            'displayPaymentTop',
+            'payment',
+            'displayPaymentEU',
+            'paymentReturn',
+            'actionOrderSlipAdd',
+            'actionFrontControllerSetMedia'
+        ),
+        '1.7' => array(
+            'displayPaymentTop',
+            'actionFrontControllerSetMedia',
+            'paymentOptions',
+            'displayPaymentReturn',
+            'actionOrderSlipAdd'
+        )
+    );
+
     /**
      * @var string
      */
