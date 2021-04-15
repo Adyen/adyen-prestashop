@@ -27,7 +27,6 @@
 // phpcs:disable PSR1.Files.SideEffects, PSR1.Classes.ClassDeclaration
 
 use Adyen\PrestaShop\application\VersionChecker;
-use Adyen\PrestaShop\exception\ModuleValidationException;
 use Adyen\PrestaShop\helper\Data;
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use PrestaShop\PrestaShop\Adapter\CoreException;
@@ -99,29 +98,27 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
     /**
      * Called by PrestaShop 1.7
      *
-     * @throws ModuleValidationException
      * @throws PrestaShopException
      */
     public function displayAjaxGet()
     {
         $this->validate();
-        $this->ajaxRender(json_encode(['Hello' => 1]));
+        $this->ajaxRender();
     }
 
     /**
      * Called by Prestashop 1.6
      *
-     * @throws ModuleValidationException
      * @throws PrestaShopException
      */
     public function ajaxProcessget()
     {
         $this->validate();
-        $this->ajaxDie(json_encode(['Hello' => 1]));
+        $this->ajaxDie();
     }
 
     /**
-     * @throws ModuleValidationException
+     * Execute all validation functions. Set response code to 400 if one fails
      */
     private function validate()
     {
@@ -129,8 +126,7 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
             !$this->validateModuleTables() ||
             !$this->validateModuleHooks()
         ) {
-            // Exception must be thrown since any other return value will be overrided by prestashop
-            throw new ModuleValidationException();
+            http_response_code(400);
         }
     }
 
