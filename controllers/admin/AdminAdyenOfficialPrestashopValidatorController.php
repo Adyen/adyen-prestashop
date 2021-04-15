@@ -66,17 +66,8 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
         $this->display = 'view';
         $this->bootstrap = true;
         $this->toolbar_title[] = 'Validator';
-        parent::__construct();
 
-        if ((string)Tools::getValue('validate')) {
-            if (!$this->validateModuleConfigs(Tools::getValue('shop')) ||
-                !$this->validateModuleTables() ||
-                !$this->validateModuleHooks()
-            ) {
-                // Exception must be thrown since any other return value will be overrided by prestashop
-                throw new ModuleValidationException();
-            }
-        }
+        parent::__construct();
     }
 
     /**
@@ -103,6 +94,44 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
         );
 
         return $tpl->fetch();
+    }
+
+    /**
+     * Called by PrestaShop 1.7
+     *
+     * @throws ModuleValidationException
+     * @throws PrestaShopException
+     */
+    public function displayAjaxGet()
+    {
+        $this->validate();
+        $this->ajaxRender(json_encode(['Hello' => 1]));
+    }
+
+    /**
+     * Called by Prestashop 1.6
+     *
+     * @throws ModuleValidationException
+     * @throws PrestaShopException
+     */
+    public function ajaxProcessget()
+    {
+        $this->validate();
+        $this->ajaxDie(json_encode(['Hello' => 1]));
+    }
+
+    /**
+     * @throws ModuleValidationException
+     */
+    private function validate()
+    {
+        if (!$this->validateModuleConfigs(Tools::getValue('shop')) ||
+            !$this->validateModuleTables() ||
+            !$this->validateModuleHooks()
+        ) {
+            // Exception must be thrown since any other return value will be overrided by prestashop
+            throw new ModuleValidationException();
+        }
     }
 
     /**
@@ -146,7 +175,7 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
         $invalidHooks = array();
         $version = $this->versionChecker->isPrestaShop16() ? '1.6' : '1.7';
         $adyenHooks = AdyenOfficial::ADYEN_HOOKS[$version];
-        $moduleHooks = $this->module->getPossibleHooksList();
+        $moduleHooks = $this->getPossibleHooksList();
 
         foreach ($adyenHooks as $adyenHook) {
             $registeredAdyenHook = array_filter($moduleHooks, function ($moduleHook) use ($adyenHook) {
@@ -187,5 +216,37 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
         }
 
         return $shops;
+    }
+
+    /**
+     * Return the hooks list where this module can be hooked.
+     * Function is a copy of Module::getPossibleHooksList since on 1.6, the registered value is not passed
+     *
+     * TODO: Remove this once 1.6 support is terminated
+     *
+     * @return array hooks list
+     */
+    private function getPossibleHooksList()
+    {
+        $hooks_list = Hook::getHooks();
+        $possible_hooks_list = array();
+        $registeredHookList = Hook::getHookModuleList();
+        foreach ($hooks_list as &$current_hook) {
+            $hook_name = $current_hook['name'];
+            $retro_hook_name = Hook::getRetroHookName($hook_name);
+
+            if (is_callable(array($this->module, 'hook' . ucfirst($hook_name))) ||
+                is_callable(array($this->module, 'hook' . ucfirst($retro_hook_name)))) {
+                $possible_hooks_list[] = array(
+                    'id_hook' => $current_hook['id_hook'],
+                    'name' => $hook_name,
+                    'description' => $current_hook['description'],
+                    'title' => $current_hook['title'],
+                    'registered' => !empty($registeredHookList[$current_hook['id_hook']][$this->module->id]),
+                );
+            }
+        }
+
+        return $possible_hooks_list;
     }
 }

@@ -39,7 +39,10 @@
                             </select>
                         </div>
                     {/if}
-                    <input type="hidden" name="validate" value="1">
+                    {* Used by PrestaShop 1.6 *}
+                    <input type="hidden" name="ajax" value="1">
+                    {* Used by PrestaShop 1.7 *}
+                    <input type="hidden" name="action" value="get">
                     <button id="validateButton" type="submit" class="btn btn-primary-reverse btn-outline-primary">Validate</button>
                     <button id="loadingSpinner" class="btn-primary-reverse spinner"></button>
                 </form>
@@ -55,9 +58,14 @@
             const button = $('#validateButton');
             button.hide();
             spinner.show();
-            $.get($(this).attr('action'), $(this).serialize())
-                .done(function() {
-                    $.growl.notice({ title: "Success", message: "Adyen module successfully validated", duration: 5000});
+            $.ajax({
+                url: $(this).attr('action'),
+                data: $(this).serialize(),
+                headers: {
+                    Accept: "application/json",
+                }
+            }).done(function() {
+                $.growl.notice({ title: "Success", message: "Adyen module successfully validated", duration: 5000});
                 })
                 .error(function () {
                     $.growl.error({ title: "Error", message: "Please check the logs for more information.", duration: 5000});

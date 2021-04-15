@@ -67,9 +67,9 @@ class AdyenOfficial extends PaymentModule
     const ADYEN_HOOKS = array(
         '1.6' => array(
             'displayPaymentTop',
-            'payment',
+            'displayPayment',
             'displayPaymentEU',
-            'paymentReturn',
+            'displayPaymentReturn',
             'actionOrderSlipAdd',
             'actionFrontControllerSetMedia'
         ),
@@ -245,7 +245,7 @@ class AdyenOfficial extends PaymentModule
             return false;
         }
 
-        // Version 1.6
+        // Version 1.6 - Add new HOOKS in self::ADYEN_HOOKS
         if ($this->versionChecker->isPrestaShop16()) {
             if (parent::install() &&
                 $this->registerHook('displayPaymentTop') &&
@@ -266,7 +266,7 @@ class AdyenOfficial extends PaymentModule
             }
         }
 
-        // Version 1.7 or higher
+        // Version 1.7 or higher - Add new HOOKS in self::ADYEN_HOOKS
         if (parent::install() &&
             $this->registerHook('displayPaymentTop') &&
             $this->installTabs() &&
