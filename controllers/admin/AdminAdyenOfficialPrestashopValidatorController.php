@@ -181,10 +181,11 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
     private function validateModuleHooks()
     {
         $invalidHooks = array();
+        $allAdyenHooks = AdyenOfficial::getAdyenHooks();
         if ($this->versionChecker->isPrestaShop16()) {
-            $adyenHooks = AdyenOfficial::getAdyenHooks()['1.6'];
+            $adyenHooks = $allAdyenHooks['1.6'];
         } else {
-            $adyenHooks = AdyenOfficial::getAdyenHooks()['1.7'];
+            $adyenHooks = $allAdyenHooks['1.7'];
         }
 
         $moduleHooks = $this->getPossibleHooksList();
