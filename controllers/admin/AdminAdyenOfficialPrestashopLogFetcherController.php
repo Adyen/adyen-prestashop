@@ -70,13 +70,22 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
         $this->bootstrap = true;
         $this->toolbar_title[] = 'Logs';
         parent::__construct();
+    }
 
-        // Zip download is triggered when queryParameter contains the download string
+    /**
+     * Trigger zip download if param exists and exit
+     *
+     * @return bool|ObjectModel
+     */
+    public function postProcess()
+    {
         if ((string)Tools::getValue('download')) {
             $this->createCurrentApplicationInfoFile();
             $this->zipAndDownload(Tools::getValue('include-all'));
             exit;
         }
+
+        return parent::postProcess();
     }
 
     /**

@@ -251,7 +251,7 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
      * Return the hooks list where this module can be hooked.
      * Function is a copy of Module::getPossibleHooksList since on 1.6, the registered value is not passed
      *
-     * TODO: Remove this once 1.6 support is terminated
+     * TODO: Remove this when 1.6 support is dropped
      *
      * @return array hooks list
      */
