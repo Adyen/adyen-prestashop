@@ -82,6 +82,11 @@ class AdyenOfficial extends PaymentModule
         )
     );
 
+    const ADYEN_ORDER_STATE = array(
+        'ADYEN_OS_WAITING_FOR_PAYMENT',
+        'ADYEN_OS_PAYMENT_NEEDS_ATTENTION'
+    );
+
     /**
      * @var string
      */
@@ -415,6 +420,7 @@ class AdyenOfficial extends PaymentModule
 
     /**
      * Creates new order statuses for the Adyen payment methods and returns true in case of success
+     * Add new statuses in self::ADYEN_ORDER_STATE
      *
      * @return bool
      */

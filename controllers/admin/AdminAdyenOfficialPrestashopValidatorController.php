@@ -28,6 +28,7 @@
 
 use Adyen\PrestaShop\application\VersionChecker;
 use Adyen\PrestaShop\helper\Data;
+use Adyen\PrestaShop\service\adapter\classes\order\OrderStateAdapter;
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use PrestaShop\PrestaShop\Adapter\CoreException;
 
@@ -51,6 +52,11 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
     private $versionChecker;
 
     /**
+     * @var OrderStateAdapter $orderStateAdapter
+     */
+    private $orderStateAdapter;
+
+    /**
      * AdminAdyenPrestashopCronController constructor.
      *
      * @throws CoreException|PrestaShopException
@@ -60,6 +66,9 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
         $this->logger = ServiceLocator::get('Adyen\PrestaShop\service\Logger');
         $this->helperData = ServiceLocator::get('Adyen\PrestaShop\helper\Data');
         $this->versionChecker = ServiceLocator::get('Adyen\PrestaShop\application\VersionChecker');
+        $this->orderStateAdapter = ServiceLocator::get(
+            'Adyen\PrestaShop\service\adapter\classes\order\OrderStateAdapter'
+        );
 
         // Required to automatically call the renderView function
         $this->display = 'view';
@@ -122,7 +131,9 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
      */
     private function validate()
     {
-        if (!$this->validateModuleConfigs(Tools::getValue('shop')) ||
+        $shopId = Tools::getValue('shop');
+        if (!$this->validateModuleConfigs($shopId) ||
+            !$this->validateOrderStates($shopId) ||
             !$this->validateModuleTables() ||
             !$this->validateModuleHooks()
         ) {
@@ -133,9 +144,10 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
     /**
      * Validate that all adyen module configurations exist in the db. If passed, check only for that shop
      *
+     * @param int|false $shopId
      * @return bool
      */
-    private function validateModuleConfigs($shopId = null)
+    private function validateModuleConfigs($shopId)
     {
         $invalidConfigs = array();
         foreach (AdyenOfficial::ADYEN_CONFIG_NAMES as $key) {
@@ -184,6 +196,27 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
         }
 
         return empty($invalidHooks);
+    }
+
+    /**
+     * Validate that all order states required by the module have been added
+     *
+     * @param int|false $shopId
+     * @return bool
+     */
+    private function validateOrderStates($shopId)
+    {
+        $invalidOrderStates = array();
+        foreach (AdyenOfficial::ADYEN_ORDER_STATE as $orderStateName) {
+            $orderStateConfigurationId = Configuration::get($orderStateName, null, null, $shopId);
+            $orderState = $this->orderStateAdapter->getOrderStateById($orderStateConfigurationId);
+            if (empty($orderState)) {
+                $invalidOrderStates[] = $orderStateName;
+                $this->logger->error(sprintf('%s order state not found', $orderStateName));
+            }
+        }
+
+        return empty($invalidOrderStates);
     }
 
     /**
