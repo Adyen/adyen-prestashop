@@ -23,7 +23,7 @@
 <div class="container">
     <div class="row">
         <div class="col-lg-4 col-lg-offset-4">
-            <div class="log-container adyen">
+            <div class="validator-container adyen">
                 <img class="img-responsive logo" src="{$logo|escape:'html':'UTF-8'}" alt="logo">
                 <p>
                     Validate module installation. If an error occurs please consult the logs page by going to
