@@ -26,7 +26,8 @@
             <div class="log-container adyen">
                 <img class="img-responsive logo" src="{$logo|escape:'html':'UTF-8'}" alt="logo">
                 <p>
-                    Validate module installation. For more information, check out <a target="_blank" href="https://docs.adyen.com/plugins/prestashop#finding-the-logs">our docs</a>.
+                    Validate module installation. If an error occurs please consult the logs page by going to
+                    <b>Advanced Parameters</b> > <b>Logs</b>.
                 </p>
                 <form id="validateForm" action="{$validateUrl}" method="GET">
                     {if {$shops|@count > 1}}
@@ -65,7 +66,7 @@
                     Accept: "application/json",
                 }
             }).done(function() {
-                $.growl.notice({ title: "Success", message: "Adyen module successfully validated", duration: 5000});
+                $.growl.notice({ title: "Success", message: "Adyen module installation successfully validated", duration: 5000});
                 })
                 .error(function () {
                     $.growl.error({ title: "Error", message: "Please check the logs for more information.", duration: 5000});
