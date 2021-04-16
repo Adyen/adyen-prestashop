@@ -150,7 +150,7 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
     private function validateModuleConfigs($shopId)
     {
         $invalidConfigs = array();
-        foreach (AdyenOfficial::ADYEN_CONFIG_NAMES as $key) {
+        foreach (AdyenOfficial::getAdyenConfigNames() as $key) {
             if (!Configuration::hasKey($key, null, null, $shopId)) {
                 $invalidConfigs[] = $key;
                 $this->logger->error(sprintf('%s configuration not found in ps_configuration table', $key));
@@ -182,9 +182,9 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
     {
         $invalidHooks = array();
         if ($this->versionChecker->isPrestaShop16()) {
-            $adyenHooks = AdyenOfficial::ADYEN_HOOKS_16;
+            $adyenHooks = AdyenOfficial::getAdyenHooks()['1.6'];
         } else {
-            $adyenHooks = AdyenOfficial::ADYEN_HOOKS_17;
+            $adyenHooks = AdyenOfficial::getAdyenHooks()['1.7'];
         }
 
         $moduleHooks = $this->getPossibleHooksList();
@@ -211,7 +211,7 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
     private function validateOrderStates($shopId)
     {
         $invalidOrderStates = array();
-        foreach (AdyenOfficial::ADYEN_ORDER_STATE as $orderStateName) {
+        foreach (AdyenOfficial::getAdyenOrderStates() as $orderStateName) {
             $orderStateConfigurationId = Configuration::get($orderStateName, null, null, $shopId);
             $orderState = $this->orderStateAdapter->getOrderStateById($orderStateConfigurationId);
             if (empty($orderState)) {
