@@ -287,7 +287,10 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
      */
     private function getDownloadUrl()
     {
-        $adminUrl = Tools::getAdminUrl('admin-dev/index.php?controller=AdminAdyenOfficialPrestashopLogFetcher&token=');
+        $adminDir = substr(PS_ADMIN_DIR, strrpos(PS_ADMIN_DIR, '/') + 1);
+        $adminUrl = Tools::getAdminUrl(
+            $adminDir . '/index.php?controller=AdminAdyenOfficialPrestashopLogFetcher&token='
+        );
         $token = Tools::getAdminTokenLite('AdminAdyenOfficialPrestashopLogFetcher');
 
         return $adminUrl . $token;
