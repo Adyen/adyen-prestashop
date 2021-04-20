@@ -225,13 +225,16 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
     }
 
     /**
-     * Get the url accessed when the button is clicked, to download the zip file
+     * Get the url accessed when the button is clicked, to do the ajax call on this controller
      *
      * @return string
      */
     private function getValidateUrl()
     {
-        $adminUrl = Tools::getAdminUrl('admin-dev/index.php?controller=AdminAdyenOfficialPrestashopValidator&token=');
+        $adminDir = substr(PS_ADMIN_DIR, strrpos(PS_ADMIN_DIR, '/') + 1);
+        $adminUrl = Tools::getAdminUrl(
+            $adminDir . '/index.php?controller=AdminAdyenOfficialPrestashopValidator&token='
+        );
         $token = Tools::getAdminTokenLite('AdminAdyenOfficialPrestashopValidator');
 
         return $adminUrl . $token;
