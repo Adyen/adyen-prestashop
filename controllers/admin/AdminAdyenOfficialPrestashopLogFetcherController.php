@@ -68,15 +68,24 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
         // Required to automatically call the renderView function
         $this->display = 'view';
         $this->bootstrap = true;
-        $this->toolbar_title[] = 'Adyen Logs';
+        $this->toolbar_title[] = 'Logs';
         parent::__construct();
+    }
 
-        // Zip download is triggered when queryParameter contains the download string
+    /**
+     * Trigger zip download if param exists and exit
+     *
+     * @return bool|ObjectModel
+     */
+    public function postProcess()
+    {
         if ((string)Tools::getValue('download')) {
             $this->createCurrentApplicationInfoFile();
             $this->zipAndDownload(Tools::getValue('include-all'));
             exit;
         }
+
+        return parent::postProcess();
     }
 
     /**
@@ -278,7 +287,10 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
      */
     private function getDownloadUrl()
     {
-        $adminUrl = Tools::getAdminUrl('admin-dev/index.php?controller=AdminAdyenOfficialPrestashopLogFetcher&token=');
+        $adminDir = substr(PS_ADMIN_DIR, strrpos(PS_ADMIN_DIR, '/') + 1);
+        $adminUrl = Tools::getAdminUrl(
+            $adminDir . '/index.php?controller=AdminAdyenOfficialPrestashopLogFetcher&token='
+        );
         $token = Tools::getAdminTokenLite('AdminAdyenOfficialPrestashopLogFetcher');
 
         return $adminUrl . $token;
