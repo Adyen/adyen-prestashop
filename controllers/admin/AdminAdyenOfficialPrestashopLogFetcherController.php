@@ -158,7 +158,7 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
         foreach ($files as $filename => $file) {
             if (!$file->isDir()) {
                 $filePath = $file->getRealPath();
-                $relativePath = substr($filename, strlen($folder) + 1);
+                $relativePath = Tools::substr($filename, Tools::strlen($folder) + 1);
 
                 $zip->addFile($filePath, $relativePath);
             }
@@ -210,6 +210,7 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
      */
     private function getConfigurationValues()
     {
+        $configs = array();
         $configValues = "\n\nConfiguration values: \n";
         $configs['autoCronJobRunner'] = sprintf(
             "\nAuto cronjob runner: %s",
@@ -261,7 +262,7 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
         if (!empty($apiKeyTest)) {
             $configs['apiKeyTest'] = sprintf(
                 "\nApi key test last 4: %s",
-                substr($this->crypto->decrypt($apiKeyTest), -4)
+                Tools::substr($this->crypto->decrypt($apiKeyTest), -4)
             );
         }
 
@@ -269,7 +270,7 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
         if (!empty($apiKeyLive)) {
             $configs['apiKeyLive'] = sprintf(
                 "\nApi key live last 4: %s",
-                substr($this->crypto->decrypt($apiKeyLive), -4)
+                Tools::substr($this->crypto->decrypt($apiKeyLive), -4)
             );
         }
 
@@ -287,7 +288,7 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
      */
     private function getDownloadUrl()
     {
-        $adminDir = substr(PS_ADMIN_DIR, strrpos(PS_ADMIN_DIR, '/') + 1);
+        $adminDir = Tools::substr(PS_ADMIN_DIR, strrpos(PS_ADMIN_DIR, '/') + 1);
         $adminUrl = Tools::getAdminUrl(
             $adminDir . '/index.php?controller=AdminAdyenOfficialPrestashopLogFetcher&token='
         );

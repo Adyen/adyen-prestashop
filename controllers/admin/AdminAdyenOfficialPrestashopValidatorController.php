@@ -231,7 +231,7 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
      */
     private function getValidateUrl()
     {
-        $adminDir = substr(PS_ADMIN_DIR, strrpos(PS_ADMIN_DIR, '/') + 1);
+        $adminDir = Tools::substr(PS_ADMIN_DIR, strrpos(PS_ADMIN_DIR, '/') + 1);
         $adminUrl = Tools::getAdminUrl(
             $adminDir . '/index.php?controller=AdminAdyenOfficialPrestashopValidator&token='
         );
@@ -272,8 +272,8 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
             $hook_name = $current_hook['name'];
             $retro_hook_name = Hook::getRetroHookName($hook_name);
 
-            if (is_callable(array($this->module, 'hook' . ucfirst($hook_name))) ||
-                is_callable(array($this->module, 'hook' . ucfirst($retro_hook_name)))) {
+            if (is_callable(array($this->module, 'hook' . Tools::ucfirst($hook_name))) ||
+                is_callable(array($this->module, 'hook' . Tools::ucfirst($retro_hook_name)))) {
                 $possible_hooks_list[] = array(
                     'id_hook' => $current_hook['id_hook'],
                     'name' => $hook_name,
