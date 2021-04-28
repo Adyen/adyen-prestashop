@@ -36,6 +36,7 @@ use Adyen\PrestaShop\service\Logger;
 use Cart;
 use Country;
 use Currency;
+use Db;
 use Exception;
 use FileLogger;
 use Tools;
@@ -335,5 +336,26 @@ class Data
         }
 
         return 'module:adyenofficial/' . ltrim($templatePath, '/');
+    }
+
+    /**
+     * Execute basic SELECT statement. If table does not exist, catch exception and return false
+     *
+     * @param $tableName
+     * @return bool
+     *
+     */
+    public function tableExists($tableName)
+    {
+        $db = Db::getInstance();
+        $sql = 'SELECT * FROM ' . _DB_PREFIX_ . $tableName;
+        try {
+            $db->getValue($sql);
+        } catch (\Exception $e) {
+            $this->logger->error(sprintf('Table %s does not exist', _DB_PREFIX_ . $tableName));
+            return false;
+        }
+
+        return true;
     }
 }

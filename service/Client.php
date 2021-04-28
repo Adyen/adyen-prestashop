@@ -57,7 +57,7 @@ class Client extends \Adyen\Client
         } catch (GenericLoggedException $e) {
             $logger->error('For configuration "ADYEN_CRONJOB_TOKEN" an exception was thrown: ' . $e->getMessage());
         } catch (MissingDataException $e) {
-            $logger->debug('The API key configuration value is missing');
+            $logger->error('The API key configuration value is missing');
         }
 
         $this->setXApiKey($apiKey);

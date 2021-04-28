@@ -21,6 +21,65 @@
  * See the LICENSE file for more info.
  */
 
-.form-group input.adyen-input-green{
+.form-group input.adyen-input-green {
     border-color: rgba(20,255,20);
+}
+
+.log-container, .validator-container {
+    background-color: white;
+    text-align: center;
+    padding: 40px;
+}
+
+.log-container .logo, .validator-container .logo {
+    margin-bottom: 20px;
+}
+
+.adyen .btn-outline-primary {
+    color: #25b9d7;
+    background-color: transparent;
+    background-image: none;
+    border-color: #25b9d7;
+}
+
+.adyen .btn-outline-primary:hover {
+    color: #fff;
+    background-color: #3ed2f0;
+    border-color: #3ed2f0;
+}
+
+.adyen .btn {
+    border-width: 1px;
+    font-weight: 600;
+    border-radius: .063rem;
+    white-space: nowrap;
+    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+@keyframes rotating{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}
+
+button.spinner {
+    display: inline-block;
+    display:none;
+    color:#fff;
+    background-color:#fff;
+    width:40px;
+    width:2.5rem;
+    height:40px;
+    height:2.5rem;
+    border-radius:2.5rem;
+    border-right-color:#25b9d7;
+    border-bottom-color:#25b9d7;
+    border-width:3px;
+    border-width:.1875rem;
+    border-style:solid;
+    font-size:0;
+    outline:none;
+    border-left-color:#bbcdd2;
+    border-top-color:#bbcdd2;
+    animation: rotating 2s linear infinite;
+}
+
+.adyen .btn-primary-reverse {
+    min-height: 40px;
 }

@@ -115,7 +115,7 @@ class AdyenOfficial extends PaymentModule
     public function __construct()
     {
         $this->name = 'adyenofficial';
-        $this->version = '3.4.0';
+        $this->version = '3.5.0';
         $this->tab = 'payments_gateways';
         $this->author = 'Adyen';
         $this->bootstrap = true;
@@ -185,6 +185,71 @@ class AdyenOfficial extends PaymentModule
     }
 
     /**
+     * @return string[]
+     */
+    public static function getAdyenConfigNames()
+    {
+        return array(
+            'CONF_ADYENOFFICIAL_FIXED',
+            'CONF_ADYENOFFICIAL_VAR',
+            'CONF_ADYENOFFICIAL_FIXED_FOREIGN',
+            'CONF_ADYENOFFICIAL_VAR_FOREIGN',
+            'ADYEN_MERCHANT_ACCOUNT',
+            'ADYEN_INTEGRATOR_NAME',
+            'ADYEN_MODE',
+            'ADYEN_NOTI_USERNAME',
+            'ADYEN_NOTI_PASSWORD',
+            'ADYEN_APIKEY_TEST',
+            'ADYEN_APIKEY_LIVE',
+            'ADYEN_CLIENTKEY_TEST',
+            'ADYEN_CLIENTKEY_LIVE',
+            'ADYEN_NOTI_HMAC',
+            'ADYEN_LIVE_ENDPOINT_URL_PREFIX',
+            'ADYEN_CRONJOB_TOKEN',
+            'ADYEN_APPLE_PAY_MERCHANT_NAME',
+            'ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER',
+            'ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID',
+            'ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER',
+            'ADYEN_PAYMENT_DISPLAY_COLLAPSE',
+            'ADYEN_AUTO_CRON_JOB_RUNNER',
+            'ADYEN_ADMIN_PATH',
+            'ADYEN_ENABLE_STORED_PAYMENT_METHODS'
+        );
+    }
+
+    /**
+     * @return string[][]
+     */
+    public static function getAdyenHooks()
+    {
+        return array(
+            '1.6' => array(
+                'displayPaymentTop',
+                'displayPayment',
+                'displayPaymentEU',
+                'displayPaymentReturn',
+                'actionOrderSlipAdd',
+                'actionFrontControllerSetMedia'
+            ),
+            '1.7' => array(
+                'displayPaymentTop',
+                'actionFrontControllerSetMedia',
+                'paymentOptions',
+                'displayPaymentReturn',
+                'actionOrderSlipAdd'
+            )
+        );
+    }
+
+    public static function getAdyenOrderStates()
+    {
+        return array(
+            'ADYEN_OS_WAITING_FOR_PAYMENT',
+            'ADYEN_OS_PAYMENT_NEEDS_ATTENTION'
+        );
+    }
+
+    /**
      * Install script
      *
      * This function is called when
@@ -200,7 +265,7 @@ class AdyenOfficial extends PaymentModule
             return false;
         }
 
-        // Version 1.6
+        // Version 1.6 - Add new HOOKS in self::getAdyenHooks
         if ($this->versionChecker->isPrestaShop16()) {
             if (parent::install() &&
                 $this->registerHook('displayPaymentTop') &&
@@ -209,22 +274,22 @@ class AdyenOfficial extends PaymentModule
                 $this->registerHook('paymentReturn') &&
                 $this->registerHook('actionOrderSlipAdd') &&
                 $this->registerHook('actionFrontControllerSetMedia') &&
-                $this->installTab() &&
+                $this->installTabs() &&
                 $this->createDefaultConfigurations() &&
                 $this->createAdyenOrderStatuses() &&
                 $this->createAdyenDatabaseTables()
             ) {
                 return true;
             } else {
-                $this->logger->debug('Adyen module: installation failed!');
+                $this->logger->critical('Adyen module: installation failed!');
                 return false;
             }
         }
 
-        // Version 1.7 or higher
+        // Version 1.7 or higher - Add new HOOKS in self::getAdyenHooks
         if (parent::install() &&
             $this->registerHook('displayPaymentTop') &&
-            $this->installTab() &&
+            $this->installTabs() &&
             $this->registerHook('actionFrontControllerSetMedia') &&
             $this->registerHook('paymentOptions') &&
             $this->registerHook('paymentReturn') &&
@@ -235,7 +300,7 @@ class AdyenOfficial extends PaymentModule
         ) {
             return true;
         } else {
-            $this->logger->debug('Adyen module: installation failed!');
+            $this->logger->critical('Adyen module: installation failed!');
             return false;
         }
     }
@@ -272,7 +337,7 @@ class AdyenOfficial extends PaymentModule
     public function uninstall()
     {
         return parent::uninstall() &&
-            $this->uninstallTab() &&
+            $this->uninstallTabs() &&
             $this->removeAdyenDatabaseTables() &&
             $this->removeConfigurationsFromDatabase();
     }
@@ -290,7 +355,7 @@ class AdyenOfficial extends PaymentModule
             $this->updateCronJobToken()) {
             return true;
         } else {
-            $this->logger->debug('Adyen module: reset failed!');
+            $this->logger->error('Adyen module: reset failed!');
             return false;
         }
     }
@@ -370,6 +435,7 @@ class AdyenOfficial extends PaymentModule
 
     /**
      * Creates new order statuses for the Adyen payment methods and returns true in case of success
+     * Add new statuses in self::ADYEN_ORDER_STATE
      *
      * @return bool
      */
@@ -523,38 +589,11 @@ class AdyenOfficial extends PaymentModule
      */
     private function removeConfigurationsFromDatabase()
     {
-        $adyenConfigurationNames = array(
-            'CONF_ADYENOFFICIAL_FIXED',
-            'CONF_ADYENOFFICIAL_VAR',
-            'CONF_ADYENOFFICIAL_FIXED_FOREIGN',
-            'CONF_ADYENOFFICIAL_VAR_FOREIGN',
-            'ADYEN_MERCHANT_ACCOUNT',
-            'ADYEN_INTEGRATOR_NAME',
-            'ADYEN_MODE',
-            'ADYEN_NOTI_USERNAME',
-            'ADYEN_NOTI_PASSWORD',
-            'ADYEN_APIKEY_TEST',
-            'ADYEN_APIKEY_LIVE',
-            'ADYEN_CLIENTKEY_TEST',
-            'ADYEN_CLIENTKEY_LIVE',
-            'ADYEN_NOTI_HMAC',
-            'ADYEN_LIVE_ENDPOINT_URL_PREFIX',
-            'ADYEN_CRONJOB_TOKEN',
-            'ADYEN_APPLE_PAY_MERCHANT_NAME',
-            'ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER',
-            'ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID',
-            'ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER',
-            'ADYEN_PAYMENT_DISPLAY_COLLAPSE',
-            'ADYEN_AUTO_CRON_JOB_RUNNER',
-            'ADYEN_ADMIN_PATH',
-            'ADYEN_ENABLE_STORED_PAYMENT_METHODS'
-        );
-
         $result = true;
 
-        foreach ($adyenConfigurationNames as $adyenConfigurationName) {
+        foreach (self::getAdyenConfigNames() as $adyenConfigurationName) {
             if (!Configuration::deleteByName($adyenConfigurationName)) {
-                $this->logger->debug("Configuration couldn't be deleted by name: " . $adyenConfigurationName);
+                $this->logger->warning("Configuration couldn't be deleted by name: " . $adyenConfigurationName);
                 $result = false;
             }
         }
@@ -565,22 +604,79 @@ class AdyenOfficial extends PaymentModule
     /**
      * @return bool true if tab is installed
      */
-    public function installTab()
+    public function installTabs()
     {
         try {
-            $tab = new Tab();
-            $tab->id_parent = -1; // invisible tab
-            $tab->active = 1;
-            $tab->name = array();
+            // Invisible cron tab
+            $cronTab = new Tab();
+            $cronTab->id_parent = -1;
+            $cronTab->active = 1;
+            $cronTab->name = array();
             foreach (Language::getLanguages(true) as $lang) {
-                $tab->name[$lang['id_lang']] = 'Adyen Prestashop Cron';
+                $cronTab->name[$lang['id_lang']] = 'Adyen Prestashop Cron';
             }
-            $tab->class_name = 'AdminAdyenOfficialPrestashopCron';
-            $tab->module = $this->name;
-            return $tab->add();
+            $cronTab->class_name = 'AdminAdyenOfficialPrestashopCron';
+            $cronTab->module = $this->name;
+            $cronTabResult = $cronTab->add();
+
+
+            // If presta v1.7 create new empty parent tab
+            if (!$this->versionChecker->isPrestaShop16()) {
+                // Parent adyen tab
+                $adyenTab = new Tab();
+                $adyenTab->id_parent = (int)Tab::getIdFromClassName('AdminParentModulesSf');
+                $adyenTab->active = 1;
+                $adyenTab->name = array();
+                foreach (Language::getLanguages() as $lang) {
+                    $adyenTab->name[$lang['id_lang']] = 'Adyen Module';
+                }
+                $adyenTab->class_name = 'AdminAdyenOfficialPrestashop';
+                $adyenTab->module = $this->name;
+                $adyenTabResult = $adyenTab->add();
+                $parentTab = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashop');
+                $namePrefix = '';
+            } else {
+                $adyenTabResult = true;
+                $parentTab = (int)Tab::getIdFromClassName('AdminParentModules');
+                $namePrefix = 'Adyen ';
+            }
+
+            // Log tab
+            $logTab = new Tab();
+            $logTab->id_parent = $parentTab;
+            $logTab->active = 1;
+            $logTab->name = array();
+            foreach (Language::getLanguages() as $lang) {
+                $logTab->name[$lang['id_lang']] = $namePrefix . 'Logs';
+            }
+            $logTab->class_name = 'AdminAdyenOfficialPrestashopLogFetcher';
+            $logTab->module = $this->name;
+            $logTabResult = $logTab->add();
+
+            // Validator tab
+            $validatorTab = new Tab();
+            $validatorTab->id_parent = $parentTab;
+            $validatorTab->active = 1;
+            $validatorTab->name = array();
+            foreach (Language::getLanguages() as $lang) {
+                $validatorTab->name[$lang['id_lang']] = $namePrefix . 'Validator';
+            }
+            $validatorTab->class_name = 'AdminAdyenOfficialPrestashopValidator';
+            $validatorTab->module = $this->name;
+            $validatorTabResult = $validatorTab->add();
+
+            return $cronTabResult && $logTabResult && $adyenTabResult && $validatorTabResult;
         } catch (PrestaShopDatabaseException $e) {
+            $this->logger->error(
+                'Database exception thrown during tab installation: ' . $e->getMessage()
+            );
+
             return false;
         } catch (PrestaShopException $e) {
+            $this->logger->error(
+                'PrestaShop exception thrown during tab installation: ' . $e->getMessage()
+            );
+
             return false;
         }
     }
@@ -588,20 +684,45 @@ class AdyenOfficial extends PaymentModule
     /**
      * @return bool
      */
-    public function uninstallTab()
+    public function uninstallTabs()
     {
+        $cronTabDelete = false;
+        $logFetcherTabDelete = false;
+        $adyenTabDelete = false;
+
         try {
-            $id_tab = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashopCron');
-            if ($id_tab) {
-                $tab = new Tab($id_tab);
-                return $tab->delete();
+            $cronTabId = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashopCron');
+            $logFetcherTabId = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashopLogFetcher');
+            $adyenTabId = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashop');
+            if ($cronTabId) {
+                $cronTab = new Tab($cronTabId);
+                $cronTabDelete = $cronTab->delete();
             }
+
+            if ($logFetcherTabId) {
+                $logFetcherTab = new Tab($logFetcherTabId);
+                $logFetcherTabDelete = $logFetcherTab->delete();
+            }
+
+            if ($adyenTabId) {
+                $adyenTab = new Tab($adyenTabId);
+                $adyenTabDelete = $adyenTab->delete();
+            }
+
+            return $cronTabDelete && $logFetcherTabDelete && $adyenTabDelete;
         } catch (PrestaShopDatabaseException $e) {
+            $this->logger->error(
+                'Database exception thrown during tab uninstall: ' . $e->getMessage()
+            );
+
             return false;
         } catch (PrestaShopException $e) {
+            $this->logger->error(
+                'PrestaShop exception thrown during tab uninstall: ' . $e->getMessage()
+            );
+
             return false;
         }
-        return false;
     }
 
 
@@ -824,7 +945,7 @@ class AdyenOfficial extends PaymentModule
                 'For configuration "ADYEN_NOTI_PASSWORD" an exception was thrown: ' . $e->getMessage()
             );
         } catch (\Adyen\PrestaShop\exception\MissingDataException $e) {
-            $this->logger->debug(
+            $this->logger->error(
                 'The configuration "ADYEN_NOTI_PASSWORD" has no value set, please add the notification password!'
             );
         }
@@ -849,7 +970,7 @@ class AdyenOfficial extends PaymentModule
         } catch (\Adyen\PrestaShop\exception\GenericLoggedException $e) {
             $this->logger->error('For configuration "ADYEN_NOTI_HMAC" an exception was thrown: ' . $e->getMessage());
         } catch (\Adyen\PrestaShop\exception\MissingDataException $e) {
-            $this->logger->debug('The configuration "ADYEN_NOTI_HMAC" has no value set, please add the HMAC key!');
+            $this->logger->error('The configuration "ADYEN_NOTI_HMAC" has no value set, please add the HMAC key!');
         }
 
         $fields_form[0]['form']['input'][] = array(
@@ -874,7 +995,7 @@ class AdyenOfficial extends PaymentModule
                 'For configuration "ADYEN_CRONJOB_TOKEN" an exception was thrown: ' . $e->getMessage()
             );
         } catch (\Adyen\PrestaShop\exception\MissingDataException $e) {
-            $this->logger->debug(
+            $this->logger->warning(
                 'The configuration "ADYEN_CRONJOB_TOKEN" has no value set, please add a secure token!'
             );
         }
@@ -931,7 +1052,7 @@ class AdyenOfficial extends PaymentModule
                 'For configuration "ADYEN_APIKEY_TEST" an exception was thrown: ' . $e->getMessage()
             );
         } catch (\Adyen\PrestaShop\exception\MissingDataException $e) {
-            $this->logger->debug('The configuration "ADYEN_APIKEY_TEST" has no value set.');
+            $this->logger->warning('The configuration "ADYEN_APIKEY_TEST" has no value set.');
         }
 
         $apiKeyTestLastDigits = Tools::substr($apiKeyTest, -4);
@@ -958,7 +1079,7 @@ class AdyenOfficial extends PaymentModule
                 'For configuration "ADYEN_APIKEY_LIVE" an exception was thrown: ' . $e->getMessage()
             );
         } catch (\Adyen\PrestaShop\exception\MissingDataException $e) {
-            $this->logger->debug('The configuration "ADYEN_APIKEY_LIVE" has no value set.');
+            $this->logger->warning('The configuration "ADYEN_APIKEY_LIVE" has no value set.');
         }
 
         $apiKeyLiveLastDigits = Tools::substr($apiKeyLive, -4);
