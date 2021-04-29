@@ -236,7 +236,8 @@ class AdyenOfficial extends PaymentModule
                 'actionFrontControllerSetMedia',
                 'paymentOptions',
                 'displayPaymentReturn',
-                'actionOrderSlipAdd'
+                'actionOrderSlipAdd',
+                'actionEmailSendBefore'
             )
         );
     }
@@ -294,6 +295,7 @@ class AdyenOfficial extends PaymentModule
             $this->registerHook('paymentOptions') &&
             $this->registerHook('paymentReturn') &&
             $this->registerHook('actionOrderSlipAdd') &&
+            $this->registerHook('actionEmailSendBefore') &&
             $this->createDefaultConfigurations() &&
             $this->createAdyenOrderStatuses() &&
             $this->createAdyenDatabaseTables()
@@ -1696,6 +1698,25 @@ class AdyenOfficial extends PaymentModule
             );
             return false;
         }
+    }
+
+    /**
+     * Do not send order_conf email if order is currently in Waiting for Payment status
+     * Only used in 1.7
+     *
+     * @param $params
+     * @return bool
+     */
+    public function hookActionEmailSendBefore($params)
+    {
+        if($params['template'] === 'order_conf' &&
+            array_key_exists('orderStatusId', $params['templateVars']) &&
+            $params['templateVars']['orderStatusId'] === \Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT')
+        ) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
