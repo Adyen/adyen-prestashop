@@ -50,8 +50,8 @@ class OrderHistory extends OrderHistoryCore
             '{firstname}' => $context->customer->firstname,
             '{lastname}' => $context->customer->lastname,
             '{email}' => $context->customer->email,
-            '{delivery_block_txt}' => $this->_getFormatedAddress($delivery, AddressFormat::FORMAT_NEW_LINE),
-            '{invoice_block_txt}' => $this->_getFormatedAddress($invoice, AddressFormat::FORMAT_NEW_LINE),
+            '{delivery_block_txt}' => $this->_getFormatedAddress($delivery, "\n"),
+            '{invoice_block_txt}' => $this->_getFormatedAddress($invoice, "\n"),
             '{delivery_block_html}' => $this->_getFormatedAddress($delivery, '<br />', array(
                 'firstname' => '<span style="font-weight:bold;">%s</span>',
                 'lastname' => '<span style="font-weight:bold;">%s</span>',
