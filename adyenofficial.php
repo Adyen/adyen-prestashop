@@ -278,7 +278,8 @@ class AdyenOfficial extends PaymentModule
                 $this->installTabs() &&
                 $this->createDefaultConfigurations() &&
                 $this->createAdyenOrderStatuses() &&
-                $this->createAdyenDatabaseTables()
+                $this->createAdyenDatabaseTables() &&
+                $this->copyEmailTemplates()
             ) {
                 return true;
             } else {
@@ -298,7 +299,8 @@ class AdyenOfficial extends PaymentModule
             $this->registerHook('actionEmailSendBefore') &&
             $this->createDefaultConfigurations() &&
             $this->createAdyenOrderStatuses() &&
-            $this->createAdyenDatabaseTables()
+            $this->createAdyenDatabaseTables() &&
+            $this->copyEmailTemplates()
         ) {
             return true;
         } else {
@@ -328,6 +330,61 @@ class AdyenOfficial extends PaymentModule
     }
 
     /**
+     * Copy waiting_for_payment email template to all /mails/ subdirectories
+     *
+     * @return bool
+     */
+    private function copyEmailTemplates()
+    {
+        $allDirectories = true;
+        $mailsDirectory = _PS_ROOT_DIR_.'/mails/';
+        $adyenEmailDirectory = __DIR__ . '/views/templates/email/';
+        if ($handle = opendir($mailsDirectory)) {
+            while (false !== ($entry = readdir($handle))) {
+                $languageDirectory = $mailsDirectory . $entry;
+                if (is_dir($languageDirectory)) {
+                    $adyenHtmlFile = $adyenEmailDirectory . 'waiting_for_payment.html';
+                    $adyenTxtFile = $adyenEmailDirectory . 'waiting_for_payment.txt';
+                    if (!copy($adyenHtmlFile, $languageDirectory . '/waiting_for_payment.html') || !copy
+                        ($adyenTxtFile, $languageDirectory . '/waiting_for_payment.txt')) {
+                        $this->logger->error(sprintf(
+                            'Unable to copy email template to directory: %s', $languageDirectory)
+                        );
+                        $allDirectories = false;
+                    }
+                }
+            }
+        }
+
+        return $allDirectories;
+    }
+
+    /**
+     * Remove waiting_for_payment email template from all /mails/ subdirectories
+     *
+     * @return bool
+     */
+    private function removeCopiedEmailTemplates()
+    {
+        $mailsDirectory = _PS_ROOT_DIR_.'/mails/';
+        if ($handle = opendir($mailsDirectory)) {
+            while (false !== ($entry = readdir($handle))) {
+                $languageDirectory = $mailsDirectory . $entry;
+                if (is_dir($languageDirectory)) {
+                    if (file_exists($languageDirectory . '/waiting_for_payment.html')) {
+                        unlink($languageDirectory . '/waiting_for_payment.html');
+                    }
+                    if (file_exists($languageDirectory . '/waiting_for_payment.txt')) {
+                        unlink($languageDirectory . '/waiting_for_payment.txt');
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Uninstall script
      *
      * This function is called when
@@ -341,7 +398,8 @@ class AdyenOfficial extends PaymentModule
         return parent::uninstall() &&
             $this->uninstallTabs() &&
             $this->removeAdyenDatabaseTables() &&
-            $this->removeConfigurationsFromDatabase();
+            $this->removeConfigurationsFromDatabase() &&
+            $this->removeCopiedEmailTemplates();
     }
 
     /**
