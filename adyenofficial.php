@@ -334,7 +334,7 @@ class AdyenOfficial extends PaymentModule
      *
      * @return bool
      */
-    private function copyEmailTemplates()
+    public function copyEmailTemplates()
     {
         $allDirectories = true;
         $mailsDirectory = _PS_ROOT_DIR_.'/mails/';
