@@ -210,7 +210,6 @@ class AdyenOfficial extends PaymentModule
             'ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER',
             'ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID',
             'ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER',
-            'ADYEN_PAYMENT_DISPLAY_COLLAPSE',
             'ADYEN_AUTO_CRON_JOB_RUNNER',
             'ADYEN_ADMIN_PATH',
             'ADYEN_ENABLE_STORED_PAYMENT_METHODS'
@@ -754,6 +753,7 @@ class AdyenOfficial extends PaymentModule
             $cronTabId = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashopCron');
             $logFetcherTabId = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashopLogFetcher');
             $adyenTabId = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashop');
+            $validatorTabId = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashopValidator');
             if ($cronTabId) {
                 $cronTab = new Tab($cronTabId);
                 $cronTabDelete = $cronTab->delete();
@@ -769,7 +769,12 @@ class AdyenOfficial extends PaymentModule
                 $adyenTabDelete = $adyenTab->delete();
             }
 
-            return $cronTabDelete && $logFetcherTabDelete && $adyenTabDelete;
+            if ($validatorTabId) {
+                $validatorTab = new Tab($validatorTabId);
+                $validatorTabDelete = $validatorTab->delete();
+            }
+
+            return $cronTabDelete && $logFetcherTabDelete && $adyenTabDelete && $validatorTabDelete;
         } catch (PrestaShopDatabaseException $e) {
             $this->logger->error(
                 'Database exception thrown during tab uninstall: ' . $e->getMessage()

@@ -54,45 +54,60 @@ function install_new_tabs(AdyenOfficial $module)
         $namePrefix = 'Adyen ';
         $adyenTabResult = true;
     } else {
-        // Parent adyen tab
-        $adyenTab = new Tab();
-        $adyenTab->id_parent = (int)Tab::getIdFromClassName('AdminParentModulesSf');
-        $adyenTab->active = 1;
-        $adyenTab->name = array();
-        foreach (Language::getLanguages() as $lang) {
-            $adyenTab->name[$lang['id_lang']] = 'Adyen Module';
-        }
-        $adyenTab->class_name = 'AdminAdyenOfficialPrestashop';
-        $adyenTab->module = $module->name;
-
-        $adyenTabResult = $adyenTab->add();
         $parentTab = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashop');
+        if (!$parentTab) {
+            // Parent adyen tab
+            $adyenTab = new Tab();
+            $adyenTab->id_parent = (int)Tab::getIdFromClassName('AdminParentModulesSf');
+            $adyenTab->active = 1;
+            $adyenTab->name = array();
+            foreach (Language::getLanguages() as $lang) {
+                $adyenTab->name[$lang['id_lang']] = 'Adyen Module';
+            }
+            $adyenTab->class_name = 'AdminAdyenOfficialPrestashop';
+            $adyenTab->module = $module->name;
+
+            $adyenTabResult = $adyenTab->add();
+            $parentTab = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashop');
+        } else {
+            $adyenTabResult = true;
+        }
         $namePrefix = '';
     }
 
-    // Log tab
-    $logTab = new Tab();
-    $logTab->id_parent = $parentTab;
-    $logTab->active = 1;
-    $logTab->name = array();
-    foreach (Language::getLanguages() as $lang) {
-        $logTab->name[$lang['id_lang']] = $namePrefix . 'Logs';
+    $logFetcherTabId = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashopLogFetcher');
+    if (!$logFetcherTabId) {
+        // Log tab
+        $logTab = new Tab();
+        $logTab->id_parent = $parentTab;
+        $logTab->active = 1;
+        $logTab->name = array();
+        foreach (Language::getLanguages() as $lang) {
+            $logTab->name[$lang['id_lang']] = $namePrefix . 'Logs';
+        }
+        $logTab->class_name = 'AdminAdyenOfficialPrestashopLogFetcher';
+        $logTab->module = $module->name;
+        $logTabResult = $logTab->add();
+    } else {
+        $logTabResult = true;
     }
-    $logTab->class_name = 'AdminAdyenOfficialPrestashopLogFetcher';
-    $logTab->module = $module->name;
-    $logTabResult = $logTab->add();
 
-    // Validator tab
-    $validatorTab = new Tab();
-    $validatorTab->id_parent = $parentTab;
-    $validatorTab->active = 1;
-    $validatorTab->name = array();
-    foreach (Language::getLanguages() as $lang) {
-        $validatorTab->name[$lang['id_lang']] = $namePrefix . 'Validator';
+    $validatorTabId = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashopValidator');
+    if (!$validatorTabId) {
+        // Validator tab
+        $validatorTab = new Tab();
+        $validatorTab->id_parent = $parentTab;
+        $validatorTab->active = 1;
+        $validatorTab->name = array();
+        foreach (Language::getLanguages() as $lang) {
+            $validatorTab->name[$lang['id_lang']] = $namePrefix . 'Validator';
+        }
+        $validatorTab->class_name = 'AdminAdyenOfficialPrestashopValidator';
+        $validatorTab->module = $module->name;
+        $validatorTabResult = $validatorTab->add();
+    } else {
+        $validatorTabResult = true;
     }
-    $validatorTab->class_name = 'AdminAdyenOfficialPrestashopValidator';
-    $validatorTab->module = $module->name;
-    $validatorTabResult = $validatorTab->add();
 
     return $logTabResult && $adyenTabResult && $validatorTabResult;
 }
