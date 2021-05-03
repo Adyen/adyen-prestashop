@@ -211,10 +211,10 @@ class Logger extends \Monolog\Logger
      * @param array $context The log context
      * @return Boolean Whether the record has been processed
      */
-    public function addRecord($level, $message, array $context = array())
+    public function addRecord($level, $message, array $context = array(), $callPrestaShopLogger = true)
     {
         $context['is_exception'] = $message instanceof \Exception;
-        if (array_key_exists($level, self::$prestashopLoggable)) {
+        if (array_key_exists($level, self::$prestashopLoggable) && $callPrestaShopLogger) {
             \PrestaShopLogger::addLog(
                 $message,
                 self::$prestashopLoggable[$level],

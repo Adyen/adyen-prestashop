@@ -52,12 +52,22 @@ class Client extends \Adyen\Client
 
         $apiKey = '';
 
+        // Do not call PrestaShop logger if this fails.
+        // See https://github.com/PrestaShop/PrestaShop/issues/24302 for more info
         try {
             $apiKey = $crypto->decrypt($configuration->encryptedApiKey);
         } catch (GenericLoggedException $e) {
-            $logger->error('For configuration "ADYEN_CRONJOB_TOKEN" an exception was thrown: ' . $e->getMessage());
+            $logger->addRecord(Logger::ERROR,
+                'For configuration "ADYEN_CRONJOB_TOKEN" an exception was thrown: ' . $e->getMessage(),
+                array(),
+                false
+            );
         } catch (MissingDataException $e) {
-            $logger->error('The API key configuration value is missing');
+            $logger->addRecord(Logger::ERROR,
+                'The API key configuration value is missing',
+                array(),
+                false
+            );
         }
 
         $this->setXApiKey($apiKey);
