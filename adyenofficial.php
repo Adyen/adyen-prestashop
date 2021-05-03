@@ -745,9 +745,11 @@ class AdyenOfficial extends PaymentModule
      */
     public function uninstallTabs()
     {
+        // If on 1.6 ignore this by setting it to true automatically
+        $adyenTabDelete = $this->versionChecker->isPrestaShop16() ? true : false;
         $cronTabDelete = false;
         $logFetcherTabDelete = false;
-        $adyenTabDelete = false;
+        $validatorTabDelete = false;
 
         try {
             $cronTabId = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashopCron');
