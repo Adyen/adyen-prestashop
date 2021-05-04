@@ -345,10 +345,11 @@ class AdyenOfficial extends PaymentModule
                 if (is_dir($languageDirectory)) {
                     $adyenHtmlFile = $adyenEmailDirectory . 'waiting_for_payment.html';
                     $adyenTxtFile = $adyenEmailDirectory . 'waiting_for_payment.txt';
-                    if (!copy($adyenHtmlFile, $languageDirectory . '/waiting_for_payment.html') || !copy
-                        ($adyenTxtFile, $languageDirectory . '/waiting_for_payment.txt')) {
-                        $this->logger->error(sprintf(
-                            'Unable to copy email template to directory: %s', $languageDirectory)
+                    if (!copy($adyenHtmlFile, $languageDirectory . '/waiting_for_payment.html') ||
+                        !copy($adyenTxtFile, $languageDirectory . '/waiting_for_payment.txt')
+                    ) {
+                        $this->logger->error(
+                            sprintf('Unable to copy email template to directory: %s', $languageDirectory)
                         );
                         $allDirectories = false;
                     }
@@ -1775,7 +1776,7 @@ class AdyenOfficial extends PaymentModule
      */
     public function hookActionEmailSendBefore($params)
     {
-        if($params['template'] === 'order_conf' &&
+        if ($params['template'] === 'order_conf' &&
             array_key_exists('orderStatusId', $params['templateVars']) &&
             $params['templateVars']['orderStatusId'] === \Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT')
         ) {

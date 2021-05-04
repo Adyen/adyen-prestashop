@@ -22,20 +22,21 @@
  * See the LICENSE file for more info.
  */
 
+/** @noinspection PhpFullyQualifiedNameUsageInspection */
 class OrderHistory extends OrderHistoryCore
 {
 
-	/**
+    /**
      * This function will ensure that all template variables sent to the order_conf template, are usable in all other
      * email templates
      *
-	 * @param bool $autodate Optional
-	 * @param array $template_vars Optional
-	 * @param Context $context Optional
-	 * @return bool
-	 */
-	public function addWithemail($autodate = true, $template_vars = false, Context $context = null)
-	{
+     * @param bool $autodate
+     * @param array $template_vars
+     * @param Context|null $context
+     * @return bool
+     */
+    public function addWithemail($autodate = true, $template_vars = false, Context $context = null)
+    {
         // Order is reloaded because the status just changed
         $order = new Order($this->id_order);
         $context = Context::getContext();
@@ -50,9 +51,9 @@ class OrderHistory extends OrderHistoryCore
             '{firstname}' => $context->customer->firstname,
             '{lastname}' => $context->customer->lastname,
             '{email}' => $context->customer->email,
-            '{delivery_block_txt}' => $this->_getFormatedAddress($delivery, "\n"),
-            '{invoice_block_txt}' => $this->_getFormatedAddress($invoice, "\n"),
-            '{delivery_block_html}' => $this->_getFormatedAddress($delivery, '<br />', array(
+            '{delivery_block_txt}' => $this->getFormatedAddress($delivery, "\n"),
+            '{invoice_block_txt}' => $this->getFormatedAddress($invoice, "\n"),
+            '{delivery_block_html}' => $this->getFormatedAddress($delivery, '<br />', array(
                 'firstname' => '<span style="font-weight:bold;">%s</span>',
                 'lastname' => '<span style="font-weight:bold;">%s</span>',
             )),
@@ -85,16 +86,22 @@ class OrderHistory extends OrderHistoryCore
             '{invoice_other}' => $invoice->other,
             '{order_name}' => $order->getUniqReference(),
             '{date}' => Tools::displayDate(date('Y-m-d H:i:s'), null, 1),
-            '{carrier}' => ($order->isVirtual() || !isset($carrier->name)) ? $this->trans('No carrier', array(), 'Admin.Payment.Notification') : $carrier->name,
+            '{carrier}' => ($order->isVirtual() || !isset($carrier->name)) ?
+                $this->trans('No carrier', array(), 'Admin.Payment.Notification') : $carrier->name,
             '{payment}' => Tools::substr($order->payment, 0, 255),
             '{total_paid}' => Tools::displayPrice($order->total_paid, $context->currency, false),
-            '{total_products}' => Tools::displayPrice(Product::getTaxCalculationMethod() == PS_TAX_EXC ? $order->total_products : $order->total_products_wt, $context->currency, false),
-            '{total_discounts}' => Tools::displayPrice($order->total_discounts, $context->currency, false),
-            '{total_shipping}' => Tools::displayPrice($order->total_shipping, $context->currency, false),
-            '{total_shipping_tax_excl}' => Tools::displayPrice($order->total_shipping_tax_excl, $context->currency, false),
-            '{total_shipping_tax_incl}' => Tools::displayPrice($order->total_shipping_tax_incl, $context->currency, false),
-            '{total_wrapping}' => Tools::displayPrice($order->total_wrapping, $context->currency, false),
-            '{total_tax_paid}' => Tools::displayPrice(($order->total_products_wt - $order->total_products) + ($order->total_shipping_tax_incl - $order->total_shipping_tax_excl), $context->currency, false),
+            '{total_products}' => Tools::displayPrice(
+                Product::getTaxCalculationMethod() == PS_TAX_EXC ? $order->total_products :
+                    $order->total_products_wt,
+                $context->currency
+            ),
+            '{total_discounts}' => Tools::displayPrice($order->total_discounts, $context->currency),
+            '{total_shipping}' => Tools::displayPrice($order->total_shipping, $context->currency),
+            '{total_shipping_tax_excl}' => Tools::displayPrice($order->total_shipping_tax_excl, $context->currency),
+            '{total_shipping_tax_incl}' => Tools::displayPrice($order->total_shipping_tax_incl, $context->currency),
+            '{total_wrapping}' => Tools::displayPrice($order->total_wrapping, $context->currency),
+            '{total_tax_paid}' => Tools::displayPrice(($order->total_products_wt - $order->total_products) +
+                ($order->total_shipping_tax_incl - $order->total_shipping_tax_excl), $context->currency),
         );
 
         if (!is_array($template_vars)) {
@@ -103,17 +110,15 @@ class OrderHistory extends OrderHistoryCore
             $template_vars = array_merge($template_vars, $data);
         }
 
-		return parent::addWithemail($autodate, $template_vars, $context);
-	}
+        return parent::addWithemail($autodate, $template_vars, $context);
+    }
 
-	/**
-	 * @param Address $the_address that needs to be txt formatted
-	 * @return String the txt formated address block
-	 */
-
-	protected function _getFormatedAddress(Address $the_address, $line_sep, $fields_style = array())
-	{
-		return AddressFormat::generateAddress($the_address, array('avoid' => array()), $line_sep, ' ', $fields_style);
-	}
-
+    /**
+     * @param Address $the_address that needs to be txt formatted
+     * @return String the txt formated address block
+     */
+    protected function getFormatedAddress(Address $the_address, $line_sep, $fields_style = array())
+    {
+        return AddressFormat::generateAddress($the_address, array('avoid' => array()), $line_sep, ' ', $fields_style);
+    }
 }
