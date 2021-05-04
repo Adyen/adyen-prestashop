@@ -330,6 +330,7 @@ class AdyenOfficial extends PaymentModule
 
     /**
      * Copy waiting_for_payment email template to all /mails/ subdirectories
+     * Required until https://github.com/PrestaShop/PrestaShop/issues/24336 is implemented
      *
      * @return bool
      */
