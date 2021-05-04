@@ -22,7 +22,7 @@
  * See the LICENSE file for more info.
  */
 
-/** @noinspection PhpFullyQualifiedNameUsageInspection */
+// phpcs:ignore PSR1.Classes.ClassDeclaration.MissingNamespace
 class OrderHistory extends OrderHistoryCore
 {
 
