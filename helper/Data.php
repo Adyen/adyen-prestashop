@@ -161,7 +161,7 @@ class Data
         );
 
         // If customer was created, but is a guest, do not send shopperReference
-        if (!\Validate::isLoadedObject($customer) && !$customer->isGuest()) {
+        if (\Validate::isLoadedObject($customer) && !$customer->isGuest()) {
             $shopperReference = str_pad($cart->id_customer, 3, '0', STR_PAD_LEFT);
             $adyenFields['shopperReference'] = $shopperReference;
         }
