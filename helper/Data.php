@@ -28,6 +28,7 @@ use Address;
 use Adyen;
 use Adyen\AdyenException;
 use Adyen\Environment;
+use Adyen\PrestaShop\application\VersionChecker;
 use Adyen\PrestaShop\infra\Crypto;
 use Adyen\PrestaShop\service\adapter\classes\Configuration;
 use Adyen\PrestaShop\service\adapter\classes\Language;
@@ -73,6 +74,9 @@ class Data
      */
     private $crypto;
 
+    /** @var VersionChecker $versionChecker */
+    private $versionChecker;
+
     /**
      * Data constructor.
      *
@@ -81,13 +85,15 @@ class Data
      * @param Logger $logger
      * @param Language $languageAdapter
      * @param Crypto $crypto
+     * @param VersionChecker $versionChecker
      */
     public function __construct(
         Configuration $configuration,
         Checkout $adyenCheckoutService,
         Logger $logger,
         Language $languageAdapter,
-        Crypto $crypto
+        Crypto $crypto,
+        VersionChecker $versionChecker
     ) {
         $this->sslEncryptionKey = $configuration->sslEncryptionKey;
         $this->adyenCheckoutService = $adyenCheckoutService;
@@ -95,6 +101,7 @@ class Data
         $this->logger = $logger;
         $this->languageAdapter = $languageAdapter;
         $this->crypto = $crypto;
+        $this->versionChecker = $versionChecker;
     }
 
     /**
@@ -117,7 +124,7 @@ class Data
             return array();
         }
 
-        if (!\Validate::isLoadedObject($customer)) {
+        if (!\Validate::isLoadedObject($customer) && !$this->areGuestAndOnePageCheckout16()) {
             $this->logger->error(
                 sprintf('Unable to load customer linked to Cart (%s)', $cart->id)
             );
@@ -128,9 +135,16 @@ class Data
         $amount = $cart->getOrderTotal();
         $currencyData = Currency::getCurrency($cart->id_currency);
         $currency = $currencyData['iso_code'];
-        $address = new Address($cart->id_address_invoice);
-        $countryCode = Country::getIsoById($address->id_country);
         $shopperLocale = $this->languageAdapter->getLocaleCode($language);
+        $address = new Address($cart->id_address_invoice);
+
+        // If address is not created correctly and guest and one-page checkout are enabled, use context country
+        if (is_null($address->id_country) && $this->areGuestAndOnePageCheckout16()) {
+            $id_country = \Context::getContext()->country->id;
+        } else {
+            $id_country = $address->id_country;
+        }
+        $countryCode = Country::getIsoById($id_country);
 
         $adyenFields = array(
             "channel" => "Web",
@@ -146,8 +160,8 @@ class Data
             "shopperLocale" => $shopperLocale
         );
 
-        // If customer is a guest, do not send shopperReference
-        if (!$customer->isGuest()) {
+        // If customer was created, but is a guest, do not send shopperReference
+        if (!\Validate::isLoadedObject($customer) && !$customer->isGuest()) {
             $shopperReference = str_pad($cart->id_customer, 3, '0', STR_PAD_LEFT);
             $adyenFields['shopperReference'] = $shopperReference;
         }
@@ -357,5 +371,22 @@ class Data
         }
 
         return true;
+    }
+
+    /**
+     * Check if One-page checkout and Guest checkout are enabled on 1.6
+     *
+     * @return bool
+     */
+    private function areGuestAndOnePageCheckout16()
+    {
+        $onePageCheckout =  \Configuration::get('PS_ORDER_PROCESS_TYPE');
+        $guestCheckoutEnabled = \Configuration::get('PS_GUEST_CHECKOUT_ENABLED');
+
+        if ($this->versionChecker->isPrestaShop16() && $onePageCheckout && $guestCheckoutEnabled) {
+            return true;
+        }
+
+        return false;
     }
 }
