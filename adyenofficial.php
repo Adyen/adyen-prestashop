@@ -229,7 +229,8 @@ class AdyenOfficial extends PaymentModule
                 'displayPaymentEU',
                 'displayPaymentReturn',
                 'actionOrderSlipAdd',
-                'actionFrontControllerSetMedia'
+                'actionFrontControllerSetMedia',
+                'displayCustomerAccountForm'
             ),
             '1.7' => array(
                 'displayPaymentTop',
@@ -274,6 +275,7 @@ class AdyenOfficial extends PaymentModule
                 $this->registerHook('paymentReturn') &&
                 $this->registerHook('actionOrderSlipAdd') &&
                 $this->registerHook('actionFrontControllerSetMedia') &&
+                $this->registerHook('displayCustomerAccountForm') &&
                 $this->installTabs() &&
                 $this->createDefaultConfigurations() &&
                 $this->createAdyenOrderStatuses() &&
@@ -1695,6 +1697,22 @@ class AdyenOfficial extends PaymentModule
                 . PHP_EOL . $e->getMessage()
             );
             return false;
+        }
+    }
+
+    /**
+     * Hook only executed on 1.6
+     *
+     * @param $params
+     * @throws Exception
+     */
+    public function hookDisplayCustomerAccountForm($params)
+    {
+        /** @var int $checkoutType */
+        $onePageCheckout =  Configuration::get('PS_ORDER_PROCESS_TYPE');
+        $guestCheckoutEnabled = Configuration::get('PS_GUEST_CHECKOUT_ENABLED');
+        if ($this->context->controller instanceof \OrderOpcController && $onePageCheckout && $guestCheckoutEnabled) {
+            return $this->hookDisplayPaymentTop();
         }
     }
 
