@@ -47,10 +47,17 @@ class OrderHistory extends OrderHistoryCore
         $invoice_state = $invoice->id_state ? new State((int) $invoice->id_state) : false;
         $carrier = $order->id_carrier ? new Carrier($order->id_carrier) : false;
 
+        // If email is to be sent during notification processing, customer won't be in context
+        if (is_null($context->customer)) {
+            $customer = $order->getCustomer();
+        } else {
+            $customer = $context->customer;
+        }
+
         $data = array(
-            '{firstname}' => $context->customer->firstname,
-            '{lastname}' => $context->customer->lastname,
-            '{email}' => $context->customer->email,
+            '{firstname}' => $customer->firstname,
+            '{lastname}' => $customer->lastname,
+            '{email}' => $customer->email,
             '{delivery_block_txt}' => $this->getFormatedAddress($delivery, "\n"),
             '{invoice_block_txt}' => $this->getFormatedAddress($invoice, "\n"),
             '{delivery_block_html}' => $this->getFormatedAddress($delivery, '<br />', array(
