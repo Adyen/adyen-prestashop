@@ -926,6 +926,60 @@ class AdyenOfficial extends PaymentModule
             'required' => true
         );
 
+        $apiKeyTest = '';
+
+        try {
+            $apiKeyTest = $this->crypto->decrypt(Configuration::get('ADYEN_APIKEY_TEST'));
+        } catch (\Adyen\PrestaShop\exception\GenericLoggedException $e) {
+            $this->logger->error(
+                'For configuration "ADYEN_APIKEY_TEST" an exception was thrown: ' . $e->getMessage()
+            );
+        } catch (\Adyen\PrestaShop\exception\MissingDataException $e) {
+            $this->logger->warning('The configuration "ADYEN_APIKEY_TEST" has no value set.');
+        }
+
+        $apiKeyTestLastDigits = Tools::substr($apiKeyTest, -4);
+
+        $fields_form[0]['form']['input'][] = array(
+            'type' => 'password',
+            'label' => $this->l('API key for Test'),
+            'name' => 'ADYEN_APIKEY_TEST',
+            'desc' => $apiKeyTestLastDigits ? $this->l('Saved key ends in: ') . $apiKeyTestLastDigits :
+                $this->l('Please fill your API key for Test'),
+            'class' => $apiKeyTestLastDigits ? 'adyen-input-green' : '',
+            'size' => 20,
+            'required' => true,
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            'hint' => $this->l('If you don\'t know your Api-Key, log in to your Test Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Checkout token is your API Key.')
+        );
+
+        $apiKeyLive = '';
+
+        try {
+            $apiKeyLive = $this->crypto->decrypt(Configuration::get('ADYEN_APIKEY_LIVE'));
+        } catch (\Adyen\PrestaShop\exception\GenericLoggedException $e) {
+            $this->logger->error(
+                'For configuration "ADYEN_APIKEY_LIVE" an exception was thrown: ' . $e->getMessage()
+            );
+        } catch (\Adyen\PrestaShop\exception\MissingDataException $e) {
+            $this->logger->warning('The configuration "ADYEN_APIKEY_LIVE" has no value set.');
+        }
+
+        $apiKeyLiveLastDigits = Tools::substr($apiKeyLive, -4);
+
+        $fields_form[0]['form']['input'][] = array(
+            'type' => 'password',
+            'label' => $this->l('API key for Live'),
+            'name' => 'ADYEN_APIKEY_LIVE',
+            'desc' => $apiKeyLiveLastDigits ? $this->l('Saved key ends in: ') . $apiKeyLiveLastDigits :
+                $this->l('Please fill your API key for Live'),
+            'class' => $apiKeyLiveLastDigits ? 'adyen-input-green' : '',
+            'size' => 20,
+            'required' => true,
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            'hint' => $this->l('If you don\'t know your Api-Key, log in to your Live Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Checkout token is your API Key.')
+        );
+
         $fields_form[0]['form']['input'][] = array(
             'type' => 'text',
             'label' => $this->l('Notification Username'),
@@ -1041,60 +1095,6 @@ class AdyenOfficial extends PaymentModule
             'label' => $this->l('Process notifications upon receiving them'),
             'name' => 'ADYEN_AUTO_CRON_JOB_RUNNER',
             'required' => true
-        );
-
-        $apiKeyTest = '';
-
-        try {
-            $apiKeyTest = $this->crypto->decrypt(Configuration::get('ADYEN_APIKEY_TEST'));
-        } catch (\Adyen\PrestaShop\exception\GenericLoggedException $e) {
-            $this->logger->error(
-                'For configuration "ADYEN_APIKEY_TEST" an exception was thrown: ' . $e->getMessage()
-            );
-        } catch (\Adyen\PrestaShop\exception\MissingDataException $e) {
-            $this->logger->warning('The configuration "ADYEN_APIKEY_TEST" has no value set.');
-        }
-
-        $apiKeyTestLastDigits = Tools::substr($apiKeyTest, -4);
-
-        $fields_form[0]['form']['input'][] = array(
-            'type' => 'password',
-            'label' => $this->l('API key for Test'),
-            'name' => 'ADYEN_APIKEY_TEST',
-            'desc' => $apiKeyTestLastDigits ? $this->l('Saved key ends in: ') . $apiKeyTestLastDigits :
-                $this->l('Please fill your API key for Test'),
-            'class' => $apiKeyTestLastDigits ? 'adyen-input-green' : '',
-            'size' => 20,
-            'required' => true,
-            // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('If you don\'t know your Api-Key, log in to your Test Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Checkout token is your API Key.')
-        );
-
-        $apiKeyLive = '';
-
-        try {
-            $apiKeyLive = $this->crypto->decrypt(Configuration::get('ADYEN_APIKEY_LIVE'));
-        } catch (\Adyen\PrestaShop\exception\GenericLoggedException $e) {
-            $this->logger->error(
-                'For configuration "ADYEN_APIKEY_LIVE" an exception was thrown: ' . $e->getMessage()
-            );
-        } catch (\Adyen\PrestaShop\exception\MissingDataException $e) {
-            $this->logger->warning('The configuration "ADYEN_APIKEY_LIVE" has no value set.');
-        }
-
-        $apiKeyLiveLastDigits = Tools::substr($apiKeyLive, -4);
-
-        $fields_form[0]['form']['input'][] = array(
-            'type' => 'password',
-            'label' => $this->l('API key for Live'),
-            'name' => 'ADYEN_APIKEY_LIVE',
-            'desc' => $apiKeyLiveLastDigits ? $this->l('Saved key ends in: ') . $apiKeyLiveLastDigits :
-                $this->l('Please fill your API key for Live'),
-            'class' => $apiKeyLiveLastDigits ? 'adyen-input-green' : '',
-            'size' => 20,
-            'required' => true,
-            // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('If you don\'t know your Api-Key, log in to your Live Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Checkout token is your API Key.')
         );
 
         // Client key input test
