@@ -895,13 +895,13 @@ class AdyenOfficial extends PaymentModule
         // Merchant account input
         $fields_form[0]['form']['input'][] = array(
             'type' => 'text',
-            'label' => $this->l('Merchant Account'),
+            'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#set-up-prestashop">Merchant Account</a>',
             'name' => 'ADYEN_MERCHANT_ACCOUNT',
             'size' => 20,
             'required' => true,
             'lang' => false,
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('In Adyen backoffice you have a company account with one or more merchantaccounts. Fill in the merchantaccount you want to use for this webshop.')
+            'hint' => $this->l('In your Adyen Customer Area you have a company account and under that a merchant account. Fill in the merchant account name.')
         );
 
         // Test/Production mode
@@ -942,7 +942,7 @@ class AdyenOfficial extends PaymentModule
 
         $fields_form[0]['form']['input'][] = array(
             'type' => 'password',
-            'label' => $this->l('API key for Test'),
+            'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#generate-an-api-key">API key for Test</a>',
             'name' => 'ADYEN_APIKEY_TEST',
             'desc' => $apiKeyTestLastDigits ? $this->l('Saved key ends in: ') . $apiKeyTestLastDigits :
                 $this->l('Please fill your API key for Test'),
@@ -950,7 +950,7 @@ class AdyenOfficial extends PaymentModule
             'size' => 20,
             'required' => true,
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('If you don\'t know your Api-Key, log in to your Test Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Checkout token is your API Key.')
+            'hint' => $this->l('Enter your test API Key. This can be found in your test Customer Area > Account > API Credentials.')
         );
 
         $apiKeyLive = '';
@@ -969,7 +969,7 @@ class AdyenOfficial extends PaymentModule
 
         $fields_form[0]['form']['input'][] = array(
             'type' => 'password',
-            'label' => $this->l('API key for Live'),
+            'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#generate-an-api-key">API key for Live</a>',
             'name' => 'ADYEN_APIKEY_LIVE',
             'desc' => $apiKeyLiveLastDigits ? $this->l('Saved key ends in: ') . $apiKeyLiveLastDigits :
                 $this->l('Please fill your API key for Live'),
@@ -977,17 +977,17 @@ class AdyenOfficial extends PaymentModule
             'size' => 20,
             'required' => true,
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('If you don\'t know your Api-Key, log in to your Live Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Checkout token is your API Key.')
+            'hint' => $this->l('Enter your live API Key. This can be found in your live Customer Area > Account > API Credentials. During testing, this field should be populated with dummy data.')
         );
 
         $fields_form[0]['form']['input'][] = array(
             'type' => 'text',
-            'label' => $this->l('Notification Username'),
+            'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#set-up-notifications">Notification Username</a>',
             'name' => 'ADYEN_NOTI_USERNAME',
             'size' => 20,
             'required' => true,
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('Must correspond to the notification username in the Adyen Backoffice under Settings => Notifications')
+            'hint' => $this->l('This is the username for basic authentication of your live endpoints. Fill in your from your live Adyen Customer Area > Account > Webhooks > Edit or Add. To test the plugin without notifications, this field can be populated with dummy data.')
         );
 
         $notificationPassword = '';
@@ -1006,7 +1006,7 @@ class AdyenOfficial extends PaymentModule
 
         $fields_form[0]['form']['input'][] = array(
             'type' => 'password',
-            'label' => $this->l('Notification Password'),
+            'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#set-up-notifications">Notification Password</a>',
             'name' => 'ADYEN_NOTI_PASSWORD',
             'desc' => $notificationPassword ? $this->l('Notification password saved') :
                 $this->l('Please fill your notification password'),
@@ -1014,7 +1014,7 @@ class AdyenOfficial extends PaymentModule
             'size' => 20,
             'required' => false,
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('Must correspond to the notification password in the Adyen Backoffice under Settings => Notifications')
+            'hint' => $this->l('This is the password for basic authentication of your live endpoints. Fill in your from your live Adyen Customer Area > Account > Webhooks > Edit or Add. To test the plugin without notifications, this field can be populated with dummy data.')
         );
 
         $notificationHmacKey = '';
@@ -1029,7 +1029,7 @@ class AdyenOfficial extends PaymentModule
 
         $fields_form[0]['form']['input'][] = array(
             'type' => 'password',
-            'label' => $this->l('HMAC key for notifications'),
+            'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#set-up-notifications">HMAC key for notifications</a>',
             'name' => 'ADYEN_NOTI_HMAC',
             'desc' => $notificationHmacKey ? $this->l('HMAC key saved') :
                 $this->l('Please fill your notification HMAC key'),
@@ -1037,7 +1037,7 @@ class AdyenOfficial extends PaymentModule
             'size' => 20,
             'required' => false,
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('Must correspond to the notification HMAC Key in the Adyen Backoffice under Settings => Notifications => Additional Settings => HMAC Key (HEX Encoded)')
+            'hint' => $this->l('This is used to authenticate your endpoints. If you want to test the webhook notifications then get your Hmac key from your test or live Adyen Customer Area > Account > Webhooks > Edit or Add. To test the plugin without notifications, this field can be populated with dummy data.')
         );
 
         $cronjobToken = '';
@@ -1100,25 +1100,25 @@ class AdyenOfficial extends PaymentModule
         // Client key input test
         $fields_form[0]['form']['input'][] = array(
             'type' => 'text',
-            'label' => $this->l('Client key test'),
+            'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#generate-a-client-key">Client key test</a>',
             'name' => 'ADYEN_CLIENTKEY_TEST',
             'size' => 50,
             'required' => true,
             'lang' => false,
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('If you don\'t know your client key, log in to your Test Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Client Key is your Client Key.')
+            'hint' => $this->l('We use your client key to authenticate requests from your payment environment. This can be found in your test Customer Area > Account > API Credentials.')
         );
 
         // Client key input live
         $fields_form[0]['form']['input'][] = array(
             'type' => 'text',
-            'label' => $this->l('Client key live'),
+            'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#generate-a-client-key">Client key live</a>',
             'name' => 'ADYEN_CLIENTKEY_LIVE',
             'size' => 50,
             'required' => true,
             'lang' => false,
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('If you don\'t know your client key, log in to your Live Customer Area. Navigate to Settings > Users > System, and click on your webservice user, normally this will be ws@Company.YourCompanyAccount. Under Client Key is your Client Key.')
+            'hint' => $this->l('We use your client key to authenticate requests from your payment environment. This can be found in your live Customer Area > Account > API Credentials. During testing, this field should be populated with dummy data.')
         );
 
         // Live endpoint prefix
@@ -1128,7 +1128,7 @@ class AdyenOfficial extends PaymentModule
             'name' => 'ADYEN_LIVE_ENDPOINT_URL_PREFIX',
             'size' => 20,
             'required' => true,
-            'hint' => $this->l('The URL prefix [random]-[company name] from your Adyen live > Account > API URLs.')
+            'hint' => $this->l('The URL prefix [random]-[company name] from your Adyen live Customer Area > Account > API URLs. During testing, this field should be populated with dummy data.')
         );
 
         $fields_form[1]['form'] = array(
