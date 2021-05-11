@@ -209,6 +209,7 @@ class Logger extends \Monolog\Logger
      * @param integer $level The logging level
      * @param string $message The log message
      * @param array $context The log context
+     * @param bool $callPrestaShopLogger
      * @return Boolean Whether the record has been processed
      */
     public function addRecord($level, $message, array $context = array(), $callPrestaShopLogger = true)

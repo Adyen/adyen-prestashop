@@ -343,10 +343,10 @@ class AdyenOfficial extends PaymentModule
             while (false !== ($entry = readdir($handle))) {
                 $languageDirectory = $mailsDirectory . $entry;
                 if (is_dir($languageDirectory)) {
-                    $adyenHtmlFile = $adyenEmailDirectory . 'waiting_for_payment.html';
-                    $adyenTxtFile = $adyenEmailDirectory . 'waiting_for_payment.txt';
-                    if (!copy($adyenHtmlFile, $languageDirectory . '/waiting_for_payment.html') ||
-                        !copy($adyenTxtFile, $languageDirectory . '/waiting_for_payment.txt')
+                    $adyenHtmlFile = $adyenEmailDirectory . 'waiting_for_payment_adyen.html';
+                    $adyenTxtFile = $adyenEmailDirectory . 'waiting_for_payment_adyen.txt';
+                    if (!copy($adyenHtmlFile, $languageDirectory . '/waiting_for_payment_adyen.html') ||
+                        !copy($adyenTxtFile, $languageDirectory . '/waiting_for_payment_adyen.txt')
                     ) {
                         $this->logger->error(
                             sprintf('Unable to copy email template to directory: %s', $languageDirectory)
@@ -372,11 +372,11 @@ class AdyenOfficial extends PaymentModule
             while (false !== ($entry = readdir($handle))) {
                 $languageDirectory = $mailsDirectory . $entry;
                 if (is_dir($languageDirectory)) {
-                    if (file_exists($languageDirectory . '/waiting_for_payment.html')) {
-                        unlink($languageDirectory . '/waiting_for_payment.html');
+                    if (file_exists($languageDirectory . '/waiting_for_payment_adyen.html')) {
+                        unlink($languageDirectory . '/waiting_for_payment_adyen.html');
                     }
-                    if (file_exists($languageDirectory . '/waiting_for_payment.txt')) {
-                        unlink($languageDirectory . '/waiting_for_payment.txt');
+                    if (file_exists($languageDirectory . '/waiting_for_payment_adyen.txt')) {
+                        unlink($languageDirectory . '/waiting_for_payment_adyen.txt');
                     }
                 }
             }
