@@ -212,7 +212,8 @@ class AdyenOfficial extends PaymentModule
             'ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER',
             'ADYEN_AUTO_CRON_JOB_RUNNER',
             'ADYEN_ADMIN_PATH',
-            'ADYEN_ENABLE_STORED_PAYMENT_METHODS'
+            'ADYEN_ENABLE_STORED_PAYMENT_METHODS',
+            'ADYEN_PAYMENT_DISPLAY_COLLAPSE'
         );
     }
 
