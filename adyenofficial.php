@@ -336,7 +336,7 @@ class AdyenOfficial extends PaymentModule
      */
     public function copyEmailTemplates()
     {
-        $allDirectories = true;
+        $successfulCopy = true;
         $mailsDirectory = _PS_ROOT_DIR_.'/mails/';
         $adyenEmailDirectory = __DIR__ . '/views/templates/email/';
         if ($handle = opendir($mailsDirectory)) {
@@ -351,13 +351,13 @@ class AdyenOfficial extends PaymentModule
                         $this->logger->error(
                             sprintf('Unable to copy email template to directory: %s', $languageDirectory)
                         );
-                        $allDirectories = false;
+                        $successfulCopy = false;
                     }
                 }
             }
         }
 
-        return $allDirectories;
+        return $successfulCopy;
     }
 
     /**
@@ -373,10 +373,24 @@ class AdyenOfficial extends PaymentModule
                 $languageDirectory = $mailsDirectory . $entry;
                 if (is_dir($languageDirectory)) {
                     if (file_exists($languageDirectory . '/waiting_for_payment_adyen.html')) {
-                        unlink($languageDirectory . '/waiting_for_payment_adyen.html');
+                        if (!unlink($languageDirectory . '/waiting_for_payment_adyen.html')) {
+                            $this->logger->error(
+                                sprintf(
+                                    'Unable to delete html email template from directory: %s',
+                                    $languageDirectory
+                                )
+                            );
+                        }
                     }
                     if (file_exists($languageDirectory . '/waiting_for_payment_adyen.txt')) {
-                        unlink($languageDirectory . '/waiting_for_payment_adyen.txt');
+                        if (!unlink($languageDirectory . '/waiting_for_payment_adyen.txt')) {
+                            $this->logger->error(
+                                sprintf(
+                                    'Unable to delete txt email template from directory: %s',
+                                    $languageDirectory
+                                )
+                            );
+                        }
                     }
                 }
             }
