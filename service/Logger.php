@@ -209,7 +209,7 @@ class Logger extends \Monolog\Logger
      * @param integer $level The logging level
      * @param string $message The log message
      * @param array $context The log context
-     * @param bool $callPrestaShopLogger
+     * @param bool $callPrestaShopLogger Set to false to disable logging with the PrestaShop default logger as well
      * @return Boolean Whether the record has been processed
      */
     public function addRecord($level, $message, array $context = array(), $callPrestaShopLogger = true)
