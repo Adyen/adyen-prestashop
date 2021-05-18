@@ -64,7 +64,7 @@ class OrderHistory extends OrderHistoryCore
                 'firstname' => '<span style="font-weight:bold;">%s</span>',
                 'lastname' => '<span style="font-weight:bold;">%s</span>',
             )),
-            '{invoice_block_html}' => $this->_getFormatedAddress($invoice, '<br />', array(
+            '{invoice_block_html}' => $this->getFormatedAddress($invoice, '<br />', array(
                 'firstname' => '<span style="font-weight:bold;">%s</span>',
                 'lastname' => '<span style="font-weight:bold;">%s</span>',
             )),
