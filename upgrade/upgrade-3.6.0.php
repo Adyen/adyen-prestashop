@@ -39,7 +39,7 @@ if (!defined('_PS_VERSION_')) {
  */
 function upgrade_module_3_6_0(AdyenOfficial $module)
 {
-    return $module->copyEmailTemplates() && install_new_tabs($module);
+    return $module->copyEmailTemplates() && install_new_tabs($module) && copy_order_history_override($module);
 }
 
 /**
@@ -110,4 +110,15 @@ function install_new_tabs(AdyenOfficial $module)
     }
 
     return $logTabResult && $adyenTabResult && $validatorTabResult;
+}
+
+/**
+ * @return bool
+ */
+function copy_order_history_override(AdyenOfficial $module)
+{
+    $orderHistoryFile = _PS_MODULE_DIR_ . $module->name . '/override/classes/order/OrderHistory.php';
+    $destinationDir = _PS_ROOT_DIR_.'/override/classes/order/OrderHistory.php';
+
+    return copy($orderHistoryFile, $destinationDir);
 }
