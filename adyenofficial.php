@@ -979,6 +979,7 @@ class AdyenOfficial extends PaymentModule
         // Merchant account input
         $fields_form[0]['form']['input'][] = array(
             'type' => 'text',
+            // phpcs:ignore Generic.Files.LineLength.TooLong
             'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#set-up-prestashop">Merchant Account</a>',
             'name' => 'ADYEN_MERCHANT_ACCOUNT',
             'size' => 20,
@@ -1026,6 +1027,7 @@ class AdyenOfficial extends PaymentModule
 
         $fields_form[0]['form']['input'][] = array(
             'type' => 'password',
+            // phpcs:ignore Generic.Files.LineLength.TooLong
             'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#generate-an-api-key">API key for Test</a>',
             'name' => 'ADYEN_APIKEY_TEST',
             'desc' => $apiKeyTestLastDigits ? $this->l('Saved key ends in: ') . $apiKeyTestLastDigits :
@@ -1053,6 +1055,7 @@ class AdyenOfficial extends PaymentModule
 
         $fields_form[0]['form']['input'][] = array(
             'type' => 'password',
+            // phpcs:ignore Generic.Files.LineLength.TooLong
             'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#generate-an-api-key">API key for Live</a>',
             'name' => 'ADYEN_APIKEY_LIVE',
             'desc' => $apiKeyLiveLastDigits ? $this->l('Saved key ends in: ') . $apiKeyLiveLastDigits :
@@ -1066,6 +1069,7 @@ class AdyenOfficial extends PaymentModule
 
         $fields_form[0]['form']['input'][] = array(
             'type' => 'text',
+            // phpcs:ignore Generic.Files.LineLength.TooLong
             'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#set-up-notifications">Notification Username</a>',
             'name' => 'ADYEN_NOTI_USERNAME',
             'size' => 20,
@@ -1090,6 +1094,7 @@ class AdyenOfficial extends PaymentModule
 
         $fields_form[0]['form']['input'][] = array(
             'type' => 'password',
+            // phpcs:ignore Generic.Files.LineLength.TooLong
             'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#set-up-notifications">Notification Password</a>',
             'name' => 'ADYEN_NOTI_PASSWORD',
             'desc' => $notificationPassword ? $this->l('Notification password saved') :
@@ -1113,6 +1118,7 @@ class AdyenOfficial extends PaymentModule
 
         $fields_form[0]['form']['input'][] = array(
             'type' => 'password',
+            // phpcs:ignore Generic.Files.LineLength.TooLong
             'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#set-up-notifications">HMAC key for notifications</a>',
             'name' => 'ADYEN_NOTI_HMAC',
             'desc' => $notificationHmacKey ? $this->l('HMAC key saved') :
@@ -1184,6 +1190,7 @@ class AdyenOfficial extends PaymentModule
         // Client key input test
         $fields_form[0]['form']['input'][] = array(
             'type' => 'text',
+            // phpcs:ignore Generic.Files.LineLength.TooLong
             'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#generate-a-client-key">Client key test</a>',
             'name' => 'ADYEN_CLIENTKEY_TEST',
             'size' => 50,
@@ -1196,6 +1203,7 @@ class AdyenOfficial extends PaymentModule
         // Client key input live
         $fields_form[0]['form']['input'][] = array(
             'type' => 'text',
+            // phpcs:ignore Generic.Files.LineLength.TooLong
             'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#generate-a-client-key">Client key live</a>',
             'name' => 'ADYEN_CLIENTKEY_LIVE',
             'size' => 50,
@@ -1212,6 +1220,7 @@ class AdyenOfficial extends PaymentModule
             'name' => 'ADYEN_LIVE_ENDPOINT_URL_PREFIX',
             'size' => 20,
             'required' => true,
+            // phpcs:ignore Generic.Files.LineLength.TooLong
             'hint' => $this->l('The URL prefix [random]-[company name] from your Adyen live Customer Area > Account > API URLs. During testing, this field should be populated with dummy data.')
         );
 
