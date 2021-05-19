@@ -210,10 +210,10 @@ class AdyenOfficial extends PaymentModule
             'ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER',
             'ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID',
             'ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER',
-            'ADYEN_PAYMENT_DISPLAY_COLLAPSE',
             'ADYEN_AUTO_CRON_JOB_RUNNER',
             'ADYEN_ADMIN_PATH',
-            'ADYEN_ENABLE_STORED_PAYMENT_METHODS'
+            'ADYEN_ENABLE_STORED_PAYMENT_METHODS',
+            'ADYEN_PAYMENT_DISPLAY_COLLAPSE'
         );
     }
 
@@ -236,7 +236,8 @@ class AdyenOfficial extends PaymentModule
                 'actionFrontControllerSetMedia',
                 'paymentOptions',
                 'displayPaymentReturn',
-                'actionOrderSlipAdd'
+                'actionOrderSlipAdd',
+                'actionEmailSendBefore'
             )
         );
     }
@@ -277,7 +278,8 @@ class AdyenOfficial extends PaymentModule
                 $this->installTabs() &&
                 $this->createDefaultConfigurations() &&
                 $this->createAdyenOrderStatuses() &&
-                $this->createAdyenDatabaseTables()
+                $this->createAdyenDatabaseTables() &&
+                $this->copyEmailTemplates()
             ) {
                 return true;
             } else {
@@ -294,9 +296,11 @@ class AdyenOfficial extends PaymentModule
             $this->registerHook('paymentOptions') &&
             $this->registerHook('paymentReturn') &&
             $this->registerHook('actionOrderSlipAdd') &&
+            $this->registerHook('actionEmailSendBefore') &&
             $this->createDefaultConfigurations() &&
             $this->createAdyenOrderStatuses() &&
-            $this->createAdyenDatabaseTables()
+            $this->createAdyenDatabaseTables() &&
+            $this->copyEmailTemplates()
         ) {
             return true;
         } else {
@@ -326,6 +330,77 @@ class AdyenOfficial extends PaymentModule
     }
 
     /**
+     * Copy waiting_for_payment email template to all /mails/ subdirectories
+     * Required until https://github.com/PrestaShop/PrestaShop/issues/24336 is implemented
+     *
+     * @return bool
+     */
+    public function copyEmailTemplates()
+    {
+        $successfulCopy = true;
+        $mailsDirectory = _PS_ROOT_DIR_.'/mails/';
+        $adyenEmailDirectory = __DIR__ . '/views/templates/email/';
+        if ($handle = opendir($mailsDirectory)) {
+            while (false !== ($entry = readdir($handle))) {
+                $languageDirectory = $mailsDirectory . $entry;
+                if (is_dir($languageDirectory)) {
+                    $adyenHtmlFile = $adyenEmailDirectory . 'waiting_for_payment_adyen.html';
+                    $adyenTxtFile = $adyenEmailDirectory . 'waiting_for_payment_adyen.txt';
+                    if (!copy($adyenHtmlFile, $languageDirectory . '/waiting_for_payment_adyen.html') ||
+                        !copy($adyenTxtFile, $languageDirectory . '/waiting_for_payment_adyen.txt')
+                    ) {
+                        $this->logger->error(
+                            sprintf('Unable to copy email template to directory: %s', $languageDirectory)
+                        );
+                        $successfulCopy = false;
+                    }
+                }
+            }
+        }
+
+        return $successfulCopy;
+    }
+
+    /**
+     * Remove waiting_for_payment email template from all /mails/ subdirectories
+     *
+     * @return bool
+     */
+    private function removeCopiedEmailTemplates()
+    {
+        $mailsDirectory = _PS_ROOT_DIR_.'/mails/';
+        if ($handle = opendir($mailsDirectory)) {
+            while (false !== ($entry = readdir($handle))) {
+                $languageDirectory = $mailsDirectory . $entry;
+                if (is_dir($languageDirectory)) {
+                    if (file_exists($languageDirectory . '/waiting_for_payment_adyen.html')) {
+                        if (!unlink($languageDirectory . '/waiting_for_payment_adyen.html')) {
+                            $this->logger->error(
+                                sprintf(
+                                    'Unable to delete html email template from directory: %s',
+                                    $languageDirectory
+                                )
+                            );
+                        }
+                    }
+                    if (file_exists($languageDirectory . '/waiting_for_payment_adyen.txt')) {
+                        if (!unlink($languageDirectory . '/waiting_for_payment_adyen.txt')) {
+                            $this->logger->error(
+                                sprintf(
+                                    'Unable to delete txt email template from directory: %s',
+                                    $languageDirectory
+                                )
+                            );
+                        }
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Uninstall script
      *
      * This function is called when
@@ -339,7 +414,8 @@ class AdyenOfficial extends PaymentModule
         return parent::uninstall() &&
             $this->uninstallTabs() &&
             $this->removeAdyenDatabaseTables() &&
-            $this->removeConfigurationsFromDatabase();
+            $this->removeConfigurationsFromDatabase() &&
+            $this->removeCopiedEmailTemplates();
     }
 
     /**
@@ -686,14 +762,17 @@ class AdyenOfficial extends PaymentModule
      */
     public function uninstallTabs()
     {
+        // If on 1.6 ignore this by setting it to true automatically
+        $adyenTabDelete = $this->versionChecker->isPrestaShop16() ? true : false;
         $cronTabDelete = false;
         $logFetcherTabDelete = false;
-        $adyenTabDelete = false;
+        $validatorTabDelete = false;
 
         try {
             $cronTabId = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashopCron');
             $logFetcherTabId = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashopLogFetcher');
             $adyenTabId = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashop');
+            $validatorTabId = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashopValidator');
             if ($cronTabId) {
                 $cronTab = new Tab($cronTabId);
                 $cronTabDelete = $cronTab->delete();
@@ -709,7 +788,12 @@ class AdyenOfficial extends PaymentModule
                 $adyenTabDelete = $adyenTab->delete();
             }
 
-            return $cronTabDelete && $logFetcherTabDelete && $adyenTabDelete;
+            if ($validatorTabId) {
+                $validatorTab = new Tab($validatorTabId);
+                $validatorTabDelete = $validatorTab->delete();
+            }
+
+            return $cronTabDelete && $logFetcherTabDelete && $adyenTabDelete && $validatorTabDelete;
         } catch (PrestaShopDatabaseException $e) {
             $this->logger->error(
                 'Database exception thrown during tab uninstall: ' . $e->getMessage()
@@ -1696,6 +1780,25 @@ class AdyenOfficial extends PaymentModule
             );
             return false;
         }
+    }
+
+    /**
+     * Do not send order_conf email if order is currently in Waiting for Payment status
+     * Only used in 1.7
+     *
+     * @param $params
+     * @return bool
+     */
+    public function hookActionEmailSendBefore($params)
+    {
+        if ($params['template'] === 'order_conf' &&
+            array_key_exists('orderStatusId', $params['templateVars']) &&
+            $params['templateVars']['orderStatusId'] === \Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT')
+        ) {
+            return false;
+        }
+
+        return true;
     }
 
     /**

@@ -209,12 +209,13 @@ class Logger extends \Monolog\Logger
      * @param integer $level The logging level
      * @param string $message The log message
      * @param array $context The log context
+     * @param bool $callPrestaShopLogger Set to false to disable logging with the PrestaShop default logger as well
      * @return Boolean Whether the record has been processed
      */
-    public function addRecord($level, $message, array $context = array())
+    public function addRecord($level, $message, array $context = array(), $callPrestaShopLogger = true)
     {
         $context['is_exception'] = $message instanceof \Exception;
-        if (array_key_exists($level, self::$prestashopLoggable)) {
+        if (array_key_exists($level, self::$prestashopLoggable) && $callPrestaShopLogger) {
             \PrestaShopLogger::addLog(
                 $message,
                 self::$prestashopLoggable[$level],
