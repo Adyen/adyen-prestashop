@@ -950,7 +950,7 @@ class AdyenOfficial extends PaymentModule
             'size' => 20,
             'required' => true,
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('Enter your test API Key. This can be found in your test Customer Area > Account > API Credentials.')
+            'hint' => $this->l('Enter your test API Key. This can be generated in your test Customer Area > Account > API Credentials.')
         );
 
         $apiKeyLive = '';
@@ -977,7 +977,7 @@ class AdyenOfficial extends PaymentModule
             'size' => 20,
             'required' => true,
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('Enter your live API Key. This can be found in your live Customer Area > Account > API Credentials. During testing, this field should be populated with dummy data.')
+            'hint' => $this->l('Enter your live API Key. This can be generated in your live Customer Area > Account > API Credentials. During testing, this field should be populated with dummy data.')
         );
 
         $fields_form[0]['form']['input'][] = array(
@@ -1106,7 +1106,7 @@ class AdyenOfficial extends PaymentModule
             'required' => true,
             'lang' => false,
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('We use your client key to authenticate requests from your payment environment. This can be found in your test Customer Area > Account > API Credentials.')
+            'hint' => $this->l('We use your client key to authenticate requests from your payment environment. This can be generated in your test Customer Area > Account > API Credentials.')
         );
 
         // Client key input live
@@ -1118,7 +1118,7 @@ class AdyenOfficial extends PaymentModule
             'required' => true,
             'lang' => false,
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('We use your client key to authenticate requests from your payment environment. This can be found in your live Customer Area > Account > API Credentials. During testing, this field should be populated with dummy data.')
+            'hint' => $this->l('We use your client key to authenticate requests from your payment environment. This can be generated in your live Customer Area > Account > API Credentials. During testing, this field should be populated with dummy data.')
         );
 
         // Live endpoint prefix
