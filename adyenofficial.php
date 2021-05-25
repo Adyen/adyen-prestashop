@@ -339,7 +339,7 @@ class AdyenOfficial extends PaymentModule
     {
         $successfulCopy = true;
         $mailsDirectory = _PS_ROOT_DIR_.'/mails/';
-        $adyenEmailDirectory = __DIR__ . '/views/templates/email/';
+        $adyenEmailDirectory = _PS_MODULE_DIR_ . $this->name . '/views/templates/email/';
         if ($handle = opendir($mailsDirectory)) {
             while (false !== ($entry = readdir($handle))) {
                 $languageDirectory = $mailsDirectory . $entry;
