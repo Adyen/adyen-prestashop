@@ -91,6 +91,5 @@ class Cart
             $context->cookie->id_cart = (int)$context->cart->id;
             $context->cookie->write();
         }
-
     }
 }
