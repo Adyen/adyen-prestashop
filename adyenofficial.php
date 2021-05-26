@@ -853,15 +853,23 @@ class AdyenOfficial extends PaymentModule
                 $output .= $this->displayError($this->l('Invalid Configuration value for Notification Username'));
             }
 
-            if (empty($client_key_test)) {
+            if (empty($client_key_test) && $mode === 'test') {
                 $output .= $this->displayError($this->l('Invalid Configuration value for test client key'));
             }
 
-            if (empty($client_key_live)) {
+            if (empty($client_key_live) && $mode === 'live') {
                 $output .= $this->displayError($this->l('Invalid Configuration value for live client key'));
             }
 
-            if (empty($live_endpoint_url_prefix)) {
+            if (empty($api_key_test) && $mode === 'test') {
+                $output .= $this->displayError($this->l('Invalid Configuration value for test api key'));
+            }
+
+            if (empty($api_key_live) && $mode === 'live') {
+                $output .= $this->displayError($this->l('Invalid Configuration value for live api key'));
+            }
+
+            if (empty($live_endpoint_url_prefix) && $mode === 'live') {
                 $output .= $this->displayError($this->l('Invalid Configuration value for live endpoint URL prefix'));
             }
 
@@ -915,6 +923,7 @@ class AdyenOfficial extends PaymentModule
                 $output .= $this->displayConfirmation($this->l('Settings updated'));
             }
         }
+
         return $output . $this->displayGetStarted() . $this->displayForm();
     }
 
@@ -962,8 +971,12 @@ class AdyenOfficial extends PaymentModule
         // Get default Language
         $default_lang = (int)Configuration::get('PS_LANG_DEFAULT');
 
-        // Get current mode
-        $mode = Configuration::get('ADYEN_MODE');
+        // Get the mode before all the other params since it's needed to check which fields are required
+        if (Tools::isSubmit('submit' . $this->name)) {
+            $mode = (string)Tools::getValue('ADYEN_MODE');
+        } else {
+            $mode = Configuration::get('ADYEN_MODE');
+        }
 
         // Init Fields form array
         $fields_form = array(array());
@@ -1427,7 +1440,6 @@ class AdyenOfficial extends PaymentModule
             // get settings from post because post can give errors and you want to keep values
             $merchant_account = (string)Tools::getValue('ADYEN_MERCHANT_ACCOUNT');
             $integrator_name = (string)Tools::getValue('ADYEN_INTEGRATOR_NAME');
-            $mode = (string)Tools::getValue('ADYEN_MODE');
             $notification_username = (string)Tools::getValue('ADYEN_NOTI_USERNAME');
             $cron_job_token = $cronjobToken;
             $auto_cron_job_runner = Tools::getValue('ADYEN_AUTO_CRON_JOB_RUNNER');
