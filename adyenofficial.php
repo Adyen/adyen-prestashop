@@ -976,6 +976,66 @@ class AdyenOfficial extends PaymentModule
             )
         );
 
+        $fields_form[1]['form'] = array(
+            'legend' => array(
+                'title' => $this->l('Production Settings'),
+                'image' => '../img/admin/edit.gif'
+            ),
+            'input' => array(),
+            'submit' => array(
+                'title' => $this->l('Save'),
+                'class' => 'btn btn-default pull-right'
+            )
+        );
+
+        $fields_form[2]['form'] = array(
+            'legend' => array(
+                'title' => $this->l('Test Settings'),
+                'image' => '../img/admin/edit.gif'
+            ),
+            'input' => array(),
+            'submit' => array(
+                'title' => $this->l('Save'),
+                'class' => 'btn btn-default pull-right'
+            )
+        );
+
+        $fields_form[3]['form'] = array(
+            'legend' => array(
+                'title' => $this->l('Notification Settings'),
+                'image' => '../img/admin/edit.gif'
+            ),
+            'input' => array(),
+            'submit' => array(
+                'title' => $this->l('Save'),
+                'class' => 'btn btn-default pull-right'
+            )
+        );
+
+        $fields_form[4]['form'] = array(
+            'legend' => array(
+                'title' => $this->l('Payment method configurations'),
+                'image' => '../img/admin/edit.gif'
+            ),
+            'input' => array(),
+            'submit' => array(
+                'title' => $this->l('Save'),
+                'class' => 'btn btn-default pull-right'
+            )
+        );
+
+        $fields_form[5]['form'] = array(
+            'legend' => array(
+                'title' => $this->l('Developer settings'),
+                'image' => '../img/admin/edit.gif'
+            ),
+            'input' => array(),
+            'submit' => array(
+                'title' => $this->l('Save'),
+                'class' => 'btn btn-default pull-right'
+            )
+        );
+
         // Merchant account input
         $fields_form[0]['form']['input'][] = array(
             'type' => 'text',
@@ -1011,34 +1071,6 @@ class AdyenOfficial extends PaymentModule
             'required' => true
         );
 
-        $apiKeyTest = '';
-
-        try {
-            $apiKeyTest = $this->crypto->decrypt(Configuration::get('ADYEN_APIKEY_TEST'));
-        } catch (\Adyen\PrestaShop\exception\GenericLoggedException $e) {
-            $this->logger->error(
-                'For configuration "ADYEN_APIKEY_TEST" an exception was thrown: ' . $e->getMessage()
-            );
-        } catch (\Adyen\PrestaShop\exception\MissingDataException $e) {
-            $this->logger->warning('The configuration "ADYEN_APIKEY_TEST" has no value set.');
-        }
-
-        $apiKeyTestLastDigits = Tools::substr($apiKeyTest, -4);
-
-        $fields_form[0]['form']['input'][] = array(
-            'type' => 'password',
-            // phpcs:ignore Generic.Files.LineLength.TooLong
-            'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#generate-an-api-key">API key for Test</a>',
-            'name' => 'ADYEN_APIKEY_TEST',
-            'desc' => $apiKeyTestLastDigits ? $this->l('Saved key ends in: ') . $apiKeyTestLastDigits :
-                $this->l('Please fill your API key for Test'),
-            'class' => $apiKeyTestLastDigits ? 'adyen-input-green' : '',
-            'size' => 20,
-            'required' => true,
-            // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('Enter your test API Key. This can be generated in your test Customer Area > Account > API Credentials.')
-        );
-
         $apiKeyLive = '';
 
         try {
@@ -1053,7 +1085,7 @@ class AdyenOfficial extends PaymentModule
 
         $apiKeyLiveLastDigits = Tools::substr($apiKeyLive, -4);
 
-        $fields_form[0]['form']['input'][] = array(
+        $fields_form[1]['form']['input'][] = array(
             'type' => 'password',
             // phpcs:ignore Generic.Files.LineLength.TooLong
             'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#generate-an-api-key">API key for Live</a>',
@@ -1067,7 +1099,72 @@ class AdyenOfficial extends PaymentModule
             'hint' => $this->l('Enter your live API Key. This can be generated in your live Customer Area > Account > API Credentials. During testing, this field should be populated with dummy data.')
         );
 
-        $fields_form[0]['form']['input'][] = array(
+        // Client key input live
+        $fields_form[1]['form']['input'][] = array(
+            'type' => 'text',
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#generate-a-client-key">Client key live</a>',
+            'name' => 'ADYEN_CLIENTKEY_LIVE',
+            'size' => 50,
+            'required' => true,
+            'lang' => false,
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            'hint' => $this->l('We use your client key to authenticate requests from your payment environment. This can be generated in your live Customer Area > Account > API Credentials. During testing, this field should be populated with dummy data.')
+        );
+
+        // Live endpoint prefix
+        $fields_form[1]['form']['input'][] = array(
+            'type' => 'text',
+            'label' => $this->l('Live endpoint prefix'),
+            'name' => 'ADYEN_LIVE_ENDPOINT_URL_PREFIX',
+            'size' => 20,
+            'required' => true,
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            'hint' => $this->l('The URL prefix [random]-[company name] from your Adyen live Customer Area > Account > API URLs. During testing, this field should be populated with dummy data.')
+        );
+
+        $apiKeyTest = '';
+
+        try {
+            $apiKeyTest = $this->crypto->decrypt(Configuration::get('ADYEN_APIKEY_TEST'));
+        } catch (\Adyen\PrestaShop\exception\GenericLoggedException $e) {
+            $this->logger->error(
+                'For configuration "ADYEN_APIKEY_TEST" an exception was thrown: ' . $e->getMessage()
+            );
+        } catch (\Adyen\PrestaShop\exception\MissingDataException $e) {
+            $this->logger->warning('The configuration "ADYEN_APIKEY_TEST" has no value set.');
+        }
+
+        $apiKeyTestLastDigits = Tools::substr($apiKeyTest, -4);
+
+        $fields_form[2]['form']['input'][] = array(
+            'type' => 'password',
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#generate-an-api-key">API key for Test</a>',
+            'name' => 'ADYEN_APIKEY_TEST',
+            'desc' => $apiKeyTestLastDigits ? $this->l('Saved key ends in: ') . $apiKeyTestLastDigits :
+                $this->l('Please fill your API key for Test'),
+            'class' => $apiKeyTestLastDigits ? 'adyen-input-green' : '',
+            'size' => 20,
+            'required' => true,
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            'hint' => $this->l('Enter your test API Key. This can be generated in your test Customer Area > Account > API Credentials.')
+        );
+
+        // Client key input test
+        $fields_form[2]['form']['input'][] = array(
+            'type' => 'text',
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#generate-a-client-key">Client key test</a>',
+            'name' => 'ADYEN_CLIENTKEY_TEST',
+            'size' => 50,
+            'required' => true,
+            'lang' => false,
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            'hint' => $this->l('We use your client key to authenticate requests from your payment environment. This can be generated in your test Customer Area > Account > API Credentials.')
+        );
+
+        $fields_form[3]['form']['input'][] = array(
             'type' => 'text',
             // phpcs:ignore Generic.Files.LineLength.TooLong
             'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#set-up-notifications">Notification Username</a>',
@@ -1092,7 +1189,7 @@ class AdyenOfficial extends PaymentModule
             );
         }
 
-        $fields_form[0]['form']['input'][] = array(
+        $fields_form[3]['form']['input'][] = array(
             'type' => 'password',
             // phpcs:ignore Generic.Files.LineLength.TooLong
             'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#set-up-notifications">Notification Password</a>',
@@ -1116,7 +1213,7 @@ class AdyenOfficial extends PaymentModule
             $this->logger->error('The configuration "ADYEN_NOTI_HMAC" has no value set, please add the HMAC key!');
         }
 
-        $fields_form[0]['form']['input'][] = array(
+        $fields_form[3]['form']['input'][] = array(
             'type' => 'password',
             // phpcs:ignore Generic.Files.LineLength.TooLong
             'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#set-up-notifications">HMAC key for notifications</a>',
@@ -1144,7 +1241,7 @@ class AdyenOfficial extends PaymentModule
             );
         }
 
-        $fields_form[0]['form']['input'][] = array(
+        $fields_form[3]['form']['input'][] = array(
             'type' => 'text',
             'desc' => $cronjobToken ?
                 // phpcs:ignore Generic.Files.LineLength.TooLong
@@ -1164,7 +1261,7 @@ class AdyenOfficial extends PaymentModule
             'required' => true
         );
 
-        $fields_form[0]['form']['input'][] = array(
+        $fields_form[3]['form']['input'][] = array(
             'type' => 'radio',
             'values' => array(
                 array(
@@ -1187,56 +1284,7 @@ class AdyenOfficial extends PaymentModule
             'required' => true
         );
 
-        // Client key input test
-        $fields_form[0]['form']['input'][] = array(
-            'type' => 'text',
-            // phpcs:ignore Generic.Files.LineLength.TooLong
-            'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#generate-a-client-key">Client key test</a>',
-            'name' => 'ADYEN_CLIENTKEY_TEST',
-            'size' => 50,
-            'required' => true,
-            'lang' => false,
-            // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('We use your client key to authenticate requests from your payment environment. This can be generated in your test Customer Area > Account > API Credentials.')
-        );
-
-        // Client key input live
-        $fields_form[0]['form']['input'][] = array(
-            'type' => 'text',
-            // phpcs:ignore Generic.Files.LineLength.TooLong
-            'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#generate-a-client-key">Client key live</a>',
-            'name' => 'ADYEN_CLIENTKEY_LIVE',
-            'size' => 50,
-            'required' => true,
-            'lang' => false,
-            // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('We use your client key to authenticate requests from your payment environment. This can be generated in your live Customer Area > Account > API Credentials. During testing, this field should be populated with dummy data.')
-        );
-
-        // Live endpoint prefix
-        $fields_form[0]['form']['input'][] = array(
-            'type' => 'text',
-            'label' => $this->l('Live endpoint prefix'),
-            'name' => 'ADYEN_LIVE_ENDPOINT_URL_PREFIX',
-            'size' => 20,
-            'required' => true,
-            // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('The URL prefix [random]-[company name] from your Adyen live Customer Area > Account > API URLs. During testing, this field should be populated with dummy data.')
-        );
-
-        $fields_form[1]['form'] = array(
-            'legend' => array(
-                'title' => $this->l('Payment method configurations'),
-                'image' => '../img/admin/edit.gif'
-            ),
-            'input' => array(),
-            'submit' => array(
-                'title' => $this->l('Save'),
-                'class' => 'btn btn-default pull-right'
-            )
-        );
-
-        $fields_form[1]['form']['input'][] = array(
+        $fields_form[4]['form']['input'][] = array(
             'type' => 'radio',
             'label' => $this->l('Enable stored payment methods'),
             'name' => 'ADYEN_ENABLE_STORED_PAYMENT_METHODS',
@@ -1258,7 +1306,7 @@ class AdyenOfficial extends PaymentModule
         );
 
         // Apple pay merchant name input
-        $fields_form[1]['form']['input'][] = array(
+        $fields_form[4]['form']['input'][] = array(
             'type' => 'text',
             'label' => $this->l('Apple Pay merchant name'),
             'name' => 'ADYEN_APPLE_PAY_MERCHANT_NAME',
@@ -1269,7 +1317,7 @@ class AdyenOfficial extends PaymentModule
         );
 
         // Apple pay merchant identifier input
-        $fields_form[1]['form']['input'][] = array(
+        $fields_form[4]['form']['input'][] = array(
             'type' => 'text',
             'label' => $this->l('Apple Pay merchant identifier'),
             'name' => 'ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER',
@@ -1280,7 +1328,7 @@ class AdyenOfficial extends PaymentModule
         );
 
         // Google pay gateway merchant id
-        $fields_form[1]['form']['input'][] = array(
+        $fields_form[4]['form']['input'][] = array(
             'type' => 'text',
             'label' => $this->l('Google Pay gateway merchant ID'),
             'name' => 'ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID',
@@ -1291,7 +1339,7 @@ class AdyenOfficial extends PaymentModule
         );
 
         // Google pay merchant identifier input
-        $fields_form[1]['form']['input'][] = array(
+        $fields_form[4]['form']['input'][] = array(
             'type' => 'text',
             'label' => $this->l('Google Pay merchant identifier'),
             'name' => 'ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER',
@@ -1302,7 +1350,7 @@ class AdyenOfficial extends PaymentModule
         );
 
         if ($this->versionChecker->isPrestaShop16()) {
-            $fields_form[1]['form']['input'][] = array(
+            $fields_form[4]['form']['input'][] = array(
                 'type' => 'radio',
                 'label' => $this->l('Collapsable payment display'),
                 'name' => 'ADYEN_PAYMENT_DISPLAY_COLLAPSE',
@@ -1326,20 +1374,8 @@ class AdyenOfficial extends PaymentModule
             );
         }
 
-        $fields_form[2]['form'] = array(
-            'legend' => array(
-                'title' => $this->l('Developer settings'),
-                'image' => '../img/admin/edit.gif'
-            ),
-            'input' => array(),
-            'submit' => array(
-                'title' => $this->l('Save'),
-                'class' => 'btn btn-default pull-right'
-            )
-        );
-
         // Integrator name input
-        $fields_form[2]['form']['input'][] = array(
+        $fields_form[5]['form']['input'][] = array(
             'type' => 'text',
             'label' => $this->l('Integrator Name'),
             'name' => 'ADYEN_INTEGRATOR_NAME',
