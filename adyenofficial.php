@@ -957,6 +957,7 @@ class AdyenOfficial extends PaymentModule
     public function displayForm()
     {
         $this->context->controller->addCSS('modules/' . $this->name . '/views/css/adyen_admin.css', 'all');
+        $this->context->controller->addJS('modules/' . $this->name . '/views/js/adyen-admin.js');
 
         // Get default Language
         $default_lang = (int)Configuration::get('PS_LANG_DEFAULT');
