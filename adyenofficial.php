@@ -962,6 +962,9 @@ class AdyenOfficial extends PaymentModule
         // Get default Language
         $default_lang = (int)Configuration::get('PS_LANG_DEFAULT');
 
+        // Get current mode
+        $mode = Configuration::get('ADYEN_MODE');
+
         // Init Fields form array
         $fields_form = array(array());
 
@@ -1095,7 +1098,7 @@ class AdyenOfficial extends PaymentModule
                 $this->l('Please fill your API key for Live'),
             'class' => $apiKeyLiveLastDigits ? 'adyen-input-green' : '',
             'size' => 20,
-            'required' => true,
+            'required' => $mode === 'live',
             // phpcs:ignore Generic.Files.LineLength.TooLong
             'hint' => $this->l('Enter your live API Key. This can be generated in your live Customer Area > Account > API Credentials. During testing, this field should be populated with dummy data.')
         );
@@ -1107,7 +1110,7 @@ class AdyenOfficial extends PaymentModule
             'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#generate-a-client-key">Client key live</a>',
             'name' => 'ADYEN_CLIENTKEY_LIVE',
             'size' => 50,
-            'required' => true,
+            'required' => $mode === 'live',
             'lang' => false,
             // phpcs:ignore Generic.Files.LineLength.TooLong
             'hint' => $this->l('We use your client key to authenticate requests from your payment environment. This can be generated in your live Customer Area > Account > API Credentials. During testing, this field should be populated with dummy data.')
@@ -1119,7 +1122,7 @@ class AdyenOfficial extends PaymentModule
             'label' => $this->l('Live endpoint prefix'),
             'name' => 'ADYEN_LIVE_ENDPOINT_URL_PREFIX',
             'size' => 20,
-            'required' => true,
+            'required' => $mode === 'live',
             // phpcs:ignore Generic.Files.LineLength.TooLong
             'hint' => $this->l('The URL prefix [random]-[company name] from your Adyen live Customer Area > Account > API URLs. During testing, this field should be populated with dummy data.')
         );
@@ -1147,7 +1150,7 @@ class AdyenOfficial extends PaymentModule
                 $this->l('Please fill your API key for Test'),
             'class' => $apiKeyTestLastDigits ? 'adyen-input-green' : '',
             'size' => 20,
-            'required' => true,
+            'required' => $mode === 'test',
             // phpcs:ignore Generic.Files.LineLength.TooLong
             'hint' => $this->l('Enter your test API Key. This can be generated in your test Customer Area > Account > API Credentials.')
         );
@@ -1159,7 +1162,7 @@ class AdyenOfficial extends PaymentModule
             'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#generate-a-client-key">Client key test</a>',
             'name' => 'ADYEN_CLIENTKEY_TEST',
             'size' => 50,
-            'required' => true,
+            'required' => $mode === 'test',
             'lang' => false,
             // phpcs:ignore Generic.Files.LineLength.TooLong
             'hint' => $this->l('We use your client key to authenticate requests from your payment environment. This can be generated in your test Customer Area > Account > API Credentials.')
@@ -1440,7 +1443,6 @@ class AdyenOfficial extends PaymentModule
         } else {
             $merchant_account = Configuration::get('ADYEN_MERCHANT_ACCOUNT');
             $integrator_name = Configuration::get('ADYEN_INTEGRATOR_NAME');
-            $mode = Configuration::get('ADYEN_MODE');
             $notification_username = Configuration::get('ADYEN_NOTI_USERNAME');
             $cron_job_token = $cronjobToken;
             $auto_cron_job_runner = Configuration::get('ADYEN_AUTO_CRON_JOB_RUNNER');
