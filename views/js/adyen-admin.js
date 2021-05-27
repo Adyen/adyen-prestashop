@@ -24,6 +24,7 @@
 jQuery(document).ready(function() {
     const prodSection = $("div:contains('Production Settings'):last").parent();
     const testSection = $("div:contains('Test Settings'):last").parent();
+    const notificationSection = $("div:contains('Notification Settings'):last").parent();
     const radioInput = $("#configuration_form input[name='ADYEN_MODE']");
 
     radioInput.change(function () {
@@ -38,10 +39,12 @@ jQuery(document).ready(function() {
     function setRequiredParams(mode) {
         if (mode === 'live') {
             prodSection.find('.control-label').addClass('required');
+            notificationSection.find('.control-label').addClass('required');
             testSection.find('.control-label').removeClass('required');
         } else if (mode === 'test') {
             testSection.find('.control-label').addClass('required');
             prodSection.find('.control-label').removeClass('required');
+            notificationSection.find('.control-label').removeClass('required');
         }
     }
 });
