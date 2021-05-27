@@ -858,7 +858,7 @@ class AdyenOfficial extends PaymentModule
             }
 
             if (empty($notification_username) || !Validate::isGenericName($notification_username)) {
-                $output .= $this->displayError($this->l('Invalid Configuration value for Notification Username'));
+                $output .= $this->displayError($this->l('Invalid Configuration value for Webhook Username'));
             }
 
             if (empty($client_key_test) && $mode === 'test') {
@@ -882,11 +882,11 @@ class AdyenOfficial extends PaymentModule
             }
 
             if (empty($notification_password) && empty(Configuration::get('ADYEN_NOTI_PASSWORD')) && $mode === 'live') {
-                $output .= $this->displayError($this->l('Invalid Configuration value for the notification password'));
+                $output .= $this->displayError($this->l('Invalid Configuration value for the webhook password'));
             }
 
             if (empty($notification_hmac) && empty(Configuration::get('ADYEN_NOTI_HMAC')) && $mode === 'live') {
-                $output .= $this->displayError($this->l('Invalid Configuration value for the notification HMAC'));
+                $output .= $this->displayError($this->l('Invalid Configuration value for the webhook HMAC'));
             }
 
             if ($output == null) {
@@ -1035,7 +1035,7 @@ class AdyenOfficial extends PaymentModule
 
         $fields_form[3]['form'] = array(
             'legend' => array(
-                'title' => $this->l('Notification Settings'),
+                'title' => $this->l('Webhook Settings'),
                 'image' => '../img/admin/edit.gif'
             ),
             'input' => array(),
@@ -1200,12 +1200,12 @@ class AdyenOfficial extends PaymentModule
         $fields_form[3]['form']['input'][] = array(
             'type' => 'text',
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#set-up-notifications">Notification Username</a>',
+            'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#set-up-notifications">Webhook Username</a>',
             'name' => 'ADYEN_NOTI_USERNAME',
             'size' => 20,
             'required' => $mode === 'live',
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('This is the username for basic authentication of your live endpoints. Fill in your from your live Adyen Customer Area > Account > Webhooks > Edit or Add. To test the plugin without notifications, this field can be populated with dummy data.')
+            'hint' => $this->l('This is the username for basic authentication of your live endpoints. Fill in your from your live Adyen Customer Area > Account > Webhooks > Edit or Add. To test the plugin without webhooks, this field can be populated with dummy data.')
         );
 
         $notificationPassword = '';
@@ -1218,22 +1218,22 @@ class AdyenOfficial extends PaymentModule
             );
         } catch (\Adyen\PrestaShop\exception\MissingDataException $e) {
             $this->logger->error(
-                'The configuration "ADYEN_NOTI_PASSWORD" has no value set, please add the notification password!'
+                'The configuration "ADYEN_NOTI_PASSWORD" has no value set, please add the webhook password!'
             );
         }
 
         $fields_form[3]['form']['input'][] = array(
             'type' => 'password',
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#set-up-notifications">Notification Password</a>',
+            'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#set-up-notifications">Webhook Password</a>',
             'name' => 'ADYEN_NOTI_PASSWORD',
-            'desc' => $notificationPassword ? $this->l('Notification password saved') :
-                $this->l('Please fill your notification password'),
+            'desc' => $notificationPassword ? $this->l('Webhook password saved') :
+                $this->l('Please fill your webhook password'),
             'class' => $notificationPassword ? 'adyen-input-green' : '',
             'size' => 20,
             'required' => $mode === 'live',
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('This is the password for basic authentication of your live endpoints. Fill in your from your live Adyen Customer Area > Account > Webhooks > Edit or Add. To test the plugin without notifications, this field can be populated with dummy data.')
+            'hint' => $this->l('This is the password for basic authentication of your live endpoints. Fill in your from your live Adyen Customer Area > Account > Webhooks > Edit or Add. To test the plugin without webhooks, this field can be populated with dummy data.')
         );
 
         $notificationHmacKey = '';
@@ -1249,15 +1249,15 @@ class AdyenOfficial extends PaymentModule
         $fields_form[3]['form']['input'][] = array(
             'type' => 'password',
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#set-up-notifications">HMAC key for notifications</a>',
+            'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#set-up-notifications">HMAC key for webhooks</a>',
             'name' => 'ADYEN_NOTI_HMAC',
             'desc' => $notificationHmacKey ? $this->l('HMAC key saved') :
-                $this->l('Please fill your notification HMAC key'),
+                $this->l('Please fill your webhook HMAC key'),
             'class' => $notificationHmacKey ? 'adyen-input-green' : '',
             'size' => 20,
             'required' => $mode === 'live',
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('This is used to authenticate your endpoints. If you want to test the webhook notifications then get your Hmac key from your test or live Adyen Customer Area > Account > Webhooks > Edit or Add. To test the plugin without notifications, this field can be populated with dummy data.')
+            'hint' => $this->l('This is used to authenticate your endpoints. If you want to test the webhooks then get your Hmac key from your test or live Adyen Customer Area > Account > Webhooks > Edit or Add. To test the plugin without webhooks, this field can be populated with dummy data.')
         );
 
         $cronjobToken = '';
@@ -1309,10 +1309,10 @@ class AdyenOfficial extends PaymentModule
                 )
             ),
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('This EXPERIMENTAL feature was created to replace the requirement to initiate a cron job in order to process our notifications. When enabled, a cron job setup (as described in the documentation) is not required.'),
+            'hint' => $this->l('This EXPERIMENTAL feature was created to replace the requirement to initiate a cron job in order to process our webhooks. When enabled, a cron job setup (as described in the documentation) is not required.'),
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'desc' => $this->l('Only enable this experimental feature after you disabled your cron job processing the notifications.'),
-            'label' => $this->l('Process notifications upon receiving them'),
+            'desc' => $this->l('Only enable this experimental feature after you disabled your cron job processing the webhooks.'),
+            'label' => $this->l('Process webhooks upon receiving them'),
             'name' => 'ADYEN_AUTO_CRON_JOB_RUNNER',
             'required' => $mode === 'live'
         );
