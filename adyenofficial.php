@@ -869,11 +869,13 @@ class AdyenOfficial extends PaymentModule
                 $output .= $this->displayError($this->l('Invalid Configuration value for live client key'));
             }
 
-            if (empty($api_key_test) && empty(Configuration::get('ADYEN_APIKEY_TEST')) && $mode === 'test') {
+            $storedApikeyTest = Configuration::get('ADYEN_APIKEY_TEST');
+            if (empty($api_key_test) && empty($storedApikeyTest) && $mode === 'test') {
                 $output .= $this->displayError($this->l('Invalid Configuration value for test api key'));
             }
 
-            if (empty($api_key_live) && empty(Configuration::get('ADYEN_APIKEY_LIVE')) && $mode === 'live') {
+            $storedApikeyLive = Configuration::get('ADYEN_APIKEY_LIVE');
+            if (empty($api_key_live) && empty($storedApikeyLive) && $mode === 'live') {
                 $output .= $this->displayError($this->l('Invalid Configuration value for live api key'));
             }
 
@@ -881,11 +883,13 @@ class AdyenOfficial extends PaymentModule
                 $output .= $this->displayError($this->l('Invalid Configuration value for live endpoint URL prefix'));
             }
 
-            if (empty($notification_password) && empty(Configuration::get('ADYEN_NOTI_PASSWORD')) && $mode === 'live') {
+            $storedNotiPass = Configuration::get('ADYEN_NOTI_PASSWORD');
+            if (empty($notification_password) && empty($storedNotiPass) && $mode === 'live') {
                 $output .= $this->displayError($this->l('Invalid Configuration value for the webhook password'));
             }
 
-            if (empty($notification_hmac) && empty(Configuration::get('ADYEN_NOTI_HMAC')) && $mode === 'live') {
+            $storedNotiHmac = Configuration::get('ADYEN_NOTI_HMAC');
+            if (empty($notification_hmac) && empty($storedNotiHmac) && $mode === 'live') {
                 $output .= $this->displayError($this->l('Invalid Configuration value for the webhook HMAC'));
             }
 
