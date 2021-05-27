@@ -185,11 +185,13 @@ class AdyenOfficial extends PaymentModule
     }
 
     /**
+     * @param $mode
+     *
      * @return string[]
      */
-    public static function getAdyenConfigNames()
+    public static function getAdyenConfigNames($mode)
     {
-        return array(
+        $configs = array(
             'CONF_ADYENOFFICIAL_FIXED',
             'CONF_ADYENOFFICIAL_VAR',
             'CONF_ADYENOFFICIAL_FIXED_FOREIGN',
@@ -199,12 +201,7 @@ class AdyenOfficial extends PaymentModule
             'ADYEN_MODE',
             'ADYEN_NOTI_USERNAME',
             'ADYEN_NOTI_PASSWORD',
-            'ADYEN_APIKEY_TEST',
-            'ADYEN_APIKEY_LIVE',
-            'ADYEN_CLIENTKEY_TEST',
-            'ADYEN_CLIENTKEY_LIVE',
             'ADYEN_NOTI_HMAC',
-            'ADYEN_LIVE_ENDPOINT_URL_PREFIX',
             'ADYEN_CRONJOB_TOKEN',
             'ADYEN_APPLE_PAY_MERCHANT_NAME',
             'ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER',
@@ -215,6 +212,17 @@ class AdyenOfficial extends PaymentModule
             'ADYEN_ENABLE_STORED_PAYMENT_METHODS',
             'ADYEN_PAYMENT_DISPLAY_COLLAPSE'
         );
+
+        if ($mode === 'test') {
+            $configs[] = 'ADYEN_APIKEY_TEST';
+            $configs[] = 'ADYEN_CLIENTKEY_TEST';
+        } elseif ($mode === 'live') {
+            $configs[] = 'ADYEN_APIKEY_LIVE';
+            $configs[] = 'ADYEN_CLIENTKEY_LIVE';
+            $configs[] = 'ADYEN_LIVE_ENDPOINT_URL_PREFIX';
+        }
+
+        return $configs;
     }
 
     /**
