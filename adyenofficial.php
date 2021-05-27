@@ -869,11 +869,11 @@ class AdyenOfficial extends PaymentModule
                 $output .= $this->displayError($this->l('Invalid Configuration value for live client key'));
             }
 
-            if (empty($api_key_test) && $mode === 'test') {
+            if (empty($api_key_test) && empty(Configuration::get('ADYEN_APIKEY_TEST')) && $mode === 'test') {
                 $output .= $this->displayError($this->l('Invalid Configuration value for test api key'));
             }
 
-            if (empty($api_key_live) && $mode === 'live') {
+            if (empty($api_key_live) && empty(Configuration::get('ADYEN_APIKEY_LIVE')) && $mode === 'live') {
                 $output .= $this->displayError($this->l('Invalid Configuration value for live api key'));
             }
 
