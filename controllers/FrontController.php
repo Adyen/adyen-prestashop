@@ -394,7 +394,7 @@ abstract class FrontController extends \ModuleFrontController
                 $this->adyenPaymentResponseModel->deletePaymentResponseByCartId($cart->id);
 
                 // In case of refused payment there is no order created and the cart needs to be cloned and reinitiated
-                $this->cartService->cloneCurrentCart($this->context, $cart);
+                $this->cartService->cloneCurrentCart($this->context, $cart, $this->versionChecker->isPrestaShop16());
 
                 $this->logger->error(
                     "There was an error with the payment method. id:  " . $cart->id .

@@ -39,12 +39,16 @@ class Cart
         $old_cart_secure_key = $cart->secure_key;
         // To save the customer id of current cart id and reassign the same to new cart
         $old_cart_customer_id = (int)$cart->id_customer;
+        $old_delivery_address_id = $cart->id_address_delivery;
+        $old_invoice_address_id = $cart->id_address_invoice;
 
         // To fetch the current cart products
         $cart_products = $cart->getProducts();
         // Creating new cart object
         $context->cart = new \Cart();
         $context->cart->id_lang = $context->language->id;
+        $context->cart->id_address_delivery = $old_delivery_address_id;
+        $context->cart->id_address_invoice = $old_invoice_address_id;
 
         $context->cart->id_currency = $context->currency->id;
         $context->cart->secure_key = $old_cart_secure_key;
