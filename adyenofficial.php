@@ -235,7 +235,7 @@ class AdyenOfficial extends PaymentModule
                 'displayPaymentTop',
                 'actionFrontControllerSetMedia',
                 'paymentOptions',
-                'displayPaymentReturn',
+                'paymentReturn',
                 'actionOrderSlipAdd',
                 'actionEmailSendBefore'
             )
