@@ -24,6 +24,7 @@ The plugin integrates card component (Secured Fields) using Adyen Checkout for a
 - POLi
 - Qiwi
 - SEPA Direct Debit
+- Swish
 - Trustly
 - TWINT
 - UnionPay
