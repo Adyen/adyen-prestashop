@@ -2,8 +2,32 @@
 Use Adyen's plugin for PrestaShop to offer frictionless payments online, in-app, and in-store.
 
 ## Integration
-The plugin integrates card component(Secured Fields) using Adyen Checkout for all card payments. Local payment methods are integrated with Checkout Payment Methods.
+The plugin integrates card component (Secured Fields) using Adyen Checkout for all card payments.
 
+### Supported payment methods
+- Credit and debit cards (non 3D secure, 3D secure 1, 3D secure 2 native)
+- Stored card payment methods (One click payment methods)
+- Applepay
+- Bank Transfer
+- Billdesk
+- Blik
+- Dotpay
+- Finnish e-banking
+- GCash
+- JCB
+- MobilePay
+- MOLPay online banking
+- MoMo Wallet
+- PayMaya E-Wallet
+- Paypal
+- Paysafecard
+- POLi
+- Qiwi
+- SEPA Direct Debit
+- Trustly
+- TWINT
+- UnionPay
+- YooMoney
 ## Requirements
 This plugin supports PrestaShop version 1.6.1 or 1.7
 
