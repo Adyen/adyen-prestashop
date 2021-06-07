@@ -131,7 +131,7 @@ jQuery(document).ready(function() {
         var placeOrderAllowed = {};
         var popupModal;
 
-        var skipComponents = ['giropay'];
+        var skipComponents = [];
         const handleActionComponents = ['paypal'];
 
         var componentBillingAddress = selectedInvoiceAddress;
@@ -372,8 +372,9 @@ jQuery(document).ready(function() {
             paymentForm.on('submit', function(e) {
                 e.preventDefault();
 
-                if (!paymentMethod.details) {
-                    placeOrderAllowed[paymentMethod.type] = true;
+                const requiredDetails = paymentMethod.details.filter(detail => detail.optional === false);
+                if (!paymentMethod.details || requiredDetails.length === 0) {
+                    placeOrderAllowed = true;
                 }
 
                 if (!placeOrderAllowed[paymentMethod.type]) {
