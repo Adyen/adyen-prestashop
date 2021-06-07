@@ -14,6 +14,7 @@ The plugin integrates card component (Secured Fields) using Adyen Checkout for a
 - Dotpay
 - Finnish e-banking
 - GCash
+- Google Pay
 - JCB
 - MobilePay
 - MOLPay online banking
