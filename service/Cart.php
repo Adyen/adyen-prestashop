@@ -65,6 +65,7 @@ class Cart
         }
 
         // Field does not exist in prestashop 16
+        // Else set the cart qties manually to ensure consistency with layout header
         if (!$isPrestashop16) {
             // Get the checkout_session_data field of the previous cart
             $checkoutSessionData = \Db::getInstance()->getValue(
@@ -76,11 +77,14 @@ class Cart
                 'UPDATE ' . _DB_PREFIX_ . 'cart SET checkout_session_data = "' . pSQL($checkoutSessionData) . '"
         WHERE id_cart = ' . (int)$newCartId
             );
+        } else {
+            $context->smarty->assign('cart_qties', $context->cart->nbProducts());
         }
 
         // to map the new cart with the customer
         $context->cart->id_customer = $old_cart_customer_id;
         $context->cart->id_guest = $cart->id_guest;
+
         // to save the new cart
         $context->cart->save();
         if ($context->cart->id) {
