@@ -26,6 +26,7 @@ jQuery(document).ready(function() {
     const testSection = $("div:contains('Test Settings'):last").parent();
     const notificationSection = $("div:contains('Notification Settings'):last").parent();
     const radioInput = $("#configuration_form input[name='ADYEN_MODE']");
+    populateApiKeys();
 
     radioInput.change(function () {
         setRequiredParams(this.value);
@@ -45,6 +46,19 @@ jQuery(document).ready(function() {
             testSection.find('.control-label').addClass('required');
             prodSection.find('.control-label').removeClass('required');
             notificationSection.find('.control-label').removeClass('required');
+        }
+    }
+
+    /**
+     * Populate the api key inputs with some dummy asterisks for better visibility
+     */
+    function populateApiKeys() {
+        if (prodSection.find(":contains('Please fill your API key')").length === 0) {
+            prodSection.find(':password').val('****************');
+        }
+
+        if (testSection.find(":contains('Please fill your API key')").length === 0) {
+            testSection.find(':password').val('****************');
         }
     }
 });

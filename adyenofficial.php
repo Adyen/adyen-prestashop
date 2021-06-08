@@ -37,6 +37,8 @@ require_once _PS_ROOT_DIR_ . '/modules/adyenofficial/vendor/autoload.php';
 // this file cannot contain the `use` operator for PrestaShop 1.6
 class AdyenOfficial extends PaymentModule
 {
+    const DISPLAYED_PASSWORD = '****************';
+
     /**
      * @var string
      */
@@ -882,11 +884,13 @@ class AdyenOfficial extends PaymentModule
             }
 
             $storedApikeyTest = Configuration::get('ADYEN_APIKEY_TEST');
+            // If input is empty AND database value is empty AND mode is test
             if (empty($api_key_test) && empty($storedApikeyTest) && $mode === 'test') {
                 $output .= $this->displayError($this->l('Invalid Configuration value for test api key'));
             }
 
             $storedApikeyLive = Configuration::get('ADYEN_APIKEY_LIVE');
+            // If input is empty AND database value is empty AND mode is live
             if (empty($api_key_live) && empty($storedApikeyLive) && $mode === 'live') {
                 $output .= $this->displayError($this->l('Invalid Configuration value for live api key'));
             }
@@ -944,11 +948,11 @@ class AdyenOfficial extends PaymentModule
                     $this->setDefaultConfigurationForAutoCronjobRunner();
                 }
 
-                if (!empty($api_key_test)) {
+                if (!empty($api_key_test) && $api_key_test !== self::DISPLAYED_PASSWORD) {
                     Configuration::updateValue('ADYEN_APIKEY_TEST', $this->crypto->encrypt($api_key_test));
                 }
 
-                if (!empty($api_key_live)) {
+                if (!empty($api_key_live) && $api_key_live !== self::DISPLAYED_PASSWORD) {
                     Configuration::updateValue('ADYEN_APIKEY_LIVE', $this->crypto->encrypt($api_key_live));
                 }
 
