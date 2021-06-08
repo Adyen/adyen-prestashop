@@ -1370,7 +1370,7 @@ class AdyenOfficial extends PaymentModule
             'size' => 50,
             'required' => false,
             'lang' => false,
-            'hint' => $this->l('')
+            'hint' => 'Name of your Adyen merchant account for which the payments will be processed'
         );
 
         // Apple pay merchant identifier input
@@ -1381,7 +1381,7 @@ class AdyenOfficial extends PaymentModule
             'size' => 50,
             'required' => false,
             'lang' => false,
-            'hint' => $this->l('')
+            'hint' => 'The Authorisation MID value in your live Customer Area > Payment methods > Apple Pay.'
         );
 
         // Google pay gateway merchant id
@@ -1392,7 +1392,7 @@ class AdyenOfficial extends PaymentModule
             'size' => 50,
             'required' => false,
             'lang' => false,
-            'hint' => $this->l('')
+            'hint' => 'Name of your Adyen merchant account for which the payments will be processed.'
         );
 
         // Google pay merchant identifier input
@@ -1403,7 +1403,8 @@ class AdyenOfficial extends PaymentModule
             'size' => 50,
             'required' => false,
             'lang' => false,
-            'hint' => $this->l('')
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            'hint' => 'The Authorisation MID value in your live Customer Area > Payment methods > Google Pay. When testing, you can use any value.'
         );
 
         if ($this->versionChecker->isPrestaShop16()) {
