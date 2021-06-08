@@ -1120,6 +1120,7 @@ class AdyenOfficial extends PaymentModule
             'required' => true
         );
 
+        // Production Settings
         $apiKeyLive = '';
 
         try {
@@ -1172,6 +1173,7 @@ class AdyenOfficial extends PaymentModule
             'hint' => $this->l('The URL prefix [random]-[company name] from your Adyen live Customer Area > Account > API URLs. During testing, this field should be populated with dummy data.')
         );
 
+        // Test Settings
         $apiKeyTest = '';
 
         try {
@@ -1213,6 +1215,7 @@ class AdyenOfficial extends PaymentModule
             'hint' => $this->l('We use your client key to authenticate requests from your payment environment. This can be generated in your test Customer Area > Account > API Credentials.')
         );
 
+        // Webhook Settings
         $fields_form[3]['form']['input'][] = array(
             'type' => 'text',
             // phpcs:ignore Generic.Files.LineLength.TooLong
@@ -1333,6 +1336,7 @@ class AdyenOfficial extends PaymentModule
             'required' => $mode === 'live'
         );
 
+        // Payment method configurations
         $fields_form[4]['form']['input'][] = array(
             'type' => 'radio',
             'label' => $this->l('Enable stored payment methods'),
@@ -1423,7 +1427,7 @@ class AdyenOfficial extends PaymentModule
             );
         }
 
-        // Integrator name input
+        // Developer settings
         $fields_form[5]['form']['input'][] = array(
             'type' => 'text',
             'label' => $this->l('Integrator Name'),
