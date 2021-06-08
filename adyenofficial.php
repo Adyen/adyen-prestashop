@@ -185,11 +185,13 @@ class AdyenOfficial extends PaymentModule
     }
 
     /**
+     * Return either the test, live or all the adyen configs, based on the passed parameter
+     *
      * @param $mode
      *
      * @return string[]
      */
-    public static function getAdyenConfigNames($mode)
+    public static function getAdyenConfigNames($mode = null)
     {
         $configs = array(
             'CONF_ADYENOFFICIAL_FIXED',
@@ -213,13 +215,23 @@ class AdyenOfficial extends PaymentModule
             'ADYEN_PAYMENT_DISPLAY_COLLAPSE'
         );
 
+        $testConfigs = [
+            'ADYEN_APIKEY_TEST',
+            'ADYEN_CLIENTKEY_TEST'
+        ];
+
+        $liveConfigs = [
+            'ADYEN_APIKEY_LIVE',
+            'ADYEN_CLIENTKEY_LIVE',
+            'ADYEN_LIVE_ENDPOINT_URL_PREFIX'
+        ];
+
         if ($mode === 'test') {
-            $configs[] = 'ADYEN_APIKEY_TEST';
-            $configs[] = 'ADYEN_CLIENTKEY_TEST';
+            $configs = array_merge($configs, $testConfigs);
         } elseif ($mode === 'live') {
-            $configs[] = 'ADYEN_APIKEY_LIVE';
-            $configs[] = 'ADYEN_CLIENTKEY_LIVE';
-            $configs[] = 'ADYEN_LIVE_ENDPOINT_URL_PREFIX';
+            $configs = array_merge($configs, $liveConfigs);
+        } else {
+            $configs = array_merge($configs, $testConfigs, $liveConfigs);
         }
 
         return $configs;
