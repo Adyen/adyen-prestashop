@@ -7,15 +7,19 @@ The plugin integrates card component (Secured Fields) using Adyen Checkout for a
 ### Supported payment methods
 - Credit and debit cards (non 3D secure, 3D secure 1, 3D secure 2 native)
 - Stored card payment methods (One click payment methods)
+- Alipay
 - Applepay
 - Bank Transfer
 - Billdesk
 - Blik
 - Dotpay
+- Electronic Payment Standard (EPS)
 - Finnish e-banking
 - GCash
 - Google Pay
+- iDeal
 - JCB
+- Klarna
 - MobilePay
 - MOLPay online banking
 - MoMo Wallet
@@ -24,6 +28,7 @@ The plugin integrates card component (Secured Fields) using Adyen Checkout for a
 - Paysafecard
 - POLi
 - Qiwi
+- RatePAY
 - SEPA Direct Debit
 - Swish
 - Trustly
