@@ -215,16 +215,16 @@ class AdyenOfficial extends PaymentModule
             'ADYEN_PAYMENT_DISPLAY_COLLAPSE'
         );
 
-        $testConfigs = [
+        $testConfigs = array(
             'ADYEN_APIKEY_TEST',
             'ADYEN_CLIENTKEY_TEST'
-        ];
+        );
 
-        $liveConfigs = [
+        $liveConfigs = array(
             'ADYEN_APIKEY_LIVE',
             'ADYEN_CLIENTKEY_LIVE',
             'ADYEN_LIVE_ENDPOINT_URL_PREFIX'
-        ];
+        );
 
         if ($mode === 'test') {
             $configs = array_merge($configs, $testConfigs);
