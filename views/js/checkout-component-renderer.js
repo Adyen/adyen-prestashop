@@ -24,8 +24,9 @@
 jQuery(document).ready(function() {
 
     // Version will be undefined on 1.6 on page load, if one-page checkout is enabled
+    // Hence the function to setup the observer is called before the config is checked
     if (typeof IS_PRESTA_SHOP_16 === 'undefined' || IS_PRESTA_SHOP_16) {
-        setupObserver16();
+        setupPaymentMethodsObserver16();
     }
 
     const prestaShopPlaceOrderButton = $('#payment-confirmation button');
@@ -38,46 +39,11 @@ jQuery(document).ready(function() {
 
     // Set which methods have their own button
     componentButtonPaymentMethods = paymentMethodsWithPayButtonFromComponent;
-
     renderPaymentMethods();
 
+    // Do not call 17 setup function if version is undefined
     if (!IS_PRESTA_SHOP_16) {
-        const queryParams = new URLSearchParams(window.location.search);
-        if (queryParams.has('message')) {
-            showRedirectErrorMessage(queryParams.get('message'));
-        }
-
-        $('input[name="payment-option"]').on('change', function(event) {
-
-            let selectedPaymentForm = $(
-                '#pay-with-' + event.target.id + '-form .adyen-payment');
-
-            // Adyen payment method
-            if (selectedPaymentForm.length > 0) {
-
-                // not local payment method
-                if (!('localPaymentMethod' in
-                    selectedPaymentForm.get(0).dataset)) {
-
-                    resetPrestaShopPlaceOrderButtonVisibility();
-                    return;
-                }
-
-                let selectedAdyenPaymentMethodCode = selectedPaymentForm.get(
-                    0).dataset.localPaymentMethod;
-
-                if (!IS_PRESTA_SHOP_16) {
-                    if (componentButtonPaymentMethods.includes(selectedAdyenPaymentMethodCode)) {
-                        prestaShopPlaceOrderButton.hide();
-                    } else {
-                        prestaShopPlaceOrderButton.show();
-                    }
-                }
-            } else {
-                // In 1.7 in case the pay button is hidden and the customer selects a non adyen method
-                resetPrestaShopPlaceOrderButtonVisibility();
-            }
-        });
+        setupPaymentMethods17();
     }
 
     function resetPrestaShopPlaceOrderButtonVisibility() {
@@ -616,10 +582,12 @@ jQuery(document).ready(function() {
         return placeOrderInProgress;
     }
 
-    // For prestashop 1.6 one page checkout retrieves the payment methods via ajax when the t&c checkbox is clicked,
-    // so to render the components we call the renderPaymentMethods when the HOOK_PAYMENT childs are being added or
-    // removed
-    function setupObserver16() {
+    /**
+     *  For prestashop 1.6, one page checkout retrieves the payment methods via ajax when the t&c checkbox is
+     *  clicked, so to render the components we call the renderPaymentMethods when the HOOK_PAYMENT children are being
+     *  added or removed
+     */
+    function setupPaymentMethodsObserver16() {
         // Select the node that will be observed for mutations
         const targetNode = document.getElementById('HOOK_PAYMENT');
 
@@ -663,5 +631,44 @@ jQuery(document).ready(function() {
         } catch (e) {
             // observer exception
         }
+    }
+
+    /**
+     * Setup payment methods on 17 by calling functionality on option change
+     */
+    function setupPaymentMethods17() {
+        const queryParams = new URLSearchParams(window.location.search);
+        if (queryParams.has('message')) {
+            showRedirectErrorMessage(queryParams.get('message'));
+        }
+
+        $('input[name="payment-option"]').on('change', function(event) {
+
+            let selectedPaymentForm = $('#pay-with-' + event.target.id + '-form .adyen-payment');
+
+            // Adyen payment method
+            if (selectedPaymentForm.length > 0) {
+
+                // not local payment method
+                if (!('localPaymentMethod' in
+                    selectedPaymentForm.get(0).dataset)) {
+
+                    resetPrestaShopPlaceOrderButtonVisibility();
+                    return;
+                }
+
+                let selectedAdyenPaymentMethodCode = selectedPaymentForm.get(
+                    0).dataset.localPaymentMethod;
+
+                if (componentButtonPaymentMethods.includes(selectedAdyenPaymentMethodCode)) {
+                    prestaShopPlaceOrderButton.hide();
+                } else {
+                    prestaShopPlaceOrderButton.show();
+                }
+            } else {
+                // In 1.7 in case the pay button is hidden and the customer selects a non adyen method
+                resetPrestaShopPlaceOrderButtonVisibility();
+            }
+        });
     }
 });
