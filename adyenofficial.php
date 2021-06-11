@@ -864,49 +864,49 @@ class AdyenOfficial extends PaymentModule
 
             // validating the input
             if (empty($merchant_account) || !Validate::isGenericName($merchant_account)) {
-                $output .= $this->displayError($this->l('Invalid Configuration value for Merchant Account'));
+                $output .= $this->displayError($this->l('Invalid configuration value for Merchant Account'));
             }
 
             if (!Validate::isGenericName($integrator_name) || preg_match('/[^A-Za-z0-9]/', $integrator_name)) {
-                $output .= $this->displayError($this->l('Invalid Configuration value for Integrator Name'));
+                $output .= $this->displayError($this->l('Invalid configuration value for Integrator Name'));
             }
 
             if (empty($notification_username) || !Validate::isGenericName($notification_username)) {
-                $output .= $this->displayError($this->l('Invalid Configuration value for Webhook Username'));
+                $output .= $this->displayError($this->l('Invalid configuration value for Webhook Username'));
             }
 
             if (empty($client_key_test) && $mode === 'test') {
-                $output .= $this->displayError($this->l('Invalid Configuration value for test client key'));
+                $output .= $this->displayError($this->l('Invalid configuration value for test client key'));
             }
 
             if (empty($client_key_live) && $mode === 'live') {
-                $output .= $this->displayError($this->l('Invalid Configuration value for live client key'));
+                $output .= $this->displayError($this->l('Invalid configuration value for live client key'));
             }
 
             $storedApikeyTest = Configuration::get('ADYEN_APIKEY_TEST');
             // If input is empty AND database value is empty AND mode is test
             if (empty($api_key_test) && empty($storedApikeyTest) && $mode === 'test') {
-                $output .= $this->displayError($this->l('Invalid Configuration value for test api key'));
+                $output .= $this->displayError($this->l('Invalid configuration value for test API key'));
             }
 
             $storedApikeyLive = Configuration::get('ADYEN_APIKEY_LIVE');
             // If input is empty AND database value is empty AND mode is live
             if (empty($api_key_live) && empty($storedApikeyLive) && $mode === 'live') {
-                $output .= $this->displayError($this->l('Invalid Configuration value for live api key'));
+                $output .= $this->displayError($this->l('Invalid configuration value for live API key'));
             }
 
             if (empty($live_endpoint_url_prefix) && $mode === 'live') {
-                $output .= $this->displayError($this->l('Invalid Configuration value for live endpoint URL prefix'));
+                $output .= $this->displayError($this->l('Invalid configuration value for live endpoint URL prefix'));
             }
 
             $storedNotiPass = Configuration::get('ADYEN_NOTI_PASSWORD');
             if (empty($notification_password) && empty($storedNotiPass) && $mode === 'live') {
-                $output .= $this->displayError($this->l('Invalid Configuration value for the webhook password'));
+                $output .= $this->displayError($this->l('Invalid configuration value for the webhook password'));
             }
 
             $storedNotiHmac = Configuration::get('ADYEN_NOTI_HMAC');
             if (empty($notification_hmac) && empty($storedNotiHmac) && $mode === 'live') {
-                $output .= $this->displayError($this->l('Invalid Configuration value for the webhook HMAC'));
+                $output .= $this->displayError($this->l('Invalid configuration value for the webhook HMAC'));
             }
 
             if ($output == null) {
