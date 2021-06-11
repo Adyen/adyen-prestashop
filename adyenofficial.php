@@ -108,6 +108,11 @@ class AdyenOfficial extends PaymentModule
     private $orderStateAdapter;
 
     /**
+     * @var Adyen\PrestaShop\service\Checkout
+     */
+    private $checkout;
+
+    /**
      * Adyen constructor.
      *
      * @throws \PrestaShop\PrestaShop\Adapter\CoreException
@@ -165,6 +170,10 @@ class AdyenOfficial extends PaymentModule
 
         $this->orderStateAdapter = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
             'Adyen\PrestaShop\service\adapter\classes\order\OrderStateAdapter'
+        );
+
+        $this->checkout = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
+            'Adyen\PrestaShop\service\Checkout'
         );
 
         // start for 1.6
@@ -1447,6 +1456,11 @@ class AdyenOfficial extends PaymentModule
     public function hookPaymentOptions()
     {
         $payment_options = array();
+
+        // If we are not at the payment method step, we don't need to fetch payment methods
+        if (!$this->checkout->isPaymentMethodStepNext($this->context->cart)) {
+            return array();
+        }
 
         //retrieve payment methods
         $paymentMethods = $this->helper_data->fetchPaymentMethods($this->context->cart, $this->context->language);
