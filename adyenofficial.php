@@ -113,6 +113,11 @@ class AdyenOfficial extends PaymentModule
     private $checkout;
 
     /**
+     * @var \PrestaShop\PrestaShop\Core\Payment\PaymentOption[]
+     */
+    private $paymentMethods;
+
+    /**
      * Adyen constructor.
      *
      * @throws \PrestaShop\PrestaShop\Adapter\CoreException
@@ -1463,13 +1468,13 @@ class AdyenOfficial extends PaymentModule
         }
 
         //retrieve payment methods
-        $paymentMethods = $this->helper_data->fetchPaymentMethods($this->context->cart, $this->context->language);
+        $this->paymentMethods = $this->helper_data->fetchPaymentMethods($this->context->cart, $this->context->language);
 
         if (!$this->context->customer->is_guest &&
-            !empty($paymentMethods['storedPaymentMethods']) &&
+            !empty($this->paymentMethods['storedPaymentMethods']) &&
             Configuration::get('ADYEN_ENABLE_STORED_PAYMENT_METHODS')
         ) {
-            $storedPaymentMethods = $paymentMethods['storedPaymentMethods'];
+            $storedPaymentMethods = $this->paymentMethods['storedPaymentMethods'];
             foreach ($storedPaymentMethods as $storedPaymentMethod) {
                 if (!empty($storedPaymentMethod)) {
                     // Only show on the frontend the Ecommerce stored payment methods and not the ContAuth
@@ -1511,8 +1516,8 @@ class AdyenOfficial extends PaymentModule
             }
         }
 
-        if (!empty($paymentMethods['paymentMethods'])) {
-            foreach ($paymentMethods['paymentMethods'] as $paymentMethod) {
+        if (!empty($this->paymentMethods['paymentMethods'])) {
+            foreach ($this->paymentMethods['paymentMethods'] as $paymentMethod) {
                 // Skip unsupported payment methods
                 if ($this->isUnsupportedPaymentMethod($paymentMethod['type'])) {
                     continue;
@@ -1721,7 +1726,13 @@ class AdyenOfficial extends PaymentModule
             return null;
         }
 
-        $paymentMethods = $this->helper_data->fetchPaymentMethods($this->context->cart, $this->context->language);
+        // If the payment methods have not been fetched yet (on 1.6)
+        if (empty($this->paymentMethods)) {
+            $this->paymentMethods = $this->helper_data->fetchPaymentMethods(
+                $this->context->cart,
+                $this->context->language
+            );
+        }
 
         $selectedDeliveryAddressId = null;
         if ($this->context->cart->id_address_delivery) {
@@ -1749,7 +1760,7 @@ class AdyenOfficial extends PaymentModule
         }
 
         $smartyVariables = array(
-            'paymentMethodsResponse' => json_encode($paymentMethods),
+            'paymentMethodsResponse' => json_encode($this->paymentMethods),
             'selectedDeliveryAddressId' => $selectedDeliveryAddressId,
             'selectedInvoiceAddressId' => $selectedInvoiceAddressId,
             'selectedInvoiceAddress' => json_encode($selectedInvoiceAddressArray)
