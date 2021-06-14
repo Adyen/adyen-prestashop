@@ -1668,16 +1668,23 @@ class AdyenOfficial extends PaymentModule
         $this->context->controller->addCSS('modules/' . $this->name . '/views/css/adyen.css', 'all');
 
         $payments = "";
-        $paymentMethods = $this->helper_data->fetchPaymentMethods($this->context->cart, $this->context->language);
-        if (!$this->context->customer->is_guest &&
-            !empty($paymentMethods['storedPaymentMethods']) &&
-            Configuration::get('ADYEN_ENABLE_STORED_PAYMENT_METHODS')
-        ) {
-            $payments .= $this->getOneClickPaymentMethods($paymentMethods);
+        // If the payment methods have not been fetched yet
+        if (empty($this->paymentMethods)) {
+            $this->paymentMethods = $this->helper_data->fetchPaymentMethods(
+                $this->context->cart,
+                $this->context->language
+            );
         }
 
-        if (!empty($paymentMethods['paymentMethods'])) {
-            $payments .= $this->getLocalPaymentMethods($paymentMethods);
+        if (!$this->context->customer->is_guest &&
+            !empty($this->paymentMethods['storedPaymentMethods']) &&
+            Configuration::get('ADYEN_ENABLE_STORED_PAYMENT_METHODS')
+        ) {
+            $payments .= $this->getOneClickPaymentMethods($this->paymentMethods);
+        }
+
+        if (!empty($this->paymentMethods['paymentMethods'])) {
+            $payments .= $this->getLocalPaymentMethods($this->paymentMethods);
         }
 
         return $payments;
