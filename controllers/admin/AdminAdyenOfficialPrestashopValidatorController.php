@@ -149,8 +149,9 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
      */
     private function validateModuleConfigs($shopId)
     {
+        $mode = (string)Tools::getValue('ADYEN_MODE');
         $invalidConfigs = array();
-        foreach (AdyenOfficial::getAdyenConfigNames() as $key) {
+        foreach (AdyenOfficial::getAdyenConfigNames($mode) as $key) {
             if (!Configuration::hasKey($key, null, null, $shopId)) {
                 $invalidConfigs[] = $key;
                 $this->logger->error(sprintf('%s configuration not found in ps_configuration table', $key));
