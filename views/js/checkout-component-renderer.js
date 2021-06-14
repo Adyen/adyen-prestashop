@@ -400,7 +400,7 @@ jQuery(document).ready(function() {
             // TODO remove when fix is rolled out in a new checkout component version
             delete configuration.data;
 
-            if (action.type === 'threeDS2Challenge' || action.type === 'await') {
+            if (action.type === 'threeDS2Challenge' || action.type === 'await' || action.type === 'qrCode') {
                 showPopup();
             }
 
