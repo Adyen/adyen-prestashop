@@ -70,6 +70,7 @@
         </div>
     {/if}
     <script>
+        // Use var on all variables instead of const for prestashop 1.6 one-page checkout
         var adyenCheckoutConfiguration = document.querySelector('#adyen-checkout-configuration').dataset;
 
         var IS_PRESTA_SHOP_16 = adyenCheckoutConfiguration.isPrestaShop16;
@@ -80,7 +81,7 @@
         var selectedInvoiceAddress = JSON.parse(adyenCheckoutConfiguration.selectedInvoiceAddress);
         var paymentMethodsConfigurations = JSON.parse(adyenCheckoutConfiguration.paymentMethodsConfigurations);
         var paymentMethodsWithPayButtonFromComponent = JSON.parse(adyenCheckoutConfiguration.paymentMethodsWithPayButtonFromComponent);
-        const enableStoredPaymentMethods = adyenCheckoutConfiguration.enableStoredPaymentMethods;
+        var enableStoredPaymentMethods = adyenCheckoutConfiguration.enableStoredPaymentMethods;
 
         var currencyIsoCode = adyenCheckoutConfiguration.currencyIsoCode;
         var totalAmountInMinorUnits = adyenCheckoutConfiguration.totalAmountInMinorUnits;
@@ -94,10 +95,10 @@
         };
 
         // Translated texts
-        const isNotAvailableText = "{l s=' is not available' js=1 mod='adyenofficial'}";
-        const placeOrderErrorRequiredConditionsText = "{l s='The order cannot be placed. Please make sure you accepted all the required conditions.' js=1 mod='adyenofficial'}";
-        const placeOrderInfoRequiredConditionsText = "{l s='Accept the required conditions which may be visible at the bottom of the page.' js=1 mod='adyenofficial'}";
-        const placeOrderInfoInProgressText = "{l s='Placing order is in progress' js=1 mod='adyenofficial'}";
-        const totalText = "{l s='total' js=1 mod='adyenofficial'}";
+        var isNotAvailableText = "{l s=' is not available' js=1 mod='adyenofficial'}";
+        var placeOrderErrorRequiredConditionsText = "{l s='The order cannot be placed. Please make sure you accepted all the required conditions.' js=1 mod='adyenofficial'}";
+        var placeOrderInfoRequiredConditionsText = "{l s='Accept the required conditions which may be visible at the bottom of the page.' js=1 mod='adyenofficial'}";
+        var placeOrderInfoInProgressText = "{l s='Placing order is in progress' js=1 mod='adyenofficial'}";
+        var totalText = "{l s='total' js=1 mod='adyenofficial'}";
     </script>
 {/if}
