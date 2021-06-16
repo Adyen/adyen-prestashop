@@ -1684,7 +1684,11 @@ class AdyenOfficial extends PaymentModule
             return null;
         }
 
-        $this->context->controller->addCSS('modules/' . $this->name . '/views/css/adyen.css', 'all');
+        $loadAdyenCss = Configuration::get('ADYEN_ENABLE_CHECKOUT_STYLING');
+
+        if ($loadAdyenCss) {
+            $this->context->controller->addCSS('modules/' . $this->name . '/views/css/adyen.css', 'all');
+        }
 
         $payments = "";
         $paymentMethods = $this->helper_data->fetchPaymentMethods($this->context->cart, $this->context->language);
@@ -2201,10 +2205,14 @@ class AdyenOfficial extends PaymentModule
             array('position' => 'bottom', 'priority' => 170)
         );
 
-        $controllerAdapter->registerStylesheet(
-            'adyen-adyencss',
-            'modules/' . $this->name . '/views/css/adyen.css'
-        );
+        $enableAdyenCss = Configuration::get('ADYEN_ENABLE_CHECKOUT_STYLING');
+
+        if ($enableAdyenCss) {
+            $controllerAdapter->registerStylesheet(
+                'adyen-adyencss',
+                'modules/' . $this->name . '/views/css/adyen.css'
+            );
+        }
 
         // Only for Order and Order one page checkout controller
         if ($controller->php_self == 'order' || $controller->php_self == 'order-opc') {
