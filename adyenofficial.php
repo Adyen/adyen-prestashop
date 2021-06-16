@@ -1555,7 +1555,7 @@ class AdyenOfficial extends PaymentModule
         $payment_options = array();
 
         // If we are not at the payment method step, we don't need to fetch payment methods
-        if (!$this->checkout->isPaymentMethodStepNext($this->context->cart)) {
+        if (!$this->checkout->requireFetchPaymentMethods($this->context->cart)) {
             return array();
         }
 

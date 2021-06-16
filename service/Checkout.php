@@ -46,14 +46,15 @@ class Checkout extends \Adyen\Service\Checkout
     }
 
     /**
-     * Check if the payment method step is next in the checkout process.
-     * If an error/exception occurs return true to be safe
+     * Check if the payment method step is next in the checkout process and if so,
+     * return true to require fetching payment methods. If an error/exception occurs
+     * return true to require fetching payment methods, to be on the safe side.
      *
      * @param Cart $cart
      *
      * @return bool
      */
-    public function isPaymentMethodStepNext(Cart $cart)
+    public function requireFetchPaymentMethods(Cart $cart)
     {
         try {
             $checkoutSessionData = \Db::getInstance()->getValue(
