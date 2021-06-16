@@ -214,7 +214,8 @@ class AdyenOfficial extends PaymentModule
             'ADYEN_AUTO_CRON_JOB_RUNNER',
             'ADYEN_ADMIN_PATH',
             'ADYEN_ENABLE_STORED_PAYMENT_METHODS',
-            'ADYEN_PAYMENT_DISPLAY_COLLAPSE'
+            'ADYEN_PAYMENT_DISPLAY_COLLAPSE',
+            'ADYEN_ENABLE_CHECKOUT_STYLING'
         );
 
         $testConfigs = array(
@@ -339,7 +340,8 @@ class AdyenOfficial extends PaymentModule
         return $this->updateCronJobToken() &&
             $this->setDefaultConfigurationForAutoCronjobRunner() &&
             $this->setDefaultConfigurationForEnableStoredPaymentMethods() &&
-            $this->setDefaultConfigurationForPaymentDisplayCollapse();
+            $this->setDefaultConfigurationForPaymentDisplayCollapse() &&
+            $this->setDefaultConfigurationForEnableAdyenCheckoutStyling();
     }
 
     /**
@@ -666,6 +668,14 @@ class AdyenOfficial extends PaymentModule
     public function setDefaultConfigurationForPaymentDisplayCollapse()
     {
         return Configuration::updateValue('ADYEN_PAYMENT_DISPLAY_COLLAPSE', 0);
+    }
+
+    /**
+     * @return bool
+     */
+    public function setDefaultConfigurationForEnableAdyenCheckoutStyling()
+    {
+        return Configuration::updateValue('ADYEN_ENABLE_CHECKOUT_STYLING', 1);
     }
 
     /**
