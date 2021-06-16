@@ -871,6 +871,7 @@ class AdyenOfficial extends PaymentModule
             $google_pay_merchant_identifier = Tools::getValue('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER');
             $payment_display_collapse = Tools::getValue('ADYEN_PAYMENT_DISPLAY_COLLAPSE');
             $enable_stored_payment_methods = Tools::getValue('ADYEN_ENABLE_STORED_PAYMENT_METHODS');
+            $enable_checkout_styling = Tools::getValue('ADYEN_ENABLE_CHECKOUT_STYLING');
 
             // validating the input
             if (empty($merchant_account) || !Validate::isGenericName($merchant_account)) {
@@ -933,6 +934,7 @@ class AdyenOfficial extends PaymentModule
                 Configuration::updateValue('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER', $google_pay_merchant_identifier);
                 Configuration::updateValue('ADYEN_PAYMENT_DISPLAY_COLLAPSE', $payment_display_collapse);
                 Configuration::updateValue('ADYEN_ENABLE_STORED_PAYMENT_METHODS', $enable_stored_payment_methods);
+                Configuration::updateValue('ADYEN_ENABLE_CHECKOUT_STYLING', $enable_checkout_styling);
                 Configuration::updateValue(
                     'ADYEN_ADMIN_PATH',
                     $this->crypto->encrypt(basename(_PS_ADMIN_DIR_))
@@ -1444,6 +1446,28 @@ class AdyenOfficial extends PaymentModule
 
         // Developer settings
         $fields_form[5]['form']['input'][] = array(
+            'type' => 'radio',
+            'label' => $this->l('Adyen checkout styling'),
+            'name' => 'ADYEN_ENABLE_CHECKOUT_STYLING',
+            'values' => array(
+                array(
+                    'id' => 'enable',
+                    'value' => 1,
+                    'label' => $this->l('Enable')
+                ),
+                array(
+                    'id' => 'disable',
+                    'value' => 0,
+                    'label' => $this->l('Disable')
+                )
+            ),
+            'is_bool' => true,
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            'hint' => 'Indicates whether the CSS styling provided by Adyen should be loaded or not, in the checkout page',
+            'required' => false
+        );
+
+        $fields_form[5]['form']['input'][] = array(
             'type' => 'text',
             'label' => $this->l('Integrator Name'),
             'name' => 'ADYEN_INTEGRATOR_NAME',
@@ -1503,6 +1527,7 @@ class AdyenOfficial extends PaymentModule
             $google_pay_merchant_identifier = Tools::getValue('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER');
             $payment_display_collapse = Tools::getValue('ADYEN_PAYMENT_DISPLAY_COLLAPSE');
             $enable_stored_payment_methods = Tools::getValue('ADYEN_ENABLE_STORED_PAYMENT_METHODS');
+            $enable_adyen_checkout_styling = Tools::getValue('ADYEN_ENABLE_CHECKOUT_STYLING');
         } else {
             $merchant_account = Configuration::get('ADYEN_MERCHANT_ACCOUNT');
             $integrator_name = Configuration::get('ADYEN_INTEGRATOR_NAME');
@@ -1518,6 +1543,7 @@ class AdyenOfficial extends PaymentModule
             $google_pay_merchant_identifier = Configuration::get('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER');
             $payment_display_collapse = Configuration::get('ADYEN_PAYMENT_DISPLAY_COLLAPSE');
             $enable_stored_payment_methods = Configuration::get('ADYEN_ENABLE_STORED_PAYMENT_METHODS');
+            $enable_adyen_checkout_styling = Configuration::get('ADYEN_ENABLE_CHECKOUT_STYLING');
         }
 
         // Load current value
@@ -1536,6 +1562,7 @@ class AdyenOfficial extends PaymentModule
         $helper->fields_value['ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER'] = $google_pay_merchant_identifier;
         $helper->fields_value['ADYEN_PAYMENT_DISPLAY_COLLAPSE'] = $payment_display_collapse;
         $helper->fields_value['ADYEN_ENABLE_STORED_PAYMENT_METHODS'] = $enable_stored_payment_methods;
+        $helper->fields_value['ADYEN_ENABLE_CHECKOUT_STYLING'] = $enable_adyen_checkout_styling;
 
         return $helper->generateForm($fields_form);
     }
