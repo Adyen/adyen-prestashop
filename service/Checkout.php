@@ -46,7 +46,8 @@ class Checkout extends \Adyen\Service\Checkout
     }
 
     /**
-     * Check if the payment method step is next in the checkout process
+     * Check if the payment method step is next in the checkout process.
+     * If an error/exception occurs return true to be safe
      *
      * @param Cart $cart
      *
@@ -59,11 +60,28 @@ class Checkout extends \Adyen\Service\Checkout
                 'SELECT checkout_session_data FROM ' . _DB_PREFIX_ . 'cart WHERE id_cart = ' . (int)$cart->id
             );
 
+            if (empty($checkoutSessionData)) {
+                $this->logger->error('Session data is empty: %s', $checkoutSessionData);
+
+                return true;
+            }
+
             $jsonData = json_decode($checkoutSessionData, true);
 
-            // If delivery step is complete and payment method is reachable
-            if ($jsonData[self::DELIVERY_STEP][self::IS_COMPLETE] &&
-                $jsonData[self::PAYMENT_METHOD_STEP][self::IS_REACHABLE]) {
+            if (is_null($jsonData) && json_last_error() !== JSON_ERROR_NONE) {
+                $this->logger->error(sprintf('Invalid session JSON data: %s', $checkoutSessionData));
+
+                return true;
+            }
+
+            // Check if all keys exist, and then check if the delivery step is complete and payment method is reachable
+            if (array_key_exists(self::DELIVERY_STEP, $jsonData) &&
+                array_key_exists(self::IS_COMPLETE, $jsonData[self::DELIVERY_STEP]) &&
+                array_key_exists(self::PAYMENT_METHOD_STEP, $jsonData) &&
+                array_key_exists(self::IS_REACHABLE, $jsonData[self::PAYMENT_METHOD_STEP]) &&
+                $jsonData[self::DELIVERY_STEP][self::IS_COMPLETE] &&
+                $jsonData[self::PAYMENT_METHOD_STEP][self::IS_REACHABLE]
+            ) {
                 return true;
             }
 
