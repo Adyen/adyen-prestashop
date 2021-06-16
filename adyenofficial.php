@@ -882,7 +882,8 @@ class AdyenOfficial extends PaymentModule
                 $output .= $this->displayError($this->l('Invalid configuration value for Integrator Name'));
             }
 
-            if (empty($notification_username) || !Validate::isGenericName($notification_username)) {
+            if ((empty($notification_username) || !Validate::isGenericName($notification_username)) &&
+                $mode === 'live') {
                 $output .= $this->displayError($this->l('Invalid configuration value for Webhook Username'));
             }
 
@@ -912,12 +913,12 @@ class AdyenOfficial extends PaymentModule
 
             $storedNotiPass = Configuration::get('ADYEN_NOTI_PASSWORD');
             if (empty($notification_password) && empty($storedNotiPass) && $mode === 'live') {
-                $output .= $this->displayError($this->l('Invalid configuration value for the webhook password'));
+                $output .= $this->displayError($this->l('Invalid configuration value for the Webhook password'));
             }
 
             $storedNotiHmac = Configuration::get('ADYEN_NOTI_HMAC');
             if (empty($notification_hmac) && empty($storedNotiHmac) && $mode === 'live') {
-                $output .= $this->displayError($this->l('Invalid configuration value for the webhook HMAC'));
+                $output .= $this->displayError($this->l('Invalid configuration value for the Webhook HMAC'));
             }
 
             if ($output == null) {
