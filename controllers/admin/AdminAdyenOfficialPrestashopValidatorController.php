@@ -149,7 +149,7 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
      */
     private function validateModuleConfigs($shopId)
     {
-        $mode = (string)Tools::getValue('ADYEN_MODE');
+        $mode = Configuration::get('ADYEN_MODE');
         $invalidConfigs = array();
         foreach (AdyenOfficial::getAdyenConfigNames($mode) as $key) {
             if (!Configuration::hasKey($key, null, null, $shopId)) {
