@@ -24,7 +24,7 @@
 jQuery(document).ready(function() {
     const prodSection = $("div:contains('Production Settings'):last").parent();
     const testSection = $("div:contains('Test Settings'):last").parent();
-    const notificationSection = $("div:contains('Notification Settings'):last").parent();
+    const notificationSection = $("div:contains('Webhook Settings'):last").parent();
     const radioInput = $("#configuration_form input[name='ADYEN_MODE']");
     populateApiKeys();
 

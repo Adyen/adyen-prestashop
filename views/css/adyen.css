@@ -143,3 +143,13 @@ body#checkout section.checkout-step .payment-options label {
 .adyen-payment .adyen-collapser.adyen-payment-method-label {
     cursor: pointer;
 }
+
+@media only screen and (max-width: 480px) {
+    body#checkout section.checkout-step .payment-options .custom-radio {
+        margin-right: 0;
+    }
+
+    .payment-option label {
+        text-align: left;
+    }
+}
