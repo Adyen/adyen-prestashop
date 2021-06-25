@@ -1,1 +1,1 @@
-For detailed changelog please visit [our github releases page](https://github.com/Adyen/adyen-prestashop/releases)
+For detailed changelog please visit [our Github releases page](https://github.com/Adyen/adyen-prestashop/releases)
