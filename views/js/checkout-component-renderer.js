@@ -22,96 +22,28 @@
  */
 
 jQuery(document).ready(function() {
+
+    // Version will be undefined on 1.6 on page load, if one-page checkout is enabled
+    // Hence the function to setup the observer is called before the config is checked
+    if (typeof IS_PRESTA_SHOP_16 === 'undefined' || IS_PRESTA_SHOP_16) {
+        setupPaymentMethodsObserver16();
+    }
+
+    const prestaShopPlaceOrderButton = $('#payment-confirmation button');
+    var placeOrderInProgress = false;
+    var componentButtonPaymentMethods;
+
     if (!window.ADYEN_CHECKOUT_CONFIG) {
         return;
     }
 
-    const componentButtonPaymentMethods = paymentMethodsWithPayButtonFromComponent;
-    const prestaShopPlaceOrderButton = $('#payment-confirmation button');
-    var placeOrderInProgress = false;
-
+    // Set which methods have their own button
+    componentButtonPaymentMethods = paymentMethodsWithPayButtonFromComponent;
     renderPaymentMethods();
 
-    // For prestashop 1.6 one page checkout retrieves the payment methods via
-    // ajax when the terms and conditions checkbox is clicked, so to render the
-    // components we call the renderPaymentMethods when the HOOK_PAYMENT childs
-    // are being added or removed
-    if (typeof IS_PRESTA_SHOP_16 !== 'undefined' && IS_PRESTA_SHOP_16) {
-        // Select the node that will be observed for mutations
-        const targetNode = document.getElementById('HOOK_PAYMENT');
-
-        // In case the targetNode does not exist return early
-        if (null === targetNode) {
-            return;
-        }
-
-        // Options for the observer (which mutations to observe)
-        const config = {attributes: true, childList: true, subtree: false};
-
-        // Callback function to execute when mutations are observed
-        const callback = function(mutationsList, observer) {
-            // Use traditional 'for loops' for IE 11
-            for (const mutation of mutationsList) {
-                if (mutation.type === 'childList') {
-                    // The children are being changed so disconnet the observer
-                    // at first to avoid infinite loop
-                    observer.disconnect();
-                    // Render the adyen checkout components
-                    renderPaymentMethods();
-                }
-            }
-
-            // Connect the observer again in case the checkbox is clicked
-            // multiple times
-            observer.observe(targetNode, config);
-        };
-
-        // Create an observer instance linked to the callback function
-        const observer = new MutationObserver(callback);
-
-        // Start observing the target node for configured mutations
-        try {
-            observer.observe(targetNode, config);
-        } catch (e) {
-            // observer exception
-        }
-    } else {
-        const queryParams = new URLSearchParams(window.location.search);
-        if (queryParams.has('message')) {
-            showRedirectErrorMessage(queryParams.get('message'));
-        }
-
-        $('input[name="payment-option"]').on('change', function(event) {
-
-            let selectedPaymentForm = $(
-                '#pay-with-' + event.target.id + '-form .adyen-payment');
-
-            // Adyen payment method
-            if (selectedPaymentForm.length > 0) {
-
-                // not local payment method
-                if (!('localPaymentMethod' in
-                    selectedPaymentForm.get(0).dataset)) {
-
-                    resetPrestaShopPlaceOrderButtonVisibility();
-                    return;
-                }
-
-                let selectedAdyenPaymentMethodCode = selectedPaymentForm.get(
-                    0).dataset.localPaymentMethod;
-
-                if (!IS_PRESTA_SHOP_16) {
-                    if (componentButtonPaymentMethods.includes(selectedAdyenPaymentMethodCode)) {
-                        prestaShopPlaceOrderButton.hide();
-                    } else {
-                        prestaShopPlaceOrderButton.show();
-                    }
-                }
-            } else {
-                // In 1.7 in case the pay button is hidden and the customer selects a non adyen method
-                resetPrestaShopPlaceOrderButtonVisibility();
-            }
-        });
+    // Do not call 17 setup function if version is undefined
+    if (!IS_PRESTA_SHOP_16) {
+        setupPaymentMethods17();
     }
 
     function resetPrestaShopPlaceOrderButtonVisibility() {
@@ -468,7 +400,7 @@ jQuery(document).ready(function() {
             // TODO remove when fix is rolled out in a new checkout component version
             delete configuration.data;
 
-            if (action.type === 'threeDS2Challenge' || action.type === 'await') {
+            if (action.type === 'threeDS2Challenge' || action.type === 'await' || action.type === 'qrCode') {
                 showPopup();
             }
 
@@ -648,5 +580,95 @@ jQuery(document).ready(function() {
 
     function isPlaceOrderInProgress() {
         return placeOrderInProgress;
+    }
+
+    /**
+     *  For prestashop 1.6, one page checkout retrieves the payment methods via ajax when the t&c checkbox is
+     *  clicked, so to render the components we call the renderPaymentMethods when the HOOK_PAYMENT children are being
+     *  added or removed
+     */
+    function setupPaymentMethodsObserver16() {
+        // Select the node that will be observed for mutations
+        const targetNode = document.getElementById('HOOK_PAYMENT');
+
+        // In case the targetNode does not exist return early
+        if (null === targetNode) {
+            return;
+        }
+
+        // Options for the observer (which mutations to observe)
+        const config = {attributes: true, childList: true, subtree: false};
+
+        // Callback function to execute when mutations are observed
+        const callback = function(mutationsList, observer) {
+            // extra check to make sure that we are on 1.6
+            if (IS_PRESTA_SHOP_16) {
+                // Set which methods have their own button
+                componentButtonPaymentMethods = paymentMethodsWithPayButtonFromComponent;
+                // Use traditional 'for loops' for IE 11
+                for (const mutation of mutationsList) {
+                    if (mutation.type === 'childList') {
+                        // The children are being changed so disconnet the observer
+                        // at first to avoid infinite loop
+                        observer.disconnect();
+                        // Render the adyen checkout components
+                        renderPaymentMethods();
+                    }
+                }
+
+                // Connect the observer again in case the checkbox is clicked
+                // multiple times
+                observer.observe(targetNode, config);
+            }
+        };
+
+        // Create an observer instance linked to the callback function
+        const observer = new MutationObserver(callback);
+
+        // Start observing the target node for configured mutations
+        try {
+            observer.observe(targetNode, config);
+        } catch (e) {
+            // observer exception
+        }
+    }
+
+    /**
+     * Setup payment methods on 17 by calling functionality on option change
+     */
+    function setupPaymentMethods17() {
+        const queryParams = new URLSearchParams(window.location.search);
+        if (queryParams.has('message')) {
+            showRedirectErrorMessage(queryParams.get('message'));
+        }
+
+        $('input[name="payment-option"]').on('change', function(event) {
+
+            let selectedPaymentForm = $('#pay-with-' + event.target.id + '-form .adyen-payment');
+
+            // Adyen payment method
+            if (selectedPaymentForm.length > 0) {
+
+                // not local payment method
+                if (!('localPaymentMethod' in
+                    selectedPaymentForm.get(0).dataset)) {
+
+                    resetPrestaShopPlaceOrderButtonVisibility();
+                    return;
+                }
+
+                let selectedAdyenPaymentMethodCode = selectedPaymentForm.get(
+                    0).dataset.localPaymentMethod;
+
+                if (componentButtonPaymentMethods.includes(selectedAdyenPaymentMethodCode)) {
+                    prestaShopPlaceOrderButton.hide();
+                } else {
+                    prestaShopPlaceOrderButton.show();
+                }
+            } else {
+                // In 1.7 in case the pay button is hidden and the customer selects a non adyen method
+                resetPrestaShopPlaceOrderButtonVisibility();
+            }
+        });
     }
 });
