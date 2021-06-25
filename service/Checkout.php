@@ -89,7 +89,7 @@ class Checkout extends \Adyen\Service\Checkout
             return false;
         } catch (\Exception $e) {
             $this->logger->error(
-                sprintf('An error while checking if the payment method step is next: %s', $e->getMessage())
+                sprintf('An error occurred while checking if the payment method step is next: %s', $e->getMessage())
             );
 
             return true;
