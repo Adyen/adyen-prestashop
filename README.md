@@ -13,7 +13,7 @@ This plugin supports PrestaShop version ~1.6.1 and ~1.7
 ## Documentation
 Please find the relevant documentation for
 - [How to start with Adyen](https://www.adyen.com/get-started)
-- [Adyen Plugin for Shopware 6](https://docs.adyen.com/plugins/prestashop)
+- [Adyen Plugin for Prestashop](https://docs.adyen.com/plugins/prestashop)
 - [Adyen PHP API Library](https://docs.adyen.com/development-resources/libraries#php)
 
 ## Support
