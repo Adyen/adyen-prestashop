@@ -7,6 +7,8 @@ We strongly encourage you to join us in contributing to this repository so every
 * Resolved bug fixes and issues
 * Any general improvements
 
+Read our [**contribution guidelines**](CONTRIBUTING.md) to find out how.
+
 ## Requirements
 This plugin supports PrestaShop version ~1.6.1 and ~1.7
 
@@ -59,8 +61,6 @@ The plugin integrates card component (Secured Fields) using Adyen Checkout for a
 If a payment method of your choice is not included in the list above, you can reach out to us so we can add support for the requested method.
 
 To learn more about enabling payment methods in your merchant account please visit our [docs page](https://docs.adyen.com/payment-methods#add-payment-methods-to-your-account).
-
-Read our [**contribution guidelines**](CONTRIBUTING.md) to find out how.
 
 ## Installation and configuration
 Please use the [official documentation](https://docs.adyen.com/plugins/prestashop) of the plugin .
