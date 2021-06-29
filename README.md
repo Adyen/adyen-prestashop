@@ -1,6 +1,28 @@
 # Adyen Payment plugin for PrestaShop
 Use Adyen's plugin for PrestaShop to offer frictionless payments online, in-app, and in-store.
 
+## Contributing
+We strongly encourage you to join us in contributing to this repository so everyone can benefit from:
+* New features and functionality
+* Resolved bug fixes and issues
+* Any general improvements
+
+Read our [**contribution guidelines**](CONTRIBUTING.md) to find out how.
+
+## Requirements
+This plugin supports PrestaShop version ~1.6.1 and ~1.7
+
+## Documentation
+Please find the relevant documentation for
+- [How to start with Adyen](https://www.adyen.com/get-started)
+- [Adyen Plugin for Prestashop](https://docs.adyen.com/plugins/prestashop)
+- [Adyen PHP API Library](https://docs.adyen.com/development-resources/libraries#php)
+
+## Support
+If you have a feature request, or spotted a bug or a technical problem, create a GitHub issue. For other questions, contact our [support team](https://support.adyen.com/hc/en-us/requests/new?ticket_form_id=360000705420).
+
+# For developers
+
 ## Integration
 The plugin integrates card component (Secured Fields) using Adyen Checkout for all card payments. Local payment methods are integrated with Checkout Payment Methods.
 
@@ -39,25 +61,12 @@ The plugin integrates card component (Secured Fields) using Adyen Checkout for a
 If a payment method of your choice is not included in the list above, you can reach out to us so we can add support for the requested method.
 
 To learn more about enabling payment methods in your merchant account please visit our [docs page](https://docs.adyen.com/payment-methods#add-payment-methods-to-your-account).
-## Requirements
-This plugin supports PrestaShop version 1.6.1 or 1.7
-
-## Contributing
-We strongly encourage you to join us in contributing to this repository so everyone can benefit from:
-* New features and functionality
-* Resolved bug fixes and issues
-* Any general improvements
-
-Read our [**contribution guidelines**](CONTRIBUTING.md) to find out how.
 
 ## Installation and configuration
-Please use the [official documentation](https://docs.adyen.com/plugins/prestashop) of the plugin 
+Please use the [official documentation](https://docs.adyen.com/plugins/prestashop) of the plugin .
 
 ## Deprecation strategy
 Whenever a not private function or property is tagged deprecated, please be aware that in the next major release it will be permanently removed.
-
-## Support
-If you have a feature request, or spotted a bug or a technical problem, create a GitHub issue. For other questions, contact our [support team](https://support.adyen.com/hc/en-us/requests/new?ticket_form_id=360000705420).
 
 ## API Library
 This module is using the Adyen APIs Library for PHP for all (API) connections to Adyen.
