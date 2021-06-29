@@ -16,7 +16,7 @@
  * Adyen PrestaShop plugin
  *
  * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2020 Adyen B.V.
+ * @copyright (c) 2021 Adyen B.V.
  * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
@@ -112,6 +112,14 @@ class Data
         if (!$merchantAccount) {
             $this->logger->error(
                 "The merchant account field is empty, check your Adyen configuration in Prestashop."
+            );
+
+            return array();
+        }
+
+        if (!$this->configuration->clientKey) {
+            $this->logger->error(
+                "The client key field is empty, check your Adyen configuration in Prestashop."
             );
 
             return array();

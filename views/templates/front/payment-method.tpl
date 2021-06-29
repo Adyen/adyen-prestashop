@@ -21,11 +21,7 @@
  * See the LICENSE file for more info.
  *}
 
-{if !$clientKey}
-    <form method="post">
-        {include './clientkey-error.tpl'}
-    </form>
-{else}
+{if $clientKey}
     <div class="row adyen-payment {$paymentMethodType|escape:'html':'UTF-8'}"
          data-local-payment-method="{$paymentMethodType|escape:'html':'UTF-8'}">
         {if $isPrestaShop16}
