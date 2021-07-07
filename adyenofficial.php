@@ -586,7 +586,7 @@ class AdyenOfficial extends PaymentModule
             $newOrderState->module_name = $this->name;
             $newOrderState->invoice = false;
             $newOrderState->color = '#4169E1';
-            $newOrderState->logable = true;
+            $newOrderState->logable = false;
             $newOrderState->delivery = false;
             $newOrderState->hidden = false;
             $newOrderState->shipped = false;
