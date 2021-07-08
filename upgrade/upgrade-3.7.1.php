@@ -69,7 +69,7 @@ function set_waiting_for_payment_status_logable_to_false()
     return Db::getInstance(_PS_USE_SQL_SLAVE_)->update(
         'order_state',
         array('logable' => false),
-        'id_order_state = ' . $orderStateConfigurationId,
+        'id_order_state = ' . (int)$orderStateConfigurationId,
         1
     );
 }
