@@ -90,7 +90,6 @@ class Order
      */
     public function updateOrderState($order, $orderStateId)
     {
-        $templateVars = array();
         // check if the new order state is the same as the current state
         $currentOrderStateId = (int)$order->getCurrentState();
 

@@ -37,7 +37,7 @@ if (!defined('_PS_VERSION_')) {
  *
  * @return bool
  */
-function upgrade_module_3_7_1(AdyenOfficial $module)
+function upgrade_module_3_7_1()
 {
     return set_waiting_for_payment_status_logable_to_false();
 }
