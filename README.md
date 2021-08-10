@@ -23,7 +23,7 @@ If you have a feature request, or spotted a bug or a technical problem, create a
 
 ### Disclaimer
 We only support the plugin with no customizations. 
-Please make sure before you raise an issue that you revisit it on a newly installed "vanilla" prestashop environment. With this practise you can make sure that the issue is not created by a customization or a third party plugin.
+Please make sure before you raise an issue that you revisit it on a newly installed "vanilla" PrestaShop environment. With this practise you can make sure that the issue is not created by a customization or a third party plugin.
 
 # For developers
 
