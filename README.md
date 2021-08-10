@@ -42,6 +42,7 @@ The plugin integrates card component (Secured Fields) using Adyen Checkout for a
 - Electronic Payment Standard (EPS)
 - Finnish e-banking
 - GCash
+- Giropay
 - Google Pay
 - iDeal
 - JCB
