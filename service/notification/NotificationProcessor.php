@@ -150,6 +150,18 @@ class NotificationProcessor
      */
     public function processNotification($unprocessedNotification)
     {
+        // try to process the notification in other modules
+        /* @var null|boolean $hookResult */
+        $hookResult = null;
+        Hook::exec(
+            'actionAdyenProcessNotificationBefore',
+            ['unprocessedNotification' => $unprocessedNotification, 'hookResult' => &$hookResult]
+        );
+        // if $hookResult is not null, the notification have been processed by an other module
+        if ($hookResult !== null) {
+            return $hookResult;
+        }
+        
         // Validate if order is available by merchant reference
         /* @var OrderCore $order */
         $order = $this->orderAdapter->getOrderByCartId($unprocessedNotification['merchant_reference']);
