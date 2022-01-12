@@ -56,6 +56,7 @@ class Checkout extends \Adyen\Service\Checkout
      */
     public function requireFetchPaymentMethods(Cart $cart)
     {
+        $isVirtualCart = $cart->isVirtualCart();
         try {
             $checkoutSessionData = \Db::getInstance()->getValue(
                 'SELECT checkout_session_data FROM ' . _DB_PREFIX_ . 'cart WHERE id_cart = ' . (int)$cart->id
@@ -76,11 +77,11 @@ class Checkout extends \Adyen\Service\Checkout
             }
 
             // Check if all keys exist, and then check if the delivery step is complete and payment method is reachable
-            if (array_key_exists(self::DELIVERY_STEP, $jsonData) &&
+            if (($isVirtualCart || array_key_exists(self::DELIVERY_STEP, $jsonData)) &&
                 array_key_exists(self::IS_COMPLETE, $jsonData[self::DELIVERY_STEP]) &&
                 array_key_exists(self::PAYMENT_METHOD_STEP, $jsonData) &&
                 array_key_exists(self::IS_REACHABLE, $jsonData[self::PAYMENT_METHOD_STEP]) &&
-                $jsonData[self::DELIVERY_STEP][self::IS_COMPLETE] &&
+                ($isVirtualCart || $jsonData[self::DELIVERY_STEP][self::IS_COMPLETE]) &&
                 $jsonData[self::PAYMENT_METHOD_STEP][self::IS_REACHABLE]
             ) {
                 return true;
