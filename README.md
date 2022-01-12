@@ -10,7 +10,9 @@ We strongly encourage you to join us in contributing to this repository so every
 Read our [**contribution guidelines**](CONTRIBUTING.md) to find out how.
 
 ## Requirements
-This plugin supports PrestaShop version ~1.6.1 and ~1.7
+This plugin supports PrestaShop version ~1.6.1 (deprecated) and ~1.7.
+As of 31 December 2021 no bug fixes or new features will be released for PrestaShop 1.6.x.
+After 31 December 2022, you will not be able to use our plugin with PrestaShop 1.6.x.
 
 ## Documentation
 Please find the relevant documentation for
