@@ -63,7 +63,7 @@ If a payment method of your choice is not included in the list above, you can re
 To learn more about enabling payment methods in your merchant account please visit our [docs page](https://docs.adyen.com/payment-methods#add-payment-methods-to-your-account).
 
 ## Installation and configuration
-Please use the [official documentation](https://docs.adyen.com/plugins/prestashop) of the plugin .
+Please use the [official documentation](https://github.com/Adyen/adyen-prestashop/wiki) of the plugin .
 
 ## Deprecation strategy
 Whenever a not private function or property is tagged deprecated, please be aware that in the next major release it will be permanently removed.
