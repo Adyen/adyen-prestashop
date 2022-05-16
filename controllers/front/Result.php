@@ -29,15 +29,31 @@
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use Adyen\PrestaShop\controllers\FrontController;
 use Adyen\AdyenException;
+use Adyen\PrestaShop\service\Logger;
 use PrestaShop\PrestaShop\Adapter\CoreException;
 use Adyen\PrestaShop\service\Checkout;
 
 class AdyenOfficialResultModuleFrontController extends FrontController
 {
     /**
+     * @var Logger
+     */
+    public $adyenLogger;
+
+    /**
      * @var bool
      */
     public $ssl = true;
+
+    /**
+     * AdyenOfficialResultModuleFrontController constructor.
+     * @throws CoreException
+     */
+    public function __construct()
+    {
+        $this->adyenLogger = ServiceLocator::get('Adyen\PrestaShop\service\Logger');
+        parent::__construct();
+    }
 
     /**
      * @throws CoreException

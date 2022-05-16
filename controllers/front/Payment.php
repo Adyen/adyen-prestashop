@@ -147,12 +147,15 @@ class AdyenOfficialPaymentModuleFrontController extends FrontController
         $request = array();
 
         try {
+            $isOpenInvoice = $this->isOpenInvoicePaymentMethod();
             $request = $this->getValidatedAdditionalData(\Tools::getAllValues());
             $request = $this->buildBrowserData($request);
             $request = $this->buildAddresses($request);
             $request = $this->buildPaymentData($request);
-            $request = $this->buildCustomerData($request);
-            $request = $this->buildOpenInvoiceLines($request);
+            $request = $this->buildCustomerData($isOpenInvoice, $request);
+            if ($isOpenInvoice) {
+                $request = $this->buildOpenInvoiceLines($request);
+            }
         } catch (MissingDataException $exception) {
             $this->logger->error(
                 sprintf(
@@ -385,8 +388,9 @@ class AdyenOfficialPaymentModuleFrontController extends FrontController
     /**
      * @param array $request
      * @return array|mixed
+     * @throws MissingDataException
      */
-    private function buildOpenInvoiceLines($request = array())
+    private function buildOpenInvoiceLines(array $request = array())
     {
         $cart = $this->getCurrentCart();
         $paymentMethod = \Tools::getValue(self::PAYMENT_METHOD);
@@ -474,5 +478,26 @@ class AdyenOfficialPaymentModuleFrontController extends FrontController
         }
 
         return $request;
+    }
+
+
+    /**
+     * @return bool
+     * @throws MissingDataException
+     */
+    private function isOpenInvoicePaymentMethod(): bool
+    {
+        $paymentMethod = \Tools::getValue(self::PAYMENT_METHOD);
+        if (empty($paymentMethod)) {
+            throw new MissingDataException('payment method is not sent in the request!');
+        }
+
+        if (empty($paymentMethod[self::TYPE])) {
+            throw new MissingDataException('payment method type is not sent in the request!');
+        }
+
+        $paymentMethodType = $paymentMethod[self::TYPE];
+
+        return $this->paymentService->isOpenInvoicePaymentMethod($paymentMethodType);
     }
 }
