@@ -324,28 +324,21 @@ class AdyenOfficialPaymentModuleFrontController extends FrontController
     }
 
     /**
+     * Add all customer related parameters to the request array
+     *
      * @param array $request
+     * @param bool $isOpenInvoice
      * @return array
-     * @throws MissingDataException
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
-    private function buildCustomerData($request = array())
+    private function buildCustomerData(bool $isOpenInvoice, array $request = array()): array
     {
         $cart = $this->getCurrentCart();
         $customer = new \CustomerCore($cart->id_customer);
         $language = new \LanguageCore($cart->id_lang);
         $invoicingAddress = new \AddressCore($cart->id_address_invoice);
 
-        $paymentMethod = \Tools::getValue(self::PAYMENT_METHOD);
-        if (empty($paymentMethod)) {
-            throw new MissingDataException('payment method is not sent in the request!');
-        }
-
-        if (empty($paymentMethod[self::TYPE])) {
-            throw new MissingDataException('payment method type is not sent in the request!');
-        }
-
-        $paymentMethodType = $paymentMethod[self::TYPE];
-        $isOpenInvoice = $this->paymentService->isOpenInvoicePaymentMethod($paymentMethodType);
         $localeCode = $this->languageAdapter->getLocaleCode($language);
         $invoicingAddressCountryCode = $this->countryAdapter->getIsoById($invoicingAddress->id_country);
         $shopperIp = \Tools::getRemoteAddr();

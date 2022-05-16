@@ -71,20 +71,12 @@ class AdyenOfficialResultModuleFrontController extends FrontController
 
         // Retrieve previous payment response to validate the payment via the paymentDetails request
         $paymentResponse = $this->adyenPaymentResponseModel->getPaymentResponseByCartId($cart->id);
-
-        // Validate if we have the necessary objects stored
-        if (empty($paymentResponse) || empty($paymentResponse['paymentData'])) {
-            \Tools::redirect($this->context->link->getPageLink('order', $this->ssl));
-        }
+        $details = self::getArrayOnlyWithApprovedKeys(\Tools::getAllValues(), self::DETAILS_ALLOWED_PARAM_KEYS);
+        $request['details'] = $details;
 
         /** @var Checkout $checkout */
         $checkout = ServiceLocator::get('Adyen\PrestaShop\service\Checkout');
-        $response = $checkout->paymentsDetails(
-            array(
-                'paymentData' => $paymentResponse['paymentData'],
-                'details' => \Tools::getAllValues()
-            )
-        );
+        $response = $checkout->paymentsDetails($request);
 
         // Remove stored response since the paymentDetails call is done
         $this->adyenPaymentResponseModel->deletePaymentResponseByCartId($cart->id);

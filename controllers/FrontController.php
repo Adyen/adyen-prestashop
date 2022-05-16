@@ -37,6 +37,25 @@ use Adyen\PrestaShop\service\OrderPaymentService;
 
 abstract class FrontController extends \ModuleFrontController
 {
+    const DETAILS_ALLOWED_PARAM_KEYS = [
+        'MD',
+        'PaReq',
+        'PaRes',
+        'billingToken',
+        'cupsecureplus.smscode',
+        'facilitatorAccessToken',
+        'oneTimePasscode',
+        'orderID',
+        'payerID',
+        'payload',
+        'paymentID',
+        'paymentStatus',
+        'redirectResult',
+        'threeDSResult',
+        'threeds2.challengeResult',
+        'threeds2.fingerprint'
+    ];
+
     /**
      * List of approved root keys from the state.data in the frontend checkout components
      * Available in the php api library from version 7.0.0
