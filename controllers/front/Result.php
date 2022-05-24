@@ -16,7 +16,7 @@
  * Adyen PrestaShop plugin
  *
  * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2020 Adyen B.V.
+ * @copyright (c) 2022 Adyen B.V.
  * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
@@ -31,7 +31,6 @@ use Adyen\PrestaShop\controllers\FrontController;
 use Adyen\AdyenException;
 use Adyen\PrestaShop\service\Logger;
 use PrestaShop\PrestaShop\Adapter\CoreException;
-use Adyen\PrestaShop\service\Checkout;
 
 class AdyenOfficialResultModuleFrontController extends FrontController
 {
@@ -61,7 +60,6 @@ class AdyenOfficialResultModuleFrontController extends FrontController
      */
     public function postProcess()
     {
-        // Retrieve cart based on the reference parameter
         $cart = new \Cart(\Tools::getValue(self::ADYEN_MERCHANT_REFERENCE));
 
         // Validate if cart exists - if not redirect back to order page
@@ -69,14 +67,7 @@ class AdyenOfficialResultModuleFrontController extends FrontController
             \Tools::redirect($this->context->link->getPageLink('order', $this->ssl));
         }
 
-        // Retrieve previous payment response to validate the payment via the paymentDetails request
-        $paymentResponse = $this->adyenPaymentResponseModel->getPaymentResponseByCartId($cart->id);
-        $details = self::getArrayOnlyWithApprovedKeys(\Tools::getAllValues(), self::DETAILS_ALLOWED_PARAM_KEYS);
-        $request['details'] = $details;
-
-        /** @var Checkout $checkout */
-        $checkout = ServiceLocator::get('Adyen\PrestaShop\service\Checkout');
-        $response = $checkout->paymentsDetails($request);
+        $response = $this->fetchPaymentDetails(\Tools::getAllValues());
 
         // Remove stored response since the paymentDetails call is done
         $this->adyenPaymentResponseModel->deletePaymentResponseByCartId($cart->id);

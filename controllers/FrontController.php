@@ -16,7 +16,7 @@
  * Adyen PrestaShop plugin
  *
  * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2020 Adyen B.V.
+ * @copyright (c) 2022 Adyen B.V.
  * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
@@ -34,6 +34,7 @@ use Adyen\PrestaShop\service\Cart as CartService;
 use Adyen\PrestaShop\model\AdyenPaymentResponse;
 use Adyen\PrestaShop\service\Order as OrderService;
 use Adyen\PrestaShop\service\OrderPaymentService;
+use Adyen\Service\Checkout;
 
 abstract class FrontController extends \ModuleFrontController
 {
@@ -91,6 +92,8 @@ abstract class FrontController extends \ModuleFrontController
     const MD = 'md';
     const ISSUER_URL = 'issuerUrl';
     const REDIRECT_METHOD = 'redirectMethod';
+    const DETAILS_KEY = 'details';
+    const RESULT_CODE = 'resultCode';
 
     /**
      * @var AdyenHelper
@@ -572,5 +575,22 @@ abstract class FrontController extends \ModuleFrontController
         }
 
         return true;
+    }
+
+    /**
+     * @param array $payload
+     * @return mixed
+     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
+     * @throws AdyenException
+     */
+    protected function fetchPaymentDetails(array $payload)
+    {
+        $details = self::getArrayOnlyWithApprovedKeys($payload, self::DETAILS_ALLOWED_PARAM_KEYS);
+        $request['details'] = $details;
+
+        /** @var Checkout $checkout */
+        $checkout = ServiceLocator::get('Adyen\PrestaShop\service\Checkout');
+
+        return $checkout->paymentsDetails($request);
     }
 }
