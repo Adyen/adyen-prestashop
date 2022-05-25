@@ -404,8 +404,7 @@ jQuery(document).ready(function() {
                 showPopup();
             }
 
-            var actionComponent = window.adyenCheckout = new AdyenCheckout(
-                configuration);
+            var actionComponent = window.adyenCheckout = new AdyenCheckout(configuration);
 
             try {
                 if (handleActionComponents.includes(action.paymentMethodType)) {

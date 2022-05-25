@@ -77,8 +77,13 @@ class AdyenOfficialPaymentsDetailsModuleFrontController extends FrontController
             );
         }
 
+        $request = [
+            self::DETAILS_KEY => $payload[self::DETAILS_KEY],
+            self::PAYMENT_DATA => $payment['response']['action'][self::PAYMENT_DATA]
+        ];
+
         try {
-            $detailsResponse = $this->fetchPaymentDetails($payload[self::DETAILS_KEY]);
+            $detailsResponse = $this->fetchPaymentDetails($request);
         } catch (AdyenException $e) {
             $detailsResponse['resultCode'] = 'Error';
         } catch (CoreException $e) {

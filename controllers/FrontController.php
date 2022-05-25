@@ -78,8 +78,8 @@ abstract class FrontController extends \ModuleFrontController
         'installments',
         'storePaymentMethod',
         'conversionId',
-        'paymentData',
-        'details'
+        self::PAYMENT_DATA,
+        self::DETAILS_KEY
     );
 
     const BROWSER_INFO = 'browserInfo';
@@ -94,6 +94,7 @@ abstract class FrontController extends \ModuleFrontController
     const REDIRECT_METHOD = 'redirectMethod';
     const DETAILS_KEY = 'details';
     const RESULT_CODE = 'resultCode';
+    const PAYMENT_DATA = 'paymentData';
 
     /**
      * @var AdyenHelper
@@ -486,13 +487,12 @@ abstract class FrontController extends \ModuleFrontController
 
     /**
      * Returns an array with only the approved keys
-     * Available in the php api library from version 7.0.0
      *
      * @param array $array
      * @param array $approvedKeys
      * @return array
      */
-    protected static function getArrayOnlyWithApprovedKeys($array, $approvedKeys)
+    protected static function getArrayOnlyWithApprovedKeys(array $array, array $approvedKeys): array
     {
         $result = array();
 
@@ -585,8 +585,7 @@ abstract class FrontController extends \ModuleFrontController
      */
     protected function fetchPaymentDetails(array $payload)
     {
-        $details = self::getArrayOnlyWithApprovedKeys($payload, self::DETAILS_ALLOWED_PARAM_KEYS);
-        $request['details'] = $details;
+        $request = $this->getValidatedAdditionalData($payload);
 
         /** @var Checkout $checkout */
         $checkout = ServiceLocator::get('Adyen\PrestaShop\service\Checkout');

@@ -61,13 +61,18 @@ class AdyenOfficialResultModuleFrontController extends FrontController
     public function postProcess()
     {
         $cart = new \Cart(\Tools::getValue(self::ADYEN_MERCHANT_REFERENCE));
+        $payload = \Tools::getAllValues();
 
         // Validate if cart exists - if not redirect back to order page
         if (!\Validate::isLoadedObject($cart)) {
             \Tools::redirect($this->context->link->getPageLink('order', $this->ssl));
         }
 
-        $response = $this->fetchPaymentDetails(\Tools::getAllValues());
+        $request = [
+            self::DETAILS_KEY => self::getArrayOnlyWithApprovedKeys($payload, self::DETAILS_ALLOWED_PARAM_KEYS),
+        ];
+
+        $response = $this->fetchPaymentDetails($request);
 
         // Remove stored response since the paymentDetails call is done
         $this->adyenPaymentResponseModel->deletePaymentResponseByCartId($cart->id);
