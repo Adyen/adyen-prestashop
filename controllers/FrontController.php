@@ -35,6 +35,7 @@ use Adyen\PrestaShop\model\AdyenPaymentResponse;
 use Adyen\PrestaShop\service\Order as OrderService;
 use Adyen\PrestaShop\service\OrderPaymentService;
 use Adyen\Service\Checkout;
+use PrestaShop\PrestaShop\Adapter\CoreException;
 
 abstract class FrontController extends \ModuleFrontController
 {
@@ -580,12 +581,12 @@ abstract class FrontController extends \ModuleFrontController
     /**
      * @param array $payload
      * @return mixed
-     * @throws \PrestaShop\PrestaShop\Adapter\CoreException
+     * @throws CoreException
      * @throws AdyenException
      */
     protected function fetchPaymentDetails(array $payload)
     {
-        $request = $this->getValidatedAdditionalData($payload);
+        $request = self::getArrayOnlyWithApprovedKeys($payload, $this->stateDataRootKeys);
 
         /** @var Checkout $checkout */
         $checkout = ServiceLocator::get('Adyen\PrestaShop\service\Checkout');

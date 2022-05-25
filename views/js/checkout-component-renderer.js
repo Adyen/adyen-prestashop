@@ -60,7 +60,7 @@ jQuery(document).ready(function() {
 
     function renderPaymentMethods() {
         var selectedPaymentMethod;
-        var placeOrderAllowed = {};
+        var placeOrderAllowed;
         var popupModal;
 
         var skipComponents = ['giropay'];
@@ -299,16 +299,12 @@ jQuery(document).ready(function() {
             }
         }
 
-        function subscribeToPaymentFormSubmit(
-            paymentForm, paymentMethod, component) {
+        function subscribeToPaymentFormSubmit(paymentForm, paymentMethod, component) {
             paymentForm.on('submit', function(e) {
                 e.preventDefault();
 
-                if (!paymentMethod.details) {
-                    placeOrderAllowed[paymentMethod.type] = true;
-                }
-
-                if (!placeOrderAllowed[paymentMethod.type]) {
+                // If paymentMethod details exist and the component state is not valid
+                if (paymentMethod.details && !component.state.isValid) {
                     if (!!component && 'showValidation' in component) {
                         component.showValidation();
                     }
@@ -426,7 +422,7 @@ jQuery(document).ready(function() {
          * @param state
          */
         function handleOnChange(state) {
-            placeOrderAllowed[state.data.paymentMethod.type] = state.isValid;
+            placeOrderAllowed = state.isValid;
         }
 
         function handleOnAdditionalDetails(state) {
@@ -438,7 +434,7 @@ jQuery(document).ready(function() {
         }
 
         function handleOnSubmit(state) {
-            placeOrderAllowed[state.data.paymentMethod.type] = state.isValid;
+            placeOrderAllowed = state.isValid;
 
             if (IS_PRESTA_SHOP_16) {
                 this.paymentForm.find('button').prop('disabled', true);
