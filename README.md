@@ -46,6 +46,7 @@ The plugin integrates card component (Secured Fields) using Adyen Checkout for a
 - iDeal
 - JCB
 - Klarna
+- MBway
 - MobilePay
 - MOLPay online banking
 - MoMo Wallet
