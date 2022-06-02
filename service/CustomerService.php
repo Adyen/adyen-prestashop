@@ -24,7 +24,6 @@
 
 namespace Adyen\PrestaShop\service;
 
-
 use OrderCore;
 
 class CustomerService

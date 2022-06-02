@@ -68,7 +68,8 @@ class AdyenOfficialPaymentsDetailsModuleFrontController extends FrontController
                 'details request with the previous warning log details for this cart'
             );
             $this->ajaxRender(
-                $this->helperData->buildControllerResponseJson('error',
+                $this->helperData->buildControllerResponseJson(
+                    'error',
                     [
                         'message' => 'Something went wrong. Please refresh your page, check your cart and place the ' .
                             'order again!'
