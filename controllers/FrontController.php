@@ -26,6 +26,7 @@ namespace Adyen\PrestaShop\controllers;
 
 use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
+use Adyen\PrestaShop\service\CustomerService;
 use Adyen\PrestaShop\service\Logger;
 use Adyen\PrestaShop\application\VersionChecker;
 use Adyen\PrestaShop\helper\Data as AdyenHelper;
@@ -143,6 +144,11 @@ abstract class FrontController extends \ModuleFrontController
     private $orderPaymentService;
 
     /**
+     * @var CustomerService
+     */
+    private $customerService;
+
+    /**
      * FrontController constructor.
      */
     public function __construct()
@@ -157,6 +163,7 @@ abstract class FrontController extends \ModuleFrontController
         $this->orderAdapter = ServiceLocator::get('Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter');
         $this->utilCurrency = ServiceLocator::get('Adyen\Util\Currency');
         $this->orderPaymentService = ServiceLocator::get('Adyen\PrestaShop\service\OrderPaymentService');
+        $this->customerService = ServiceLocator::get('Adyen\PrestaShop\service\CustomerService');
     }
 
     /**
@@ -349,7 +356,6 @@ abstract class FrontController extends \ModuleFrontController
                 // Handle the rest the same way as the cases below
             case 'IdentifyShopper':
             case 'ChallengeShopper':
-            case 'Pending':
                 // Store response for cart until the payment is done
                 $this->adyenPaymentResponseModel->insertOrUpdatePaymentResponse(
                     $cart->id,
@@ -371,6 +377,7 @@ abstract class FrontController extends \ModuleFrontController
                 break;
             case 'Received':
             case 'PresentToShopper':
+            case 'Pending':
                 // Store response for cart temporarily until the payment is done
                 $this->adyenPaymentResponseModel->insertOrUpdatePaymentResponse(
                     $cart->id,
@@ -381,7 +388,22 @@ abstract class FrontController extends \ModuleFrontController
                 );
 
                 if (\Validate::isLoadedObject($customer)) {
-                    $orderStatus = \Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT');
+                    if ($resultCode === 'Pending') {
+                        $order = $this->orderAdapter->getOrderByCartId($cart->id);
+                        $customerThread = $this->customerService->createCustomerThread(
+                            $customer,
+                            $order,
+                            $this->context->shop,
+                            $this->context->language
+                        );
+
+                        $this->customerService->createCustomerMessage($customerThread, sprintf(
+                            'Adyen Payment is Pending. Status will be updated upon webhook processing.'
+                        ));
+                        $orderStatus = \Configuration::get('PS_OS_PREPARATION');
+                    } else {
+                        $orderStatus = \Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT');
+                    }
                     if ($orderNeedsAttention) {
                         $orderStatus = \Configuration::get('ADYEN_OS_PAYMENT_NEEDS_ATTENTION');
                     }
