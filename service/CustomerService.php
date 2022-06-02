@@ -37,7 +37,12 @@ class CustomerService
      * @throws \PrestaShopDatabaseException
      * @throws \PrestaShopException
      */
-    public function createCustomerThread(\Customer $customer, OrderCore $order, \Shop $shop, \Language $language): \CustomerThread
+    public function createCustomerThread(
+        \Customer $customer,
+        OrderCore $order,
+        \Shop $shop,
+        \Language $language
+    ): \CustomerThread
     {
         $customerThread = new \CustomerThread();
         $customerThread->id_contact = 0;

@@ -110,7 +110,11 @@ class AdyenOfficialPaymentsDetailsModuleFrontController extends FrontController
         }
 
         // Update saved response for cart
-        $this->adyenPaymentResponseModel->insertOrUpdatePaymentResponse($cart->id, $detailsResponse[self::RESULT_CODE], $detailsResponse);
+        $this->adyenPaymentResponseModel->insertOrUpdatePaymentResponse(
+            $cart->id,
+            $detailsResponse[self::RESULT_CODE],
+            $detailsResponse
+        );
         $customer = new \Customer($cart->id_customer);
 
         if (!\Validate::isLoadedObject($customer)) {
