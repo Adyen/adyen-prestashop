@@ -42,8 +42,7 @@ class CustomerService
         OrderCore $order,
         \Shop $shop,
         \Language $language
-    ): \CustomerThread
-    {
+    ): \CustomerThread {
         $customerThread = new \CustomerThread();
         $customerThread->id_contact = 0;
         $customerThread->id_customer = $customer->id;
