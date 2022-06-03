@@ -387,6 +387,18 @@ abstract class FrontController extends \ModuleFrontController
                     $paymentRequestCurrency
                 );
 
+                // If result code is pending and action key exists, return immediately the ajax call
+                if ($resultCode === 'Pending' && array_key_exists('action', $response)) {
+                    $this->ajaxRender(
+                        $this->helperData->buildControllerResponseJson(
+                            'action',
+                            array(
+                                'response' => $response['action']
+                            )
+                        )
+                    );
+                }
+
                 if (\Validate::isLoadedObject($customer)) {
                     if ($resultCode === 'Pending') {
                         $order = $this->orderAdapter->getOrderByCartId($cart->id);
