@@ -16,7 +16,7 @@
  * Adyen PrestaShop plugin
  *
  * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2020 Adyen B.V.
+ * @copyright (c) 2022 Adyen B.V.
  * @license https://opensource.org/licenses/MIT MIT license
  * This file is open source and available under the MIT license.
  * See the LICENSE file for more info.
@@ -26,6 +26,7 @@ namespace Adyen\PrestaShop\controllers;
 
 use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
+use Adyen\PrestaShop\service\CustomerService;
 use Adyen\PrestaShop\service\Logger;
 use Adyen\PrestaShop\application\VersionChecker;
 use Adyen\PrestaShop\helper\Data as AdyenHelper;
@@ -34,9 +35,30 @@ use Adyen\PrestaShop\service\Cart as CartService;
 use Adyen\PrestaShop\model\AdyenPaymentResponse;
 use Adyen\PrestaShop\service\Order as OrderService;
 use Adyen\PrestaShop\service\OrderPaymentService;
+use Adyen\Service\Checkout;
+use PrestaShop\PrestaShop\Adapter\CoreException;
 
 abstract class FrontController extends \ModuleFrontController
 {
+    const DETAILS_ALLOWED_PARAM_KEYS = [
+        'MD',
+        'PaReq',
+        'PaRes',
+        'billingToken',
+        'cupsecureplus.smscode',
+        'facilitatorAccessToken',
+        'oneTimePasscode',
+        'orderID',
+        'payerID',
+        'payload',
+        'paymentID',
+        'paymentStatus',
+        'redirectResult',
+        'threeDSResult',
+        'threeds2.challengeResult',
+        'threeds2.fingerprint'
+    ];
+
     /**
      * List of approved root keys from the state.data in the frontend checkout components
      * Available in the php api library from version 7.0.0
@@ -58,8 +80,8 @@ abstract class FrontController extends \ModuleFrontController
         'installments',
         'storePaymentMethod',
         'conversionId',
-        'paymentData',
-        'details'
+        self::PAYMENT_DATA,
+        self::DETAILS_KEY
     );
 
     const BROWSER_INFO = 'browserInfo';
@@ -72,6 +94,9 @@ abstract class FrontController extends \ModuleFrontController
     const MD = 'md';
     const ISSUER_URL = 'issuerUrl';
     const REDIRECT_METHOD = 'redirectMethod';
+    const DETAILS_KEY = 'details';
+    const RESULT_CODE = 'resultCode';
+    const PAYMENT_DATA = 'paymentData';
 
     /**
      * @var AdyenHelper
@@ -119,6 +144,11 @@ abstract class FrontController extends \ModuleFrontController
     private $orderPaymentService;
 
     /**
+     * @var CustomerService
+     */
+    private $customerService;
+
+    /**
      * FrontController constructor.
      */
     public function __construct()
@@ -133,6 +163,7 @@ abstract class FrontController extends \ModuleFrontController
         $this->orderAdapter = ServiceLocator::get('Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter');
         $this->utilCurrency = ServiceLocator::get('Adyen\Util\Currency');
         $this->orderPaymentService = ServiceLocator::get('Adyen\PrestaShop\service\OrderPaymentService');
+        $this->customerService = ServiceLocator::get('Adyen\PrestaShop\service\CustomerService');
     }
 
     /**
@@ -325,7 +356,6 @@ abstract class FrontController extends \ModuleFrontController
                 // Handle the rest the same way as the cases below
             case 'IdentifyShopper':
             case 'ChallengeShopper':
-            case 'Pending':
                 // Store response for cart until the payment is done
                 $this->adyenPaymentResponseModel->insertOrUpdatePaymentResponse(
                     $cart->id,
@@ -347,6 +377,7 @@ abstract class FrontController extends \ModuleFrontController
                 break;
             case 'Received':
             case 'PresentToShopper':
+            case 'Pending':
                 // Store response for cart temporarily until the payment is done
                 $this->adyenPaymentResponseModel->insertOrUpdatePaymentResponse(
                     $cart->id,
@@ -356,8 +387,35 @@ abstract class FrontController extends \ModuleFrontController
                     $paymentRequestCurrency
                 );
 
+                // If result code is pending and action key exists, return immediately the ajax call
+                if ($resultCode === 'Pending' && array_key_exists('action', $response)) {
+                    $this->ajaxRender(
+                        $this->helperData->buildControllerResponseJson(
+                            'action',
+                            array(
+                                'response' => $response['action']
+                            )
+                        )
+                    );
+                }
+
                 if (\Validate::isLoadedObject($customer)) {
-                    $orderStatus = \Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT');
+                    if ($resultCode === 'Pending') {
+                        $order = $this->orderAdapter->getOrderByCartId($cart->id);
+                        $customerThread = $this->customerService->createCustomerThread(
+                            $customer,
+                            $order,
+                            $this->context->shop,
+                            $this->context->language
+                        );
+
+                        $this->customerService->createCustomerMessage($customerThread, sprintf(
+                            'Adyen Payment is Pending. Status will be updated upon webhook processing.'
+                        ));
+                        $orderStatus = \Configuration::get('PS_OS_PREPARATION');
+                    } else {
+                        $orderStatus = \Configuration::get('ADYEN_OS_WAITING_FOR_PAYMENT');
+                    }
                     if ($orderNeedsAttention) {
                         $orderStatus = \Configuration::get('ADYEN_OS_PAYMENT_NEEDS_ATTENTION');
                     }
@@ -464,13 +522,12 @@ abstract class FrontController extends \ModuleFrontController
 
     /**
      * Returns an array with only the approved keys
-     * Available in the php api library from version 7.0.0
      *
      * @param array $array
      * @param array $approvedKeys
      * @return array
      */
-    protected static function getArrayOnlyWithApprovedKeys($array, $approvedKeys)
+    protected static function getArrayOnlyWithApprovedKeys(array $array, array $approvedKeys): array
     {
         $result = array();
 
@@ -553,5 +610,21 @@ abstract class FrontController extends \ModuleFrontController
         }
 
         return true;
+    }
+
+    /**
+     * @param array $payload
+     * @return mixed
+     * @throws CoreException
+     * @throws AdyenException
+     */
+    protected function fetchPaymentDetails(array $payload)
+    {
+        $request = self::getArrayOnlyWithApprovedKeys($payload, $this->stateDataRootKeys);
+
+        /** @var Checkout $checkout */
+        $checkout = ServiceLocator::get('Adyen\PrestaShop\service\Checkout');
+
+        return $checkout->paymentsDetails($request);
     }
 }

@@ -2228,6 +2228,10 @@ class AdyenOfficial extends PaymentModule
 
         if ($enableAdyenCss) {
             $controllerAdapter->registerStylesheet(
+                'adyen-component-css',
+                'modules/' . $this->name . '/views/css/adyen_component.css'
+            );
+            $controllerAdapter->registerStylesheet(
                 'adyen-adyencss',
                 'modules/' . $this->name . '/views/css/adyen.css'
             );

@@ -8,11 +8,11 @@
     "prepend-autoloader": false
   },
   "require": {
-    "adyen/php-api-library": "~6",
+    "adyen/php-api-library": "~10",
     "ext-json": "*",
     "ext-openssl": "*",
     "monolog/monolog": "1.24.*",
-    "php": ">=5.2"
+    "php": ">=7.1"
   },
   "require-dev": {
     "phpunit/phpunit": "~4",
