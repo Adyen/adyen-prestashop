@@ -10,7 +10,7 @@ We strongly encourage you to join us in contributing to this repository so every
 Read our [**contribution guidelines**](CONTRIBUTING.md) to find out how.
 
 ## Requirements
-This plugin supports PrestaShop version ~1.6.1 and ~1.7
+This plugin supports PrestaShop version ~1.7. If you are using version 1.6 and want to use Adyen services, please contact your sales manager or account manager. 
 
 ## Documentation
 Please find the relevant documentation for
@@ -20,6 +20,10 @@ Please find the relevant documentation for
 
 ## Support
 If you have a feature request, or spotted a bug or a technical problem, create a GitHub issue. For other questions, contact our [support team](https://support.adyen.com/hc/en-us/requests/new?ticket_form_id=360000705420).
+
+### Disclaimer
+We only support the plugin with no customizations. 
+Please make sure before you raise an issue that you revisit it on a newly installed "vanilla" PrestaShop environment. With this practise you can make sure that the issue is not created by a customization or a third party plugin.
 
 # For developers
 
@@ -42,6 +46,7 @@ The plugin integrates card component (Secured Fields) using Adyen Checkout for a
 - iDeal
 - JCB
 - Klarna
+- MBway
 - MobilePay
 - MOLPay online banking
 - MoMo Wallet
@@ -52,7 +57,6 @@ The plugin integrates card component (Secured Fields) using Adyen Checkout for a
 - Qiwi
 - RatePAY
 - SEPA Direct Debit
-- Swish
 - Trustly
 - TWINT
 - UnionPay
@@ -63,7 +67,7 @@ If a payment method of your choice is not included in the list above, you can re
 To learn more about enabling payment methods in your merchant account please visit our [docs page](https://docs.adyen.com/payment-methods#add-payment-methods-to-your-account).
 
 ## Installation and configuration
-Please use the [official documentation](https://docs.adyen.com/plugins/prestashop) of the plugin .
+Please use the [official documentation](https://github.com/Adyen/adyen-prestashop/wiki) of the plugin .
 
 ## Deprecation strategy
 Whenever a not private function or property is tagged deprecated, please be aware that in the next major release it will be permanently removed.

@@ -52,7 +52,8 @@ class NotificationProcessor
     private static $nonFinalOrderStatuses = array(
         'PS_OS_CANCELED',
         'PS_OS_ERROR',
-        'ADYEN_OS_WAITING_FOR_PAYMENT'
+        'ADYEN_OS_WAITING_FOR_PAYMENT',
+        'PS_OS_PREPARATION'
     );
 
     /**

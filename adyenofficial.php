@@ -127,7 +127,7 @@ class AdyenOfficial extends PaymentModule
     public function __construct()
     {
         $this->name = 'adyenofficial';
-        $this->version = '3.7.1';
+        $this->version = '4.0.0';
         $this->tab = 'payments_gateways';
         $this->author = 'Adyen';
         $this->bootstrap = true;
@@ -2227,6 +2227,10 @@ class AdyenOfficial extends PaymentModule
         $enableAdyenCss = Configuration::get('ADYEN_ENABLE_CHECKOUT_STYLING');
 
         if ($enableAdyenCss) {
+            $controllerAdapter->registerStylesheet(
+                'adyen-component-css',
+                'modules/' . $this->name . '/views/css/adyen_component.css'
+            );
             $controllerAdapter->registerStylesheet(
                 'adyen-adyencss',
                 'modules/' . $this->name . '/views/css/adyen.css'
