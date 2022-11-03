@@ -238,7 +238,7 @@ jQuery(document).ready(function() {
                     merchantName: paymentMethodsConfigurations.applePayMerchantName,
                     merchantIdentifier: paymentMethodsConfigurations.applePayMerchantIdentifier,
                 };
-                
+
                 paymentMethodExtraConfiguration.totalPriceLabel = totalText;
             }
 
@@ -303,8 +303,10 @@ jQuery(document).ready(function() {
             paymentForm.on('submit', function(e) {
                 e.preventDefault();
 
+                let isValid = !component.state.isValid ? placeOrderAllowed : component.state.isValid;
+
                 // If paymentMethod details exist and the component state is not valid
-                if (paymentMethod.details && !component.state.isValid) {
+                if (paymentMethod.details && !isValid) {
                     if (!!component && 'showValidation' in component) {
                         component.showValidation();
                     }
