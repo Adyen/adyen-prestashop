@@ -16,6 +16,7 @@ rm -rf ./adyenofficial/.github
 rm -rf ./adyenofficial/tools
 rm -rf ./adyenofficial/vendor
 rm -rf ./adyenofficial/PluginInstallation
+rm -rf ./adyenofficial/adyenofficial
 
 cd ./adyenofficial
 composer install --no-dev

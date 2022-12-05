@@ -40,3 +40,6 @@ upload/
 
 #composer
 vendor/
+
+#plugin installation zips
+PluginInstallation/
