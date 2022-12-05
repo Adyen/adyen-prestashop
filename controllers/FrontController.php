@@ -309,9 +309,9 @@ abstract class FrontController extends \ModuleFrontController
                     $cart->id);
 
                 if ($resultCode === 'Cancelled') {
-                    $message = $this->module->l('The payment was cancelled by the customer');
+                    $message = $this->module->l('The payment was cancelled by the customer', 'frontcontroller');
                 } else {
-                    $message = $this->module->l('The payment was refused');
+                    $message = $this->module->l('The payment was refused', 'frontcontroller');
                 }
 
                 if ($isAjax) {
@@ -461,7 +461,7 @@ abstract class FrontController extends \ModuleFrontController
 
                 if ($isAjax) {
                     // phpcs:ignore Generic.Files.LineLength.TooLong
-                    $message = $this->module->l('There was an error with the payment method, please choose another one');
+                    $message = $this->module->l('There was an error with the payment method, please choose another one', 'frontcontroller');
                     $this->ajaxRender(
                         $this->helperData->buildControllerResponseJson(
                             'error',
@@ -490,8 +490,8 @@ abstract class FrontController extends \ModuleFrontController
                         $this->helperData->buildControllerResponseJson(
                             'error',
                             array(
-                                'message' => $this->module->l('Unsupported result code:') .
-                                    "{" . $response['resultCode'] . "}"
+                                'message' => $this->module->l('Unsupported result code:', 'frontcontroller') .
+                                             "{" . $response['resultCode'] . "}"
                             )
                         )
                     );
