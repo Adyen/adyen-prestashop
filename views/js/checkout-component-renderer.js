@@ -98,19 +98,23 @@ jQuery(document).ready(function() {
         const enableStoreDetails = !!isUserLoggedIn && !!enableStoredPaymentMethods;
 
         var configuration = Object.assign(
-            ADYEN_CHECKOUT_CONFIG,
-            {
-                hasHolderName: true,
-                holderNameRequired: false,
-                enableStoreDetails: enableStoreDetails,
+           ADYEN_CHECKOUT_CONFIG,
+    {
                 countryCode: countryCode,
-                data: {
-                    billingAddress: componentBillingAddress,
-                    deliveryAddress: componentDeliveryAddress,
-                    personalDetails: componentPersonalDetails,
+                paymentMethodsConfiguration: {
+                    card: {
+                        hasHolderName: true,
+                        holderNameRequired: false,
+                        enableStoreDetails: enableStoreDetails,
+                        data: {
+                            billingAddress: componentBillingAddress,
+                            deliveryAddress: componentDeliveryAddress,
+                            personalDetails: componentPersonalDetails,
+                        }
+                    }
                 },
-                onAdditionalDetails: handleOnAdditionalDetails,
-            },
+                onAdditionalDetails: handleOnAdditionalDetails
+            }
         );
 
         window.adyenCheckout = new AdyenCheckout(configuration);
