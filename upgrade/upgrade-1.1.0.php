@@ -24,7 +24,7 @@
 
 // This file declares a function and checks if PrestaShop is loaded to follow
 // PrestaShop's good practices, which breaks a PSR1 element.
-//phpcs:disable PSR1.Files.SideEffects
+// phpcs:disable PSR1.Files.SideEffects
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -36,11 +36,13 @@ if (!defined('_PS_VERSION_')) {
  * Version 1.1.0 introduces refund feature
  *
  * @param Adyen $module
+ *
  * @return bool
  */
 function upgrade_module_1_1_0(Adyen $module)
 {
     $module->registerHook('actionOrderSlipAdd');
     $module->registerHook('displayPaymentTop');
+
     return true;
 }

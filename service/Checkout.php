@@ -1,26 +1,4 @@
 <?php
-/**
- *                       ######
- *                       ######
- * ############    ####( ######  #####. ######  ############   ############
- * #############  #####( ######  #####. ######  #############  #############
- *        ######  #####( ######  #####. ######  #####  ######  #####  ######
- * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
- * ###### ######  #####( ######  #####. ######  #####          #####  ######
- * #############  #############  #############  #############  #####  ######
- *  ############   ############  #############   ############  #####  ######
- *                                      ######
- *                               #############
- *                               ############
- *
- * Adyen PrestaShop plugin
- *
- * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2020 Adyen B.V.
- * @license https://opensource.org/licenses/MIT MIT license
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
- */
 
 namespace Adyen\PrestaShop\service;
 
@@ -29,10 +7,10 @@ use Cart;
 
 class Checkout extends \Adyen\Service\Checkout
 {
-    const PAYMENT_METHOD_STEP = 'checkout-payment-step';
-    const DELIVERY_STEP = 'checkout-delivery-step';
-    const IS_REACHABLE = 'step_is_reachable';
-    const IS_COMPLETE = 'step_is_complete';
+    public const PAYMENT_METHOD_STEP = 'checkout-payment-step';
+    public const DELIVERY_STEP = 'checkout-delivery-step';
+    public const IS_REACHABLE = 'step_is_reachable';
+    public const IS_COMPLETE = 'step_is_complete';
 
     /**
      * @var Logger
@@ -50,15 +28,15 @@ class Checkout extends \Adyen\Service\Checkout
      * return true to require fetching payment methods. If an error/exception occurs
      * return true to require fetching payment methods, to be on the safe side.
      *
-     * @param Cart $cart
+     * @param \Cart $cart
      *
      * @return bool
      */
-    public function requireFetchPaymentMethods(Cart $cart)
+    public function requireFetchPaymentMethods(\Cart $cart)
     {
         try {
             $checkoutSessionData = \Db::getInstance()->getValue(
-                'SELECT checkout_session_data FROM ' . _DB_PREFIX_ . 'cart WHERE id_cart = ' . (int)$cart->id
+                'SELECT checkout_session_data FROM ' . _DB_PREFIX_ . 'cart WHERE id_cart = ' . (int) $cart->id
             );
 
             if (empty($checkoutSessionData)) {

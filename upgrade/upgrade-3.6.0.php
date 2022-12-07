@@ -24,7 +24,7 @@
 
 // This file declares a function and checks if PrestaShop is loaded to follow
 // PrestaShop's good practices, which breaks a PSR1 element.
-//phpcs:disable PSR1.Files.SideEffects
+// phpcs:disable PSR1.Files.SideEffects
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -50,17 +50,17 @@ function upgrade_module_3_6_0(AdyenOfficial $module)
 function install_new_tabs(AdyenOfficial $module)
 {
     if (version_compare(_PS_VERSION_, '1.7', '<')) {
-        $parentTab = (int)Tab::getIdFromClassName('AdminParentModules');
+        $parentTab = (int) Tab::getIdFromClassName('AdminParentModules');
         $namePrefix = 'Adyen ';
         $adyenTabResult = true;
     } else {
-        $parentTab = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashop');
+        $parentTab = (int) Tab::getIdFromClassName('AdminAdyenOfficialPrestashop');
         if (!$parentTab) {
             // Parent adyen tab
             $adyenTab = new Tab();
-            $adyenTab->id_parent = (int)Tab::getIdFromClassName('AdminParentModulesSf');
+            $adyenTab->id_parent = (int) Tab::getIdFromClassName('AdminParentModulesSf');
             $adyenTab->active = 1;
-            $adyenTab->name = array();
+            $adyenTab->name = [];
             foreach (Language::getLanguages() as $lang) {
                 $adyenTab->name[$lang['id_lang']] = 'Adyen Module';
             }
@@ -68,20 +68,20 @@ function install_new_tabs(AdyenOfficial $module)
             $adyenTab->module = $module->name;
 
             $adyenTabResult = $adyenTab->add();
-            $parentTab = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashop');
+            $parentTab = (int) Tab::getIdFromClassName('AdminAdyenOfficialPrestashop');
         } else {
             $adyenTabResult = true;
         }
         $namePrefix = '';
     }
 
-    $logFetcherTabId = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashopLogFetcher');
+    $logFetcherTabId = (int) Tab::getIdFromClassName('AdminAdyenOfficialPrestashopLogFetcher');
     if (!$logFetcherTabId) {
         // Log tab
         $logTab = new Tab();
         $logTab->id_parent = $parentTab;
         $logTab->active = 1;
-        $logTab->name = array();
+        $logTab->name = [];
         foreach (Language::getLanguages() as $lang) {
             $logTab->name[$lang['id_lang']] = $namePrefix . 'Logs';
         }
@@ -92,13 +92,13 @@ function install_new_tabs(AdyenOfficial $module)
         $logTabResult = true;
     }
 
-    $validatorTabId = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashopValidator');
+    $validatorTabId = (int) Tab::getIdFromClassName('AdminAdyenOfficialPrestashopValidator');
     if (!$validatorTabId) {
         // Validator tab
         $validatorTab = new Tab();
         $validatorTab->id_parent = $parentTab;
         $validatorTab->active = 1;
-        $validatorTab->name = array();
+        $validatorTab->name = [];
         foreach (Language::getLanguages() as $lang) {
             $validatorTab->name[$lang['id_lang']] = $namePrefix . 'Validator';
         }
@@ -118,7 +118,7 @@ function install_new_tabs(AdyenOfficial $module)
 function copy_order_history_override(AdyenOfficial $module)
 {
     $orderHistoryFile = _PS_MODULE_DIR_ . $module->name . '/override/classes/order/OrderHistory.php';
-    $destinationDir = _PS_ROOT_DIR_.'/override/classes/order/OrderHistory.php';
+    $destinationDir = _PS_ROOT_DIR_ . '/override/classes/order/OrderHistory.php';
 
     return copy($orderHistoryFile, $destinationDir);
 }

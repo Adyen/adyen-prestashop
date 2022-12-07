@@ -1,26 +1,4 @@
 <?php
-/**
- *                       ######
- *                       ######
- * ############    ####( ######  #####. ######  ############   ############
- * #############  #####( ######  #####. ######  #############  #############
- *        ######  #####( ######  #####. ######  #####  ######  #####  ######
- * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
- * ###### ######  #####( ######  #####. ######  #####          #####  ######
- * #############  #############  #############  #############  #####  ######
- *  ############   ############  #############   ############  #####  ######
- *                                      ######
- *                               #############
- *                               ############
- *
- * Adyen PrestaShop plugin
- *
- * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2020 Adyen B.V.
- * @license https://opensource.org/licenses/MIT MIT license
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
- */
 
 // This class is not in a namespace because of the way PrestaShop loads
 // Controllers, which breaks a PSR1 element.
@@ -35,13 +13,13 @@ use PrestaShop\PrestaShop\Adapter\CoreException;
 
 class AdyenOfficialPaymentModuleFrontController extends FrontController
 {
-    const IS_AJAX = 'isAjax';
-    const DATE_OF_BIRTH = 'dateOfBirth';
-    const GENDER = 'gender';
-    const TELEPHONE_NUMBER = 'telephoneNumber';
-    const PAYMENT_METHOD = 'paymentMethod';
-    const TYPE = 'type';
-    const PERSONAL_DETAILS = 'personalDetails';
+    public const IS_AJAX = 'isAjax';
+    public const DATE_OF_BIRTH = 'dateOfBirth';
+    public const GENDER = 'gender';
+    public const TELEPHONE_NUMBER = 'telephoneNumber';
+    public const PAYMENT_METHOD = 'paymentMethod';
+    public const TYPE = 'type';
+    public const PERSONAL_DETAILS = 'personalDetails';
 
     /**
      * @var bool
@@ -137,6 +115,7 @@ class AdyenOfficialPaymentModuleFrontController extends FrontController
 
     /**
      * @return mixed
+     *
      * @throws CoreException
      * @throws AdyenException
      */
@@ -144,7 +123,7 @@ class AdyenOfficialPaymentModuleFrontController extends FrontController
     {
         $cart = $this->getCurrentCart();
         $isAjax = \Tools::getValue(self::IS_AJAX);
-        $request = array();
+        $request = [];
 
         try {
             $isOpenInvoice = $this->isOpenInvoicePaymentMethod();
@@ -159,7 +138,7 @@ class AdyenOfficialPaymentModuleFrontController extends FrontController
         } catch (MissingDataException $exception) {
             $this->logger->error(
                 sprintf(
-                    "There was an error with the payment method. id:  %s Missing data: %s",
+                    'There was an error with the payment method. id:  %s Missing data: %s',
                     $cart->id,
                     $exception->getMessage()
                 )
@@ -168,9 +147,9 @@ class AdyenOfficialPaymentModuleFrontController extends FrontController
             $this->ajaxRender(
                 $this->helperData->buildControllerResponseJson(
                     'error',
-                    array(
-                        'message' => "There was an error with the payment method, please choose another one."
-                    )
+                    [
+                        'message' => 'There was an error with the payment method, please choose another one.',
+                    ]
                 )
             );
         }
@@ -183,16 +162,16 @@ class AdyenOfficialPaymentModuleFrontController extends FrontController
             $response = $service->payments($request);
         } catch (AdyenException $e) {
             $this->logger->error(
-                "There was an error with the payment method. id:  " . $cart->id .
-                " Response: " . $e->getMessage()
+                'There was an error with the payment method. id:  ' . $cart->id .
+                ' Response: ' . $e->getMessage()
             );
 
             $this->ajaxRender(
                 $this->helperData->buildControllerResponseJson(
                     'error',
-                    array(
-                        'message' => "There was an error with the payment method, please choose another one."
-                    )
+                    [
+                        'message' => 'There was an error with the payment method, please choose another one.',
+                    ]
                 )
             );
         }
@@ -211,10 +190,12 @@ class AdyenOfficialPaymentModuleFrontController extends FrontController
 
     /**
      * @param array $request
+     *
      * @return array|mixed
+     *
      * @throws MissingDataException
      */
-    public function buildPaymentData($request = array())
+    public function buildPaymentData($request = [])
     {
         $cart = $this->getCurrentCart();
         $origin = $this->configuration->httpHost;
@@ -230,9 +211,9 @@ class AdyenOfficialPaymentModuleFrontController extends FrontController
         $returnUrl = $this->context->link->getModuleLink(
             $this->module->name,
             'Result',
-            array(
-                self::ADYEN_MERCHANT_REFERENCE => $cart->id
-            ),
+            [
+                self::ADYEN_MERCHANT_REFERENCE => $cart->id,
+            ],
             $this->ssl
         );
 
@@ -251,9 +232,10 @@ class AdyenOfficialPaymentModuleFrontController extends FrontController
 
     /**
      * @param array $request
+     *
      * @return array
      */
-    private function buildBrowserData($request = array())
+    private function buildBrowserData($request = [])
     {
         // Default values for acceptHeader and userAgent
         $acceptHeader = $_SERVER['HTTP_ACCEPT'];
@@ -273,9 +255,10 @@ class AdyenOfficialPaymentModuleFrontController extends FrontController
 
     /**
      * @param array $request
+     *
      * @return array
      */
-    private function buildAddresses($request = array())
+    private function buildAddresses($request = [])
     {
         $cart = $this->getCurrentCart();
 
@@ -328,11 +311,13 @@ class AdyenOfficialPaymentModuleFrontController extends FrontController
      *
      * @param array $request
      * @param bool $isOpenInvoice
+     *
      * @return array
+     *
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      */
-    private function buildCustomerData(bool $isOpenInvoice, array $request = array()): array
+    private function buildCustomerData(bool $isOpenInvoice, array $request = []): array
     {
         $cart = $this->getCurrentCart();
         $customer = new \CustomerCore($cart->id_customer);
@@ -359,7 +344,7 @@ class AdyenOfficialPaymentModuleFrontController extends FrontController
 
         if (empty($request[self::PAYMENT_METHOD][self::PERSONAL_DETAILS][self::TELEPHONE_NUMBER])) {
             // Retrieve the phone number from the invoicing address, if phone is null, try phone_mobile
-            $telephoneNumber = $invoicingAddress->phone ? $invoicingAddress->phone:$invoicingAddress->phone_mobile;
+            $telephoneNumber = $invoicingAddress->phone ? $invoicingAddress->phone : $invoicingAddress->phone_mobile;
         }
 
         return $this->customerBuilder->buildCustomerData(
@@ -380,10 +365,12 @@ class AdyenOfficialPaymentModuleFrontController extends FrontController
 
     /**
      * @param array $request
+     *
      * @return array|mixed
+     *
      * @throws MissingDataException
      */
-    private function buildOpenInvoiceLines(array $request = array())
+    private function buildOpenInvoiceLines(array $request = [])
     {
         $cart = $this->getCurrentCart();
         $paymentMethod = \Tools::getValue(self::PAYMENT_METHOD);
@@ -392,7 +379,7 @@ class AdyenOfficialPaymentModuleFrontController extends FrontController
         }
 
         $products = $cart->getProducts(true);
-        $lineItems = array();
+        $lineItems = [];
 
         // Build open invoice lines for products in the cart
         foreach ($products as $product) {
@@ -473,9 +460,9 @@ class AdyenOfficialPaymentModuleFrontController extends FrontController
         return $request;
     }
 
-
     /**
      * @return bool
+     *
      * @throws MissingDataException
      */
     private function isOpenInvoicePaymentMethod(): bool

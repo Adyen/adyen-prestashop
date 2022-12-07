@@ -1,26 +1,3 @@
-/*
- *                       ######
- *                       ######
- * ############    ####( ######  #####. ######  ############   ############
- * #############  #####( ######  #####. ######  #############  #############
- *        ######  #####( ######  #####. ######  #####  ######  #####  ######
- * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
- * ###### ######  #####( ######  #####. ######  #####          #####  ######
- * #############  #############  #############  #############  #####  ######
- *  ############   ############  #############   ############  #####  ######
- *                                      ######
- *                               #############
- *                               ############
- *
- * Adyen PrestaShop plugin
- *
- * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2021 Adyen B.V.
- * @license https://opensource.org/licenses/MIT MIT license
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
- */
-
 jQuery(document).ready(function() {
     const prodSection = $("div:contains('Production Settings'):last").parent();
     const testSection = $("div:contains('Test Settings'):last").parent();

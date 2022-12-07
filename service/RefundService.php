@@ -1,41 +1,14 @@
 <?php
-/**
- *                       ######
- *                       ######
- * ############    ####( ######  #####. ######  ############   ############
- * #############  #####( ######  #####. ######  #############  #############
- *        ######  #####( ######  #####. ######  #####  ######  #####  ######
- * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
- * ###### ######  #####( ######  #####. ######  #####          #####  ######
- * #############  #############  #############  #############  #####  ######
- *  ############   ############  #############   ############  #####  ######
- *                                      ######
- *                               #############
- *                               ############
- *
- * Adyen PrestaShop plugin
- *
- * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2020 Adyen B.V.
- * @license https://opensource.org/licenses/MIT MIT license
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
- */
 
 namespace Adyen\PrestaShop\service;
 
-use Adyen\PrestaShop\infra\NotificationRetriever;
 use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
 use Adyen\PrestaShop\service\modification\Refund;
 use Configuration as PrestaShopConfiguration;
-use Currency;
 use Order as PrestaShopOrder;
-use OrderSlip;
-use PrestaShopException;
 
 class RefundService
 {
-
     /**
      * @var Modification
      */
@@ -64,7 +37,8 @@ class RefundService
      * @param PrestaShopOrder $order
      *
      * @return bool
-     * @throws PrestaShopException
+     *
+     * @throws \PrestaShopException
      */
     public function refund(PrestaShopOrder $order)
     {
@@ -76,17 +50,17 @@ class RefundService
             $this->logger
         );
 
-        /** @var OrderSlip $orderSlip */
+        /** @var \OrderSlip $orderSlip */
         $orderSlip = $order->getOrderSlipsCollection()
-                           ->orderBy('date_upd', 'desc')
-                           ->getFirst();
-        $currency = Currency::getCurrency($order->id_currency);
+            ->orderBy('date_upd', 'desc')
+            ->getFirst();
+        $currency = \Currency::getCurrency($order->id_currency);
         if ($orderSlip) {
             return $refundService->request($orderSlip, $currency['iso_code']);
         } else {
             $this->logger->error('Refund occurred without a credit slip.');
         }
-        
+
         return false;
     }
 }

@@ -1,38 +1,15 @@
 <?php
-/**
- *                       ######
- *                       ######
- * ############    ####( ######  #####. ######  ############   ############
- * #############  #####( ######  #####. ######  #############  #############
- *        ######  #####( ######  #####. ######  #####  ######  #####  ######
- * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
- * ###### ######  #####( ######  #####. ######  #####          #####  ######
- * #############  #############  #############  #############  #####  ######
- *  ############   ############  #############   ############  #####  ######
- *                                      ######
- *                               #############
- *                               ############
- *
- * Adyen PrestaShop plugin
- *
- * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2022 Adyen B.V.
- * @license https://opensource.org/licenses/MIT MIT license
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
- */
 
 // This class is not in a namespace because of the way PrestaShop loads
 // Controllers, which breaks a PSR1 element.
 // phpcs:disable PSR1.Classes.ClassDeclaration
 
-use PrestaShop\PrestaShop\Adapter\CoreException;
 use Adyen\AdyenException;
 use Adyen\PrestaShop\controllers\FrontController;
+use PrestaShop\PrestaShop\Adapter\CoreException;
 
 class AdyenOfficialPaymentsDetailsModuleFrontController extends FrontController
 {
-
     /**
      * @var bool
      */
@@ -52,7 +29,7 @@ class AdyenOfficialPaymentsDetailsModuleFrontController extends FrontController
         if (!array_key_exists(self::DETAILS_KEY, $payload)) {
             $this->ajaxRender(
                 $this->helperData->buildControllerResponseJson('error', [
-                    'message' => "Something went wrong. Please place the order again!"
+                    'message' => 'Something went wrong. Please place the order again!',
                 ])
             );
         }
@@ -72,7 +49,7 @@ class AdyenOfficialPaymentsDetailsModuleFrontController extends FrontController
                     'error',
                     [
                         'message' => 'Something went wrong. Please refresh your page, check your cart and place the ' .
-                            'order again!'
+                            'order again!',
                     ]
                 )
             );
@@ -80,7 +57,7 @@ class AdyenOfficialPaymentsDetailsModuleFrontController extends FrontController
 
         $request = [
             self::DETAILS_KEY => $payload[self::DETAILS_KEY],
-            self::PAYMENT_DATA => $payment['response']['action'][self::PAYMENT_DATA]
+            self::PAYMENT_DATA => $payment['response']['action'][self::PAYMENT_DATA],
         ];
 
         try {
@@ -92,7 +69,7 @@ class AdyenOfficialPaymentsDetailsModuleFrontController extends FrontController
                 $this->helperData->buildControllerResponseJson(
                     'error',
                     [
-                        'message' => 'The payment failed, please try again with another payment method!'
+                        'message' => 'The payment failed, please try again with another payment method!',
                     ]
                 )
             );
@@ -103,7 +80,7 @@ class AdyenOfficialPaymentsDetailsModuleFrontController extends FrontController
                 $this->helperData->buildControllerResponseJson(
                     'error',
                     [
-                        'message' => 'The payment failed, please try again with another payment method!'
+                        'message' => 'The payment failed, please try again with another payment method!',
                     ]
                 )
             );

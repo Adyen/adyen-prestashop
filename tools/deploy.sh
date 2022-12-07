@@ -17,16 +17,30 @@ rm -rf ./adyenofficial/tools
 rm -rf ./adyenofficial/vendor
 rm -rf ./adyenofficial/PluginInstallation
 rm -rf ./adyenofficial/adyenofficial
+rm -rf ./adyenofficial/tests
 
 cd ./adyenofficial
 composer install --no-dev
+
+cd ..
+
+# Adding PrestaShop mandatory index.php file to all folders
+echo -e "\e[32mSTEP 5:\e[0m Adding PrestaShop mandatory index.php file to all folders..."
+php "$PWD/tools/autoindex/index.php" "$PWD/adyenofficial" >/dev/null
+
+echo -e "\e[32mSTEP 4:\e[0m Adding PrestaShop mandatory licence header to files..."
+php "$PWD/tools/autoLicence.php" "$PWD/adyenofficial"
+
+./tools/php-cs-fixer/vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php
+
+cd ./adyenofficial
 
 # get plugin version
 echo -e "\e[32mSTEP 6:\e[0m Reading module version..."
 
 version="$1"
 if [ "$version" = "" ]; then
-    version=$(php -r "echo json_decode(file_get_contents('src/composer.json'), true)['version'];")
+    version=$(php -r "echo json_decode(file_get_contents('$PWD/composer.json'), true)['version'];")
     if [ "$version" = "" ]; then
         echo "Please enter new plugin version (leave empty to use root folder as destination) [ENTER]:"
         read version

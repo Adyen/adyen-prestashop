@@ -24,7 +24,7 @@
 
 // This file declares a function and checks if PrestaShop is loaded to follow
 // PrestaShop's good practices, which breaks a PSR1 element.
-//phpcs:disable PSR1.Files.SideEffects
+// phpcs:disable PSR1.Files.SideEffects
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -58,7 +58,7 @@ function set_waiting_for_payment_status_logable_to_false()
             '
                 SELECT *
                 FROM `' . _DB_PREFIX_ . 'order_state`
-                WHERE deleted = 0 AND `id_order_state` = ' . (int)$orderStateConfigurationId
+                WHERE deleted = 0 AND `id_order_state` = ' . (int) $orderStateConfigurationId
         );
     }
 
@@ -68,8 +68,8 @@ function set_waiting_for_payment_status_logable_to_false()
 
     return Db::getInstance(_PS_USE_SQL_SLAVE_)->update(
         'order_state',
-        array('logable' => false),
-        'id_order_state = ' . (int)$orderStateConfigurationId,
+        ['logable' => false],
+        'id_order_state = ' . (int) $orderStateConfigurationId,
         1
     );
 }

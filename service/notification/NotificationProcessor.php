@@ -1,26 +1,4 @@
 <?php
-/**
- *                       ######
- *                       ######
- * ############    ####( ######  #####. ######  ############   ############
- * #############  #####( ######  #####. ######  #############  #############
- *        ######  #####( ######  #####. ######  #####  ######  #####  ######
- * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
- * ###### ######  #####( ######  #####. ######  #####          #####  ######
- * #############  #############  #############  #############  #####  ######
- *  ############   ############  #############   ############  #####  ######
- *                                      ######
- *                               #############
- *                               ############
- *
- * Adyen PrestaShop plugin
- *
- * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2020 Adyen B.V.
- * @license https://opensource.org/licenses/MIT MIT license
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
- */
 
 namespace Adyen\PrestaShop\service\notification;
 
@@ -29,16 +7,11 @@ use Adyen\PrestaShop\model\AdyenNotification;
 use Adyen\PrestaShop\model\AdyenPaymentResponse;
 use Adyen\PrestaShop\service\adapter\classes\CustomerThreadAdapter;
 use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
+use Adyen\PrestaShop\service\Order as OrderService;
 use Adyen\PrestaShop\service\OrderPaymentService;
 use Adyen\Util\Currency;
-use Context;
-use Db;
 use OrderCore;
-use OrderPayment;
-use PrestaShopDatabaseException;
-use PrestaShopException;
 use Psr\Log\LoggerInterface;
-use Adyen\PrestaShop\service\Order as OrderService;
 
 class NotificationProcessor
 {
@@ -49,12 +22,12 @@ class NotificationProcessor
      *
      * @var string[]
      */
-    private static $nonFinalOrderStatuses = array(
+    private static $nonFinalOrderStatuses = [
         'PS_OS_CANCELED',
         'PS_OS_ERROR',
         'ADYEN_OS_WAITING_FOR_PAYMENT',
-        'PS_OS_PREPARATION'
-    );
+        'PS_OS_PREPARATION',
+    ];
 
     /**
      * @var AdyenHelper
@@ -62,7 +35,7 @@ class NotificationProcessor
     private $helperData;
 
     /**
-     * @var Db
+     * @var \Db
      */
     private $dbInstance;
 
@@ -82,7 +55,7 @@ class NotificationProcessor
     private $customerThreadAdapter;
 
     /**
-     * @var Context
+     * @var \Context
      */
     private $context;
 
@@ -110,11 +83,11 @@ class NotificationProcessor
      * NotificationProcessor constructor.
      *
      * @param AdyenHelper $helperData
-     * @param Db $dbInstance
+     * @param \Db $dbInstance
      * @param OrderAdapter $orderAdapter
      * @param CustomerThreadAdapter $customerThreadAdapter
      * @param LoggerInterface $logger
-     * @param Context $context
+     * @param \Context $context
      * @param AdyenPaymentResponse $adyenPaymentResponse
      * @param OrderService $orderService
      * @param Currency $utilCurrency
@@ -122,11 +95,11 @@ class NotificationProcessor
      */
     public function __construct(
         AdyenHelper $helperData,
-        Db $dbInstance,
+        \Db $dbInstance,
         OrderAdapter $orderAdapter,
         CustomerThreadAdapter $customerThreadAdapter,
         LoggerInterface $logger,
-        Context $context,
+        \Context $context,
         AdyenPaymentResponse $adyenPaymentResponse,
         OrderService $orderService,
         Currency $utilCurrency,
@@ -146,7 +119,9 @@ class NotificationProcessor
 
     /**
      * @param $unprocessedNotification
+     *
      * @return bool
+     *
      * @throws \Exception
      */
     public function processNotification($unprocessedNotification)
@@ -266,15 +241,16 @@ class NotificationProcessor
      * @param $notification
      *
      * @return bool
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
+     *
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      */
     public function addMessage($notification)
     {
         $successResult = (strcmp($notification['success'], 'true') == 0 ||
             strcmp($notification['success'], '1') == 0) ? 'true' : 'false';
-        if ((!empty($notification['reason']))) {
-            $success = $successResult . PHP_EOL . "reason:" . $notification['reason'] . PHP_EOL;
+        if (!empty($notification['reason'])) {
+            $success = $successResult . PHP_EOL . 'reason:' . $notification['reason'] . PHP_EOL;
         } else {
             $success = $successResult . PHP_EOL;
         }
@@ -299,11 +275,12 @@ class NotificationProcessor
         if (empty($order)) {
             $this->logger->error(
                 sprintf(
-                    "Order with id: \"%s\" cannot be found while notification with id: \"%s\" was processed.",
+                    'Order with id: "%s" cannot be found while notification with id: "%s" was processed.',
                     $notification['merchant_reference'],
                     $notification['entity_id']
                 )
             );
+
             return false;
         }
 
@@ -312,13 +289,14 @@ class NotificationProcessor
         if (empty($customer)) {
             $this->logger->error(
                 sprintf(
-                    "Customer with id: \"%s\" cannot be found for order with id: \"%s\" while notification with id:" .
-                    " \"%s\" was processed.",
+                    'Customer with id: "%s" cannot be found for order with id: "%s" while notification with id:' .
+                    ' "%s" was processed.',
                     $order->id_customer,
                     $order->id,
                     $notification['entity_id']
                 )
             );
+
             return false;
         }
 
@@ -331,10 +309,10 @@ class NotificationProcessor
         if (empty($customerThread->id)) {
             $customerThread = new \CustomerThread();
             $customerThread->id_contact = 0;
-            $customerThread->id_customer = (int)$customer->id;
-            $customerThread->id_shop = (int)$this->context->shop->id;
-            $customerThread->id_order = (int)$order->id;
-            $customerThread->id_lang = (int)$this->context->language->id;
+            $customerThread->id_customer = (int) $customer->id;
+            $customerThread->id_shop = (int) $this->context->shop->id;
+            $customerThread->id_order = (int) $order->id;
+            $customerThread->id_lang = (int) $this->context->language->id;
             $customerThread->email = $customer->email;
             $customerThread->status = 'open';
             $customerThread->token = \Tools::passwdGen(12);
@@ -351,6 +329,7 @@ class NotificationProcessor
 
         if (!$customerMessage->add()) {
             $this->logger->error('An error occurred while saving the message.');
+
             return false;
         }
 
@@ -361,6 +340,7 @@ class NotificationProcessor
      * Checks if the current order status is in the self::$nonFinalOrderStatuses list
      *
      * @param string $currentOrderStatus
+     *
      * @return bool
      */
     private function isCurrentOrderStatusANonFinalStatus($currentOrderStatus)
@@ -376,11 +356,13 @@ class NotificationProcessor
 
     /**
      * @param $notification
-     * @param OrderCore $order
+     * @param \OrderCore $order
+     *
      * @return bool
+     *
      * @throws \Exception
      */
-    private function validateWithCartAndOrder($notification, OrderCore $order)
+    private function validateWithCartAndOrder($notification, \OrderCore $order)
     {
         $cart = \Cart::getCartByOrderId($order->id);
 
@@ -402,7 +384,7 @@ class NotificationProcessor
         $cartTotalMinorUnits = $this->utilCurrency->sanitize($cart->getOrderTotal(), $cartCurrencyIso);
 
         if ($notification['amount_currency'] !== $cartCurrencyIso ||
-            (int)$notification['amount_value'] !== $cartTotalMinorUnits) {
+            (int) $notification['amount_value'] !== $cartTotalMinorUnits) {
             $this->logger->addAdyenNotification(
                 sprintf(
                     'Notification: id (%s), amount (%s) and currency (%s) contains an incompatible ' .
@@ -423,12 +405,14 @@ class NotificationProcessor
     }
 
     /**
-     * @param OrderCore $order
+     * @param \OrderCore $order
      * @param $notification
-     * @return false|OrderPayment|null
-     * @throws PrestaShopException
+     *
+     * @return false|\OrderPayment|null
+     *
+     * @throws \PrestaShopException
      */
-    private function setPspReferenceUsingNotificationData(OrderCore $order, $notification)
+    private function setPspReferenceUsingNotificationData(\OrderCore $order, $notification)
     {
         $orderPayment = $this->orderPaymentService->getAdyenOrderPayment($order);
 

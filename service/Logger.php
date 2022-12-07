@@ -1,26 +1,4 @@
 <?php
-/**
- *                       ######
- *                       ######
- * ############    ####( ######  #####. ######  ############   ############
- * #############  #####( ######  #####. ######  #############  #############
- *        ######  #####( ######  #####. ######  #####  ######  #####  ######
- * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
- * ###### ######  #####( ######  #####. ######  #####          #####  ######
- * #############  #############  #############  #############  #####  ######
- *  ############   ############  #############   ############  #####  ######
- *                                      ######
- *                               #############
- *                               ############
- *
- * Adyen PrestaShop plugin
- *
- * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2020 Adyen B.V.
- * @license https://opensource.org/licenses/MIT MIT license
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
- */
 
 namespace Adyen\PrestaShop\service;
 
@@ -30,58 +8,58 @@ use Monolog\Handler\StreamHandler;
 
 class Logger extends \Monolog\Logger
 {
-    const NAME = 'ADYEN';
-    const ADYEN_API = 201;
-    const ADYEN_RESULT = 202;
-    const ADYEN_NOTIFICATION = 203;
-    const ADYEN_CRONJOB = 204;
+    public const NAME = 'ADYEN';
+    public const ADYEN_API = 201;
+    public const ADYEN_RESULT = 202;
+    public const ADYEN_NOTIFICATION = 203;
+    public const ADYEN_CRONJOB = 204;
 
-    private static $adyenHandlers = array(
-        self::DEBUG => array(
+    private static $adyenHandlers = [
+        self::DEBUG => [
             'level' => self::DEBUG,
-            'fileName' => 'debug.log'
-        ),
-        self::INFO => array(
+            'fileName' => 'debug.log',
+        ],
+        self::INFO => [
             'level' => self::INFO,
-            'fileName' => 'info.log'
-        ),
-        self::ADYEN_API => array(
+            'fileName' => 'info.log',
+        ],
+        self::ADYEN_API => [
             'level' => self::ADYEN_API,
-            'fileName' => 'adyen_api.log'
-        ),
-        self::ADYEN_RESULT => array(
+            'fileName' => 'adyen_api.log',
+        ],
+        self::ADYEN_RESULT => [
             'level' => self::ADYEN_RESULT,
-            'fileName' => 'adyen_result.log'
-        ),
-        self::ADYEN_NOTIFICATION => array(
+            'fileName' => 'adyen_result.log',
+        ],
+        self::ADYEN_NOTIFICATION => [
             'level' => self::ADYEN_NOTIFICATION,
-            'fileName' => 'adyen_notification.log'
-        ),
-        self::ADYEN_CRONJOB => array(
+            'fileName' => 'adyen_notification.log',
+        ],
+        self::ADYEN_CRONJOB => [
             'level' => self::ADYEN_CRONJOB,
-            'fileName' => 'adyen_cronjob.log'
-        ),
-        self::NOTICE => array(
+            'fileName' => 'adyen_cronjob.log',
+        ],
+        self::NOTICE => [
             'level' => self::NOTICE,
-            'fileName' => 'notice.log'
-        ),
-        self::WARNING => array(
+            'fileName' => 'notice.log',
+        ],
+        self::WARNING => [
             'level' => self::WARNING,
-            'fileName' => 'warning.log'
-        ),
-        self::ERROR => array(
+            'fileName' => 'warning.log',
+        ],
+        self::ERROR => [
             'level' => self::ERROR,
-            'fileName' => 'error.log'
-        ),
-    );
+            'fileName' => 'error.log',
+        ],
+    ];
 
     /**
      * Logging levels from syslog protocol defined in RFC 5424
      * Overrule the default to add Adyen specific loggers to log into separate files
      *
-     * @var array $levels Logging levels
+     * @var array Logging levels
      */
-    protected static $levels = array(
+    protected static $levels = [
         self::DEBUG => 'DEBUG',
         self::INFO => 'INFO',
         self::ADYEN_API => 'ADYEN_API',
@@ -94,19 +72,19 @@ class Logger extends \Monolog\Logger
         self::CRITICAL => 'CRITICAL',
         self::ALERT => 'ALERT',
         self::EMERGENCY => 'EMERGENCY',
-    );
+    ];
 
     /**
      * Levels which should also be logged via PrestaShop, mapped to their PrestaShop severity
      *
      * @var array
      */
-    protected static $prestashopLoggable = array(
+    protected static $prestashopLoggable = [
         self::EMERGENCY => 4,
         self::CRITICAL => 4,
         self::ERROR => 3,
         self::WARNING => 2,
-    );
+    ];
 
     /**
      * @var VersionChecker
@@ -117,6 +95,7 @@ class Logger extends \Monolog\Logger
      * Logger constructor.
      *
      * @param VersionChecker $versionChecker
+     *
      * @throws \Exception
      */
     public function __construct(
@@ -148,6 +127,7 @@ class Logger extends \Monolog\Logger
      * If it doesn't exist yet then also creates it
      *
      * @return string
+     *
      * @throws CommandException
      */
     private function getAdyenLogPath()
@@ -166,9 +146,10 @@ class Logger extends \Monolog\Logger
     /**
      * @param string $message
      * @param array $context
+     *
      * @return bool
      */
-    public function addAdyenAPI($message, array $context = array())
+    public function addAdyenAPI($message, array $context = [])
     {
         return $this->addRecord(static::ADYEN_API, $message, $context);
     }
@@ -176,9 +157,10 @@ class Logger extends \Monolog\Logger
     /**
      * @param string $message
      * @param array $context
+     *
      * @return bool
      */
-    public function addAdyenResult($message, array $context = array())
+    public function addAdyenResult($message, array $context = [])
     {
         return $this->addRecord(static::ADYEN_RESULT, $message, $context);
     }
@@ -186,9 +168,10 @@ class Logger extends \Monolog\Logger
     /**
      * @param string $message
      * @param array $context
+     *
      * @return bool
      */
-    public function addAdyenNotification($message, array $context = array())
+    public function addAdyenNotification($message, array $context = [])
     {
         return $this->addRecord(static::ADYEN_NOTIFICATION, $message, $context);
     }
@@ -196,9 +179,10 @@ class Logger extends \Monolog\Logger
     /**
      * @param string $message
      * @param array $context
+     *
      * @return bool
      */
-    public function addAdyenCronjob($message, array $context = array())
+    public function addAdyenCronjob($message, array $context = [])
     {
         return $this->addRecord(static::ADYEN_CRONJOB, $message, $context);
     }
@@ -206,13 +190,14 @@ class Logger extends \Monolog\Logger
     /**
      * Adds a log record and depending on the level, also add it to the prestashop logs
      *
-     * @param integer $level The logging level
+     * @param int $level The logging level
      * @param string $message The log message
      * @param array $context The log context
      * @param bool $callPrestaShopLogger Set to false to disable logging with the PrestaShop default logger as well
-     * @return Boolean Whether the record has been processed
+     *
+     * @return bool Whether the record has been processed
      */
-    public function addRecord($level, $message, array $context = array(), $callPrestaShopLogger = true)
+    public function addRecord($level, $message, array $context = [], $callPrestaShopLogger = true)
     {
         $context['is_exception'] = $message instanceof \Exception;
         if (array_key_exists($level, self::$prestashopLoggable) && $callPrestaShopLogger) {

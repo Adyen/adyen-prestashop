@@ -1,45 +1,23 @@
 <?php
-/**
- *                       ######
- *                       ######
- * ############    ####( ######  #####. ######  ############   ############
- * #############  #####( ######  #####. ######  #############  #############
- *        ######  #####( ######  #####. ######  #####  ######  #####  ######
- * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
- * ###### ######  #####( ######  #####. ######  #####          #####  ######
- * #############  #############  #############  #############  #####  ######
- *  ############   ############  #############   ############  #####  ######
- *                                      ######
- *                               #############
- *                               ############
- *
- * Adyen PrestaShop plugin
- *
- * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2022 Adyen B.V.
- * @license https://opensource.org/licenses/MIT MIT license
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
- */
 
 namespace Adyen\PrestaShop\service;
-
-use OrderCore;
 
 class CustomerService
 {
     /**
      * @param \Customer $customer
-     * @param OrderCore $order
+     * @param \OrderCore $order
      * @param \Shop $shop
      * @param \Language $language
+     *
      * @return \CustomerThread
+     *
      * @throws \PrestaShopDatabaseException
      * @throws \PrestaShopException
      */
     public function createCustomerThread(
         \Customer $customer,
-        OrderCore $order,
+        \OrderCore $order,
         \Shop $shop,
         \Language $language
     ): \CustomerThread {
@@ -60,7 +38,9 @@ class CustomerService
     /**
      * @param \CustomerThread $customerThread
      * @param string $comment
+     *
      * @return \CustomerMessage
+     *
      * @throws \PrestaShopDatabaseException
      * @throws \PrestaShopException
      */

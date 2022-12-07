@@ -1,57 +1,36 @@
 <?php
-/**
- *                       ######
- *                       ######
- * ############    ####( ######  #####. ######  ############   ############
- * #############  #####( ######  #####. ######  #############  #############
- *        ######  #####( ######  #####. ######  #####  ######  #####  ######
- * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
- * ###### ######  #####( ######  #####. ######  #####          #####  ######
- * #############  #############  #############  #############  #####  ######
- *  ############   ############  #############   ############  #####  ######
- *                                      ######
- *                               #############
- *                               ############
- *
- * Adyen PrestaShop plugin
- *
- * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2021 Adyen B.V.
- * @license https://opensource.org/licenses/MIT MIT license
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
- */
 
 namespace Adyen\PrestaShop\model;
 
 class AdyenNotification extends AbstractModel
 {
-    const AUTHORISATION = 'AUTHORISATION';
-    const PENDING = 'PENDING';
-    const AUTHORISED = 'AUTHORISED';
-    const RECEIVED = 'RECEIVED';
-    const CANCELLED = 'CANCELLED';
-    const REFUSED = 'REFUSED';
-    const ERROR = 'ERROR';
-    const REFUND = 'REFUND';
-    const REFUND_FAILED = 'REFUND_FAILED';
-    const CANCEL_OR_REFUND = 'CANCEL_OR_REFUND';
-    const CAPTURE = 'CAPTURE';
-    const CAPTURE_FAILED = 'CAPTURE_FAILED';
-    const CANCELLATION = 'CANCELLATION';
-    const POSAPPROVED = 'POS_APPROVED';
-    const HANDLED_EXTERNALLY = 'HANDLED_EXTERNALLY';
-    const MANUAL_REVIEW_ACCEPT = 'MANUAL_REVIEW_ACCEPT';
-    const MANUAL_REVIEW_REJECT = 'MANUAL_REVIEW_REJECT ';
-    const RECURRING_CONTRACT = "RECURRING_CONTRACT";
-    const REPORT_AVAILABLE = "REPORT_AVAILABLE";
-    const ORDER_CLOSED = "ORDER_CLOSED";
-    const OFFER_CLOSED = "OFFER_CLOSED";
+    public const AUTHORISATION = 'AUTHORISATION';
+    public const PENDING = 'PENDING';
+    public const AUTHORISED = 'AUTHORISED';
+    public const RECEIVED = 'RECEIVED';
+    public const CANCELLED = 'CANCELLED';
+    public const REFUSED = 'REFUSED';
+    public const ERROR = 'ERROR';
+    public const REFUND = 'REFUND';
+    public const REFUND_FAILED = 'REFUND_FAILED';
+    public const CANCEL_OR_REFUND = 'CANCEL_OR_REFUND';
+    public const CAPTURE = 'CAPTURE';
+    public const CAPTURE_FAILED = 'CAPTURE_FAILED';
+    public const CANCELLATION = 'CANCELLATION';
+    public const POSAPPROVED = 'POS_APPROVED';
+    public const HANDLED_EXTERNALLY = 'HANDLED_EXTERNALLY';
+    public const MANUAL_REVIEW_ACCEPT = 'MANUAL_REVIEW_ACCEPT';
+    public const MANUAL_REVIEW_REJECT = 'MANUAL_REVIEW_REJECT ';
+    public const RECURRING_CONTRACT = 'RECURRING_CONTRACT';
+    public const REPORT_AVAILABLE = 'REPORT_AVAILABLE';
+    public const ORDER_CLOSED = 'ORDER_CLOSED';
+    public const OFFER_CLOSED = 'OFFER_CLOSED';
 
     private static $tableName = 'adyen_notification';
 
     /**
      * @return array|false|\mysqli_result|\PDOStatement|resource|null
+     *
      * @throws \Exception
      */
     public function getUnprocessedNotifications()
@@ -75,8 +54,8 @@ class AdyenNotification extends AbstractModel
     public function getNumberOfUnprocessedNotifications()
     {
         $sql = 'SELECT COUNT(*) FROM ' . _DB_PREFIX_ . self::$tableName
-            . ' WHERE `done` = "' . (int)0 . '"'
-            . ' AND `processing` = "' . (int)0 . '"';
+            . ' WHERE `done` = "' . (int) 0 . '"'
+            . ' AND `processing` = "' . (int) 0 . '"';
 
         return $this->dbInstance->getValue($sql);
     }
@@ -85,17 +64,18 @@ class AdyenNotification extends AbstractModel
      * Update the unprocessed and not done notification to processing
      *
      * @param $id
+     *
      * @return mixed
      */
     public function updateNotificationAsProcessing($id)
     {
-        $data = array(
-            'processing' => 1
-        );
+        $data = [
+            'processing' => 1,
+        ];
 
         $where = '`done` = 0'
             . ' AND `processing` = 0'
-            . ' AND `entity_id` = "' . (int)$id . '"';
+            . ' AND `entity_id` = "' . (int) $id . '"';
 
         return $this->dbInstance->update(self::$tableName, $data, $where);
     }
@@ -104,18 +84,19 @@ class AdyenNotification extends AbstractModel
      * Update the processed but not done notification to done
      *
      * @param $id
+     *
      * @return mixed
      */
     public function updateNotificationAsDone($id)
     {
-        $data = array(
+        $data = [
             'processing' => 0,
-            'done' => 1
-        );
+            'done' => 1,
+        ];
 
         $where = '`done` = 0'
             . ' AND `processing` = 1'
-            . ' AND `entity_id` = "' . (int)$id . '"';
+            . ' AND `entity_id` = "' . (int) $id . '"';
 
         return $this->dbInstance->update(self::$tableName, $data, $where);
     }
@@ -124,29 +105,31 @@ class AdyenNotification extends AbstractModel
      * Update the processed but not done notification to new
      *
      * @param $id
+     *
      * @return mixed
      */
     public function updateNotificationAsNew($id)
     {
-        $data = array(
+        $data = [
             'processing' => 0,
-            'done' => 0
-        );
+            'done' => 0,
+        ];
 
         $where = '`done` = 0'
             . ' AND `processing` = 1'
-            . ' AND `entity_id` = "' . (int)$id . '"';
+            . ' AND `entity_id` = "' . (int) $id . '"';
 
         return $this->dbInstance->update(self::$tableName, $data, $where);
     }
 
     /**
      * @param $notification
+     *
      * @throws \Exception
      */
     public function insertNotification($notification)
     {
-        $data = array();
+        $data = [];
         if (isset($notification['pspReference'])) {
             $data['pspreference'] = pSQL($notification['pspReference']);
         }
@@ -193,6 +176,7 @@ class AdyenNotification extends AbstractModel
      * If notification is already saved ignore it
      *
      * @param $notification
+     *
      * @return mixed
      */
     public function isDuplicate($notification)
@@ -217,6 +201,7 @@ class AdyenNotification extends AbstractModel
 
     /**
      * @param $merchantReference
+     *
      * @return mixed
      */
     public function getProcessedNotificationsByMerchantReference($merchantReference)
@@ -230,6 +215,7 @@ class AdyenNotification extends AbstractModel
 
     /**
      * @param $data
+     *
      * @return \DateTime
      */
     private function getCreatedAtDate($data)
@@ -238,7 +224,7 @@ class AdyenNotification extends AbstractModel
         // If authorisation w/ false success OR offer closed, delay by an hour
         if (($data['event_code'] === self::AUTHORISATION && $data['success'] === 'false') ||
             $data['event_code'] === self::OFFER_CLOSED) {
-            $date->add(new \DateInterval("PT1H"));
+            $date->add(new \DateInterval('PT1H'));
         }
 
         return $date;

@@ -29,15 +29,11 @@ use Adyen\PrestaShop\model\AdyenPaymentResponse;
 use Adyen\PrestaShop\service\adapter\classes\CustomerThreadAdapter;
 use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
 use Adyen\PrestaShop\service\notification\NotificationProcessor;
+use Adyen\PrestaShop\service\Order as OrderService;
 use Adyen\Util\Currency;
-use Context;
-use Db;
 use Mockery as m;
 use Order;
 use PHPUnit_Framework_MockObject_MockObject;
-use PrestaShopDatabaseException;
-use PrestaShopException;
-use Adyen\PrestaShop\service\Order as OrderService;
 
 class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
 {
@@ -47,78 +43,74 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
     public static $functions;
 
     /**
-     * @var Adyen\PrestaShop\service\Logger|\PHPUnit_Framework_MockObject_MockObject $logger
+     * @var Adyen\PrestaShop\service\Logger|\PHPUnit_Framework_MockObject_MockObject
      */
     private $logger;
 
     /**
-     * @var AdyenHelper|PHPUnit_Framework_MockObject_MockObject $adyenHelper
+     * @var AdyenHelper|\PHPUnit_Framework_MockObject_MockObject
      */
     private $adyenHelper;
 
     /**
-     * @var Db|PHPUnit_Framework_MockObject_MockObject $dbInstance
+     * @var \Db|\PHPUnit_Framework_MockObject_MockObject
      */
     private $dbInstance;
 
     /**
-     * @var CustomerThreadAdapter|PHPUnit_Framework_MockObject_MockObject $customerThreadAdapter
+     * @var CustomerThreadAdapter|\PHPUnit_Framework_MockObject_MockObject
      */
     private $customerThreadAdapter;
 
     /**
-     * @var AdyenPaymentResponse|PHPUnit_Framework_MockObject_MockObject $adyenPaymentResponseMock
+     * @var AdyenPaymentResponse|\PHPUnit_Framework_MockObject_MockObject
      */
     private $adyenPaymentResponseMock;
 
     /**
-     * @var OrderService|PHPUnit_Framework_MockObject_MockObject $orderServiceMock
+     * @var OrderService|\PHPUnit_Framework_MockObject_MockObject
      */
     private $orderServiceMock;
 
     /**
-     * @var Currency|PHPUnit_Framework_MockObject_MockObject $utilCurrency
+     * @var Currency|\PHPUnit_Framework_MockObject_MockObject
      */
     private $utilCurrency;
 
     /**
-     * @var OrderPaymentService|PHPUnit_Framework_MockObject_MockObject $orderPaymentService
+     * @var OrderPaymentService|\PHPUnit_Framework_MockObject_MockObject
      */
     private $orderPaymentService;
 
-    /**
-     *
-     */
     protected function setUp()
     {
         self::$functions = m::mock();
-
 
         $this->logger = $this->getMockBuilder(\Adyen\PrestaShop\service\Logger::class)
             ->disableOriginalConstructor()
             ->getMock();
 
         $this->adyenHelper = $this->getMockBuilder(AdyenHelper::class)
-                                  ->disableOriginalConstructor()
-                                  ->getMock();
+            ->disableOriginalConstructor()
+            ->getMock();
 
-        $this->dbInstance = $this->getMockBuilder(Db::class)->disableOriginalConstructor()->getMock();
+        $this->dbInstance = $this->getMockBuilder(\Db::class)->disableOriginalConstructor()->getMock();
 
         // Mock customerThread
         $customerThreadMock = $this->getMockBuilder(\CustomerThread::class)
-                                   ->disableOriginalConstructor()
-                                   ->getMock();
+            ->disableOriginalConstructor()
+            ->getMock();
         $customerThreadMock->id = 1;
 
         // Mock customerThreadAdapter
         $this->customerThreadAdapter = $this->getMockBuilder(CustomerThreadAdapter::class)
-                                            ->disableOriginalConstructor()
-                                            ->getMock();
+            ->disableOriginalConstructor()
+            ->getMock();
         $this->customerThreadAdapter->method('getCustomerThreadByEmailAndOrderId')
-                                    ->willReturn($customerThreadMock);
+            ->willReturn($customerThreadMock);
 
         // Mock AdyenNotification
-        /** @var PHPUnit_Framework_MockObject_MockObject|AdyenPaymentResponse $customerMock */
+        /* @var PHPUnit_Framework_MockObject_MockObject|AdyenPaymentResponse $customerMock */
         $this->adyenPaymentResponseMock = $this->getMockBuilder(AdyenPaymentResponse::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -142,35 +134,35 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
         $notification = json_decode(file_get_contents(__DIR__ . '/unprocessed-notification.json'), true);
 
         // Mock Customer with email
-        /** @var PHPUnit_Framework_MockObject_MockObject|\Customer $customerMock */
+        /** @var \PHPUnit_Framework_MockObject_MockObject|\Customer $customerMock */
         $customerMock = $this->getMockBuilder(\Customer::class)
             ->disableOriginalConstructor()
             ->getMock();
         $customerMock->email = 'test@test.com';
 
         // Mock order
-        /** @var PHPUnit_Framework_MockObject_MockObject|Order $orderMock */
+        /** @var \PHPUnit_Framework_MockObject_MockObject|\Order $orderMock */
         $orderMock = $this->getMockBuilder(\Order::class)
-                          ->setMethods(array('getCustomer'))
-                          ->disableOriginalConstructor()
-                          ->getMock();
+            ->setMethods(['getCustomer'])
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $orderMock->method('getCustomer')->willReturn($customerMock);
         $orderMock->id = 1;
         $orderMock->id_customer = 1;
 
         // Mock order adapter
-        /** @var PHPUnit_Framework_MockObject_MockObject|OrderAdapter $orderAdapter */
+        /** @var \PHPUnit_Framework_MockObject_MockObject|OrderAdapter $orderAdapter */
         $orderAdapter = $this->getMockBuilder(OrderAdapter::class)->disableOriginalConstructor()->getMock();
         $orderAdapter->method('getOrderByCartId')->willReturn($orderMock);
 
         // Mock customerMessage add
         $customerMessageMock = m::mock('overload:CustomerMessage');
         $customerMessageMock->shouldReceive('add')
-                            ->once()
-                            ->andReturn(true);
+            ->once()
+            ->andReturn(true);
 
-        /** @var PHPUnit_Framework_MockObject_MockObject|Context $context */
+        /** @var \PHPUnit_Framework_MockObject_MockObject|\Context $context */
         $context = $this->getMockBuilder('Context')->disableOriginalConstructor()->getMock();
         $shop = new \stdClass();
         $shop->id = 1;
@@ -200,11 +192,11 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
         $notification = json_decode(file_get_contents(__DIR__ . '/unprocessed-notification.json'), true);
 
         // Mock order adapter
-        /** @var PHPUnit_Framework_MockObject_MockObject|OrderAdapter $orderAdapter */
+        /** @var \PHPUnit_Framework_MockObject_MockObject|OrderAdapter $orderAdapter */
         $orderAdapter = $this->getMockBuilder(OrderAdapter::class)->disableOriginalConstructor()->getMock();
         $orderAdapter->method('getOrderByCartId')->willReturn(null);
 
-        /** @var PHPUnit_Framework_MockObject_MockObject|Context $context */
+        /** @var \PHPUnit_Framework_MockObject_MockObject|\Context $context */
         $context = $this->getMockBuilder('Context')->disableOriginalConstructor()->getMock();
         $shop = new \stdClass();
         $shop->id = 1;
@@ -238,24 +230,24 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
         $notification = json_decode(file_get_contents(__DIR__ . '/unprocessed-notification.json'), true);
 
         // Mock order
-        /** @var PHPUnit_Framework_MockObject_MockObject|Order $orderMock */
-        $orderMock = $this->getMockBuilder(Order::class)
-                          ->setMethods(array('getCustomer'))
-                          ->disableOriginalConstructor()
-                          ->getMock();
+        /** @var \PHPUnit_Framework_MockObject_MockObject|\Order $orderMock */
+        $orderMock = $this->getMockBuilder(\Order::class)
+            ->setMethods(['getCustomer'])
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $orderMock->method('getCustomer')->willReturn(null);
         $orderMock->id = '';
         $orderMock->id_customer = null;
 
         // Mock order adapter
-        /** @var PHPUnit_Framework_MockObject_MockObject|OrderAdapter $orderAdapter */
+        /** @var \PHPUnit_Framework_MockObject_MockObject|OrderAdapter $orderAdapter */
         $orderAdapter = $this->getMockBuilder(OrderAdapter::class)->disableOriginalConstructor()->getMock();
         $orderAdapter->method('getOrderByCartId')
-                     ->willReturn($orderMock);
+            ->willReturn($orderMock);
 
-        /** @var Context $context */
-        $context = $this->getMockBuilder(Context::class)->disableOriginalConstructor()->getMock();
+        /** @var \Context $context */
+        $context = $this->getMockBuilder(\Context::class)->disableOriginalConstructor()->getMock();
 
         $notificationProcessor = new NotificationProcessor(
             $this->adyenHelper,
@@ -271,17 +263,17 @@ class NotificationProcessorTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->logger->expects($this->once())
-                     ->method('error')
-                     ->with(
-                         'Customer with id: "" cannot be found for order with id: "" while notification with' .
-                         ' id: "1" was processed.'
-                     );
+            ->method('error')
+            ->with(
+                'Customer with id: "" cannot be found for order with id: "" while notification with' .
+                ' id: "1" was processed.'
+            );
 
         try {
             $this->assertFalse($notificationProcessor->addMessage($notification));
-        } catch (PrestaShopDatabaseException $e) {
+        } catch (\PrestaShopDatabaseException $e) {
             $this->fail($e->getMessage());
-        } catch (PrestaShopException $e) {
+        } catch (\PrestaShopException $e) {
             $this->fail($e->getMessage());
         }
     }

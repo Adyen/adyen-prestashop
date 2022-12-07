@@ -1,42 +1,20 @@
 <?php
-/**
- *                       ######
- *                       ######
- * ############    ####( ######  #####. ######  ############   ############
- * #############  #####( ######  #####. ######  #############  #############
- *        ######  #####( ######  #####. ######  #####  ######  #####  ######
- * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
- * ###### ######  #####( ######  #####. ######  #####          #####  ######
- * #############  #############  #############  #############  #####  ######
- *  ############   ############  #############   ############  #####  ######
- *                                      ######
- *                               #############
- *                               ############
- *
- * Adyen PrestaShop plugin
- *
- * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2020 Adyen B.V.
- * @license https://opensource.org/licenses/MIT MIT license
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
- */
 
 // This class is not in a namespace because of the way PrestaShop loads
 // Controllers, which breaks a PSR1 element.
 // phpcs:disable PSR1.Files.SideEffects, PSR1.Classes.ClassDeclaration
 
-use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
-use Adyen\PrestaShop\service\OrderPaymentService;
-use PrestaShop\PrestaShop\Adapter\CoreException;
 use Adyen\PrestaShop\exception\GenericLoggedException;
 use Adyen\PrestaShop\exception\MissingDataException;
-use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
-use Adyen\PrestaShop\service\adapter\classes\CustomerThreadAdapter;
-use Adyen\PrestaShop\service\notification\NotificationProcessor;
-use Adyen\PrestaShop\model\AdyenPaymentResponse;
 use Adyen\PrestaShop\model\AdyenNotification;
-use \Adyen\PrestaShop\service\Order as OrderService;
+use Adyen\PrestaShop\model\AdyenPaymentResponse;
+use Adyen\PrestaShop\service\adapter\classes\CustomerThreadAdapter;
+use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
+use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
+use Adyen\PrestaShop\service\notification\NotificationProcessor;
+use Adyen\PrestaShop\service\Order as OrderService;
+use Adyen\PrestaShop\service\OrderPaymentService;
+use PrestaShop\PrestaShop\Adapter\CoreException;
 
 require_once _PS_ROOT_DIR_ . '/modules/adyenofficial/vendor/autoload.php';
 
@@ -88,7 +66,7 @@ class AdminAdyenOfficialPrestashopCronController extends \ModuleAdminController
         }
 
         if (\Tools::getValue('token') != $cronjobToken) {
-            die('Invalid token');
+            exit('Invalid token');
         }
 
         $this->context = \Context::getContext();
@@ -104,16 +82,17 @@ class AdminAdyenOfficialPrestashopCronController extends \ModuleAdminController
             );
         }
 
-        die($message);
+        exit($message);
     }
 
     /**
      * @return array
+     *
      * @throws Exception
      */
     public function postProcess()
     {
-        $failedNotifications = array();
+        $failedNotifications = [];
         $notificationProcessor = new NotificationProcessor(
             $this->helperData,
             \Db::getInstance(),

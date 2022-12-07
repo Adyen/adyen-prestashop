@@ -1,26 +1,4 @@
 <?php
-/**
- *                       ######
- *                       ######
- * ############    ####( ######  #####. ######  ############   ############
- * #############  #####( ######  #####. ######  #############  #############
- *        ######  #####( ######  #####. ######  #####  ######  #####  ######
- * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
- * ###### ######  #####( ######  #####. ######  #####          #####  ######
- * #############  #############  #############  #############  #####  ######
- *  ############   ############  #############   ############  #####  ######
- *                                      ######
- *                               #############
- *                               ############
- *
- * Adyen PrestaShop plugin
- *
- * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2020 Adyen B.V.
- * @license https://opensource.org/licenses/MIT MIT license
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
- */
 
 namespace Adyen\PrestaShop\service\builder;
 
@@ -69,6 +47,7 @@ class Address
      * @param string $stateOrProvince
      * @param string $country
      * @param array $request
+     *
      * @return array
      */
     public function buildBillingAddress(
@@ -78,7 +57,7 @@ class Address
         $city = '',
         $stateOrProvince = '',
         $country = '',
-        $request = array()
+        $request = []
     ) {
         return $this->buildAddress(
             self::$addressTypeBilling,
@@ -100,6 +79,7 @@ class Address
      * @param string $stateOrProvince
      * @param string $country
      * @param array $request
+     *
      * @return array
      */
     public function buildDeliveryAddress(
@@ -109,7 +89,7 @@ class Address
         $city = '',
         $stateOrProvince = '',
         $country = '',
-        $request = array()
+        $request = []
     ) {
         return $this->buildAddress(
             self::$addressTypeDelivery,
@@ -132,6 +112,7 @@ class Address
      * @param string $stateOrProvince
      * @param string $country
      * @param array $request
+     *
      * @return array
      */
     private function buildAddress(
@@ -144,45 +125,44 @@ class Address
         $country,
         $request
     ) {
-
         // Don't overwrite the state data address details
         if (!empty($request[$addressType])) {
             return $request;
         }
 
-        $address = array();
+        $address = [];
         if (!empty($street)) {
-            $address["street"] = $street;
+            $address['street'] = $street;
         } else {
-            $address["street"] = self::$defaultStreet;
+            $address['street'] = self::$defaultStreet;
         }
 
         if (!empty($houseNumberOrName)) {
-            $address["houseNumberOrName"] = $houseNumberOrName;
+            $address['houseNumberOrName'] = $houseNumberOrName;
         } else {
-            $address["houseNumberOrName"] = self::$defaultHouseNumberOrName;
+            $address['houseNumberOrName'] = self::$defaultHouseNumberOrName;
         }
 
         if (!empty($postalCode)) {
-            $address["postalCode"] = $postalCode;
+            $address['postalCode'] = $postalCode;
         } else {
-            $address["postalCode"] = self::$defaultPostalCode;
+            $address['postalCode'] = self::$defaultPostalCode;
         }
 
         if (!empty($city)) {
-            $address["city"] = $city;
+            $address['city'] = $city;
         } else {
-            $address["city"] = self::$defaultCity;
+            $address['city'] = self::$defaultCity;
         }
 
         if (!empty($stateOrProvince)) {
-            $address["stateOrProvince"] = $stateOrProvince;
+            $address['stateOrProvince'] = $stateOrProvince;
         }
 
         if (!empty($country)) {
-            $address["country"] = $country;
+            $address['country'] = $country;
         } else {
-            $address["country"] = self::$defaultCountry;
+            $address['country'] = self::$defaultCountry;
         }
 
         // Assigns the address to billing or delivery address depends on the $addressType parameter

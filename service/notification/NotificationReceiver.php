@@ -1,26 +1,4 @@
 <?php
-/**
- *                       ######
- *                       ######
- * ############    ####( ######  #####. ######  ############   ############
- * #############  #####( ######  #####. ######  #############  #############
- *        ######  #####( ######  #####. ######  #####  ######  #####  ######
- * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
- * ###### ######  #####( ######  #####. ######  #####          #####  ######
- * #############  #############  #############  #############  #####  ######
- *  ############   ############  #############   ############  #####  ######
- *                                      ######
- *                               #############
- *                               ############
- *
- * Adyen PrestaShop plugin
- *
- * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2021 Adyen B.V.
- * @license https://opensource.org/licenses/MIT MIT license
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
- */
 
 namespace Adyen\PrestaShop\service\notification;
 
@@ -32,7 +10,6 @@ use Adyen\PrestaShop\model\AdyenNotification;
 use Adyen\PrestaShop\service\adapter\classes\Configuration;
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use Adyen\Util\HmacSignature;
-use Db;
 use Psr\Log\LoggerInterface;
 
 class NotificationReceiver
@@ -68,7 +45,7 @@ class NotificationReceiver
     private $notificationPassword;
 
     /**
-     * @var Db
+     * @var \Db
      */
     private $dbInstance;
 
@@ -96,7 +73,7 @@ class NotificationReceiver
      * @param $merchantAccount
      * @param $notificationUsername
      * @param $notificationPassword
-     * @param Db $dbInstance
+     * @param \Db $dbInstance
      * @param LoggerInterface $logger
      * @param Configuration $configuration
      * @param AdyenNotification $adyenNotification
@@ -108,7 +85,7 @@ class NotificationReceiver
         $merchantAccount,
         $notificationUsername,
         $notificationPassword,
-        Db $dbInstance,
+        \Db $dbInstance,
         LoggerInterface $logger,
         Configuration $configuration,
         AdyenNotification $adyenNotification
@@ -127,7 +104,9 @@ class NotificationReceiver
 
     /**
      * @param $notificationItems
+     *
      * @return false|string|null
+     *
      * @throws AuthenticationException
      * @throws HMACKeyValidationException
      * @throws MerchantAccountCodeException
@@ -140,11 +119,12 @@ class NotificationReceiver
         if (empty($notificationItems)) {
             $message = 'Notification is not formatted correctly';
             $this->logger->addAdyenNotification($message);
+
             return json_encode(
-                array(
+                [
                     'success' => false,
-                    'message' => $message
-                )
+                    'message' => $message,
+                ]
             );
         }
 
@@ -172,15 +152,17 @@ class NotificationReceiver
             }
 
             $this->logger->addAdyenNotification('The result is accepted');
+
             return $this->returnAccepted($acceptedMessage);
         } else {
             $message = 'Mismatch between Live/Test modes of PrestaShop store and the Adyen platform';
             $this->logger->addAdyenNotification($message);
+
             return json_encode(
-                array(
+                [
                     'success' => false,
-                    'message' => $message
-                )
+                    'message' => $message,
+                ]
             );
         }
     }
@@ -189,7 +171,9 @@ class NotificationReceiver
      * HTTP Authentication of the notification
      *
      * @param $response
+     *
      * @return bool
+     *
      * @throws MerchantAccountCodeException
      * @throws AuthenticationException
      * @throws HMACKeyValidationException
@@ -205,16 +189,18 @@ class NotificationReceiver
             if ($isTestNotification) {
                 throw new MerchantAccountCodeException('merchantAccountCode is empty in PrestaShop settings');
             }
+
             return false;
         }
 
         // validate username and password
-        if ((!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW']))) {
+        if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW'])) {
             if ($isTestNotification) {
                 $message = 'Authentication failed: PHP_AUTH_USER and/or PHP_AUTH_PW are empty.';
                 $this->logger->addAdyenNotification($message);
                 throw new AuthenticationException($message);
             }
+
             return false;
         }
 
@@ -240,14 +226,15 @@ class NotificationReceiver
                 throw new AuthenticationException($message);
             }
         }
+
         return false;
     }
-
 
     /**
      * Checks if notification mode and the store mode configuration matches
      *
      * @param $notificationMode
+     *
      * @return bool
      */
     protected function validateNotificationMode($notificationMode)
@@ -260,6 +247,7 @@ class NotificationReceiver
         ) {
             return true;
         }
+
         return false;
     }
 
@@ -267,7 +255,9 @@ class NotificationReceiver
      * Save notification into the database for cron job to execute notification
      *
      * @param $notification
+     *
      * @return bool
+     *
      * @throws AuthenticationException
      * @throws HMACKeyValidationException
      * @throws MerchantAccountCodeException
@@ -285,6 +275,7 @@ class NotificationReceiver
             // skip report notifications
             if ($this->isReportNotification($notification['eventCode'])) {
                 $this->logger->addAdyenNotification('Notification is a REPORT notification from Adyen Customer Area');
+
                 return true;
             }
 
@@ -293,10 +284,12 @@ class NotificationReceiver
                 $notification
             )) {
                 $this->adyenNotification->insertNotification($notification);
+
                 return true;
             } else {
                 // duplicated so do nothing but return accepted to Adyen
                 $this->logger->addAdyenNotification('Notification is a TEST notification from Adyen Customer Area');
+
                 return true;
             }
         }
@@ -308,6 +301,7 @@ class NotificationReceiver
      * If notification is a test notification from Adyen Customer Area
      *
      * @param $pspReference
+     *
      * @return bool
      */
     protected function isTestNotification($pspReference)
@@ -325,6 +319,7 @@ class NotificationReceiver
      * Check if notification is a report notification
      *
      * @param $eventCode
+     *
      * @return bool
      */
     protected function isReportNotification($eventCode)
@@ -340,6 +335,7 @@ class NotificationReceiver
      * Add '[accepted]' into $acceptedMessage if empty
      *
      * @param $acceptedMessage
+     *
      * @return string
      */
     private function returnAccepted($acceptedMessage)
@@ -347,6 +343,7 @@ class NotificationReceiver
         if (empty($acceptedMessage)) {
             $acceptedMessage = '[accepted]';
         }
+
         return $acceptedMessage;
     }
 
@@ -364,7 +361,7 @@ class NotificationReceiver
         } catch (\Exception $e) {
             $this->logger->addAdyenNotification(
                 'Could not call the cron service',
-                array('exception' => $e, 'type' => get_class($e))
+                ['exception' => $e, 'type' => get_class($e)]
             );
         }
     }

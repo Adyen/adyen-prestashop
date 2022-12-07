@@ -1,34 +1,9 @@
 <?php
-/**
- *                       ######
- *                       ######
- * ############    ####( ######  #####. ######  ############   ############
- * #############  #####( ######  #####. ######  #############  #############
- *        ######  #####( ######  #####. ######  #####  ######  #####  ######
- * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
- * ###### ######  #####( ######  #####. ######  #####          #####  ######
- * #############  #############  #############  #############  #####  ######
- *  ############   ############  #############   ############  #####  ######
- *                                      ######
- *                               #############
- *                               ############
- *
- * Adyen PrestaShop plugin
- *
- * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2020 Adyen B.V.
- * @license https://opensource.org/licenses/MIT MIT license
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
- */
 
 namespace Adyen\PrestaShop\service\adapter\classes\order;
 
 use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use Order;
-use OrderSlip;
-use PrestaShopDatabaseException;
-use PrestaShopException;
 
 class OrderAdapter
 {
@@ -46,7 +21,8 @@ class OrderAdapter
      * Returns the order instance for cart id
      *
      * @param $cartId
-     * @return null|\Order
+     *
+     * @return \Order|null
      */
     public function getOrderByCartId($cartId)
     {
@@ -67,13 +43,15 @@ class OrderAdapter
     /**
      * @param string $orderSlipId
      *
-     * @return Order
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
+     * @return \Order
+     *
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      */
     public function getOrderByOrderSlipId($orderSlipId)
     {
-        $orderSlip = new OrderSlip($orderSlipId);
-        return new Order($orderSlip->id_order);
+        $orderSlip = new \OrderSlip($orderSlipId);
+
+        return new \Order($orderSlip->id_order);
     }
 }

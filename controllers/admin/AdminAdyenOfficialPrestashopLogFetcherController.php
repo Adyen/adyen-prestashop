@@ -1,26 +1,4 @@
 <?php
-/**
- *                       ######
- *                       ######
- * ############    ####( ######  #####. ######  ############   ############
- * #############  #####( ######  #####. ######  #############  #############
- *        ######  #####( ######  #####. ######  #####  ######  #####  ######
- * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
- * ###### ######  #####( ######  #####. ######  #####          #####  ######
- * #############  #############  #############  #############  #####  ######
- *  ############   ############  #############   ############  #####  ######
- *                                      ######
- *                               #############
- *                               ############
- *
- * Adyen PrestaShop plugin
- *
- * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2021 Adyen B.V.
- * @license https://opensource.org/licenses/MIT MIT license
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
- */
 
 // This class is not in a namespace because of the way PrestaShop loads
 // Controllers, which breaks a PSR1 element.
@@ -37,7 +15,7 @@ require_once _PS_ROOT_DIR_ . '/modules/adyenofficial/vendor/autoload.php';
 
 class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminController
 {
-    /** @var \Adyen\PrestaShop\service\adapter\classes\Configuration $configuration */
+    /** @var \Adyen\PrestaShop\service\adapter\classes\Configuration */
     private $configuration;
 
     /** @var Adyen\PrestaShop\infra\Crypto */
@@ -46,7 +24,7 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
     /** @var VersionChecker */
     private $versionChecker;
 
-    /** @var string $logsDirectory */
+    /** @var string */
     private $logsDirectory;
 
     /**
@@ -79,7 +57,7 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
      */
     public function postProcess()
     {
-        if ((string)Tools::getValue('download')) {
+        if ((string) Tools::getValue('download')) {
             $this->createCurrentApplicationInfoFile();
             $this->zipAndDownload(Tools::getValue('include-all'));
             exit;
@@ -92,14 +70,15 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
      * Render the log-fetcher template
      *
      * @return false|string
+     *
      * @throws SmartyException
      */
     public function renderView()
     {
-        $smartyVariables = array(
+        $smartyVariables = [
             'logo' => Media::getMediaPath(_PS_MODULE_DIR_ . $this->module->name . '/views/img/adyen.png'),
-            'downloadUrl' => $this->getDownloadUrl()
-        );
+            'downloadUrl' => $this->getDownloadUrl(),
+        ];
         $this->addCSS('modules/' . $this->module->name . '/views/css/adyen_admin.css');
 
         // Passing variables in this call (instead of assign()) required for 1.6
@@ -124,7 +103,7 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
             $this->logsDirectory = $this->logsDirectory . '/adyen';
         }
 
-        $zip_file = Configuration::get('PS_SHOP_NAME') . '_' . date('Y-m-d') . '_' . 'Adyen_Logs.zip';
+        $zip_file = Configuration::get('PS_SHOP_NAME') . '_' . date('Y-m-d') . '_Adyen_Logs.zip';
         // Get real path for our folder
         $rootPath = realpath($this->logsDirectory);
         $this->createArchive($zip_file, $rootPath);
@@ -196,7 +175,7 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
 
         $content = $adyenPaymentSource . $prestashopVersion . $environment . $time . $this->getConfigurationValues();
 
-        $filePath = fopen($this->logsDirectory . "/applicationInfo", "wb");
+        $filePath = fopen($this->logsDirectory . '/applicationInfo', 'wb');
         fwrite($filePath, $content);
         fclose($filePath);
     }
@@ -205,12 +184,13 @@ class AdminAdyenOfficialPrestashopLogFetcherController extends ModuleAdminContro
      * Get all remaining adyen config values
      *
      * @return string
+     *
      * @throws GenericLoggedException
      * @throws MissingDataException
      */
     private function getConfigurationValues()
     {
-        $configs = array();
+        $configs = [];
         $configValues = "\n\nConfiguration values: \n";
         $configs['autoCronJobRunner'] = sprintf(
             "\nAuto cronjob runner: %s",

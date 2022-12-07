@@ -1,34 +1,12 @@
 <?php
-/**
- *                       ######
- *                       ######
- * ############    ####( ######  #####. ######  ############   ############
- * #############  #####( ######  #####. ######  #############  #############
- *        ######  #####( ######  #####. ######  #####  ######  #####  ######
- * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
- * ###### ######  #####( ######  #####. ######  #####          #####  ######
- * #############  #############  #############  #############  #####  ######
- *  ############   ############  #############   ############  #####  ######
- *                                      ######
- *                               #############
- *                               ############
- *
- * Adyen PrestaShop plugin
- *
- * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2022 Adyen B.V.
- * @license https://opensource.org/licenses/MIT MIT license
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
- */
 
 // This class is not in a namespace because of the way PrestaShop loads
 // Controllers, which breaks a PSR1 element.
 // phpcs:disable PSR1.Classes.ClassDeclaration
 
-use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
-use Adyen\PrestaShop\controllers\FrontController;
 use Adyen\AdyenException;
+use Adyen\PrestaShop\controllers\FrontController;
+use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
 use Adyen\PrestaShop\service\Logger;
 use PrestaShop\PrestaShop\Adapter\CoreException;
 
@@ -46,6 +24,7 @@ class AdyenOfficialResultModuleFrontController extends FrontController
 
     /**
      * AdyenOfficialResultModuleFrontController constructor.
+     *
      * @throws CoreException
      */
     public function __construct()

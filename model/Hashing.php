@@ -1,26 +1,4 @@
 <?php
-/**
- *                       ######
- *                       ######
- * ############    ####( ######  #####. ######  ############   ############
- * #############  #####( ######  #####. ######  #############  #############
- *        ######  #####( ######  #####. ######  #####  ######  #####  ######
- * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
- * ###### ######  #####( ######  #####. ######  #####          #####  ######
- * #############  #############  #############  #############  #####  ######
- *  ############   ############  #############   ############  #####  ######
- *                                      ######
- *                               #############
- *                               ############
- *
- * Adyen PrestaShop plugin
- *
- * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2020 Adyen B.V.
- * @license https://opensource.org/licenses/MIT MIT license
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
- */
 
 namespace Adyen\PrestaShop\model;
 
@@ -30,7 +8,8 @@ namespace Adyen\PrestaShop\model;
 class Hashing
 {
     /** @var array should contain hashing methods */
-    private $hashMethods = array();
+    private $hashMethods = [];
+
     /**
      * Check if it's the first function of the array that was used for hashing.
      *
@@ -46,8 +25,10 @@ class Hashing
             $this->initHashMethods();
         }
         $closure = reset($this->hashMethods);
+
         return $closure['verify']($passwd, $hash, $staticSalt);
     }
+
     /**
      * Iterate on hash_methods array and return true if it matches.
      *
@@ -67,8 +48,10 @@ class Hashing
                 return true;
             }
         }
+
         return false;
     }
+
     /**
      * Hash the `$plaintextPassword` string and return the result of the 1st hashing method
      * contained in PrestaShop\PrestaShop\Core\Crypto\Hashing::hash_methods.
@@ -84,32 +67,34 @@ class Hashing
             $this->initHashMethods();
         }
         $closure = reset($this->hashMethods);
+
         return $closure['hash']($plaintextPassword, $staticSalt, $closure['option']);
     }
+
     /**
      * Init $hash_methods.
      */
     private function initHashMethods()
     {
-        $this->hashMethods = array(
-            'bcrypt' => array(
-                'option' => array(),
+        $this->hashMethods = [
+            'bcrypt' => [
+                'option' => [],
                 'hash' => function ($password) {
                     return password_hash($password, PASSWORD_BCRYPT);
                 },
                 'verify' => function ($password, $hash) {
                     return password_verify($password, $hash);
                 },
-            ),
-            'md5' => array(
-                'option' => array(),
+            ],
+            'md5' => [
+                'option' => [],
                 'hash' => function ($password, $staticSalt) {
                     return md5($staticSalt . $password);
                 },
                 'verify' => function ($password, $hash, $staticSalt) {
                     return md5($staticSalt . $password) === $hash;
                 },
-            ),
-        );
+            ],
+        ];
     }
 }

@@ -1,31 +1,8 @@
 <?php
-/**
- *                       ######
- *                       ######
- * ############    ####( ######  #####. ######  ############   ############
- * #############  #####( ######  #####. ######  #############  #############
- *        ######  #####( ######  #####. ######  #####  ######  #####  ######
- * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
- * ###### ######  #####( ######  #####. ######  #####          #####  ######
- * #############  #############  #############  #############  #####  ######
- *  ############   ############  #############   ############  #####  ######
- *                                      ######
- *                               #############
- *                               ############
- *
- * Adyen PrestaShop plugin
- *
- * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2021 Adyen B.V.
- * @license https://opensource.org/licenses/MIT MIT license
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
- */
 
 // phpcs:ignore PSR1.Classes.ClassDeclaration.MissingNamespace
 class OrderHistory extends OrderHistoryCore
 {
-
     /**
      * This function will ensure that all template variables sent to the order_conf template, are usable in all other
      * email templates
@@ -33,6 +10,7 @@ class OrderHistory extends OrderHistoryCore
      * @param bool $autodate
      * @param array $template_vars
      * @param Context|null $context
+     *
      * @return bool
      */
     public function addWithemail($autodate = true, $template_vars = false, Context $context = null)
@@ -54,20 +32,20 @@ class OrderHistory extends OrderHistoryCore
             $customer = $context->customer;
         }
 
-        $data = array(
+        $data = [
             '{firstname}' => $customer->firstname,
             '{lastname}' => $customer->lastname,
             '{email}' => $customer->email,
             '{delivery_block_txt}' => $this->getFormatedAddress($delivery, "\n"),
             '{invoice_block_txt}' => $this->getFormatedAddress($invoice, "\n"),
-            '{delivery_block_html}' => $this->getFormatedAddress($delivery, '<br />', array(
+            '{delivery_block_html}' => $this->getFormatedAddress($delivery, '<br />', [
                 'firstname' => '<span style="font-weight:bold;">%s</span>',
                 'lastname' => '<span style="font-weight:bold;">%s</span>',
-            )),
-            '{invoice_block_html}' => $this->getFormatedAddress($invoice, '<br />', array(
+            ]),
+            '{invoice_block_html}' => $this->getFormatedAddress($invoice, '<br />', [
                 'firstname' => '<span style="font-weight:bold;">%s</span>',
                 'lastname' => '<span style="font-weight:bold;">%s</span>',
-            )),
+            ]),
             '{delivery_company}' => $delivery->company,
             '{delivery_firstname}' => $delivery->firstname,
             '{delivery_lastname}' => $delivery->lastname,
@@ -94,7 +72,7 @@ class OrderHistory extends OrderHistoryCore
             '{order_name}' => $order->getUniqReference(),
             '{date}' => Tools::displayDate(date('Y-m-d H:i:s'), null, 1),
             '{carrier}' => ($order->isVirtual() || !isset($carrier->name)) ?
-                $this->trans('No carrier', array(), 'Admin.Payment.Notification') : $carrier->name,
+                $this->trans('No carrier', [], 'Admin.Payment.Notification') : $carrier->name,
             '{payment}' => Tools::substr($order->payment, 0, 255),
             '{total_paid}' => Tools::displayPrice($order->total_paid, $context->currency, false),
             '{total_products}' => Tools::displayPrice(
@@ -109,7 +87,7 @@ class OrderHistory extends OrderHistoryCore
             '{total_wrapping}' => Tools::displayPrice($order->total_wrapping, $context->currency),
             '{total_tax_paid}' => Tools::displayPrice(($order->total_products_wt - $order->total_products) +
                 ($order->total_shipping_tax_incl - $order->total_shipping_tax_excl), $context->currency),
-        );
+        ];
 
         if (!is_array($template_vars)) {
             $template_vars = $data;
@@ -122,10 +100,11 @@ class OrderHistory extends OrderHistoryCore
 
     /**
      * @param Address $the_address that needs to be txt formatted
-     * @return String the txt formated address block
+     *
+     * @return string the txt formated address block
      */
-    protected function getFormatedAddress(Address $the_address, $line_sep, $fields_style = array())
+    protected function getFormatedAddress(Address $the_address, $line_sep, $fields_style = [])
     {
-        return AddressFormat::generateAddress($the_address, array('avoid' => array()), $line_sep, ' ', $fields_style);
+        return AddressFormat::generateAddress($the_address, ['avoid' => []], $line_sep, ' ', $fields_style);
     }
 }

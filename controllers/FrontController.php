@@ -1,38 +1,16 @@
 <?php
-/**
- *                       ######
- *                       ######
- * ############    ####( ######  #####. ######  ############   ############
- * #############  #####( ######  #####. ######  #############  #############
- *        ######  #####( ######  #####. ######  #####  ######  #####  ######
- * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
- * ###### ######  #####( ######  #####. ######  #####          #####  ######
- * #############  #############  #############  #############  #####  ######
- *  ############   ############  #############   ############  #####  ######
- *                                      ######
- *                               #############
- *                               ############
- *
- * Adyen PrestaShop plugin
- *
- * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2022 Adyen B.V.
- * @license https://opensource.org/licenses/MIT MIT license
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
- */
 
 namespace Adyen\PrestaShop\controllers;
 
-use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
-use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
-use Adyen\PrestaShop\service\CustomerService;
-use Adyen\PrestaShop\service\Logger;
+use Adyen\AdyenException;
 use Adyen\PrestaShop\application\VersionChecker;
 use Adyen\PrestaShop\helper\Data as AdyenHelper;
-use Adyen\AdyenException;
-use Adyen\PrestaShop\service\Cart as CartService;
 use Adyen\PrestaShop\model\AdyenPaymentResponse;
+use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
+use Adyen\PrestaShop\service\adapter\classes\ServiceLocator;
+use Adyen\PrestaShop\service\Cart as CartService;
+use Adyen\PrestaShop\service\CustomerService;
+use Adyen\PrestaShop\service\Logger;
 use Adyen\PrestaShop\service\Order as OrderService;
 use Adyen\PrestaShop\service\OrderPaymentService;
 use Adyen\Service\Checkout;
@@ -40,7 +18,7 @@ use PrestaShop\PrestaShop\Adapter\CoreException;
 
 abstract class FrontController extends \ModuleFrontController
 {
-    const DETAILS_ALLOWED_PARAM_KEYS = [
+    public const DETAILS_ALLOWED_PARAM_KEYS = [
         'MD',
         'PaReq',
         'PaRes',
@@ -56,7 +34,7 @@ abstract class FrontController extends \ModuleFrontController
         'redirectResult',
         'threeDSResult',
         'threeds2.challengeResult',
-        'threeds2.fingerprint'
+        'threeds2.fingerprint',
     ];
 
     /**
@@ -65,7 +43,7 @@ abstract class FrontController extends \ModuleFrontController
      *
      * @var string[]
      */
-    protected $stateDataRootKeys = array(
+    protected $stateDataRootKeys = [
         'paymentMethod',
         'billingAddress',
         'deliveryAddress',
@@ -81,22 +59,22 @@ abstract class FrontController extends \ModuleFrontController
         'storePaymentMethod',
         'conversionId',
         self::PAYMENT_DATA,
-        self::DETAILS_KEY
-    );
+        self::DETAILS_KEY,
+    ];
 
-    const BROWSER_INFO = 'browserInfo';
-    const USER_AGENT = 'userAgent';
-    const ACCEPT_HEADER = 'acceptHeader';
+    public const BROWSER_INFO = 'browserInfo';
+    public const USER_AGENT = 'userAgent';
+    public const ACCEPT_HEADER = 'acceptHeader';
 
-    const ADYEN_MERCHANT_REFERENCE = 'adyenMerchantReference';
-    const ISSUER = 'issuer';
-    const PA_REQUEST = 'paRequest';
-    const MD = 'md';
-    const ISSUER_URL = 'issuerUrl';
-    const REDIRECT_METHOD = 'redirectMethod';
-    const DETAILS_KEY = 'details';
-    const RESULT_CODE = 'resultCode';
-    const PAYMENT_DATA = 'paymentData';
+    public const ADYEN_MERCHANT_REFERENCE = 'adyenMerchantReference';
+    public const ISSUER = 'issuer';
+    public const PA_REQUEST = 'paRequest';
+    public const MD = 'md';
+    public const ISSUER_URL = 'issuerUrl';
+    public const REDIRECT_METHOD = 'redirectMethod';
+    public const DETAILS_KEY = 'details';
+    public const RESULT_CODE = 'resultCode';
+    public const PAYMENT_DATA = 'paymentData';
 
     /**
      * @var AdyenHelper
@@ -172,6 +150,7 @@ abstract class FrontController extends \ModuleFrontController
      *
      * @param string $pageLink
      * @param bool $isAjax
+     *
      * @throws AdyenException
      */
     protected function redirectUserToPageLink($pageLink, $isAjax = false)
@@ -182,9 +161,9 @@ abstract class FrontController extends \ModuleFrontController
             $this->ajaxRender(
                 $this->helperData->buildControllerResponseJson(
                     'redirect',
-                    array(
-                        'redirectUrl' => $pageLink
-                    )
+                    [
+                        'redirectUrl' => $pageLink,
+                    ]
                 )
             );
         }
@@ -194,6 +173,7 @@ abstract class FrontController extends \ModuleFrontController
      * @param null $value
      * @param null $controller
      * @param null $method
+     *
      * @throws PrestaShopException
      */
     protected function ajaxRender($value = null, $controller = null, $method = null)
@@ -222,13 +202,14 @@ abstract class FrontController extends \ModuleFrontController
      * @param $customer
      * @param $isAjax
      * @param array $paymentRequest
+     *
      * @throws AdyenException
      */
-    protected function handleAdyenApiResponse($response, \Cart $cart, $customer, $isAjax, $paymentRequest = array())
+    protected function handleAdyenApiResponse($response, \Cart $cart, $customer, $isAjax, $paymentRequest = [])
     {
         $resultCode = $response['resultCode'];
 
-        $extraVars = array();
+        $extraVars = [];
         if (!empty($response['pspReference'])) {
             $extraVars['transaction_id'] = $response['pspReference'];
         }
@@ -262,7 +243,7 @@ abstract class FrontController extends \ModuleFrontController
 
                 $this->createOrUpdateOrder($cart, $extraVars, $customer, $orderStatus);
 
-                $newOrder = new \Order((int)$this->module->currentOrder);
+                $newOrder = new \Order((int) $this->module->currentOrder);
 
                 if (array_key_exists('additionalData', $response)) {
                     $this->orderService->addPaymentDataToOrderFromResponse($newOrder, $response['additionalData']);
@@ -277,7 +258,7 @@ abstract class FrontController extends \ModuleFrontController
                         $this->ssl,
                         null,
                         sprintf(
-                            "id_cart=%s&id_module=%s&id_order=%s&key=%s",
+                            'id_cart=%s&id_module=%s&id_order=%s&key=%s',
                             $cart->id,
                             $this->module->id,
                             $this->module->currentOrder,
@@ -318,9 +299,9 @@ abstract class FrontController extends \ModuleFrontController
                     $this->ajaxRender(
                         $this->helperData->buildControllerResponseJson(
                             'error',
-                            array(
-                                'message' => $message
-                            )
+                            [
+                                'message' => $message,
+                            ]
                         )
                     );
                 } else {
@@ -354,6 +335,7 @@ abstract class FrontController extends \ModuleFrontController
                 );
 
                 // Handle the rest the same way as the cases below
+                // no break
             case 'IdentifyShopper':
             case 'ChallengeShopper':
                 // Store response for cart until the payment is done
@@ -368,9 +350,9 @@ abstract class FrontController extends \ModuleFrontController
                 $this->ajaxRender(
                     $this->helperData->buildControllerResponseJson(
                         'action',
-                        array(
-                            'response' => $response['action']
-                        )
+                        [
+                            'response' => $response['action'],
+                        ]
                     )
                 );
 
@@ -392,9 +374,9 @@ abstract class FrontController extends \ModuleFrontController
                     $this->ajaxRender(
                         $this->helperData->buildControllerResponseJson(
                             'action',
-                            array(
-                                'response' => $response['action']
-                            )
+                            [
+                                'response' => $response['action'],
+                            ]
                         )
                     );
                 }
@@ -433,7 +415,7 @@ abstract class FrontController extends \ModuleFrontController
                             $this->ssl,
                             null,
                             sprintf(
-                                "id_cart=%s&id_module=%s&id_order=%s&key=%s",
+                                'id_cart=%s&id_module=%s&id_order=%s&key=%s',
                                 $cart->id,
                                 $this->module->id,
                                 $this->module->currentOrder,
@@ -455,7 +437,7 @@ abstract class FrontController extends \ModuleFrontController
                 $this->cartService->cloneCurrentCart($this->context, $cart, $this->versionChecker->isPrestaShop16());
 
                 $this->logger->error(
-                    "There was an error with the payment method. id:  " . $cart->id .
+                    'There was an error with the payment method. id:  ' . $cart->id .
                     ' Result code "Error" in response: ' . print_r($response, true)
                 );
 
@@ -465,9 +447,9 @@ abstract class FrontController extends \ModuleFrontController
                     $this->ajaxRender(
                         $this->helperData->buildControllerResponseJson(
                             'error',
-                            array(
+                            [
                                 'message' => $message,
-                            )
+                            ]
                         )
                     );
                 } else {
@@ -481,7 +463,7 @@ abstract class FrontController extends \ModuleFrontController
                 $this->createOrUpdateOrder($cart, $extraVars, $customer, \Configuration::get('PS_OS_ERROR'));
 
                 $this->logger->error(
-                    "There was an error with the payment method. id:  " . $cart->id .
+                    'There was an error with the payment method. id:  ' . $cart->id .
                     ' Unsupported result code in response: ' . print_r($response, true)
                 );
 
@@ -489,10 +471,10 @@ abstract class FrontController extends \ModuleFrontController
                     $this->ajaxRender(
                         $this->helperData->buildControllerResponseJson(
                             'error',
-                            array(
+                            [
                                 'message' => $this->module->l('Unsupported result code:', 'frontcontroller') .
-                                             "{" . $response['resultCode'] . "}"
-                            )
+                                             '{' . $response['resultCode'] . '}',
+                            ]
                         )
                     );
                 } else {
@@ -509,6 +491,7 @@ abstract class FrontController extends \ModuleFrontController
      * Available in the php api library from version 7.0.0
      *
      * @param array $stateData
+     *
      * @return array
      */
     protected function getValidatedAdditionalData($stateData)
@@ -517,6 +500,7 @@ abstract class FrontController extends \ModuleFrontController
         if (!empty($stateData)) {
             $stateData = self::getArrayOnlyWithApprovedKeys($stateData, $this->stateDataRootKeys);
         }
+
         return $stateData;
     }
 
@@ -525,17 +509,19 @@ abstract class FrontController extends \ModuleFrontController
      *
      * @param array $array
      * @param array $approvedKeys
+     *
      * @return array
      */
     protected static function getArrayOnlyWithApprovedKeys(array $array, array $approvedKeys): array
     {
-        $result = array();
+        $result = [];
 
         foreach ($approvedKeys as $approvedKey) {
             if (isset($array[$approvedKey])) {
                 $result[$approvedKey] = $array[$approvedKey];
             }
         }
+
         return $result;
     }
 
@@ -544,6 +530,7 @@ abstract class FrontController extends \ModuleFrontController
      * @param $extraVars
      * @param $customer
      * @param $orderStatus
+     *
      * @throws \PrestaShopException
      */
     private function createOrUpdateOrder($cart, $extraVars, $customer, $orderStatus)
@@ -564,7 +551,7 @@ abstract class FrontController extends \ModuleFrontController
                 $this->logger->addError('Order cannot be loaded for cart id: ' . $cart->id);
             }
         } else {
-            $total = (float)$cart->getOrderTotal(true, \Cart::BOTH);
+            $total = (float) $cart->getOrderTotal(true, \Cart::BOTH);
             $this->module->validateOrder(
                 $cart->id,
                 $orderStatus,
@@ -572,7 +559,7 @@ abstract class FrontController extends \ModuleFrontController
                 $this->module->displayName,
                 null,
                 $extraVars,
-                (int)$cart->id_currency,
+                (int) $cart->id_currency,
                 false,
                 $customer->secure_key
             );
@@ -585,7 +572,9 @@ abstract class FrontController extends \ModuleFrontController
      * @param \Cart $cart
      * @param $amount
      * @param $currency
+     *
      * @return bool
+     *
      * @throws \Exception
      */
     protected function validateCartOrderTotalAndCurrency(\Cart $cart, $amount, $currency)
@@ -599,13 +588,14 @@ abstract class FrontController extends \ModuleFrontController
         );
 
         // In case amount or currency doesn't match return false
-        if ((int)$amount !== $orderTotalInMinorUnits || $currency !== $cartCurrencyIso) {
+        if ((int) $amount !== $orderTotalInMinorUnits || $currency !== $cartCurrencyIso) {
             $this->logger->addWarning(
                 'The cart (id: "' . $cart->id . '") amount ("' . $orderTotalInMinorUnits . '") or currency ("' .
                 $cartCurrencyIso . '") has changed during the payment process from amount ("' . $amount .
                 '") or currency ("' . $currency . '"). The order has not been placed but the customer was shown an ' .
                 'error message'
             );
+
             return false;
         }
 
@@ -614,7 +604,9 @@ abstract class FrontController extends \ModuleFrontController
 
     /**
      * @param array $payload
+     *
      * @return mixed
+     *
      * @throws CoreException
      * @throws AdyenException
      */

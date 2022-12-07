@@ -24,7 +24,7 @@
 
 // This file declares a function and checks if PrestaShop is loaded to follow
 // PrestaShop's good practices, which breaks a PSR1 element.
-//phpcs:disable PSR1.Files.SideEffects
+// phpcs:disable PSR1.Files.SideEffects
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -48,6 +48,7 @@ function upgrade_module_3_7_0(AdyenOfficial $module)
  * if not add it
  *
  * @param AdyenOfficial $module
+ *
  * @return bool
  */
 function add_payment_display_collapse(AdyenOfficial $module)

@@ -1,26 +1,4 @@
 <?php
-/**
- *                       ######
- *                       ######
- * ############    ####( ######  #####. ######  ############   ############
- * #############  #####( ######  #####. ######  #############  #############
- *        ######  #####( ######  #####. ######  #####  ######  #####  ######
- * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
- * ###### ######  #####( ######  #####. ######  #####          #####  ######
- * #############  #############  #############  #############  #####  ######
- *  ############   ############  #############   ############  #####  ######
- *                                      ######
- *                               #############
- *                               ############
- *
- * Adyen PrestaShop plugin
- *
- * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2020 Adyen B.V.
- * @license https://opensource.org/licenses/MIT MIT license
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
- */
 
 namespace Adyen\PrestaShop\service\builder;
 
@@ -36,6 +14,7 @@ class Payment
      * @param $returnUrl
      * @param $origin
      * @param array $request
+     *
      * @return array|mixed
      */
     public function buildPaymentData(
@@ -45,14 +24,14 @@ class Payment
         $merchantAccount,
         $returnUrl,
         $origin,
-        $request = array()
+        $request = []
     ) {
-        $request['amount'] = array(
+        $request['amount'] = [
             'currency' => $currencyIso,
-            'value' => $formattedValue
-        );
+            'value' => $formattedValue,
+        ];
 
-        $request["reference"] = $reference;
+        $request['reference'] = $reference;
         $request['merchantAccount'] = $merchantAccount;
         $request['returnUrl'] = $returnUrl;
         $request['additionalData']['allow3DS2'] = true;

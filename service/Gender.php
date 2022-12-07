@@ -1,49 +1,28 @@
 <?php
-/**
- *                       ######
- *                       ######
- * ############    ####( ######  #####. ######  ############   ############
- * #############  #####( ######  #####. ######  #############  #############
- *        ######  #####( ######  #####. ######  #####  ######  #####  ######
- * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
- * ###### ######  #####( ######  #####. ######  #####          #####  ######
- * #############  #############  #############  #############  #####  ######
- *  ############   ############  #############   ############  #####  ######
- *                                      ######
- *                               #############
- *                               ############
- *
- * Adyen PrestaShop plugin
- *
- * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2020 Adyen B.V.
- * @license https://opensource.org/licenses/MIT MIT license
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
- */
 
 namespace Adyen\PrestaShop\service;
 
 class Gender
 {
-    const MALE_ID = 1;
-    const FEMALE_ID = 2;
-    const MALE_VALUE = 'MALE';
-    const FEMALE_VALUE = 'FEMALE';
-    const UNKNOWN_VALUE = 'UNKNOWN';
+    public const MALE_ID = 1;
+    public const FEMALE_ID = 2;
+    public const MALE_VALUE = 'MALE';
+    public const FEMALE_VALUE = 'FEMALE';
+    public const UNKNOWN_VALUE = 'UNKNOWN';
 
     /**
      * @var array
      */
-    private static $genderMap = array(
+    private static $genderMap = [
         self::MALE_ID => self::MALE_VALUE,
-        self::FEMALE_ID => self::FEMALE_VALUE
-    );
+        self::FEMALE_ID => self::FEMALE_VALUE,
+    ];
 
     /**
      * Returns 'MALE' or 'FEMALE' by PrestaShop gender id
      *
      * @param $genderId
+     *
      * @return mixed|string
      */
     public function getAdyenGenderValueById($genderId)

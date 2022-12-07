@@ -1,26 +1,4 @@
 <?php
-/**
- *                       ######
- *                       ######
- * ############    ####( ######  #####. ######  ############   ############
- * #############  #####( ######  #####. ######  #############  #############
- *        ######  #####( ######  #####. ######  #####  ######  #####  ######
- * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
- * ###### ######  #####( ######  #####. ######  #####          #####  ######
- * #############  #############  #############  #############  #####  ######
- *  ############   ############  #############   ############  #####  ######
- *                                      ######
- *                               #############
- *                               ############
- *
- * Adyen PrestaShop plugin
- *
- * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2021 Adyen B.V.
- * @license https://opensource.org/licenses/MIT MIT license
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
- */
 
 // This class is not in a namespace because of the way PrestaShop loads
 // Controllers, which breaks a PSR1 element.
@@ -52,7 +30,7 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
     private $versionChecker;
 
     /**
-     * @var OrderStateAdapter $orderStateAdapter
+     * @var OrderStateAdapter
      */
     private $orderStateAdapter;
 
@@ -82,15 +60,16 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
      * Render the log-fetcher template
      *
      * @return false|string
+     *
      * @throws SmartyException
      */
     public function renderView()
     {
-        $smartyVariables = array(
+        $smartyVariables = [
             'logo' => Media::getMediaPath(_PS_MODULE_DIR_ . $this->module->name . '/views/img/adyen.png'),
             'validateUrl' => $this->getValidateUrl(),
-            'shops' => $this->getShops()
-        );
+            'shops' => $this->getShops(),
+        ];
         $this->addCSS('modules/' . $this->module->name . '/views/css/adyen_admin.css');
 
         // Passing variables in this call (instead of assign()) required for 1.6
@@ -145,12 +124,13 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
      * Validate that all adyen module configurations exist in the db. If passed, check only for that shop
      *
      * @param int|false $shopId
+     *
      * @return bool
      */
     private function validateModuleConfigs($shopId)
     {
         $mode = Configuration::get('ADYEN_MODE');
-        $invalidConfigs = array();
+        $invalidConfigs = [];
         foreach (AdyenOfficial::getAdyenConfigNames($mode) as $key) {
             if (!Configuration::hasKey($key, null, null, $shopId)) {
                 $invalidConfigs[] = $key;
@@ -181,7 +161,7 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
      */
     private function validateModuleHooks()
     {
-        $invalidHooks = array();
+        $invalidHooks = [];
         $allAdyenHooks = AdyenOfficial::getAdyenHooks();
         if ($this->versionChecker->isPrestaShop16()) {
             $adyenHooks = $allAdyenHooks['1.6'];
@@ -208,11 +188,12 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
      * Validate that all order states required by the module have been added
      *
      * @param int|false $shopId
+     *
      * @return bool
      */
     private function validateOrderStates($shopId)
     {
-        $invalidOrderStates = array();
+        $invalidOrderStates = [];
         foreach (AdyenOfficial::getAdyenOrderStates() as $orderStateName) {
             $orderStateConfigurationId = Configuration::get($orderStateName, null, null, $shopId);
             $orderState = $this->orderStateAdapter->getOrderStateById($orderStateConfigurationId);
@@ -248,7 +229,7 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
      */
     private function getShops()
     {
-        $shops = array();
+        $shops = [];
         foreach (Shop::getShops() as $shop) {
             $shops[$shop['id_shop']] = $shop['name'];
         }
@@ -267,21 +248,21 @@ class AdminAdyenOfficialPrestashopValidatorController extends ModuleAdminControl
     private function getPossibleHooksList()
     {
         $hooks_list = Hook::getHooks();
-        $possible_hooks_list = array();
+        $possible_hooks_list = [];
         $registeredHookList = Hook::getHookModuleList();
         foreach ($hooks_list as &$current_hook) {
             $hook_name = $current_hook['name'];
             $retro_hook_name = Hook::getRetroHookName($hook_name);
 
-            if (is_callable(array($this->module, 'hook' . Tools::ucfirst($hook_name))) ||
-                is_callable(array($this->module, 'hook' . Tools::ucfirst($retro_hook_name)))) {
-                $possible_hooks_list[] = array(
+            if (is_callable([$this->module, 'hook' . Tools::ucfirst($hook_name)]) ||
+                is_callable([$this->module, 'hook' . Tools::ucfirst($retro_hook_name)])) {
+                $possible_hooks_list[] = [
                     'id_hook' => $current_hook['id_hook'],
                     'name' => $hook_name,
                     'description' => $current_hook['description'],
                     'title' => $current_hook['title'],
                     'registered' => !empty($registeredHookList[$current_hook['id_hook']][$this->module->id]),
-                );
+                ];
             }
         }
 

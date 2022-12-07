@@ -24,35 +24,32 @@
 
 namespace Adyen\PrestaShop\service\modification;
 
-use Adyen\PrestaShop\infra\NotificationRetriever;
 use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
 use Adyen\PrestaShop\service\OrderPaymentService;
 use Adyen\Service\Modification;
 use Order;
-use OrderCore;
-use OrderPayment;
-use OrderSlip;
 use PHPUnit\Framework\TestCase;
-use PHPUnit_Framework_MockObject_MockObject;
 
 class RefundTest extends TestCase
 {
     public function refundDataProvider()
     {
-        return array(
-            array('1234567890abcdef', '123', 'EUR', '1', 'PrestaShopTest', '1'),
-            array('abcdef1234567890', '100', 'BRL', '2', 'PrestaShopTest', '1')
-        );
+        return [
+            ['1234567890abcdef', '123', 'EUR', '1', 'PrestaShopTest', '1'],
+            ['abcdef1234567890', '100', 'BRL', '2', 'PrestaShopTest', '1'],
+        ];
     }
 
     /**
      * @dataProvider refundDataProvider
+     *
      * @param $pspReference
      * @param $amount
      * @param $currency
      * @param $orderId
      * @param $merchantAccount
      * @param $merchantReference
+     *
      * @throws \Adyen\AdyenException
      * @throws \PrestaShopDatabaseException
      */
@@ -64,38 +61,38 @@ class RefundTest extends TestCase
         $merchantAccount,
         $merchantReference
     ) {
-        /** @var PHPUnit_Framework_MockObject_MockObject|Modification $modificationClient */
+        /** @var \PHPUnit_Framework_MockObject_MockObject|Modification $modificationClient */
         $modificationClient = $this->getMockBuilder('Adyen\Service\Modification')
-                                   ->disableOriginalConstructor()
-                                   ->getMock();
+            ->disableOriginalConstructor()
+            ->getMock();
         $modificationClient->expects($this->once())
-                           ->method('refund')
-                           ->with(
-                               $this->equalTo(
-                                   array(
-                                       'originalReference' => $pspReference,
-                                       'modificationAmount' => array(
-                                           'value' => $amount * 100,
-                                           'currency' => $currency
-                                       ),
-                                       'reference' => (string)$merchantReference,
-                                       'merchantAccount' => $merchantAccount
-                                   )
-                               )
-                           )
-                           ->willReturn(true);
+            ->method('refund')
+            ->with(
+                $this->equalTo(
+                    [
+                        'originalReference' => $pspReference,
+                        'modificationAmount' => [
+                            'value' => $amount * 100,
+                            'currency' => $currency,
+                        ],
+                        'reference' => (string) $merchantReference,
+                        'merchantAccount' => $merchantAccount,
+                    ]
+                )
+            )
+            ->willReturn(true);
 
         // Mock order
-        /** @var PHPUnit_Framework_MockObject_MockObject|Order $orderMock */
-        $orderMock = $this->getMockBuilder(OrderCore::class)
+        /** @var \PHPUnit_Framework_MockObject_MockObject|\Order $orderMock */
+        $orderMock = $this->getMockBuilder(\OrderCore::class)
             ->disableOriginalConstructor()
             ->getMock();
         $orderMock->total_paid = $amount;
 
-        /** @var PHPUnit_Framework_MockObject_MockObject|OrderSlip $orderSlip */
+        /** @var \PHPUnit_Framework_MockObject_MockObject|\OrderSlip $orderSlip */
         $orderSlip = $this->getMockBuilder('OrderSlip')
-                          ->disableOriginalConstructor()
-                          ->getMock();
+            ->disableOriginalConstructor()
+            ->getMock();
         $orderSlip->id_order = $orderId;
         $orderSlip->amount = $amount;
         $orderSlip->shipping_cost = '0';
@@ -107,7 +104,7 @@ class RefundTest extends TestCase
 
         $orderPayment->transaction_id = $pspReference;
 
-        /** @var PHPUnit_Framework_MockObject_MockObject|OrderPaymentService $orderPaymentService */
+        /** @var \PHPUnit_Framework_MockObject_MockObject|OrderPaymentService $orderPaymentService */
         $orderPaymentService = $this->getMockBuilder(OrderPaymentService::class)
             ->getMock();
 
@@ -116,7 +113,7 @@ class RefundTest extends TestCase
             ->with($orderMock)
             ->willReturn($orderPayment);
 
-        /** @var PHPUnit_Framework_MockObject_MockObject|OrderAdapter $orderAdapter */
+        /** @var \PHPUnit_Framework_MockObject_MockObject|OrderAdapter $orderAdapter */
         $orderAdapter = $this->getMockBuilder(OrderAdapter::class)
             ->disableOriginalConstructor()
             ->getMock();

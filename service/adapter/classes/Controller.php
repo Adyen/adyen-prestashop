@@ -1,36 +1,13 @@
 <?php
-/**
- *                       ######
- *                       ######
- * ############    ####( ######  #####. ######  ############   ############
- * #############  #####( ######  #####. ######  #############  #############
- *        ######  #####( ######  #####. ######  #####  ######  #####  ######
- * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
- * ###### ######  #####( ######  #####. ######  #####          #####  ######
- * #############  #############  #############  #############  #####  ######
- *  ############   ############  #############   ############  #####  ######
- *                                      ######
- *                               #############
- *                               ############
- *
- * Adyen PrestaShop plugin
- *
- * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2020 Adyen B.V.
- * @license https://opensource.org/licenses/MIT MIT license
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
- */
 
 namespace Adyen\PrestaShop\service\adapter\classes;
 
 use Adyen\PrestaShop\application\VersionChecker;
-use FrontController;
 
 class Controller
 {
     /**
-     * @var FrontController
+     * @var \FrontController
      */
     private $controller;
 
@@ -45,9 +22,9 @@ class Controller
     }
 
     /**
-     * @param FrontController $controller
+     * @param \FrontController $controller
      */
-    public function setController(FrontController $controller)
+    public function setController(\FrontController $controller)
     {
         $this->controller = $controller;
     }
@@ -57,10 +34,10 @@ class Controller
      * @param string $relativePath
      * @param array $params
      */
-    public function registerJavascript($id, $relativePath, array $params = array())
+    public function registerJavascript($id, $relativePath, array $params = [])
     {
         if ($this->versionChecker->isPrestaShop16()) {
-            /** @noinspection PhpDeprecationInspection */
+            /* @noinspection PhpDeprecationInspection */
             $this->controller->addJS($relativePath);
         } else {
             $this->controller->registerJavascript($id, $relativePath, $params);
@@ -72,10 +49,10 @@ class Controller
      * @param string $relativePath
      * @param array $params
      */
-    public function registerStylesheet($id, $relativePath, $params = array())
+    public function registerStylesheet($id, $relativePath, $params = [])
     {
         if ($this->versionChecker->isPrestaShop16()) {
-            /** @noinspection PhpDeprecationInspection */
+            /* @noinspection PhpDeprecationInspection */
             $this->controller->addCSS($relativePath);
         } else {
             $this->controller->registerStylesheet($id, $relativePath, $params);

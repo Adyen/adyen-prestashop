@@ -1,26 +1,4 @@
 <?php
-/**
- *                       ######
- *                       ######
- * ############    ####( ######  #####. ######  ############   ############
- * #############  #####( ######  #####. ######  #############  #############
- *        ######  #####( ######  #####. ######  #####  ######  #####  ######
- * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
- * ###### ######  #####( ######  #####. ######  #####          #####  ######
- * #############  #############  #############  #############  #####  ######
- *  ############   ############  #############   ############  #####  ######
- *                                      ######
- *                               #############
- *                               ############
- *
- * Adyen PrestaShop plugin
- *
- * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2020 Adyen B.V.
- * @license https://opensource.org/licenses/MIT MIT license
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
- */
 
 namespace Adyen\PrestaShop\model;
 
@@ -35,6 +13,7 @@ class AdyenPaymentResponse extends AbstractModel
      * @param $response
      * @param null $requestAmount
      * @param null $requestCurrency
+     *
      * @return bool
      */
     public function insertOrUpdatePaymentResponse(
@@ -44,13 +23,13 @@ class AdyenPaymentResponse extends AbstractModel
         $requestAmount = null,
         $requestCurrency = null
     ) {
-        $data = array(
+        $data = [
             'result_code' => pSQL($resultCode),
-            'response' => pSQL($this->jsonEncodeIfArray($response))
-        );
+            'response' => pSQL($this->jsonEncodeIfArray($response)),
+        ];
 
         if (null !== $requestAmount) {
-            $data['request_amount'] = pSQL((int)$requestAmount);
+            $data['request_amount'] = pSQL((int) $requestAmount);
         }
 
         if (null !== $requestCurrency) {
@@ -61,19 +40,20 @@ class AdyenPaymentResponse extends AbstractModel
             return $this->updatePaymentResponseByCartId($cartId, $data);
         }
 
-        $data['id_cart'] = (int)$cartId;
+        $data['id_cart'] = (int) $cartId;
 
         return $this->insertPaymentResponse($data);
     }
 
     /**
      * @param $cartId
+     *
      * @return array|bool|object|null
      */
     public function getPaymentResponseByCartId($cartId)
     {
         $sql = 'SELECT `response` FROM ' . _DB_PREFIX_ . self::$tableName
-            . ' WHERE `id_cart` = "' . (int)$cartId . '"';
+            . ' WHERE `id_cart` = "' . (int) $cartId . '"';
 
         return $this->jsonDecodeIfJson(
             $this->dbInstance->getValue($sql)
@@ -82,12 +62,13 @@ class AdyenPaymentResponse extends AbstractModel
 
     /**
      * @param $cartId
+     *
      * @return array|bool|object|null
      */
     public function getPaymentByCartId($cartId)
     {
         $sql = 'SELECT `request_amount`, `request_currency`, `result_code`, `response` FROM ' .
-            _DB_PREFIX_ . self::$tableName . ' WHERE `id_cart` = "' . (int)$cartId . '"';
+            _DB_PREFIX_ . self::$tableName . ' WHERE `id_cart` = "' . (int) $cartId . '"';
 
         $row = $this->dbInstance->getRow($sql, false);
 
@@ -101,17 +82,18 @@ class AdyenPaymentResponse extends AbstractModel
     /**
      * @param $cartId
      * @param $data
+     *
      * @return bool
      */
     public function updatePaymentResponseByCartId($cartId, $data)
     {
-        return $this->dbInstance->update(self::$tableName, $data, '`id_cart` = "' . (int)$cartId . '"');
+        return $this->dbInstance->update(self::$tableName, $data, '`id_cart` = "' . (int) $cartId . '"');
     }
 
     /**
      * @param $data
-     * @return bool
      *
+     * @return bool
      */
     public function insertPaymentResponse($data)
     {
@@ -120,15 +102,17 @@ class AdyenPaymentResponse extends AbstractModel
 
     /**
      * @param $cartId
+     *
      * @return bool
      */
     public function deletePaymentResponseByCartId($cartId)
     {
-        return $this->dbInstance->delete(self::$tableName, '`id_cart` = "' . (int)$cartId . '"');
+        return $this->dbInstance->delete(self::$tableName, '`id_cart` = "' . (int) $cartId . '"');
     }
 
     /**
      * @param $param
+     *
      * @return mixed
      */
     private function jsonEncodeIfArray($param)
@@ -142,6 +126,7 @@ class AdyenPaymentResponse extends AbstractModel
 
     /**
      * @param $param
+     *
      * @return mixed
      */
     private function jsonDecodeIfJson($param)

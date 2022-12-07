@@ -33,7 +33,7 @@ use PHPUnit\Framework\TestCase;
 
 function pSQL($string)
 {
-    /** @noinspection PhpUndefinedMethodInspection */
+    /* @noinspection PhpUndefinedMethodInspection */
     return NotificationReceiverTest::$functions->pSQL($string);
 }
 
@@ -45,32 +45,32 @@ class NotificationReceiverTest extends TestCase
     public static $functions;
 
     /**
-     * @var Adyen\PrestaShop\service\Logger|\PHPUnit_Framework_MockObject_MockObject $logger
+     * @var Adyen\PrestaShop\service\Logger|\PHPUnit_Framework_MockObject_MockObject
      */
     private $logger;
 
     /**
-     * @var AdyenHelper|\PHPUnit_Framework_MockObject_MockObject $adyenHelper
+     * @var AdyenHelper|\PHPUnit_Framework_MockObject_MockObject
      */
     private $adyenHelper;
 
     /**
-     * @var HmacSignature|\PHPUnit_Framework_MockObject_MockObject $hmacSignature
+     * @var HmacSignature|\PHPUnit_Framework_MockObject_MockObject
      */
     private $hmacSignature;
 
     /**
-     * @var Db|\PHPUnit_Framework_MockObject_MockObject $dbInstance
+     * @var Db|\PHPUnit_Framework_MockObject_MockObject
      */
     private $dbInstance;
 
     /**
-     * @var Configuration|\PHPUnit_Framework_MockObject_MockObject $configuration
+     * @var Configuration|\PHPUnit_Framework_MockObject_MockObject
      */
     private $configuration;
 
     /**
-     * @var AdyenNotification|PHPUnit_Framework_MockObject_MockObject $adyenNotificationMock
+     * @var AdyenNotification|PHPUnit_Framework_MockObject_MockObject
      */
     private $adyenNotificationMock;
 
@@ -90,17 +90,17 @@ class NotificationReceiverTest extends TestCase
         $this->hmacSignature = $this->getMock('Adyen\Util\HmacSignature');
 
         $this->dbInstance = $this->getMockBuilder('Db')
-            ->setMethods(array('getValue', 'insert'))
+            ->setMethods(['getValue', 'insert'])
             ->disableOriginalConstructor()
             ->getMock();
 
-        /** @var Configuration|\PHPUnit_Framework_MockObject_MockObject $crypto */
+        /* @var Configuration|\PHPUnit_Framework_MockObject_MockObject $crypto */
         $this->configuration = $this->getMockBuilder('Adyen\PrestaShop\service\adapter\classes\Configuration')
             ->disableOriginalConstructor()
             ->getMock();
 
         // Mock AdyenNotification
-        /** @var PHPUnit_Framework_MockObject_MockObject|AdyenNotification $customerMock */
+        /* @var PHPUnit_Framework_MockObject_MockObject|AdyenNotification $customerMock */
         $this->adyenNotificationMock = $this->getMockBuilder(AdyenNotification::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -135,7 +135,7 @@ class NotificationReceiverTest extends TestCase
 
         $this->setExpectedException('Adyen\PrestaShop\service\notification\HMACKeyValidationException');
 
-        /** @noinspection PhpUnhandledExceptionInspection */
+        /* @noinspection PhpUnhandledExceptionInspection */
         $notificationReceiver->doPostProcess(
             json_decode(file_get_contents(__DIR__ . '/regular-notification.json'), true)
         );
@@ -160,7 +160,7 @@ class NotificationReceiverTest extends TestCase
 
         $this->setExpectedException('Adyen\PrestaShop\service\notification\AuthenticationException');
 
-        /** @noinspection PhpUnhandledExceptionInspection */
+        /* @noinspection PhpUnhandledExceptionInspection */
         $notificationReceiver->doPostProcess(
             json_decode(file_get_contents(__DIR__ . '/test-notification.json'), true)
         );
@@ -188,7 +188,7 @@ class NotificationReceiverTest extends TestCase
 
         $this->setExpectedException('Adyen\PrestaShop\service\notification\MerchantAccountCodeException');
 
-        /** @noinspection PhpUnhandledExceptionInspection */
+        /* @noinspection PhpUnhandledExceptionInspection */
         $notificationReceiver->doPostProcess(
             json_decode(file_get_contents(__DIR__ . '/invalid-merchant-test-notification.json'), true)
         );
@@ -216,7 +216,7 @@ class NotificationReceiverTest extends TestCase
 
         $this->setExpectedException('Adyen\PrestaShop\service\notification\AuthorizationException');
 
-        /** @noinspection PhpUnhandledExceptionInspection */
+        /* @noinspection PhpUnhandledExceptionInspection */
         $notificationReceiver->doPostProcess(
             json_decode(file_get_contents(__DIR__ . '/invalid-merchant-notification.json'), true)
         );
@@ -230,8 +230,8 @@ class NotificationReceiverTest extends TestCase
 
         self::$functions->shouldReceive('pSQL')->andReturnUsing(
             function ($string) {
-                $search = array('\\', "\0", "\n", "\r", "\x1a", "'", '"');
-                $replace = array('\\\\', '\\0', '\\n', '\\r', "\Z", "\'", '\"');
+                $search = ['\\', "\0", "\n", "\r", "\x1a", "'", '"'];
+                $replace = ['\\\\', '\\0', '\\n', '\\r', "\Z", "\'", '\"'];
 
                 return str_replace($search, $replace, $string);
             }
@@ -244,7 +244,7 @@ class NotificationReceiverTest extends TestCase
             'adyen_notification',
             $this->callback(
                 function ($subject) use ($notificationRequestItem) {
-                    $arr = array(
+                    $arr = [
                         'pspreference' => $notificationRequestItem['pspReference'],
                         'merchant_reference' => $notificationRequestItem['merchantReference'],
                         'event_code' => $notificationRequestItem['eventCode'],
@@ -255,8 +255,9 @@ class NotificationReceiverTest extends TestCase
                         'reason' => $notificationRequestItem['reason'],
                         'additional_data' => pSQL(serialize($notificationRequestItem['additionalData'])),
                         'created_at' => $subject['created_at'],
-                        'updated_at' => $subject['updated_at']
-                    );
+                        'updated_at' => $subject['updated_at'],
+                    ];
+
                     return $arr == $subject;
                 }
             )
@@ -278,7 +279,7 @@ class NotificationReceiverTest extends TestCase
             $this->adyenNotificationMock
         );
 
-        /** @noinspection PhpUnhandledExceptionInspection */
+        /* @noinspection PhpUnhandledExceptionInspection */
         $this->assertEquals('[accepted]', $notificationReceiver->doPostProcess($notificationItems));
     }
 }

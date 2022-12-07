@@ -1,26 +1,4 @@
 <?php
-/**
- *                       ######
- *                       ######
- * ############    ####( ######  #####. ######  ############   ############
- * #############  #####( ######  #####. ######  #############  #############
- *        ######  #####( ######  #####. ######  #####  ######  #####  ######
- * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
- * ###### ######  #####( ######  #####. ######  #####          #####  ######
- * #############  #############  #############  #############  #####  ######
- *  ############   ############  #############   ############  #####  ######
- *                                      ######
- *                               #############
- *                               ############
- *
- * Adyen PrestaShop plugin
- *
- * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2020 Adyen B.V.
- * @license https://opensource.org/licenses/MIT MIT license
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
- */
 
 namespace Adyen\PrestaShop\infra;
 
@@ -28,7 +6,6 @@ use Adyen\PrestaShop\exception\GenericLoggedException;
 use Adyen\PrestaShop\exception\MissingDataException;
 use Adyen\PrestaShop\service\adapter\classes\Configuration;
 use Adyen\PrestaShop\service\Logger;
-use Tools;
 
 class Crypto
 {
@@ -70,7 +47,9 @@ class Crypto
 
     /**
      * @param $data
+     *
      * @return false|string
+     *
      * @throws GenericLoggedException
      * @throws MissingDataException
      */
@@ -81,15 +60,16 @@ class Crypto
         }
 
         $ivLength = openssl_cipher_iv_length($this->method);
-        $hex = Tools::substr($data, 0, $ivLength * 2);
+        $hex = \Tools::substr($data, 0, $ivLength * 2);
 
         if (!ctype_xdigit($hex)) {
             throw new GenericLoggedException('Crypto decrypt() $data parameter is not hex encoded');
         }
 
         $iv = hex2bin($hex);
+
         return openssl_decrypt(
-            Tools::substr($data, $ivLength * 2),
+            \Tools::substr($data, $ivLength * 2),
             $this->method,
             $this->configuration->sslEncryptionKey,
             0,

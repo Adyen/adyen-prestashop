@@ -24,7 +24,7 @@
 
 // This file declares a function and checks if PrestaShop is loaded to follow
 // PrestaShop's good practices, which breaks a PSR1 element.
-//phpcs:disable PSR1.Files.SideEffects
+// phpcs:disable PSR1.Files.SideEffects
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -49,7 +49,7 @@ function upgrade_module_2_1_3(AdyenOfficial $module)
  */
 function install_new_tab(AdyenOfficial $module)
 {
-    if ((int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashopCron')) {
+    if ((int) Tab::getIdFromClassName('AdminAdyenOfficialPrestashopCron')) {
         return true;
     }
 
@@ -62,9 +62,10 @@ function install_new_tab(AdyenOfficial $module)
 function uninstall_old_tab()
 {
     try {
-        $id_tab = (int)Tab::getIdFromClassName('AdminAdyenPrestashopCron');
+        $id_tab = (int) Tab::getIdFromClassName('AdminAdyenPrestashopCron');
         if ($id_tab) {
             $tab = new Tab($id_tab);
+
             return $tab->delete();
         }
     } catch (PrestaShopDatabaseException $e) {
@@ -72,5 +73,6 @@ function uninstall_old_tab()
     } catch (PrestaShopException $e) {
         return false;
     }
+
     return false;
 }

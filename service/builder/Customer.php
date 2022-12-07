@@ -1,26 +1,4 @@
 <?php
-/**
- *                       ######
- *                       ######
- * ############    ####( ######  #####. ######  ############   ############
- * #############  #####( ######  #####. ######  #############  #############
- *        ######  #####( ######  #####. ######  #####  ######  #####  ######
- * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
- * ###### ######  #####( ######  #####. ######  #####          #####  ######
- * #############  #############  #############  #############  #####  ######
- *  ############   ############  #############   ############  #####  ######
- *                                      ######
- *                               #############
- *                               ############
- *
- * Adyen PrestaShop plugin
- *
- * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2020 Adyen B.V.
- * @license https://opensource.org/licenses/MIT MIT license
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
- */
 
 namespace Adyen\PrestaShop\service\builder;
 
@@ -41,6 +19,7 @@ class Customer
      * @param string $shopperIp
      * @param int $customerId
      * @param array $request
+     *
      * @return array
      */
     public function buildCustomerData(
@@ -55,7 +34,7 @@ class Customer
         $localeCode = '',
         $shopperIp = '',
         $customerId = 0,
-        $request = array()
+        $request = []
     ) {
         // Add shopperReference to identify the unique shoppers in the store by id, necessary for recurring payments
         if (!empty($customerId)) {
@@ -110,6 +89,7 @@ class Customer
      * @param $firstName
      * @param $lastName
      * @param array $request
+     *
      * @return array
      */
     private function buildCustomerDataForOpenInvoicePaymentMethod(
@@ -119,7 +99,7 @@ class Customer
         $dateOfBirth,
         $firstName,
         $lastName,
-        $request = array()
+        $request = []
     ) {
         if (!empty($email) && empty($request['paymentMethod']['personalDetails']['shopperEmail'])) {
             $request['paymentMethod']['personalDetails']['shopperEmail'] = $email;
@@ -144,6 +124,7 @@ class Customer
         if (!empty($lastName) && empty($request['paymentMethod']['personalDetails']['lastName'])) {
             $request['paymentMethod']['personalDetails']['lastName'] = $lastName;
         }
+
         return $request;
     }
 
@@ -157,6 +138,7 @@ class Customer
      * @param $firstName
      * @param $lastName
      * @param array $request
+     *
      * @return array
      */
     private function buildCustomerDataForNonOpenInvoicePaymentMethod(
@@ -166,7 +148,7 @@ class Customer
         $dateOfBirth,
         $firstName,
         $lastName,
-        $request = array()
+        $request = []
     ) {
         if (!empty($email) && empty($request['shopperEmail'])) {
             $request['shopperEmail'] = $email;

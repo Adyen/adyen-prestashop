@@ -1,26 +1,4 @@
 <?php
-/**
- *                       ######
- *                       ######
- * ############    ####( ######  #####. ######  ############   ############
- * #############  #####( ######  #####. ######  #############  #############
- *        ######  #####( ######  #####. ######  #####  ######  #####  ######
- * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
- * ###### ######  #####( ######  #####. ######  #####          #####  ######
- * #############  #############  #############  #############  #####  ######
- *  ############   ############  #############   ############  #####  ######
- *                                      ######
- *                               #############
- *                               ############
- *
- * Adyen PrestaShop plugin
- *
- * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2021 Adyen B.V.
- * @license https://opensource.org/licenses/MIT MIT license
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
- */
 
 namespace Adyen\PrestaShop\service\modification;
 
@@ -29,7 +7,6 @@ use Adyen\PrestaShop\service\adapter\classes\order\OrderAdapter;
 use Adyen\PrestaShop\service\OrderPaymentService;
 use Adyen\Service\Modification;
 use Adyen\Util\Currency;
-use OrderSlip;
 use Psr\Log\LoggerInterface;
 
 class Refund
@@ -83,13 +60,14 @@ class Refund
     }
 
     /**
-     * @param OrderSlip $orderSlip
+     * @param \OrderSlip $orderSlip
      * @param string $currency
      *
      * @return bool
+     *
      * @throws \PrestaShopException
      */
-    public function request(OrderSlip $orderSlip, $currency)
+    public function request(\OrderSlip $orderSlip, $currency)
     {
         $currencyConverter = new Currency();
 
@@ -115,26 +93,29 @@ class Refund
         if (!$orderPayment || empty($orderPayment->transaction_id)) {
             $this->logger->error(sprintf('Unable to get order payment linked to order (%s) OR
              order payment has an empty transaction_id', $order->id));
+
             return false;
         }
 
         $pspReference = $orderPayment->transaction_id;
         try {
             $this->modificationClient->refund(
-                array(
+                [
                     'originalReference' => $pspReference,
-                    'modificationAmount' => array(
+                    'modificationAmount' => [
                         'value' => $amount,
-                        'currency' => $currency
-                    ),
+                        'currency' => $currency,
+                    ],
                     'reference' => $orderSlip->id,
-                    'merchantAccount' => $this->merchantAccount
-                )
+                    'merchantAccount' => $this->merchantAccount,
+                ]
             );
         } catch (AdyenException $e) {
             $this->logger->error($e->getMessage());
+
             return false;
         }
+
         return true;
     }
 }

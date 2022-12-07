@@ -22,7 +22,7 @@
  * See the LICENSE file for more info.
  */
 
-/** @noinspection PhpFullyQualifiedNameUsageInspection */
+/* @noinspection PhpFullyQualifiedNameUsageInspection */
 // PrestaShop good practices ask developers to check if PrestaShop is loaded
 // before running any other PHP code, which breaks a PSR1 element.
 // Also, the main class is not in a namespace, which breaks another element.
@@ -37,7 +37,7 @@ require_once _PS_ROOT_DIR_ . '/modules/adyenofficial/vendor/autoload.php';
 // this file cannot contain the `use` operator for PrestaShop 1.6
 class AdyenOfficial extends PaymentModule
 {
-    const DISPLAYED_PASSWORD = '****************';
+    public const DISPLAYED_PASSWORD = '****************';
 
     /**
      * @var string
@@ -126,13 +126,14 @@ class AdyenOfficial extends PaymentModule
      */
     public function __construct()
     {
+        $this->module_key = '0d28de799435cd859f10e31f2edafc39';
         $this->name = 'adyenofficial';
         $this->version = '4.0.1';
         $this->tab = 'payments_gateways';
         $this->author = 'Adyen';
         $this->bootstrap = true;
         $this->display = 'view';
-        $this->ps_versions_compliancy = array('min' => '1.6.1', 'max' => _PS_VERSION_);
+        $this->ps_versions_compliancy = ['min' => '1.6.1', 'max' => _PS_VERSION_];
         $this->currencies = true;
 
         $this->helper_data = \Adyen\PrestaShop\service\adapter\classes\ServiceLocator::get(
@@ -192,7 +193,7 @@ class AdyenOfficial extends PaymentModule
 
         parent::__construct();
 
-        $this->dependencies = array();
+        $this->dependencies = [];
 
         $this->meta_title = $this->l('Adyen');
         $this->displayName = $this->l('Adyen');
@@ -209,7 +210,7 @@ class AdyenOfficial extends PaymentModule
      */
     public static function getAdyenConfigNames($mode = null)
     {
-        $configs = array(
+        $configs = [
             'CONF_ADYENOFFICIAL_FIXED',
             'CONF_ADYENOFFICIAL_VAR',
             'CONF_ADYENOFFICIAL_FIXED_FOREIGN',
@@ -229,19 +230,19 @@ class AdyenOfficial extends PaymentModule
             'ADYEN_ADMIN_PATH',
             'ADYEN_ENABLE_STORED_PAYMENT_METHODS',
             'ADYEN_PAYMENT_DISPLAY_COLLAPSE',
-            'ADYEN_ENABLE_CHECKOUT_STYLING'
-        );
+            'ADYEN_ENABLE_CHECKOUT_STYLING',
+        ];
 
-        $testConfigs = array(
+        $testConfigs = [
             'ADYEN_APIKEY_TEST',
-            'ADYEN_CLIENTKEY_TEST'
-        );
+            'ADYEN_CLIENTKEY_TEST',
+        ];
 
-        $liveConfigs = array(
+        $liveConfigs = [
             'ADYEN_APIKEY_LIVE',
             'ADYEN_CLIENTKEY_LIVE',
-            'ADYEN_LIVE_ENDPOINT_URL_PREFIX'
-        );
+            'ADYEN_LIVE_ENDPOINT_URL_PREFIX',
+        ];
 
         if ($mode === 'test') {
             $configs = array_merge($configs, $testConfigs);
@@ -259,32 +260,32 @@ class AdyenOfficial extends PaymentModule
      */
     public static function getAdyenHooks()
     {
-        return array(
-            '1.6' => array(
+        return [
+            '1.6' => [
                 'displayPaymentTop',
                 'displayPayment',
                 'displayPaymentEU',
                 'displayPaymentReturn',
                 'actionOrderSlipAdd',
-                'actionFrontControllerSetMedia'
-            ),
-            '1.7' => array(
+                'actionFrontControllerSetMedia',
+            ],
+            '1.7' => [
                 'displayPaymentTop',
                 'actionFrontControllerSetMedia',
                 'paymentOptions',
                 'paymentReturn',
                 'actionOrderSlipAdd',
-                'actionEmailSendBefore'
-            )
-        );
+                'actionEmailSendBefore',
+            ],
+        ];
     }
 
     public static function getAdyenOrderStates()
     {
-        return array(
+        return [
             'ADYEN_OS_WAITING_FOR_PAYMENT',
-            'ADYEN_OS_PAYMENT_NEEDS_ATTENTION'
-        );
+            'ADYEN_OS_PAYMENT_NEEDS_ATTENTION',
+        ];
     }
 
     /**
@@ -300,6 +301,7 @@ class AdyenOfficial extends PaymentModule
     {
         if (!$this->versionChecker->isPrestaShopSupportedVersion()) {
             $this->_errors[] = $this->l('Sorry, this module is not compatible with your version.');
+
             return false;
         }
 
@@ -321,6 +323,7 @@ class AdyenOfficial extends PaymentModule
                 return true;
             } else {
                 $this->logger->critical('Adyen module: installation failed!');
+
                 return false;
             }
         }
@@ -342,6 +345,7 @@ class AdyenOfficial extends PaymentModule
             return true;
         } else {
             $this->logger->critical('Adyen module: installation failed!');
+
             return false;
         }
     }
@@ -376,7 +380,7 @@ class AdyenOfficial extends PaymentModule
     public function copyEmailTemplates()
     {
         $successfulCopy = true;
-        $mailsDirectory = _PS_ROOT_DIR_.'/mails/';
+        $mailsDirectory = _PS_ROOT_DIR_ . '/mails/';
         $adyenEmailDirectory = _PS_MODULE_DIR_ . $this->name . '/views/templates/email/';
         if ($handle = opendir($mailsDirectory)) {
             while (false !== ($entry = readdir($handle))) {
@@ -406,7 +410,7 @@ class AdyenOfficial extends PaymentModule
      */
     private function removeCopiedEmailTemplates()
     {
-        $mailsDirectory = _PS_ROOT_DIR_.'/mails/';
+        $mailsDirectory = _PS_ROOT_DIR_ . '/mails/';
         if ($handle = opendir($mailsDirectory)) {
             while (false !== ($entry = readdir($handle))) {
                 $languageDirectory = $mailsDirectory . $entry;
@@ -470,6 +474,7 @@ class AdyenOfficial extends PaymentModule
             return true;
         } else {
             $this->logger->error('Adyen module: reset failed!');
+
             return false;
         }
     }
@@ -478,6 +483,7 @@ class AdyenOfficial extends PaymentModule
      * Updating the cron job token
      *
      * @param string $token
+     *
      * @return bool
      */
     public function updateCronJobToken($token = '')
@@ -562,6 +568,7 @@ class AdyenOfficial extends PaymentModule
      * Create a new order status: "waiting for payment"
      *
      * @return mixed
+     *
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      */
@@ -577,7 +584,7 @@ class AdyenOfficial extends PaymentModule
         // In case order state does not exist in the database anymore
         if (empty($orderState)) {
             $newOrderState = new OrderState();
-            $newOrderState->name = array();
+            $newOrderState->name = [];
             foreach (Language::getLanguages() as $language) {
                 $newOrderState->name[$language['id_lang']] = 'Waiting for payment';
             }
@@ -594,10 +601,10 @@ class AdyenOfficial extends PaymentModule
 
             if ($newOrderState->add()) {
                 $source = _PS_ROOT_DIR_ . '/img/os/' . Configuration::get('PS_OS_BANKWIRE') . '.gif';
-                $destination = _PS_ROOT_DIR_ . '/img/os/' . (int)$newOrderState->id . '.gif';
+                $destination = _PS_ROOT_DIR_ . '/img/os/' . (int) $newOrderState->id . '.gif';
                 copy($source, $destination);
 
-                return Configuration::updateValue('ADYEN_OS_WAITING_FOR_PAYMENT', (int)$newOrderState->id);
+                return Configuration::updateValue('ADYEN_OS_WAITING_FOR_PAYMENT', (int) $newOrderState->id);
             } else {
                 $this->logger->addError('ADYEN_OS_WAITING_FOR_PAYMENT Order status was not created!');
 
@@ -613,6 +620,7 @@ class AdyenOfficial extends PaymentModule
      * Create a new order status: "payment needs attention"
      *
      * @return mixed
+     *
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      */
@@ -628,7 +636,7 @@ class AdyenOfficial extends PaymentModule
         // In case order state does not exist in the database anymore
         if (empty($orderState)) {
             $newOrderState = new OrderState();
-            $newOrderState->name = array();
+            $newOrderState->name = [];
             foreach (Language::getLanguages() as $language) {
                 $newOrderState->name[$language['id_lang']] = 'Payment needs attention';
             }
@@ -645,10 +653,10 @@ class AdyenOfficial extends PaymentModule
 
             if ($newOrderState->add()) {
                 $source = _PS_ROOT_DIR_ . '/img/os/' . Configuration::get('PS_OS_BANKWIRE') . '.gif';
-                $destination = _PS_ROOT_DIR_ . '/img/os/' . (int)$newOrderState->id . '.gif';
+                $destination = _PS_ROOT_DIR_ . '/img/os/' . (int) $newOrderState->id . '.gif';
                 copy($source, $destination);
 
-                return Configuration::updateValue('ADYEN_OS_PAYMENT_NEEDS_ATTENTION', (int)$newOrderState->id);
+                return Configuration::updateValue('ADYEN_OS_PAYMENT_NEEDS_ATTENTION', (int) $newOrderState->id);
             } else {
                 $this->logger->addError('ADYEN_OS_PAYMENT_NEEDS_ATTENTION Order status was not created!');
 
@@ -700,6 +708,7 @@ class AdyenOfficial extends PaymentModule
     private function removeAdyenDatabaseTables()
     {
         $db = Db::getInstance();
+
         return $db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'adyen_notification`') &&
             $db->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'adyen_payment_response`');
     }
@@ -733,7 +742,7 @@ class AdyenOfficial extends PaymentModule
             $cronTab = new Tab();
             $cronTab->id_parent = -1;
             $cronTab->active = 1;
-            $cronTab->name = array();
+            $cronTab->name = [];
             foreach (Language::getLanguages(true) as $lang) {
                 $cronTab->name[$lang['id_lang']] = 'Adyen Prestashop Cron';
             }
@@ -741,25 +750,24 @@ class AdyenOfficial extends PaymentModule
             $cronTab->module = $this->name;
             $cronTabResult = $cronTab->add();
 
-
             // If presta v1.7 create new empty parent tab
             if (!$this->versionChecker->isPrestaShop16()) {
                 // Parent adyen tab
                 $adyenTab = new Tab();
-                $adyenTab->id_parent = (int)Tab::getIdFromClassName('AdminParentModulesSf');
+                $adyenTab->id_parent = (int) Tab::getIdFromClassName('AdminParentModulesSf');
                 $adyenTab->active = 1;
-                $adyenTab->name = array();
+                $adyenTab->name = [];
                 foreach (Language::getLanguages() as $lang) {
                     $adyenTab->name[$lang['id_lang']] = 'Adyen Module';
                 }
                 $adyenTab->class_name = 'AdminAdyenOfficialPrestashop';
                 $adyenTab->module = $this->name;
                 $adyenTabResult = $adyenTab->add();
-                $parentTab = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashop');
+                $parentTab = (int) Tab::getIdFromClassName('AdminAdyenOfficialPrestashop');
                 $namePrefix = '';
             } else {
                 $adyenTabResult = true;
-                $parentTab = (int)Tab::getIdFromClassName('AdminParentModules');
+                $parentTab = (int) Tab::getIdFromClassName('AdminParentModules');
                 $namePrefix = 'Adyen ';
             }
 
@@ -767,7 +775,7 @@ class AdyenOfficial extends PaymentModule
             $logTab = new Tab();
             $logTab->id_parent = $parentTab;
             $logTab->active = 1;
-            $logTab->name = array();
+            $logTab->name = [];
             foreach (Language::getLanguages() as $lang) {
                 $logTab->name[$lang['id_lang']] = $namePrefix . 'Logs';
             }
@@ -779,7 +787,7 @@ class AdyenOfficial extends PaymentModule
             $validatorTab = new Tab();
             $validatorTab->id_parent = $parentTab;
             $validatorTab->active = 1;
-            $validatorTab->name = array();
+            $validatorTab->name = [];
             foreach (Language::getLanguages() as $lang) {
                 $validatorTab->name[$lang['id_lang']] = $namePrefix . 'Validator';
             }
@@ -815,10 +823,10 @@ class AdyenOfficial extends PaymentModule
         $validatorTabDelete = false;
 
         try {
-            $cronTabId = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashopCron');
-            $logFetcherTabId = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashopLogFetcher');
-            $adyenTabId = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashop');
-            $validatorTabId = (int)Tab::getIdFromClassName('AdminAdyenOfficialPrestashopValidator');
+            $cronTabId = (int) Tab::getIdFromClassName('AdminAdyenOfficialPrestashopCron');
+            $logFetcherTabId = (int) Tab::getIdFromClassName('AdminAdyenOfficialPrestashopLogFetcher');
+            $adyenTabId = (int) Tab::getIdFromClassName('AdminAdyenOfficialPrestashop');
+            $validatorTabId = (int) Tab::getIdFromClassName('AdminAdyenOfficialPrestashopValidator');
             if ($cronTabId) {
                 $cronTab = new Tab($cronTabId);
                 $cronTabDelete = $cronTab->delete();
@@ -855,30 +863,28 @@ class AdyenOfficial extends PaymentModule
         }
     }
 
-
     /**
      * shows the configuration page in the back-end
      */
-
     public function getContent()
     {
         $output = null;
 
         if (Tools::isSubmit('submit' . $this->name)) {
             // get post values
-            $merchant_account = (string)Tools::getValue('ADYEN_MERCHANT_ACCOUNT');
-            $integrator_name = (string)Tools::getValue('ADYEN_INTEGRATOR_NAME');
-            $mode = (string)Tools::getValue('ADYEN_MODE');
-            $notification_username = (string)Tools::getValue('ADYEN_NOTI_USERNAME');
-            $notification_password = (string)Tools::getValue('ADYEN_NOTI_PASSWORD');
-            $notification_hmac = (string)Tools::getValue('ADYEN_NOTI_HMAC');
+            $merchant_account = (string) Tools::getValue('ADYEN_MERCHANT_ACCOUNT');
+            $integrator_name = (string) Tools::getValue('ADYEN_INTEGRATOR_NAME');
+            $mode = (string) Tools::getValue('ADYEN_MODE');
+            $notification_username = (string) Tools::getValue('ADYEN_NOTI_USERNAME');
+            $notification_password = (string) Tools::getValue('ADYEN_NOTI_PASSWORD');
+            $notification_hmac = (string) Tools::getValue('ADYEN_NOTI_HMAC');
             $cron_job_token = Tools::getValue('ADYEN_CRONJOB_TOKEN');
             $auto_cron_job_runner = Tools::getValue('ADYEN_AUTO_CRON_JOB_RUNNER');
             $api_key_test = Tools::getValue('ADYEN_APIKEY_TEST');
             $api_key_live = Tools::getValue('ADYEN_APIKEY_LIVE');
             $client_key_test = Tools::getValue('ADYEN_CLIENTKEY_TEST');
             $client_key_live = Tools::getValue('ADYEN_CLIENTKEY_LIVE');
-            $live_endpoint_url_prefix = (string)Tools::getValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
+            $live_endpoint_url_prefix = (string) Tools::getValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
             $apple_pay_merchant_name = Tools::getValue('ADYEN_APPLE_PAY_MERCHANT_NAME');
             $apple_pay_merchant_identifier = Tools::getValue('ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER');
             $google_pay_gateway_merchant_id = Tools::getValue('ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID');
@@ -995,28 +1001,28 @@ class AdyenOfficial extends PaymentModule
      */
     private function displayGetStarted()
     {
-        $smartyVariables = array(
+        $smartyVariables = [
             'logo' => Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/adyen.png'),
-            'links' => array(
-                array(
-                    "label" => "Docs",
-                    "url" => "https://docs.adyen.com/plugins/prestashop"
-                ),
-                array(
-                    "label" => "Support",
-                    "url" => "https://support.adyen.com/hc/en-us/requests/new?ticket_form_id=78764"
-                ),
-                array(
-                    "label" => "GitHub",
-                    "url" => "https://github.com/Adyen/adyen-prestashop/releases"
-                ),
-                array(
-                    "label" => "PrestaShop Marketplace",
-                    "url" => "https://addons.prestashop.com/en/payments-gateways-prestashop-modules/" .
-                        "48042-adyen-the-payments-platform-built-for-growth.html"
-                )
-            )
-        );
+            'links' => [
+                [
+                    'label' => 'Docs',
+                    'url' => 'https://docs.adyen.com/plugins/prestashop',
+                ],
+                [
+                    'label' => 'Support',
+                    'url' => 'https://support.adyen.com/hc/en-us/requests/new?ticket_form_id=78764',
+                ],
+                [
+                    'label' => 'GitHub',
+                    'url' => 'https://github.com/Adyen/adyen-prestashop/releases',
+                ],
+                [
+                    'label' => 'PrestaShop Marketplace',
+                    'url' => 'https://addons.prestashop.com/en/payments-gateways-prestashop-modules/' .
+                        '48042-adyen-the-payments-platform-built-for-growth.html',
+                ],
+            ],
+        ];
 
         $this->context->smarty->assign($smartyVariables);
 
@@ -1032,92 +1038,92 @@ class AdyenOfficial extends PaymentModule
         $this->context->controller->addJS('modules/' . $this->name . '/views/js/adyen-admin.js');
 
         // Get default Language
-        $default_lang = (int)Configuration::get('PS_LANG_DEFAULT');
+        $default_lang = (int) Configuration::get('PS_LANG_DEFAULT');
 
         // Get the mode before all the other params since it's needed to check which fields are required
         if (Tools::isSubmit('submit' . $this->name)) {
-            $mode = (string)Tools::getValue('ADYEN_MODE');
+            $mode = (string) Tools::getValue('ADYEN_MODE');
         } else {
             $mode = Configuration::get('ADYEN_MODE');
         }
 
         // Init Fields form array
-        $fields_form = array(array());
+        $fields_form = [[]];
 
-        $fields_form[0]['form'] = array(
-            'legend' => array(
+        $fields_form[0]['form'] = [
+            'legend' => [
                 'title' => $this->l('General Settings'),
-                'image' => '../img/admin/edit.gif'
-            ),
-            'input' => array(),
-            'submit' => array(
+                'image' => '../img/admin/edit.gif',
+            ],
+            'input' => [],
+            'submit' => [
                 'title' => $this->l('Save'),
-                'class' => 'btn btn-default pull-right'
-            )
-        );
+                'class' => 'btn btn-default pull-right',
+            ],
+        ];
 
-        $fields_form[1]['form'] = array(
-            'legend' => array(
+        $fields_form[1]['form'] = [
+            'legend' => [
                 'title' => $this->l('Production Settings'),
-                'image' => '../img/admin/edit.gif'
-            ),
-            'input' => array(),
-            'submit' => array(
+                'image' => '../img/admin/edit.gif',
+            ],
+            'input' => [],
+            'submit' => [
                 'title' => $this->l('Save'),
-                'class' => 'btn btn-default pull-right'
-            )
-        );
+                'class' => 'btn btn-default pull-right',
+            ],
+        ];
 
-        $fields_form[2]['form'] = array(
-            'legend' => array(
+        $fields_form[2]['form'] = [
+            'legend' => [
                 'title' => $this->l('Test Settings'),
-                'image' => '../img/admin/edit.gif'
-            ),
-            'input' => array(),
-            'submit' => array(
+                'image' => '../img/admin/edit.gif',
+            ],
+            'input' => [],
+            'submit' => [
                 'title' => $this->l('Save'),
-                'class' => 'btn btn-default pull-right'
-            )
-        );
+                'class' => 'btn btn-default pull-right',
+            ],
+        ];
 
-        $fields_form[3]['form'] = array(
-            'legend' => array(
+        $fields_form[3]['form'] = [
+            'legend' => [
                 'title' => $this->l('Webhook Settings'),
-                'image' => '../img/admin/edit.gif'
-            ),
-            'input' => array(),
-            'submit' => array(
+                'image' => '../img/admin/edit.gif',
+            ],
+            'input' => [],
+            'submit' => [
                 'title' => $this->l('Save'),
-                'class' => 'btn btn-default pull-right'
-            )
-        );
+                'class' => 'btn btn-default pull-right',
+            ],
+        ];
 
-        $fields_form[4]['form'] = array(
-            'legend' => array(
+        $fields_form[4]['form'] = [
+            'legend' => [
                 'title' => $this->l('Payment method configurations'),
-                'image' => '../img/admin/edit.gif'
-            ),
-            'input' => array(),
-            'submit' => array(
+                'image' => '../img/admin/edit.gif',
+            ],
+            'input' => [],
+            'submit' => [
                 'title' => $this->l('Save'),
-                'class' => 'btn btn-default pull-right'
-            )
-        );
+                'class' => 'btn btn-default pull-right',
+            ],
+        ];
 
-        $fields_form[5]['form'] = array(
-            'legend' => array(
+        $fields_form[5]['form'] = [
+            'legend' => [
                 'title' => $this->l('Developer settings'),
-                'image' => '../img/admin/edit.gif'
-            ),
-            'input' => array(),
-            'submit' => array(
+                'image' => '../img/admin/edit.gif',
+            ],
+            'input' => [],
+            'submit' => [
                 'title' => $this->l('Save'),
-                'class' => 'btn btn-default pull-right'
-            )
-        );
+                'class' => 'btn btn-default pull-right',
+            ],
+        ];
 
         // Merchant account input
-        $fields_form[0]['form']['input'][] = array(
+        $fields_form[0]['form']['input'][] = [
             'type' => 'text',
             // phpcs:ignore Generic.Files.LineLength.TooLong
             'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#set-up-prestashop">Merchant Account</a>',
@@ -1126,30 +1132,30 @@ class AdyenOfficial extends PaymentModule
             'required' => true,
             'lang' => false,
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('In your Adyen Customer Area you have a company account and under that a merchant account. Fill in the merchant account name.')
-        );
+            'hint' => $this->l('In your Adyen Customer Area you have a company account and under that a merchant account. Fill in the merchant account name.'),
+        ];
 
         // Test/Production mode
-        $fields_form[0]['form']['input'][] = array(
+        $fields_form[0]['form']['input'][] = [
             'type' => 'radio',
             'label' => $this->l('Test/Production Mode'),
             'name' => 'ADYEN_MODE',
-            'values' => array(
-                array(
+            'values' => [
+                [
                     'id' => 'prod',
                     'value' => 'live',
-                    'label' => $this->l('Production')
-                ),
-                array(
+                    'label' => $this->l('Production'),
+                ],
+                [
                     'id' => 'test',
                     'value' => 'test',
-                    'label' => $this->l('Test')
-                )
-            ),
+                    'label' => $this->l('Test'),
+                ],
+            ],
             // phpcs:ignore Generic.Files.LineLength.TooLong
             'hint' => $this->l('Indicates whether the plugin can process live or test transactions. Please always test the payment methods in test mode before switching to live!'),
-            'required' => true
-        );
+            'required' => true,
+        ];
 
         // Production Settings
         $apiKeyLive = '';
@@ -1166,7 +1172,7 @@ class AdyenOfficial extends PaymentModule
 
         $apiKeyLiveLastDigits = Tools::substr($apiKeyLive, -4);
 
-        $fields_form[1]['form']['input'][] = array(
+        $fields_form[1]['form']['input'][] = [
             'type' => 'password',
             // phpcs:ignore Generic.Files.LineLength.TooLong
             'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#generate-an-api-key">API key for Live</a>',
@@ -1177,11 +1183,11 @@ class AdyenOfficial extends PaymentModule
             'size' => 20,
             'required' => $mode === 'live',
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('Enter your live API Key. This can be generated in your live Customer Area > Account > API Credentials. During testing, this field should be populated with dummy data.')
-        );
+            'hint' => $this->l('Enter your live API Key. This can be generated in your live Customer Area > Account > API Credentials. During testing, this field should be populated with dummy data.'),
+        ];
 
         // Client key input live
-        $fields_form[1]['form']['input'][] = array(
+        $fields_form[1]['form']['input'][] = [
             'type' => 'text',
             // phpcs:ignore Generic.Files.LineLength.TooLong
             'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#generate-a-client-key">Client key live</a>',
@@ -1190,19 +1196,19 @@ class AdyenOfficial extends PaymentModule
             'required' => $mode === 'live',
             'lang' => false,
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('We use your client key to authenticate requests from your payment environment. This can be generated in your live Customer Area > Account > API Credentials. During testing, this field should be populated with dummy data.')
-        );
+            'hint' => $this->l('We use your client key to authenticate requests from your payment environment. This can be generated in your live Customer Area > Account > API Credentials. During testing, this field should be populated with dummy data.'),
+        ];
 
         // Live endpoint prefix
-        $fields_form[1]['form']['input'][] = array(
+        $fields_form[1]['form']['input'][] = [
             'type' => 'text',
             'label' => $this->l('Live endpoint prefix'),
             'name' => 'ADYEN_LIVE_ENDPOINT_URL_PREFIX',
             'size' => 20,
             'required' => $mode === 'live',
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('The URL prefix [random]-[company name] from your Adyen live Customer Area > Account > API URLs. During testing, this field should be populated with dummy data.')
-        );
+            'hint' => $this->l('The URL prefix [random]-[company name] from your Adyen live Customer Area > Account > API URLs. During testing, this field should be populated with dummy data.'),
+        ];
 
         // Test Settings
         $apiKeyTest = '';
@@ -1219,7 +1225,7 @@ class AdyenOfficial extends PaymentModule
 
         $apiKeyTestLastDigits = Tools::substr($apiKeyTest, -4);
 
-        $fields_form[2]['form']['input'][] = array(
+        $fields_form[2]['form']['input'][] = [
             'type' => 'password',
             // phpcs:ignore Generic.Files.LineLength.TooLong
             'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#generate-an-api-key">API key for Test</a>',
@@ -1230,11 +1236,11 @@ class AdyenOfficial extends PaymentModule
             'size' => 20,
             'required' => $mode === 'test',
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('Enter your test API Key. This can be generated in your test Customer Area > Account > API Credentials.')
-        );
+            'hint' => $this->l('Enter your test API Key. This can be generated in your test Customer Area > Account > API Credentials.'),
+        ];
 
         // Client key input test
-        $fields_form[2]['form']['input'][] = array(
+        $fields_form[2]['form']['input'][] = [
             'type' => 'text',
             // phpcs:ignore Generic.Files.LineLength.TooLong
             'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#generate-a-client-key">Client key test</a>',
@@ -1243,11 +1249,11 @@ class AdyenOfficial extends PaymentModule
             'required' => $mode === 'test',
             'lang' => false,
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('We use your client key to authenticate requests from your payment environment. This can be generated in your test Customer Area > Account > API Credentials.')
-        );
+            'hint' => $this->l('We use your client key to authenticate requests from your payment environment. This can be generated in your test Customer Area > Account > API Credentials.'),
+        ];
 
         // Webhook Settings
-        $fields_form[3]['form']['input'][] = array(
+        $fields_form[3]['form']['input'][] = [
             'type' => 'text',
             // phpcs:ignore Generic.Files.LineLength.TooLong
             'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#set-up-notifications">Webhook Username</a>',
@@ -1255,8 +1261,8 @@ class AdyenOfficial extends PaymentModule
             'size' => 20,
             'required' => $mode === 'live',
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('This is the username for basic authentication of your live endpoints. Fill in your from your live Adyen Customer Area > Account > Webhooks > Edit or Add. To test the plugin without webhooks, this field can be populated with dummy data.')
-        );
+            'hint' => $this->l('This is the username for basic authentication of your live endpoints. Fill in your from your live Adyen Customer Area > Account > Webhooks > Edit or Add. To test the plugin without webhooks, this field can be populated with dummy data.'),
+        ];
 
         $notificationPassword = '';
 
@@ -1272,7 +1278,7 @@ class AdyenOfficial extends PaymentModule
             );
         }
 
-        $fields_form[3]['form']['input'][] = array(
+        $fields_form[3]['form']['input'][] = [
             'type' => 'password',
             // phpcs:ignore Generic.Files.LineLength.TooLong
             'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#set-up-notifications">Webhook Password</a>',
@@ -1283,8 +1289,8 @@ class AdyenOfficial extends PaymentModule
             'size' => 20,
             'required' => $mode === 'live',
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('This is the password for basic authentication of your live endpoints. Fill in your from your live Adyen Customer Area > Account > Webhooks > Edit or Add. To test the plugin without webhooks, this field can be populated with dummy data.')
-        );
+            'hint' => $this->l('This is the password for basic authentication of your live endpoints. Fill in your from your live Adyen Customer Area > Account > Webhooks > Edit or Add. To test the plugin without webhooks, this field can be populated with dummy data.'),
+        ];
 
         $notificationHmacKey = '';
 
@@ -1296,7 +1302,7 @@ class AdyenOfficial extends PaymentModule
             $this->logger->error('The configuration "ADYEN_NOTI_HMAC" has no value set, please add the HMAC key!');
         }
 
-        $fields_form[3]['form']['input'][] = array(
+        $fields_form[3]['form']['input'][] = [
             'type' => 'password',
             // phpcs:ignore Generic.Files.LineLength.TooLong
             'label' => '<a target="_blank" href="https://docs.adyen.com/plugins/prestashop#set-up-notifications">HMAC key for webhooks</a>',
@@ -1307,8 +1313,8 @@ class AdyenOfficial extends PaymentModule
             'size' => 20,
             'required' => $mode === 'live',
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => $this->l('This is used to authenticate your endpoints. If you want to test the webhooks then get your Hmac key from your test or live Adyen Customer Area > Account > Webhooks > Edit or Add. To test the plugin without webhooks, this field can be populated with dummy data.')
-        );
+            'hint' => $this->l('This is used to authenticate your endpoints. If you want to test the webhooks then get your Hmac key from your test or live Adyen Customer Area > Account > Webhooks > Edit or Add. To test the plugin without webhooks, this field can be populated with dummy data.'),
+        ];
 
         $cronjobToken = '';
 
@@ -1324,13 +1330,13 @@ class AdyenOfficial extends PaymentModule
             );
         }
 
-        $fields_form[3]['form']['input'][] = array(
+        $fields_form[3]['form']['input'][] = [
             'type' => 'text',
             'desc' => $cronjobToken ?
                 // phpcs:ignore Generic.Files.LineLength.TooLong
                 $this->l('Your adyen cron job processor\'s URL includes this secure token. Your URL is: ') .
                 sprintf(
-                    "%s/%s/index.php?fc=module&controller=AdminAdyenOfficialPrestashopCron&token=%s",
+                    '%s/%s/index.php?fc=module&controller=AdminAdyenOfficialPrestashopCron&token=%s',
                     Tools::getShopDomainSsl(),
                     basename(_PS_ADMIN_DIR_),
                     $cronjobToken
@@ -1341,89 +1347,89 @@ class AdyenOfficial extends PaymentModule
             'size' => 20,
             'hint' => $this->l('To regenerate the token, simply save this field with no value.') .
                 $this->l('In case of filling this field manually please only use numbers and a-z or A-Z characters'),
-            'required' => $mode === 'live'
-        );
+            'required' => $mode === 'live',
+        ];
 
-        $fields_form[3]['form']['input'][] = array(
+        $fields_form[3]['form']['input'][] = [
             'type' => 'radio',
-            'values' => array(
-                array(
+            'values' => [
+                [
                     'id' => 'enabled',
                     'value' => 1,
-                    'label' => $this->l('Enabled')
-                ),
-                array(
+                    'label' => $this->l('Enabled'),
+                ],
+                [
                     'id' => 'disabled',
                     'value' => 0,
-                    'label' => $this->l('Disabled')
-                )
-            ),
+                    'label' => $this->l('Disabled'),
+                ],
+            ],
             // phpcs:ignore Generic.Files.LineLength.TooLong
             'hint' => $this->l('This EXPERIMENTAL feature was created to replace the requirement to initiate a cron job in order to process our webhooks. When enabled, a cron job setup (as described in the documentation) is not required.'),
             // phpcs:ignore Generic.Files.LineLength.TooLong
             'desc' => $this->l('Only enable this experimental feature after you disabled your cron job processing the webhooks.'),
             'label' => $this->l('Process webhooks upon receiving them'),
             'name' => 'ADYEN_AUTO_CRON_JOB_RUNNER',
-            'required' => $mode === 'live'
-        );
+            'required' => $mode === 'live',
+        ];
 
         // Payment method configurations
-        $fields_form[4]['form']['input'][] = array(
+        $fields_form[4]['form']['input'][] = [
             'type' => 'radio',
             'label' => $this->l('Enable stored payment methods'),
             'name' => 'ADYEN_ENABLE_STORED_PAYMENT_METHODS',
-            'values' => array(
-                array(
+            'values' => [
+                [
                     'id' => 'enable',
                     'value' => 1,
-                    'label' => $this->l('Enable')
-                ),
-                array(
+                    'label' => $this->l('Enable'),
+                ],
+                [
                     'id' => 'disable',
                     'value' => 0,
-                    'label' => $this->l('Disable')
-                )
-            ),
+                    'label' => $this->l('Disable'),
+                ],
+            ],
             'is_bool' => true,
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => 'Indicates whether the customers can store and use payment methods during checkout for one click checkout purposes'
-        );
+            'hint' => 'Indicates whether the customers can store and use payment methods during checkout for one click checkout purposes',
+        ];
 
         // Apple pay merchant name input
-        $fields_form[4]['form']['input'][] = array(
+        $fields_form[4]['form']['input'][] = [
             'type' => 'text',
             'label' => $this->l('Apple Pay merchant name'),
             'name' => 'ADYEN_APPLE_PAY_MERCHANT_NAME',
             'size' => 50,
             'required' => false,
             'lang' => false,
-            'hint' => 'Name of your Adyen merchant account for which the payments will be processed'
-        );
+            'hint' => 'Name of your Adyen merchant account for which the payments will be processed',
+        ];
 
         // Apple pay merchant identifier input
-        $fields_form[4]['form']['input'][] = array(
+        $fields_form[4]['form']['input'][] = [
             'type' => 'text',
             'label' => $this->l('Apple Pay merchant identifier'),
             'name' => 'ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER',
             'size' => 50,
             'required' => false,
             'lang' => false,
-            'hint' => 'The Authorisation MID value in your live Customer Area > Payment methods > Apple Pay.'
-        );
+            'hint' => 'The Authorisation MID value in your live Customer Area > Payment methods > Apple Pay.',
+        ];
 
         // Google pay gateway merchant id
-        $fields_form[4]['form']['input'][] = array(
+        $fields_form[4]['form']['input'][] = [
             'type' => 'text',
             'label' => $this->l('Google Pay gateway merchant ID'),
             'name' => 'ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID',
             'size' => 50,
             'required' => false,
             'lang' => false,
-            'hint' => 'Name of your Adyen merchant account for which the payments will be processed.'
-        );
+            'hint' => 'Name of your Adyen merchant account for which the payments will be processed.',
+        ];
 
         // Google pay merchant identifier input
-        $fields_form[4]['form']['input'][] = array(
+        $fields_form[4]['form']['input'][] = [
             'type' => 'text',
             'label' => $this->l('Google Pay merchant identifier'),
             'name' => 'ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER',
@@ -1431,66 +1437,66 @@ class AdyenOfficial extends PaymentModule
             'required' => false,
             'lang' => false,
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            'hint' => 'The Authorisation MID value in your live Customer Area > Payment methods > Google Pay. When testing, you can use any value.'
-        );
+            'hint' => 'The Authorisation MID value in your live Customer Area > Payment methods > Google Pay. When testing, you can use any value.',
+        ];
 
         if ($this->versionChecker->isPrestaShop16()) {
-            $fields_form[4]['form']['input'][] = array(
+            $fields_form[4]['form']['input'][] = [
                 'type' => 'radio',
                 'label' => $this->l('Collapsable payment display'),
                 'name' => 'ADYEN_PAYMENT_DISPLAY_COLLAPSE',
-                'values' => array(
-                    array(
+                'values' => [
+                    [
                         'id' => 'enable',
                         'value' => 1,
-                        'label' => $this->l('Enable')
-                    ),
-                    array(
+                        'label' => $this->l('Enable'),
+                    ],
+                    [
                         'id' => 'disable',
                         'value' => 0,
-                        'label' => $this->l('Disable')
-                    )
-                ),
+                        'label' => $this->l('Disable'),
+                    ],
+                ],
                 'is_bool' => true,
                 // phpcs:ignore Generic.Files.LineLength.TooLong
                 'hint' => 'Indicates whether the payment methods should be rendered in a list of collapsable items,
                  during checkout',
-                'required' => false
-            );
+                'required' => false,
+            ];
         }
 
         // Developer settings
-        $fields_form[5]['form']['input'][] = array(
+        $fields_form[5]['form']['input'][] = [
             'type' => 'radio',
             'label' => $this->l('Adyen checkout styling'),
             'name' => 'ADYEN_ENABLE_CHECKOUT_STYLING',
-            'values' => array(
-                array(
+            'values' => [
+                [
                     'id' => 'enable',
                     'value' => 1,
-                    'label' => $this->l('Enable')
-                ),
-                array(
+                    'label' => $this->l('Enable'),
+                ],
+                [
                     'id' => 'disable',
                     'value' => 0,
-                    'label' => $this->l('Disable')
-                )
-            ),
+                    'label' => $this->l('Disable'),
+                ],
+            ],
             'is_bool' => true,
             // phpcs:ignore Generic.Files.LineLength.TooLong
             'hint' => 'Indicates whether the CSS styling provided by Adyen should be loaded or not, in the checkout page',
-            'required' => false
-        );
+            'required' => false,
+        ];
 
-        $fields_form[5]['form']['input'][] = array(
+        $fields_form[5]['form']['input'][] = [
             'type' => 'text',
             'label' => $this->l('Integrator Name'),
             'name' => 'ADYEN_INTEGRATOR_NAME',
             'size' => 20,
             'required' => false,
             'lang' => false,
-            'hint' => $this->l('Name of the integrator used. Leave blank if no integrator was utilised.')
-        );
+            'hint' => $this->l('Name of the integrator used. Leave blank if no integrator was utilised.'),
+        ];
 
         $helper = new HelperForm();
 
@@ -1509,33 +1515,33 @@ class AdyenOfficial extends PaymentModule
         $helper->show_toolbar = true; // false -> remove toolbar
         $helper->toolbar_scroll = true; // yes - > Toolbar is always visible on the top of the screen.
         $helper->submit_action = 'submit' . $this->name;
-        $helper->toolbar_btn = array(
-            'save' => array(
+        $helper->toolbar_btn = [
+            'save' => [
                 'desc' => $this->l('Save'),
                 'href' => sprintf(
-                    "%s&configure=%s&save%s&token=%s",
+                    '%s&configure=%s&save%s&token=%s',
                     AdminController::$currentIndex,
                     $this->name,
                     $this->name,
                     Tools::getAdminTokenLite('AdminModules')
-                )
-            ),
-            'back' => array(
+                ),
+            ],
+            'back' => [
                 'href' => AdminController::$currentIndex . '&token=' . Tools::getAdminTokenLite('AdminModules'),
-                'desc' => $this->l('Back to list')
-            )
-        );
+                'desc' => $this->l('Back to list'),
+            ],
+        ];
 
         if (Tools::isSubmit('submit' . $this->name)) {
             // get settings from post because post can give errors and you want to keep values
-            $merchant_account = (string)Tools::getValue('ADYEN_MERCHANT_ACCOUNT');
-            $integrator_name = (string)Tools::getValue('ADYEN_INTEGRATOR_NAME');
-            $notification_username = (string)Tools::getValue('ADYEN_NOTI_USERNAME');
+            $merchant_account = (string) Tools::getValue('ADYEN_MERCHANT_ACCOUNT');
+            $integrator_name = (string) Tools::getValue('ADYEN_INTEGRATOR_NAME');
+            $notification_username = (string) Tools::getValue('ADYEN_NOTI_USERNAME');
             $cron_job_token = $cronjobToken;
             $auto_cron_job_runner = Tools::getValue('ADYEN_AUTO_CRON_JOB_RUNNER');
             $client_key_test = Tools::getValue('ADYEN_CLIENTKEY_TEST');
             $client_key_live = Tools::getValue('ADYEN_CLIENTKEY_LIVE');
-            $live_endpoint_url_prefix = (string)Tools::getValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
+            $live_endpoint_url_prefix = (string) Tools::getValue('ADYEN_LIVE_ENDPOINT_URL_PREFIX');
             $apple_pay_merchant_name = Tools::getValue('ADYEN_APPLE_PAY_MERCHANT_NAME');
             $apple_pay_merchant_identifier = Tools::getValue('ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER');
             $google_pay_gateway_merchant_id = Tools::getValue('ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID');
@@ -1586,15 +1592,16 @@ class AdyenOfficial extends PaymentModule
      * Hook payment options PrestaShop > 1.7
      *
      * @return array
+     *
      * @throws Exception
      */
     public function hookPaymentOptions()
     {
-        $payment_options = array();
+        $payment_options = [];
 
         // If we are not at the payment method step, we don't need to fetch payment methods
         if (!$this->checkout->requireFetchPaymentMethods($this->context->cart)) {
-            return array();
+            return [];
         }
 
         $paymentMethods = $this->getPaymentMethods();
@@ -1611,9 +1618,9 @@ class AdyenOfficial extends PaymentModule
                         continue;
                     }
 
-                    $smartyVariables = array(
-                        'storedPaymentApiId' => $storedPaymentMethod['id']
-                    );
+                    $smartyVariables = [
+                        'storedPaymentApiId' => $storedPaymentMethod['id'],
+                    ];
 
                     // Add checkout component default configuration parameters for smarty variables
                     $smartyVariables = array_merge($smartyVariables, $this->getCheckoutComponentInitData());
@@ -1639,7 +1646,7 @@ class AdyenOfficial extends PaymentModule
                         'https://checkoutshopper-live.adyen.com/checkoutshopper/images/logos/medium/' .
                         $storedPaymentMethod['brand'] . '.png'
                     )
-                    ->setAction($this->context->link->getModuleLink($this->name, 'Payment', array(), true));
+                    ->setAction($this->context->link->getModuleLink($this->name, 'Payment', [], true));
 
                 $payment_options[] = $oneClickOption;
             }
@@ -1652,10 +1659,10 @@ class AdyenOfficial extends PaymentModule
                     continue;
                 }
 
-                $smartyVariables = array(
+                $smartyVariables = [
                     'paymentMethodType' => $paymentMethod['type'],
-                    'paymentMethodName' => $paymentMethod['name']
-                );
+                    'paymentMethodName' => $paymentMethod['name'],
+                ];
 
                 // Add checkout component default configuration parameters for smarty variables
                 $smartyVariables = array_merge($smartyVariables, $this->getCheckoutComponentInitData());
@@ -1681,7 +1688,7 @@ class AdyenOfficial extends PaymentModule
                         $logoName . '.png'
                     )
                     ->setAction(
-                        $this->context->link->getModuleLink($this->name, 'Payment', array(), true)
+                        $this->context->link->getModuleLink($this->name, 'Payment', [], true)
                     );
                 $payment_options[] = $localPaymentMethod;
             }
@@ -1694,6 +1701,7 @@ class AdyenOfficial extends PaymentModule
      * Hook payment options PrestaShop <= 1.6
      *
      * @return string|null
+     *
      * @throws Exception
      */
     public function hookPayment()
@@ -1708,7 +1716,7 @@ class AdyenOfficial extends PaymentModule
             $this->context->controller->addCSS('modules/' . $this->name . '/views/css/adyen.css', 'all');
         }
 
-        $payments = "";
+        $payments = '';
         $paymentMethods = $this->getPaymentMethods();
 
         if (!$this->context->customer->is_guest &&
@@ -1727,6 +1735,7 @@ class AdyenOfficial extends PaymentModule
 
     /**
      * @return array|null
+     *
      * @throws Exception
      */
     public function hookDisplayPaymentEU()
@@ -1735,11 +1744,11 @@ class AdyenOfficial extends PaymentModule
             return null;
         }
 
-        $payment_options = array(
+        $payment_options = [
             'cta_text' => $this->l('Pay by Adyen'),
             'logo' => Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/logo.png'),
-            'form' => $this->hookPayment()
-        );
+            'form' => $this->hookPayment(),
+        ];
 
         return $payment_options;
     }
@@ -1764,32 +1773,32 @@ class AdyenOfficial extends PaymentModule
         );
 
         // List of payment methods that needs to show the pay button from the component
-        $paymentMethodsWithPayButtonFromComponent = json_encode(array('paywithgoogle', 'applepay', 'paypal'));
+        $paymentMethodsWithPayButtonFromComponent = json_encode(['paywithgoogle', 'applepay', 'paypal']);
 
         // All payment method specific configuration
         $paymentMethodsConfigurations = json_encode(
-            array(
+            [
                 'applePayMerchantName' => Configuration::get('ADYEN_APPLE_PAY_MERCHANT_NAME'),
                 'applePayMerchantIdentifier' => Configuration::get('ADYEN_APPLE_PAY_MERCHANT_IDENTIFIER'),
                 'googlePayGatewayMerchantId' => Configuration::get('ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID'),
-                'googlePayMerchantIdentifier' => Configuration::get('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER')
-            )
+                'googlePayMerchantIdentifier' => Configuration::get('ADYEN_GOOGLE_PAY_MERCHANT_IDENTIFIER'),
+            ]
         );
 
-        return array(
+        return [
             'locale' => $this->languageAdapter->getLocaleCode($this->context->language),
             'clientKey' => $this->configuration->clientKey,
             'environment' => Configuration::get('ADYEN_MODE'),
             'isUserLoggedIn' => !$this->context->customer->is_guest,
-            'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', array(), true),
-            'paymentsDetailsUrl' => $this->context->link->getModuleLink($this->name, 'PaymentsDetails', array(), true),
+            'paymentProcessUrl' => $this->context->link->getModuleLink($this->name, 'Payment', [], true),
+            'paymentsDetailsUrl' => $this->context->link->getModuleLink($this->name, 'PaymentsDetails', [], true),
             'isPrestaShop16' => $this->versionChecker->isPrestaShop16() ? true : false,
             'currencyIsoCode' => $currencyIsoCode,
             'totalAmountInMinorUnits' => $totalAmountInMinorUnits,
             'paymentMethodsConfigurations' => $paymentMethodsConfigurations,
             'paymentMethodsWithPayButtonFromComponent' => $paymentMethodsWithPayButtonFromComponent,
-            'enableStoredPaymentMethods' => Configuration::get('ADYEN_ENABLE_STORED_PAYMENT_METHODS') ? true : false
-        );
+            'enableStoredPaymentMethods' => Configuration::get('ADYEN_ENABLE_STORED_PAYMENT_METHODS') ? true : false,
+        ];
     }
 
     /**
@@ -1812,6 +1821,7 @@ class AdyenOfficial extends PaymentModule
         // Check if order object is not empty
         if (empty($order)) {
             $this->logger->debug('In hookPaymentReturn Order object is empty');
+
             return null;
         }
 
@@ -1826,10 +1836,10 @@ class AdyenOfficial extends PaymentModule
         }
 
         // Default parameters to frontend
-        $smartyVariables = array(
+        $smartyVariables = [
             'paymentMethodsResponse' => '{}',
-            'selectedInvoiceAddress' => '{}'
-        );
+            'selectedInvoiceAddress' => '{}',
+        ];
 
         // checkout action if available
         if (!empty($paymentResponse['action'])) {
@@ -1852,6 +1862,7 @@ class AdyenOfficial extends PaymentModule
 
     /**
      * @return null
+     *
      * @throws Exception
      */
     public function hookDisplayPaymentTop()
@@ -1872,27 +1883,27 @@ class AdyenOfficial extends PaymentModule
             $selectedInvoiceAddressId = $this->context->cart->id_address_invoice;
         }
 
-        $selectedInvoiceAddressArray = array();
+        $selectedInvoiceAddressArray = [];
 
         /** @var AddressCore $selectedInvoiceAddress */
         $selectedInvoiceAddress = AddressCore::initialize($selectedInvoiceAddressId);
         if (\Validate::isLoadedObject($selectedInvoiceAddress)) {
             // Format the address in a way that frontend can use it
-            $selectedInvoiceAddressArray = array(
+            $selectedInvoiceAddressArray = [
                 'city' => $selectedInvoiceAddress->city,
                 'country' => $this->countryAdapter->getIsoById($selectedInvoiceAddress->id_country),
                 'houseNumberOrName' => $selectedInvoiceAddress->address2,
                 'postalCode' => $selectedInvoiceAddress->postcode,
-                'street' => $selectedInvoiceAddress->address1
-            );
+                'street' => $selectedInvoiceAddress->address1,
+            ];
         }
 
-        $smartyVariables = array(
+        $smartyVariables = [
             'paymentMethodsResponse' => json_encode($paymentMethods),
             'selectedDeliveryAddressId' => $selectedDeliveryAddressId,
             'selectedInvoiceAddressId' => $selectedInvoiceAddressId,
-            'selectedInvoiceAddress' => json_encode($selectedInvoiceAddressArray)
-        );
+            'selectedInvoiceAddress' => json_encode($selectedInvoiceAddressArray),
+        ];
 
         // Add checkout component default configuration parameters for smarty variables
         $smartyVariables = array_merge($smartyVariables, $this->getCheckoutComponentInitData());
@@ -1930,6 +1941,7 @@ class AdyenOfficial extends PaymentModule
                 'Error initializing Refund Service in actionOrderSlipAdd hook:'
                 . PHP_EOL . $e->getMessage()
             );
+
             return false;
         }
 
@@ -1940,6 +1952,7 @@ class AdyenOfficial extends PaymentModule
                 'Error while requesting a refund in actionOrderSlipAdd:'
                 . PHP_EOL . $e->getMessage()
             );
+
             return false;
         }
     }
@@ -1949,6 +1962,7 @@ class AdyenOfficial extends PaymentModule
      * Only used in 1.7
      *
      * @param $params
+     *
      * @return bool
      */
     public function hookActionEmailSendBefore($params)
@@ -1973,7 +1987,7 @@ class AdyenOfficial extends PaymentModule
         Order $order = null,
         OrderSlip $orderSlip = null
     ) {
-        if (isset($order) && isset($orderSlip)) {
+        if (isset($order, $orderSlip)) {
             $this->addMessageToOrderForOrderSlip($message, $order, $orderSlip);
         }
         $this->logger->error($message);
@@ -1983,6 +1997,7 @@ class AdyenOfficial extends PaymentModule
      * @param string $message
      * @param Order $order
      * @param OrderSlip $orderSlip
+     *
      * @return bool
      */
     private function addMessageToOrderForOrderSlip($message, Order $order, OrderSlip $orderSlip)
@@ -1990,18 +2005,16 @@ class AdyenOfficial extends PaymentModule
         try {
             $customer = $order->getCustomer();
             if (empty($customer)) {
-                throw new Adyen\PrestaShop\exception\GenericLoggedException(
-                    "Customer with id: \"{$order->id_customer}\" cannot be found for" .
-                    " order with id: \"{$order->id}\" while processing" .
-                    " order slip with id: \"{$orderSlip->id}\"."
-                );
+                throw new Adyen\PrestaShop\exception\GenericLoggedException("Customer with id: \"{$order->id_customer}\" cannot be found for order with id: \"{$order->id}\" while processing order slip with id: \"{$orderSlip->id}\".");
             }
             $customerThread = $this->createCustomerThread($order, $orderSlip, $customer);
             $this->createCustomerMessage($message, $customerThread);
         } catch (Adyen\PrestaShop\exception\GenericLoggedException $e) {
             $this->logger->error($e->getMessage());
+
             return false;
         }
+
         return true;
     }
 
@@ -2011,6 +2024,7 @@ class AdyenOfficial extends PaymentModule
      * @param Customer $customer
      *
      * @return CustomerThread
+     *
      * @throws Adyen\PrestaShop\exception\GenericLoggedException
      */
     private function createCustomerThread(Order $order, OrderSlip $orderSlip, Customer $customer)
@@ -2022,30 +2036,23 @@ class AdyenOfficial extends PaymentModule
             if (empty($customerThread->id)) {
                 $customerThread = new CustomerThread();
                 $customerThread->id_contact = 0;
-                $customerThread->id_customer = (int)$customer->id;
-                $customerThread->id_shop = (int)$this->context->shop->id;
-                $customerThread->id_order = (int)$order->id;
-                $customerThread->id_lang = (int)$this->context->language->id;
+                $customerThread->id_customer = (int) $customer->id;
+                $customerThread->id_shop = (int) $this->context->shop->id;
+                $customerThread->id_order = (int) $order->id;
+                $customerThread->id_lang = (int) $this->context->language->id;
                 $customerThread->email = $customer->email;
                 $customerThread->status = 'open';
                 $customerThread->token = Tools::passwdGen(12);
                 if (!$customerThread->add()) {
-                    throw new Adyen\PrestaShop\exception\GenericLoggedException(
-                        "Could not start a Customer Thread for Order Slip with id \"{$orderSlip->id}\"."
-                    );
+                    throw new Adyen\PrestaShop\exception\GenericLoggedException("Could not start a Customer Thread for Order Slip with id \"{$orderSlip->id}\".");
                 }
             }
         } catch (PrestaShopDatabaseException $e) {
-            throw new Adyen\PrestaShop\exception\GenericLoggedException(
-                'Could not start a Customer Thread for Order Slip with id "' . $orderSlip->id .
-                '". Reason:' . PHP_EOL . $e->getMessage()
-            );
+            throw new Adyen\PrestaShop\exception\GenericLoggedException('Could not start a Customer Thread for Order Slip with id "' . $orderSlip->id . '". Reason:' . PHP_EOL . $e->getMessage());
         } catch (PrestaShopException $e) {
-            throw new Adyen\PrestaShop\exception\GenericLoggedException(
-                "Could not start a Customer Thread for Order Slip with id \"" . $orderSlip->id .
-                '". Reason:' . PHP_EOL . $e->getMessage()
-            );
+            throw new Adyen\PrestaShop\exception\GenericLoggedException('Could not start a Customer Thread for Order Slip with id "' . $orderSlip->id . '". Reason:' . PHP_EOL . $e->getMessage());
         }
+
         return $customerThread;
     }
 
@@ -2065,23 +2072,18 @@ class AdyenOfficial extends PaymentModule
             $customerMessage->private = 1;
 
             if (!$customerMessage->add()) {
-                throw new Adyen\PrestaShop\exception\GenericLoggedException(
-                    'An error occurred while saving the message.'
-                );
+                throw new Adyen\PrestaShop\exception\GenericLoggedException('An error occurred while saving the message.');
             }
         } catch (PrestaShopDatabaseException $e) {
-            throw new Adyen\PrestaShop\exception\GenericLoggedException(
-                'An error occurred while saving the message. Reason:' . PHP_EOL . $e->getMessage()
-            );
+            throw new Adyen\PrestaShop\exception\GenericLoggedException('An error occurred while saving the message. Reason:' . PHP_EOL . $e->getMessage());
         } catch (PrestaShopException $e) {
-            throw new Adyen\PrestaShop\exception\GenericLoggedException(
-                'An error occurred while saving the message. Reason:' . PHP_EOL . $e->getMessage()
-            );
+            throw new Adyen\PrestaShop\exception\GenericLoggedException('An error occurred while saving the message. Reason:' . PHP_EOL . $e->getMessage());
         }
     }
 
     /**
      * @param array $paymentMethods
+     *
      * @return string
      */
     private function getOneClickPaymentMethods(array $paymentMethods)
@@ -2097,13 +2099,13 @@ class AdyenOfficial extends PaymentModule
 
                 $collapsePayments = \Configuration::get('ADYEN_PAYMENT_DISPLAY_COLLAPSE');
 
-                $smartyVariables = array(
+                $smartyVariables = [
                     'storedPaymentApiId' => $storedPayment['id'],
                     'name' => $storedPayment['name'],
                     'logoBrand' => $storedPayment['brand'],
                     'number' => $storedPayment['lastFour'],
-                    'collapsePayments' => $collapsePayments === false ? '0' : $collapsePayments
-                );
+                    'collapsePayments' => $collapsePayments === false ? '0' : $collapsePayments,
+                ];
 
                 // Add checkout component default configuration parameters for smarty variables
                 $smartyVariables = array_merge($smartyVariables, $this->getCheckoutComponentInitData());
@@ -2113,11 +2115,13 @@ class AdyenOfficial extends PaymentModule
             }
             $payments .= $this->display(__FILE__, '/views/templates/front/stored-payment-method.tpl');
         }
+
         return $payments;
     }
 
     /**
      * @param array $paymentMethods
+     *
      * @return string
      */
     private function getLocalPaymentMethods(array $paymentMethods)
@@ -2131,12 +2135,12 @@ class AdyenOfficial extends PaymentModule
 
             $collapsePayments = \Configuration::get('ADYEN_PAYMENT_DISPLAY_COLLAPSE');
 
-            $smartyVariables = array(
+            $smartyVariables = [
                 'paymentMethodType' => $paymentMethod['type'],
                 'paymentMethodName' => $paymentMethod['name'],
                 'paymentMethodBrand' => $paymentMethod['type'],
-                'collapsePayments' => $collapsePayments === false ? '0' : $collapsePayments
-            );
+                'collapsePayments' => $collapsePayments === false ? '0' : $collapsePayments,
+            ];
 
             // If brand is scheme, logo will not be displayed correctly unless it is set to card
             if ($paymentMethod['type'] === 'scheme') {
@@ -2151,6 +2155,7 @@ class AdyenOfficial extends PaymentModule
 
             $payments .= $this->display(__FILE__, '/views/templates/front/payment-method.tpl');
         }
+
         return $payments;
     }
 
@@ -2158,17 +2163,18 @@ class AdyenOfficial extends PaymentModule
      * Returns true if payment method is unsupported
      *
      * @param $paymentMethodType
+     *
      * @return bool
      */
     private function isUnsupportedPaymentMethod($paymentMethodType)
     {
-        $unsupportedPaymentMethods = array(
+        $unsupportedPaymentMethods = [
             'bcmc_mobile_QR',
             'wechatpay',
             'wechatpay_pos',
             'wechatpaySdk',
-            'wechatpayQr'
-        );
+            'wechatpayQr',
+        ];
 
         if (in_array($paymentMethodType, $unsupportedPaymentMethods)) {
             return true;
@@ -2179,14 +2185,16 @@ class AdyenOfficial extends PaymentModule
 
     /**
      * @param $params
+     *
      * @throws \PrestaShop\PrestaShop\Adapter\CoreException
+     *
      * @noinspection PhpUnusedParameterInspection This method accepts a parameter and, even we don't use it,
      * it's better to make sure this is cataloged in the code base
      */
     public function hookActionFrontControllerSetMedia($params)
     {
         // List of front controllers where we set the assets
-        $frontControllers = array('order', 'order-confirmation', 'order-opc');
+        $frontControllers = ['order', 'order-confirmation', 'order-opc'];
         $controller = $this->context->controller;
 
         if (in_array($controller->php_self, $frontControllers)) {
@@ -2196,6 +2204,7 @@ class AdyenOfficial extends PaymentModule
 
     /**
      * @param $controller
+     *
      * @throws \PrestaShop\PrestaShop\Adapter\CoreException
      */
     private function registerAdyenAssets($controller)
@@ -2209,19 +2218,19 @@ class AdyenOfficial extends PaymentModule
         $controllerAdapter->registerJavascript(
             'adyen-checkout-component', // Unique ID
             'modules/' . $this->name . '/views/js/bundle.js', // JS path
-            array('position' => 'bottom', 'priority' => 150) // Arguments
+            ['position' => 'bottom', 'priority' => 150] // Arguments
         );
 
         $controllerAdapter->registerJavascript(
             'adyen-polyfill',
             'modules/' . $this->name . '/views/js/polyfill.js',
-            array('position' => 'bottom', 'priority' => 140)
+            ['position' => 'bottom', 'priority' => 140]
         );
 
         $controllerAdapter->registerJavascript(
             'adyen-component-renderer',
             'modules/' . $this->name . '/views/js/checkout-component-renderer.js',
-            array('position' => 'bottom', 'priority' => 170)
+            ['position' => 'bottom', 'priority' => 170]
         );
 
         $enableAdyenCss = Configuration::get('ADYEN_ENABLE_CHECKOUT_STYLING');
@@ -2249,14 +2258,16 @@ class AdyenOfficial extends PaymentModule
             $controllerAdapter->registerJavascript(
                 'adyen-order-confirmation',
                 'modules/' . $this->name . '/views/js/payment-components/order-confirmation.js',
-                array('position' => 'bottom', 'priority' => 170)
+                ['position' => 'bottom', 'priority' => 170]
             );
         }
     }
 
     /**
      * @param $serviceName
+     *
      * @return mixed|object
+     *
      * @throws \PrestaShop\PrestaShop\Adapter\CoreException
      */
     private function getService($serviceName)
@@ -2268,6 +2279,7 @@ class AdyenOfficial extends PaymentModule
      * Check if payment methods have already been obtained in this object. If not, fetch them.
      *
      * @return array
+     *
      * @throws Exception
      */
     private function getPaymentMethods()

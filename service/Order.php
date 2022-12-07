@@ -1,26 +1,4 @@
 <?php
-/**
- *                       ######
- *                       ######
- * ############    ####( ######  #####. ######  ############   ############
- * #############  #####( ######  #####. ######  #############  #############
- *        ######  #####( ######  #####. ######  #####  ######  #####  ######
- * ###### ######  #####( ######  #####. ######  #####  #####   #####  ######
- * ###### ######  #####( ######  #####. ######  #####          #####  ######
- * #############  #############  #############  #############  #####  ######
- *  ############   ############  #############   ############  #####  ######
- *                                      ######
- *                               #############
- *                               ############
- *
- * Adyen PrestaShop plugin
- *
- * @author Adyen BV <support@adyen.com>
- * @copyright (c) 2021 Adyen B.V.
- * @license https://opensource.org/licenses/MIT MIT license
- * This file is open source and available under the MIT license.
- * See the LICENSE file for more info.
- */
 
 namespace Adyen\PrestaShop\service;
 
@@ -46,6 +24,7 @@ class Order
      *
      * @param $order
      * @param $additionalData
+     *
      * @return mixed
      *
      * TODO: Refactor/modify this function w/OrderPaymentService::addPspReferenceForOrderPayment since they are related
@@ -91,7 +70,7 @@ class Order
     public function updateOrderState($order, $orderStateId)
     {
         // check if the new order state is the same as the current state
-        $currentOrderStateId = (int)$order->getCurrentState();
+        $currentOrderStateId = (int) $order->getCurrentState();
 
         if ($currentOrderStateId === $orderStateId) {
             // duplicate order state handling, no need to update the order
@@ -113,7 +92,7 @@ class Order
         if (!$orderHistory->addWithemail()) {
             $this->logger->addError(
                 'Email was not sent upon order state update',
-                array("order id" => $order->id, "new state id" => $orderStateId)
+                ['order id' => $order->id, 'new state id' => $orderStateId]
             );
         }
 
