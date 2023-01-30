@@ -217,7 +217,7 @@ jQuery(document).ready(function() {
             if (paymentMethod.type.includes('applepay')) {
                 paymentMethodExtraConfiguration.configuration = {
                     merchantName: paymentMethodsConfigurations.applePayMerchantName,
-                    merchantIdentifier: paymentMethodsConfigurations.applePayMerchantIdentifier,
+                    merchantId: paymentMethodsConfigurations.applePayMerchantIdentifier,
                 };
 
                 paymentMethodExtraConfiguration.totalPriceLabel = totalText;
