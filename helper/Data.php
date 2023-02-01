@@ -249,7 +249,7 @@ class Data
                 break;
         }
 
-        return \Tools::jsonEncode($response);
+        return json_encode($response);
     }
 
     /**
