@@ -40,7 +40,8 @@ function addLicence($dirPath)
 
 function addLicenceToFile($path)
 {
-    $licence = ' *                       ######
+    $licence = '*
+ *                       ######
  *                       ######
  * ############    ####( ######  #####. ######  ############   ############
  * #############  #####( ######  #####. ######  #############  #############
@@ -71,13 +72,13 @@ function addLicenceToFile($path)
         case 'php':
             // strip php header
             $file = substr($file, 5);
-            $header = "<?php\n/**\n" . $licence . " */\n\n";
+            $header = "<?php\n/*" . $licence . " */\n\n";
             break;
         case 'tpl':
             $header = "{**\n" . $licence . " *}\n\n";
             break;
         case 'js':
-            $header = "/**\n" . $licence . " */\n\n";
+            $header = "/**\n " . $licence . " */\n\n";
             break;
         default:
             return;
