@@ -286,6 +286,10 @@ jQuery(document).ready(function() {
 
                 let isValid = !component.state.isValid ? placeOrderAllowed : component.state.isValid;
 
+                if (paymentMethod.type === 'onlineBanking_PL') {
+                    isValid = true;
+                }
+
                 // If paymentMethod details exist and the component state is not valid
                 if (paymentMethod.details && !isValid) {
                     if (!!component && 'showValidation' in component) {
