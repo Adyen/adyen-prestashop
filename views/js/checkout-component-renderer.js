@@ -291,12 +291,26 @@ jQuery(document).ready(function() {
                 }
 
                 // If paymentMethod details exist and the component state is not valid
-                if (paymentMethod.details && !isValid) {
+                if (!isValid) {
                     if (!!component && 'showValidation' in component) {
                         component.showValidation();
                     }
 
+                    if (IS_PRESTA_SHOP_16) {
+                        paymentForm.find('button[type="submit"]').prop('disabled', "disabled");
+                        paymentForm.find('button[type="submit"] i').toggleClass('icon-spinner icon-chevron-right right');
+                    } else {
+                        prestaShopPlaceOrderButton.prop('disabled', "disabled");
+                    }
+
                     return;
+                }
+
+                if (IS_PRESTA_SHOP_16) {
+                    paymentForm.find('button[type="submit"]').removeProp('disabled');
+                    paymentForm.find('button[type="submit"] i').toggleClass('icon-spinner icon-chevron-right right');
+                } else {
+                    prestaShopPlaceOrderButton.removeProp('disabled');
                 }
 
                 if (isPlaceOrderInProgress()) {
@@ -424,7 +438,7 @@ jQuery(document).ready(function() {
             placeOrderAllowed = state.isValid;
 
             if (IS_PRESTA_SHOP_16) {
-                this.paymentForm.find('button').prop('disabled', true);
+                this.paymentForm.find('button').prop('disabled', "disabled");
                 this.paymentForm.submit();
             } else {
                 if (!prestaShopPlaceOrderButton.prop('disabled')) {
@@ -528,11 +542,11 @@ jQuery(document).ready(function() {
                 fadeIn(1000);
             if (IS_PRESTA_SHOP_16) {
                 paymentForm.find('button[type="submit"]').
-                    prop('disabled', true);
+                prop('disabled', "disabled");
                 paymentForm.find('button[type="submit"] i').
                     toggleClass('icon-spinner icon-chevron-right right');
             } else {
-                prestaShopPlaceOrderButton.prop('disabled', true);
+                prestaShopPlaceOrderButton.prop('disabled', "disabled");
             }
         }
 
@@ -541,11 +555,11 @@ jQuery(document).ready(function() {
             paymentForm.find('.info-container').fadeOut(1000);
             if (IS_PRESTA_SHOP_16) {
                 paymentForm.find('button[type="submit"]').
-                    prop('disabled', false);
+                removeProp('disabled');
                 paymentForm.find('button[type="submit"] i').
                     toggleClass('icon-spinner icon-chevron-right right');
             } else {
-                prestaShopPlaceOrderButton.prop('disabled', false);
+                prestaShopPlaceOrderButton.removeProp('disabled');
             }
         }
     }
