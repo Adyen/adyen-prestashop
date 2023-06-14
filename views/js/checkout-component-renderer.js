@@ -37,7 +37,6 @@ jQuery(document).ready(function() {
 
     function renderPaymentMethods() {
         var selectedPaymentMethod;
-        var placeOrderAllowed;
         var popupModal;
 
         var skipComponents = ['giropay'];
@@ -53,6 +52,7 @@ jQuery(document).ready(function() {
         var phoneNumber = '';
         var componentDeliveryAddress = {};
         var componentPersonalDetails;
+        let arrayOfAllowedOrderPaymentTypes = [];
 
         if (typeof prestashop !== 'undefined') {
             if (selectedInvoiceAddressId in prestashop.customer.addresses) {
@@ -284,7 +284,8 @@ jQuery(document).ready(function() {
             paymentForm.on('submit', function(e) {
                 e.preventDefault();
 
-                let isValid = !component.state.isValid ? placeOrderAllowed : component.state.isValid;
+                let isValid = typeof component.state.isValid === 'undefined' ?
+                    arrayOfAllowedOrderPaymentTypes [paymentMethod.type] : component.state.isValid;
 
                 if (paymentMethod.type === 'onlineBanking_PL') {
                     isValid = true;
@@ -423,7 +424,8 @@ jQuery(document).ready(function() {
          * @param state
          */
         function handleOnChange(state) {
-            placeOrderAllowed = state.isValid;
+            let type = state.data.paymentMethod.type;
+            arrayOfAllowedOrderPaymentTypes [type] = state.isValid;
         }
 
         function handleOnAdditionalDetails(state) {
@@ -435,7 +437,8 @@ jQuery(document).ready(function() {
         }
 
         function handleOnSubmit(state) {
-            placeOrderAllowed = state.isValid;
+            let type = state.data.paymentMethod.type;
+            arrayOfAllowedOrderPaymentTypes [type] = state.isValid;
 
             if (IS_PRESTA_SHOP_16) {
                 this.paymentForm.find('button').prop('disabled', "disabled");
