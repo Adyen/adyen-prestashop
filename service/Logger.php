@@ -197,10 +197,10 @@ class Logger extends \Monolog\Logger
      *
      * @return bool Whether the record has been processed
      */
-    public function addRecord($level, $message, array $context = [], $callPrestaShopLogger = true)
+    public function addRecord(int $level, string $message, array $context = [], ?\Monolog\DateTimeImmutable $datetime = null): bool
     {
         $context['is_exception'] = $message instanceof \Exception;
-        if (array_key_exists($level, self::$prestashopLoggable) && $callPrestaShopLogger) {
+        if (array_key_exists($level, self::$prestashopLoggable)) {
             \PrestaShopLogger::addLog(
                 $message,
                 self::$prestashopLoggable[$level],
@@ -211,7 +211,7 @@ class Logger extends \Monolog\Logger
             );
         }
 
-        return parent::addRecord($level, $message, $context);
+        return parent::addRecord($level, $message, $context, $datetime);
     }
 
     /**
