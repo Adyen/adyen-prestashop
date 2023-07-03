@@ -284,8 +284,8 @@ jQuery(document).ready(function() {
             paymentForm.on('submit', function(e) {
                 e.preventDefault();
 
-                let isValid = typeof component.state.isValid === 'undefined' ?
-                    arrayOfAllowedOrderPaymentTypes [paymentMethod.type] : component.state.isValid;
+                let isValid = typeof component.state.isValid !== 'undefined' ?
+                    component.state.isValid : verifyIfPaymentMethodValid(paymentMethod, paymentMethod.type);
 
                 if (paymentMethod.type === 'onlineBanking_PL') {
                     isValid = true;
@@ -339,6 +339,14 @@ jQuery(document).ready(function() {
 
                 processPayment(paymentData, paymentForm, component);
             });
+        }
+
+        function verifyIfPaymentMethodValid(paymentMethod, type) {
+            if (arrayOfAllowedOrderPaymentTypes.hasOwnProperty(type)) {
+                return arrayOfAllowedOrderPaymentTypes [type];
+            }
+
+            return !paymentMethod.hasOwnProperty('details');
         }
 
         function processPayment(data, paymentForm, component) {
