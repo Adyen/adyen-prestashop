@@ -38,6 +38,7 @@ class Payment
         $request['channel'] = 'web';
         $request['origin'] = $origin;
         $request['shopperInteraction'] = 'Ecommerce';
+        $request['storePaymentMethod'] = $request['storePaymentMethod'] === 'true';
 
         return $request;
     }
