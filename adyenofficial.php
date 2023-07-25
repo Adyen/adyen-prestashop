@@ -128,7 +128,7 @@ class AdyenOfficial extends PaymentModule
     {
         $this->module_key = '0d28de799435cd859f10e31f2edafc39';
         $this->name = 'adyenofficial';
-        $this->version = '4.0.6';
+        $this->version = '4.0.7';
         $this->tab = 'payments_gateways';
         $this->author = 'Adyen';
         $this->bootstrap = true;
