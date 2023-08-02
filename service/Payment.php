@@ -18,6 +18,7 @@ class Payment
     public const KLARNA_B2B_PAYMENT_METHOD = 'klarna_b2b';
     public const KLARNA_PAYNOW_PAYMENT_METHOD = 'klarna_paynow';
     public const KLARNA_ACCOUNT_PAYMENT_METHOD = 'klarna_account';
+    public const CLEARPAY_PAYMENT_METHOD = 'clearpay';
 
     /**
      * List of open invoice payment methods
@@ -36,6 +37,7 @@ class Payment
         self::KLARNA_B2B_PAYMENT_METHOD,
         self::KLARNA_PAYNOW_PAYMENT_METHOD,
         self::KLARNA_ACCOUNT_PAYMENT_METHOD,
+        self::CLEARPAY_PAYMENT_METHOD
     ];
 
     /**

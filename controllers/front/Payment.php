@@ -131,7 +131,7 @@ class AdyenOfficialPaymentModuleFrontController extends FrontController
             $request = $this->buildBrowserData($request);
             $request = $this->buildAddresses($request);
             $request = $this->buildPaymentData($request);
-            $request = $this->buildCustomerData($isOpenInvoice, $request);
+            $request = $this->buildCustomerData($request);
             if ($isOpenInvoice) {
                 $request = $this->buildOpenInvoiceLines($request);
             }
@@ -310,14 +310,13 @@ class AdyenOfficialPaymentModuleFrontController extends FrontController
      * Add all customer related parameters to the request array
      *
      * @param array $request
-     * @param bool $isOpenInvoice
      *
      * @return array
      *
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      */
-    private function buildCustomerData(bool $isOpenInvoice, array $request = []): array
+    private function buildCustomerData(array $request = []): array
     {
         $cart = $this->getCurrentCart();
         $customer = new \CustomerCore($cart->id_customer);
@@ -348,7 +347,6 @@ class AdyenOfficialPaymentModuleFrontController extends FrontController
         }
 
         return $this->customerBuilder->buildCustomerData(
-            $isOpenInvoice,
             $customer->email,
             $telephoneNumber,
             $gender,
