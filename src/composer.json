@@ -1,0 +1,68 @@
+{
+  "name": "adyen/prestashop",
+  "description": "Adyen plugin Presta Shop",
+  "version" : "5.0.0",
+  "type": "prestashop-plugin",
+  "keywords": [
+    "adyen",
+    "payment",
+    "payment platform"
+  ],
+  "homepage": "https://adyen.com",
+  "license": "MIT",
+  "extra": {
+    "installer-name": "AdyenPayment"
+  },
+  "authors": [
+    {
+      "name": "Adyen",
+      "email": "shopware@adyen.com",
+      "homepage": "https://adyen.com",
+      "role": "Developer"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "AdyenPayment\\Classes\\": "classes",
+      "AdyenPayment\\Controllers\\": "controllers"
+    },
+    "classmap": [
+      "controllers/admin/AdyenBaseController.php"
+    ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Adyen\\Core\\Tests\\Infrastructure\\": "vendor/adyen/integration-core/tests/Infrastructure",
+      "Adyen\\Core\\Tests\\BusinessLogic\\": "vendor/adyen/integration-core/tests/BusinessLogic",
+      "AdyenPayment\\Tests\\": "tests"
+    }
+  },
+  "require": {
+    "php": "^7.2|^7.4|^8.0",
+    "ext-json": "*",
+    "ext-zip": "*",
+    "adyen/integration-core": "1.0.0",
+    "ext-simplexml": "*",
+    "ext-openssl": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^8.5"
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "config": {
+    "prepend-autoloader": false
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "no-api": true,
+      "url": "git@github.com:logeecom/adyen-php-webhook-module.git"
+    },
+    {
+      "type": "vcs",
+      "no-api": true,
+      "url": "git@github.com:Adyen/adyen-php-plugin-core.git"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="./tests/autoload.php" colors="true">
+    <testsuites>
+        <testsuite name="Core Test Suite">
+            <directory>./vendor/adyen/integration-core/tests</directory>
+        </testsuite>
+        <testsuite name="PrestaShop Test Suite">
+            <directory>./tests</directory>
+        </testsuite>
+    </testsuites>
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">./classes</directory>
+        </whitelist>
+    </filter>
+</phpunit>

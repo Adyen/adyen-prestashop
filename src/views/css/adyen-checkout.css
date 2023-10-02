@@ -1,0 +1,23 @@
+.adyen-image img{
+    width: 77px;
+    height: 55px;
+}
+
+.custom-radio.float-xs-left {
+    float: none !important;
+    display: inline-block;
+}
+
+body#checkout section.checkout-step .payment-options label {
+    display: inline-block;
+    margin-bottom: 0;
+}
+
+.adyen-express-checkout-element {
+    margin-top: 15px;
+}
+
+#adyen-express-checkout-applepay > button,
+div[data-adyen-submit-button="true"] > button {
+    -webkit-appearance: -apple-pay-button;
+}

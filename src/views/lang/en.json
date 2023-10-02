@@ -1,0 +1,704 @@
+{
+  "general": {
+    "save": "Save",
+    "saveChanges": "Save changes",
+    "unsavedChanges": "Unsaved changes",
+    "discardChanges": "Discard changes",
+    "cancel": "Cancel",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "Ok",
+    "back": "Back",
+    "confirm": "Confirm",
+    "enable": "Enable",
+    "disable": "Disable",
+    "add": "Add",
+    "edit": "Edit",
+    "delete": "Remove",
+    "discard": "Discard",
+    "any": "ANY",
+    "clear": "Clear",
+    "apply": "Apply",
+    "search": "Search...",
+    "viewDetails": "View details",
+    "changesSaved": "Changes saved successfully.",
+    "errors": {
+      "InvalidOperationException": "An error occurred on the server side. Please check the data and try again.",
+      "unknown": "An unknown error occurred. Please try again later.",
+      "saveEntityFailed": "Failed to save entity because %s",
+      "getEntityFailed": "Failed to retrieve entity because %s",
+      "failedToRetrieveStores": "Failed to retrieve stores.",
+      "failedToRetrieveOrderStatuses": "Failed to retrieve order statuses.",
+      "general": {
+        "unhandled": "An error occurred. Please check all inputs and try again."
+      },
+      "stores": {
+        "invalidIdAndStatus": "Status Id and status name are invalid."
+      },
+      "connection": {
+        "emptyStoreId": "Empty store ID.",
+        "invalidMode": "Invalid environment.",
+        "emptyData": "API key data must not be empty.",
+        "settingsNotFound": "Connection settings not found.",
+        "invalidRoles": "User does not have all necessary roles.",
+        "invalidSettings": "Connection settings are not valid.",
+        "credentialsDoNotExist": "Api credential details do not exist.",
+        "testKeyChanged": "Test api key has been changed.",
+        "liveKeyChanged": "Live api key has been changed.",
+        "testMerchantIdChanged": "Test merchant ID has been changed.",
+        "liveMerchantIdChanged": "Live merchant ID has been changed.",
+        "companyLevelKey": "We didn't recognize this API key on merchant level. Check that you have copied the API key on merchant level from your Adyen Customer Area.",
+        "invalidKey": "We didn't recognize this API key. Check that you have copied the API key for the right environment from your Adyen Customer Area.",
+        "invalidMerchant": "Merchant account is not connected to provided credentials.",
+        "originFailed": "Adding allowed origin failed.",
+        "clientKeyGenerationFailed": "Failed to generate client key."
+      },
+      "payments": {
+        "requiredFieldsError": "Method id and code fields are required.",
+        "notConfigured": "Payment method with id %s is not configured",
+        "emptyDataError": "Empty payment method data.",
+        "failedToRetrieveMethods": "Failed to retrieve payment methods.",
+        "saveFailed": "Failed to save payment method.",
+        "updateFailed": "Failed to update payment method.",
+        "deleteFailed": "Failed to remove payment method.",
+        "failedToRetrieveMethodsAdyen": "Failed to retrieve payment methods from Adyen.",
+        "invalidCardConfig": "The configuration of installments is invalid."
+      },
+      "generalSettings": {
+        "captureDelayError": "Number of days must be between 1 and 7.",
+        "retentionPeriodError": "Minimum number of retention period is 60."
+      },
+      "webhooks": {
+        "merchantError": "Error occured: Merchant with ID %s is not found.",
+        "failedToRegisterWebhook": "Error occured: Unable to register webhooks on Adyen API. Make sure that storefront is publicly available, so Adyen webhooks can reach the store.",
+        "hmacError": "Error occured: Generating HMAC on Adyen API failed."
+      }
+    },
+    "selectedItems": "%s items selected"
+  },
+  "sidebar": {
+    "newVersionAvailable": "New version is available",
+    "gettingStarted": "Getting started",
+    "setupConnection": "Setup",
+    "selectMerchantAccount": "Merchant account",
+    "paymentMethods": "Payment methods",
+    "configurePaymentMethods": "Payment methods",
+    "settings": "Settings",
+    "generalSettings": "General settings",
+    "orderStatusMapping": "Order status mapping",
+    "adyenGiving": "Adyen Giving",
+    "notifications": "Notifications",
+    "webhookNotification": "Webhook notifications",
+    "shopNotification": "Shop event notifications",
+    "quickLinks": "Quick links",
+    "goToDocumentation": "Go to Adyen docs",
+    "goToCustomerArea": "Go to Customer Area",
+    "goToAdyenGiving": "Go to Adyen Giving",
+    "troubleshooting": "System troubleshooting",
+    "contactAdyenSupport": "Contact Adyen support",
+    "systemInformation": "System information"
+  },
+  "mainHeader": {
+    "merchant": "Merchant",
+    "switchStore": "Switch Store",
+    "mode": "Environment",
+    "download": "Download new version",
+    "version": "Version %s"
+  },
+  "maintenance": {
+    "title": "Store maintenance mode has been detected",
+    "description": "Integration won't work while the store is in maintenance mode. Make sure that storefront is publicly available, so Adyen webhooks can reach the store."
+  },
+  "validation": {
+    "requiredField": "This field is required.",
+    "invalidField": "This field is invalid.",
+    "invalidEmail": "This field must be a valid email.",
+    "maxLength": "The field cannot have more than %s characters.",
+    "numeric": "Value must be a valid number with max two decimals.",
+    "greaterThanZero": "Value must be greater than 0.",
+    "nonNegative": "Field cannot have a negative value.",
+    "numberOfDecimalPlaces": "Field must have 2 decimal places.",
+    "integer": "Field must be an integer.",
+    "invalidNumberInList": "Each value must be a positive number.",
+    "invalidWholeNumberInList": "Each value must be a positive whole number.",
+    "duplicateNumberInList": "The list cannot contain duplicate values.",
+    "invalidUrl": "Field must be a valid URL.",
+    "invalidFieldValue": "Field must be set to \"%s\".",
+    "invalidMaxValue": "Maximal allowed value is %s.",
+    "invalidImageType": "Provide a file in one of the supported image types (PNG, JPG, SVG).",
+    "invalidImageSize": "The provided file exceeds the limit of 10MB."
+  },
+  "connection": {
+    "title": "Setup",
+    "title_merchant": "Merchant account",
+    "subtitle": "Make sure you're logged in to the Adyen Customer Area. You will need top copy several settings from there to here. If you don't have an account yet, <a href=\"https://www.adyen.com/signup\" target=\"_blank\"><span>sign up.</span></a>",
+    "subtitle_merchant": "",
+    "environment": {
+      "title": "Environment",
+      "description": "Connect to the test environment to test your store's payments. When you're ready to process for real shoppers, connect to live.",
+      "options": {
+        "test": "Test",
+        "live": "Live"
+      }
+    },
+    "apiKey": {
+      "title": "Merchant API key",
+      "description": "Copy the API key for the merchant account you want to connect. You can find this in the <a href=\"https://ca-test.adyen.com/ca/ca/config/api_credentials_new.shtml\" target=\"_blank\"><span>Adyen Customer Area.</span></a>",
+      "error": "API key is required."
+    },
+    "merchant": {
+      "title": "Merchant account",
+      "description": "Select which Adyen merchant account you want to connect to this store.",
+      "placeholder": "Select Adyen merchant account",
+      "error": "Merchant account is required."
+    },
+    "next": "Next",
+    "connect": "Connect",
+    "disconnect": "Disconnect",
+    "disconnectModal": {
+      "title": "Disconnect from Adyen?",
+      "message": "Are you sure you want to disconnect your shop from Adyen? This will remove all configured payment methods and settings, and shoppers will not be able to complete purchases on your shop."
+    },
+    "changeEnvironmentModal": {
+      "title": "Change the environment?",
+      "message": "Are you sure you want to change the environment? This will remove all configured payment methods and settings on the current environment, and reconnect you to the newly selected environment."
+    },
+    "validateCredentials": "Validate credentials",
+    "errors": {
+      "invalidApiKey": "We didn't recognize this API key. Check that you have copied the API key for the right environment from your Adyen Customer Area.",
+      "credentialsValidationError": "Connection settings are not valid.",
+      "webhookValidationError": "Webhook validation failed. Make sure that storefront is publicly available, so Adyen webhooks can reach the store."
+    },
+    "messages": {
+      "validCredentials": "Your connection to Adyen was successful.",
+      "connectionUpdated": "Your connection details are updated and connection to Adyen was successful."
+    }
+  },
+  "payments": {
+    "list": {
+      "filter": "Filter",
+      "paymentMethod": "Payment method",
+      "currencies": "Currencies",
+      "regions": "Supported regions",
+      "type": "Type",
+      "status": "Status",
+      "statusActive": "Active",
+      "statusInactive": "Inactive",
+      "statusHint": "Payment method status in Adyen Customer Area.",
+      "actions": "Actions",
+      "actionsAdd": "Add",
+      "multiItemLabel": "%s and %s others",
+      "noMethodsForFilter": "We couldn't find any payment methods matching the chosen criteria."
+    },
+    "filter": {
+      "filter": "Filter",
+      "types": {
+        "label": "Type",
+        "labelPlural": "Types",
+        "selectPlaceholder": "Select types to filter by"
+      },
+      "statuses": {
+        "label": "Status",
+        "labelPlural": "Statuses",
+        "selectPlaceholder": "Select a status to filter by"
+      },
+      "currencies": {
+        "label": "Currency",
+        "labelPlural": "Currencies",
+        "selectPlaceholder": "Select currencies to filter by"
+      },
+      "countries": {
+        "label": "Country",
+        "labelPlural": "Countries",
+        "selectPlaceholder": "Select countries to filter by"
+      },
+      "resetAll": "Reset all"
+    },
+    "active": {
+      "title": "Payment methods",
+      "description": "This overview shows payment methods that are available for shoppers at this store's checkout.",
+      "addMethod": "Add payment method",
+      "noMethodsMessage": "There are no Adyen payment methods configured to this store."
+    },
+    "add": {
+      "title": "Add payment method",
+      "description": "Choose a new payment method to be available in your store.",
+      "noMethodsMessage": "There are no Adyen payment methods.",
+      "back": "Back"
+    },
+    "configure": {
+      "title": "Setup %s payment method",
+      "description": "Configure your preferences for this payment method. When you save your preferences, the payment method will be available on your store. <a href=\"https://docs.adyen.com/payment-methods/%s\" target=\"_blank\"><span>Learn more</span></a>",
+      "methodAdded": "Added new payment method.",
+      "methodSaved": "Payment method is saved.",
+      "fields": {
+        "name": {
+          "label": "Payment method name",
+          "description": "This is the name the shoppers will see on the checkout page."
+        },
+        "description": {
+          "label": "Payment method description (optional)",
+          "description": "This is the description the shoppers will see on the checkout page. You can show shoppers more information about this payment method."
+        },
+        "surchargeType": {
+          "label": "Surcharge type",
+          "description": "You can decide whether to add a surcharge when a shopper uses this payment method.",
+          "placeholder": "Select surcharge type",
+          "none": "None",
+          "fixed": "Fixed surcharge",
+          "percent": "Percent surcharge",
+          "combined": "Combined surcharge"
+        },
+        "fixedSurcharge": {
+          "label": "Fixed surcharge",
+          "description": "Enter the specific amount to add to the order total when a shopper uses this payment method. Set the amount in default store currency."
+        },
+        "percentSurcharge": {
+          "label": "Percent surcharge",
+          "description": "Enter the percentage amount of the order total that is added to the total when a shopper uses this payment method."
+        },
+        "surchargeLimit": {
+          "label": "Surcharge limit",
+          "description": "Enter the threshold for the total surcharge. This is the maximum surcharge that a shopper can be charged when using this payment method. Set the amount in default store currency.",
+          "error": "Surcharge limit must be a positive number with maximum two decimals and greater or equal to the fixed surcharge."
+        },
+        "logo": {
+          "label": "Upload payment method logo",
+          "description": "",
+          "error": "Provide a file in one of the supported image types (PNG, JPG, SVG).",
+          "errorSize": "The selected file exceeds the limit of 10MB.",
+          "placeholder": "Drop image or click here to upload"
+        },
+        "creditCardFields": {
+          "showLogos": {
+            "label": "Show credit card logos",
+            "description": "You can decide whether to show shoppers credit card logos on the checkout."
+          },
+          "singleClickPayment": {
+            "label": "Enable single click payments",
+            "description": "Do you want shoppers to have the option to save their card details for future payments?"
+          },
+          "sendBasket": {
+            "label": "Enable L2/L3 data",
+            "description": "Do you want to send additional data to shopper's card statements? This is useful for companies to track corporate card usage when a single card can have multiple users. <a href=\"https://docs.adyen.com/payment-methods/cards/enhanced-scheme-data/l2-l3\" target=\"_blank\"><span>Learn more</span></a>"
+          }
+        },
+        "oneyFields": {
+          "supportedInstallments": {
+            "label": "Supported installments",
+            "description": "Do you want to allow shoppers to pay their bill in installments? <a href=\"https://docs.adyen.com/payment-methods/oney\" target=\"_blank\"><span>Learn more</span></a>",
+            "placeholder": "Select one or more"
+          }
+        },
+        "installmentFields": {
+          "installments": {
+            "label": "Enable installments",
+            "description": "Do you want to allow shoppers to pay their bill in installments? <a href=\"https://docs.adyen.com/payment-methods/cards/credit-card-installments\" target=\"_blank\"><span>Learn more</span></a>"
+          },
+          "installmentAmounts": {
+            "label": "Show installment amounts",
+            "description": "You can decide whether to show shoppers installment amounts on the checkout."
+          },
+          "installmentCountries": {
+            "label": "Allowed installment countries",
+            "description": "You can decide for which countries installments should be offered to shoppers on the checkout."
+          },
+          "minimumAmount": {
+            "label": "Minimum installment amount (optional)",
+            "description": "You can specify minimum order amount threshold for which installments should be offered to shoppers on the checkout."
+          },
+          "numberOfInstallments": {
+            "label": "Number of installments",
+            "description": "Provide a comma-separated list of options representing the number of installments offered to shoppers on checkout. <a href=\"https://docs.adyen.com/payment-methods/cards/credit-card-installments#installment-options\" target=\"_blank\"><span>Learn more</span></a>"
+          }
+        },
+        "issuersFields": {
+          "showLogos": {
+            "label": "Show issuer logos",
+            "description": "You can decide whether to show shoppers bank issuer logos on the checkout."
+          },
+          "bankIssuer": {
+            "label": "Bank issuer description (optional)",
+            "description": "This is a bank issuer dropdown description. The default description is 'Select your bank'"
+          }
+        },
+        "applePayFields": {
+          "merchantId": {
+            "label": "Apple Pay merchant ID",
+            "description": "Enter identifier of the Apple Pay merchant."
+          },
+          "merchantName": {
+            "label": "Apple Pay merchant name",
+            "description": "Enter name of the Apple Pay merchant."
+          },
+          "displayButtonOn": {
+            "label": "Enable express checkout",
+            "description": "Do you want to show Apple Pay Express Checkout on the product, cart, and checkout pages?"
+          }
+        },
+        "amazonPayFields": {
+          "publicKeyId": {
+            "label": "Amazon Pay public key ID",
+            "description": "Enter identifier of the Amazon Pay public key."
+          },
+          "merchantId": {
+            "label": "Amazon Pay merchant ID",
+            "description": "Enter identifier of the Amazon Pay merchant."
+          },
+          "storeId": {
+            "label": "Store ID",
+            "description": "Enter identifier of the store"
+          },
+          "displayButtonOn": {
+            "label": "Enable express checkout",
+            "description": "Do you want to show Amazon Pay Express Checkout on the product, cart, and checkout pages?"
+          }
+        },
+        "googlePayFields": {
+          "gatewayMerchantId": {
+            "label": "Google Pay merchant gateway ID",
+            "description": "Enter identifier of the Google Pay merchant gateway."
+          },
+          "merchantId": {
+            "label": "Google Pay merchant ID",
+            "description": "Enter identifier of the Google Pay merchant."
+          },
+          "displayButtonOn": {
+            "label": "Enable express checkout",
+            "description": "Do you want to show Google Pay Express Checkout on the product, cart, and checkout pages?"
+          }
+        },
+        "paypalFields": {
+          "displayButtonOn": {
+            "label": "Enable express checkout",
+            "description": "Do you want to show PayPal Express Checkout on the product, cart, and checkout pages?"
+          }
+        }
+      }
+    },
+    "delete": {
+      "title": "Remove payment method",
+      "description": "Do you want to remove this payment method from your store? Shoppers will no longer be able to pay with this payment method."
+    },
+    "switchToStore": {
+      "title": "Unsaved changes",
+      "description": "Changes you made are not saved. Are you sure that you want to proceed with switching to another store?"
+    },
+    "messages": {
+      "methodAdded": "Added new payment method."
+    },
+    "paymentTypes": {
+      "creditOrDebitCard": "Credit and Debit cards",
+      "buyNowPayLater": "Buy now - pay later",
+      "cashOrAtm": "Cash and ATM payment methods",
+      "directDebit": "Direct Debit",
+      "onlinePayments": "Online payments",
+      "wallet": "Wallets",
+      "prepaidAndGiftCard": "Prepaid and gift cards",
+      "mobile": "Mobile"
+    }
+  },
+  "settings": {
+    "general": {
+      "title": "General settings",
+      "description": "These settings are applicable globally and will be implemented across all payment methods.",
+      "fields": {
+        "basketItemSync": {
+          "label": "Send basket data",
+          "description": "Sending basket data as additional risk fields makes it easier to detect fraud and can be used for custom risk rules. Do you want to send this data to Adyen?"
+        },
+        "capture": {
+          "label": "Capture",
+          "description": "Some payment methods support separate authorisation and capture. By default, capture is set to immediately after authorisation, but you can choose to delay the capture for these payment methods. This can be helpful if you want to have the option to cancel a payment in case of issues with shipment, for example.",
+          "placeholder": "Select capture type",
+          "error": "Capture type is mandatory",
+          "delayed": "Delayed",
+          "immediate": "Immediate",
+          "manual": "Manual"
+        },
+        "captureDelay": {
+          "label": "Capture delay",
+          "description": "How many days after authorisation do you want the payment to be captured? Enter a number from 1 to 7.",
+          "error": "Number of days must be between 1 and 7."
+        },
+        "shipmentStatus": {
+          "label": "Capture on status change",
+          "description": "Select the status that will trigger the payment capture.",
+          "placeholder": "Status"
+        },
+        "retentionPeriod": {
+          "label": "Notifications retention period",
+          "description": "Define number of days that notification logs will be stored in the system.",
+          "error": "Minimum number of the retention period is 60 days."
+        }
+      }
+    },
+    "orderStatusMapping": {
+      "title": "Order status mapping",
+      "description": "This page allows you to map shop order statuses to Adyen payment statuses.",
+      "none": "None",
+      "fields": {
+        "inProgress": {
+          "label": "In progress",
+          "description": "The Adyen payment status <strong>In progress</strong> should represent the following shop status:",
+          "placeholder": "Select status"
+        },
+        "pending": {
+          "label": "Pending",
+          "description": "The Adyen payment status <strong>Pending</strong> should represent the following shop status:",
+          "placeholder": "Select status"
+        },
+        "paid": {
+          "label": "Paid",
+          "description": "The Adyen payment status <strong>Paid</strong> should represent the following shop status:",
+          "placeholder": "Select status"
+        },
+        "failed": {
+          "label": "Failed",
+          "description": "The Adyen payment status <strong>Failed</strong> should represent the following shop status:",
+          "placeholder": "Select status"
+        },
+        "refunded": {
+          "label": "Refunded",
+          "description": "The Adyen payment status <strong>Refunded</strong> should represent the following shop status:",
+          "placeholder": "Select status"
+        },
+        "cancelled": {
+          "label": "Cancelled",
+          "description": "The Adyen payment status <strong>Cancelled</strong> should represent the following shop status:",
+          "placeholder": "Select status"
+        },
+        "partiallyRefunded": {
+          "label": "Partially refunded",
+          "description": "The Adyen payment status <strong>Partially refunded</strong> should represent the following shop status:",
+          "placeholder": "Select status"
+        },
+        "new": {
+          "label": "New",
+          "description": "The Adyen payment status <strong>New</strong> should represent the following shop status:",
+          "placeholder": "Select status"
+        },
+        "chargeBack": {
+          "label": "Charge back",
+          "description": "The Adyen payment status <strong>Charge back</strong> should represent the following shop status:",
+          "placeholder": "Select status"
+        }
+      }
+    },
+    "adyenGiving": {
+      "title": "Adyen giving",
+      "description": "With Adyen Giving, your shoppers can have the option to donate to a charity of your choice during checkout. Make sure you have an Adyen merchant account set up for Adyen Giving, or contact your Adyen Account Manager or Support. <a href=\"https://www.adyen.com/social-responsibility/giving\" target=\"_blank\"><span>Learn more</span></a>",
+      "fields": {
+        "enableAdyenGiving": {
+          "label": "Enable Adyen Giving",
+          "description": "You need a charity account to enable Adyen Giving. Do you want to enable Adyen Giving?"
+        },
+        "charityName": {
+          "label": "Charity name",
+          "description": "Enter the name of the charity. This will be shown to shoppers on the donation page."
+        },
+        "charityDescription": {
+          "label": "Charity description",
+          "description": "Enter a short description of the charity to show to shoppers on the donation page."
+        },
+        "charityMerchantAccount": {
+          "label": "Charity merchant account",
+          "description": "Enter your Adyen merchant account name for charity."
+        },
+        "donationAmount": {
+          "label": "Donation Amounts",
+          "description": "Enter suggested donation amounts for shoppers to choose from. Use comma-separated values in your default store currency. Example: 2, 3, 5, 10"
+        },
+        "charityWebsite": {
+          "label": "Charity website",
+          "description": "Enter the link to the charity website."
+        },
+        "logo": {
+          "label": "Logo in Adyen Giving component",
+          "description": "",
+          "placeholder": "Drop image or click here to upload"
+        },
+        "backgroundImage": {
+          "label": "Background image for Adyen Giving component",
+          "description": "",
+          "placeholder": "Drop image or click here to upload"
+        }
+      }
+    },
+    "system": {
+      "title": "System information and troubleshooting",
+      "description": "This page comprehensively details the integration's current configuration, system status, and diagnostic information. ",
+      "fields": {
+        "debugMode": {
+          "label": "Debug mode",
+          "description": "Enable debug log level for Adyen payment requests."
+        },
+        "adyenWebhooksValidation": {
+          "label": "Adyen webhooks validation",
+          "description": "Validate whether webhooks are received from Adyen to your store."
+        },
+        "integrationConfigurationValidation": {
+          "label": "Integration configuration validation",
+          "description": "Performs validation if background tasks are executed in your store."
+        },
+        "downloadSystemInformation": {
+          "label": "Download system information",
+          "description": "Download the system information report so that you can pass it to Adyen support for easier and faster troubleshooting of the issue."
+        },
+        "contactAdyenSupport": {
+          "label": "Contact Adyen support",
+          "description": "If you need help troubleshooting the issue, please feel free to contact our support."
+        }
+      },
+      "buttons": {
+        "validate": "Validate",
+        "downloadReport": "Download report",
+        "contactAdyenSupport": "Contact Adyen support"
+      },
+      "messages": {
+        "successWebhookValidation": "Webhook validated successfully",
+        "failedWebhookValidation": "Store was not able to receive webhook from Adyen",
+        "downloadReportText": "Download the full report <a href=\"%s\" target=\"_blank\" download>here</a>.",
+        "successIntegrationValidation": "Auto-test completed successfully",
+        "failedIntegrationValidation": "Auto-test did not complete successfully"
+      },
+      "debugModeEnabled": "Debug mode enabled.",
+      "debugModeDisabled": "Debug mode disabled."
+    }
+  },
+  "notifications": {
+    "shop": {
+      "title": "Shop event notifications",
+      "description": "This page displays any important store events that were not able to be synced with Adyen.",
+      "noNotificationsMessage": "There are no shop notifications.",
+      "severity": {
+        "error": "Error",
+        "warning": "Warning",
+        "info": "Info"
+      },
+      "shopEventsNotifications": {
+        "orderId": "Order ID",
+        "paymentMethod": "Payment method",
+        "severity": "Severity",
+        "dateAndTime": "Date and time",
+        "message": "Message",
+        "details": "Details"
+      },
+      "event": {
+        "failedPaymentAuthorizationMessage": "Payment authorization failed.",
+        "failedPaymentAuthorizationDetails": "Payment authorization failed on Adyen.",
+        "successfulPaymentAuthorizationEventMessage": "Payment has been authorized successfully.",
+        "successfulPaymentAuthorizationEventDetails": "Payment has been authorized by Adyen.",
+        "failedCancellationEventMessage": "Cancellation failed on Adyen.",
+        "failedCancellationEventDetails": "Cancellation failed on Adyen.",
+        "failedCancellationRequestEventMessage": "Cancellation request failed.",
+        "failedCancellationRequestEventDetails": "Cancellation request failed.",
+        "successfulCancellationEventMessage": "Payment has been cancelled on Adyen.",
+        "successfulCancellationEventDetails": "Payment has been cancelled on Adyen.",
+        "successfulCancellationRequestEventMessage": "Cancellation request has been sent to Adyen.",
+        "successfulCancellationRequestEventDetails": "Cancellation request has been sent to Adyen.",
+        "failedCaptureEventMessage": "Capture failed on Adyen.",
+        "failedCaptureEventDetails": "Capture failed on Adyen.",
+        "failedCaptureRequestEventMessage": "Capture request failed.",
+        "failedCaptureRequestEventDetails": "Capture request failed.",
+        "successfulCaptureEventMessage": "Payment has been captured successfully on Adyen.",
+        "successfulCaptureEventDetails": "Payment has been captured successfully on Adyen.",
+        "successfulCaptureRequestEventMessage": "Capture request has been sent to Adyen.",
+        "successfulCaptureRequestEventDetails": "Capture request has been sent to Adyen.",
+        "failedRefundEventMessage": "Refund failed on Adyen.",
+        "failedRefundEventDetails": "Refund failed on Adyen.",
+        "failedRefundRequestEventMessage": "Refund request failed.",
+        "failedRefundRequestEventDetails": "Refund request failed.",
+        "successfulRefundEventMessage": "Payment has been refunded successfully on Adyen.",
+        "successfulRefundEventDetails": "Payment has been refunded successfully on Adyen.",
+        "successfulRefundRequestEventMessage": "Refund request has been sent to Adyen.",
+        "successfulRefundRequestEventDetails": "Refund request has been sent to Adyen."
+      }
+    },
+    "webhook": {
+      "title": "Webhook notifications",
+      "description": "This log shows all notifications for Adyen webhooks that have been received.",
+      "noNotificationsMessage": "There are no webhook notifications.",
+      "status": {
+        "created": "Created",
+        "queued": "Queued",
+        "in_progress": "In progress",
+        "aborted": "Aborted",
+        "failed": "Failed",
+        "completed": "Completed"
+      },
+      "webhookEventsNotifications": {
+        "orderId": "Order ID",
+        "logo": "Logo",
+        "paymentMethod": "Payment method",
+        "eventCode": "Event code",
+        "dateAndTime": "Date and time",
+        "success": "Success",
+        "status": "Status",
+        "action": "Action"
+      },
+      "notificationDetailsModal": {
+        "title": "Notification details",
+        "reason": "Reason: ",
+        "failureDescription": "Failure description: ",
+        "paymentLink": "Go to payment in Adyen CA",
+        "shopLink": "Go to shop order"
+      }
+    }
+  },
+  "countries": {
+    "BR": "Brazil",
+    "MX": "Mexico",
+    "TK": "Tokelau",
+    "TR": "Turkey",
+    "AU": "Australia",
+    "AT": "Austria",
+    "BE": "Belgium",
+    "BG": "Bulgaria",
+    "CA": "Canada",
+    "HR": "Croatia",
+    "CY": "Cyprus",
+    "CZ": "Czech Republic",
+    "DK": "Denmark",
+    "EE": "Estonia",
+    "FI": "Finland",
+    "FR": "France",
+    "DE": "Germany",
+    "GI": "Gibraltar",
+    "GR": "Greece",
+    "HK": "Hong Kong",
+    "HU": "Hungary",
+    "IS": "Iceland",
+    "IE": "Ireland",
+    "IT": "Italy",
+    "JP": "Japan",
+    "LV": "Latvia",
+    "LI": "Liechtenstein",
+    "LT": "Lithuania",
+    "LU": "Luxembourg",
+    "MT": "Malta",
+    "NL": "Netherlands",
+    "NZ": "New Zealand",
+    "NO": "Norway",
+    "PL": "Poland",
+    "PT": "Portugal",
+    "PR": "Puerto Rico",
+    "RO": "Romania",
+    "SG": "Singapore",
+    "SK": "Slovakia",
+    "SI": "Slovenia",
+    "ES": "Spain",
+    "SE": "Sweden",
+    "CH": "Switzerland",
+    "AE": "United Arab Emirates",
+    "GB": "United Kingdom",
+    "US": "United States of America"
+  },
+  "oneyValues": {
+    "3x": "3x",
+    "4x": "4x",
+    "6x": "6x",
+    "10x": "10x",
+    "12x": "12x"
+  }
+}

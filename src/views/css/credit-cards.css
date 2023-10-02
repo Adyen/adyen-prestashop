@@ -1,0 +1,86 @@
+.stored-credit-cards {
+    background-color: white;
+    padding-top: 1rem;
+}
+
+.stored-credit-card-div {
+    margin-bottom: 1.875rem;
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 4px 3px 20px 0 lightgray;
+}
+
+.stored-credit-card-info {
+    padding: 1rem;
+    color: gray;
+}
+
+.stored-credit-card-button {
+    padding: 1rem;
+}
+
+.stored-credit-card-button > button {
+    width: 100%;
+}
+
+.adyen-modal-dialog {
+    width: max-content;
+    margin-top: 10%;
+}
+
+.adyen-modal {
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.adyen-modal-content {
+    width: 100%;
+}
+
+.adyen-modal-error-container {
+    background-color: #ff4c4c;
+    border-radius: 10px;
+    display: none;
+}
+
+.adyen-modal-header {
+    display: flex;
+}
+
+.adyen-modal-title {
+    flex-grow: 1;
+}
+
+.adyen-hidden {
+    display: none;
+}
+
+.adyen-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px solid lightgray;
+    height: 5rem;
+    padding: 1rem;
+}
+
+.adyen-cancel-button {
+    border-radius: 6px;
+    border: 1px solid black;
+    background: white;
+    width: 6rem;
+    margin-right: 3px
+}
+
+.adyen-delete-button {
+    border-radius: 6px;
+    border: 1px solid white;
+    background: #ff4c4c;
+    width: 6rem;
+    color: white;
+}
+
+@media screen and (max-width: 600px) {
+    .adyen-modal-dialog {
+        width: auto;
+    }
+}
