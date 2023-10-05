@@ -28,6 +28,7 @@ use Adyen\Core\BusinessLogic\Domain\Integration\Processors\ShopperEmailProcessor
 use Adyen\Core\BusinessLogic\Domain\Integration\Processors\ShopperLocaleProcessor as ShopperLocaleProcessorInterface;
 use Adyen\Core\BusinessLogic\Domain\Integration\Processors\ShopperNameProcessor as ShopperNameProcessorInterface;
 use Adyen\Core\BusinessLogic\Domain\Integration\Processors\ShopperReferenceProcessor as ShopperReferenceProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\ApplicationInfoProcessor as ApplicationInfoProcessorInterface;
 use Adyen\Core\BusinessLogic\Domain\Integration\Store\StoreService as StoreServiceInterface;
 use Adyen\Core\BusinessLogic\Domain\Integration\SystemInfo\SystemInfoService as SystemInfoServiceInterface;
 use Adyen\Core\BusinessLogic\Domain\Integration\Version\VersionService as VersionServiceInterface;
@@ -69,6 +70,7 @@ use AdyenPayment\Classes\Services\Integration\ConfigService;
 use AdyenPayment\Classes\Services\Integration\Logger\LoggerService;
 use AdyenPayment\Classes\Services\Integration\OrderService;
 use AdyenPayment\Classes\Services\Integration\PaymentProcessors\AddressProcessor;
+use AdyenPayment\Classes\Services\Integration\PaymentProcessors\ApplicationInfoProcessor;
 use AdyenPayment\Classes\Services\Integration\PaymentProcessors\BasketItemsProcessor;
 use AdyenPayment\Classes\Services\Integration\PaymentProcessors\BirthdayProcessor;
 use AdyenPayment\Classes\Services\Integration\PaymentProcessors\DeviceFingerprintProcessor;
@@ -333,6 +335,13 @@ class Bootstrap extends BootstrapComponent
             ShopperReferenceProcessorInterface::class,
             static function () {
                 return new ShopperReferenceProcessor();
+            }
+        );
+
+        ServiceRegister::registerService(
+            ApplicationInfoProcessorInterface::class,
+            static function () {
+                return new ApplicationInfoProcessor();
             }
         );
     }
