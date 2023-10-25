@@ -17,9 +17,8 @@ class VersionInfoService implements VersionServiceInterface
      */
     public function getVersionInfo(): VersionInfo
     {
-        return new VersionInfo(
-            \Module::getInstanceByName('adyenofficial')->version,
-            '5.0.0'
-        );
+        $version = \Module::getInstanceByName('adyenofficial')->version;
+
+        return new VersionInfo($version, $version);
     }
 }
