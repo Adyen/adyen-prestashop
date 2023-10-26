@@ -2,11 +2,14 @@
 
 namespace AdyenPayment\Classes\Services\Integration\PaymentProcessors;
 
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentLink\Factory\PaymentLinkRequestBuilder;
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentLink\Models\PaymentLinkRequestContext;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Factory\PaymentRequestBuilder;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\ApplicationInfo\ApplicationInfo;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\ApplicationInfo\ExternalPlatform;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\StartTransactionRequestContext;
-use Adyen\Core\BusinessLogic\Domain\Integration\Processors\ApplicationInfoProcessor as ApplicationInfoProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\ApplicationInfoProcessor as ApplicationInfoProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\ApplicationInfoProcessor as PaymentLinkApplicationInfoProcessorInterface;
 use Configuration;
 use Module;
 
@@ -15,7 +18,7 @@ use Module;
  *
  * @package AdyenPayment\Classes\Services\Integration\PaymentProcessors
  */
-class ApplicationInfoProcessor implements ApplicationInfoProcessorInterface
+class ApplicationInfoProcessor implements ApplicationInfoProcessorInterface, PaymentLinkApplicationInfoProcessorInterface
 {
     /**
      * @param PaymentRequestBuilder $builder
@@ -24,6 +27,22 @@ class ApplicationInfoProcessor implements ApplicationInfoProcessorInterface
      * @return void
      */
     public function process(PaymentRequestBuilder $builder, StartTransactionRequestContext $context): void
+    {
+        $shopName = Configuration::get('PS_SHOP_NAME');
+        $moduleInstance = Module::getInstanceByName('adyenofficial');
+
+        $shopName && $builder->setApplicationInfo(
+            new ApplicationInfo(new ExternalPlatform($shopName, _PS_VERSION_), $moduleInstance->version ?? null)
+        );
+    }
+
+    /**
+     * @param PaymentLinkRequestBuilder $builder
+     * @param PaymentLinkRequestContext $context
+     *
+     * @return void
+     */
+    public function processPaymentLink(PaymentLinkRequestBuilder $builder, PaymentLinkRequestContext $context): void
     {
         $shopName = Configuration::get('PS_SHOP_NAME');
         $moduleInstance = Module::getInstanceByName('adyenofficial');

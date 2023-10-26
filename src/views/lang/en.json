@@ -257,6 +257,10 @@
           "label": "Percent surcharge",
           "description": "Enter the percentage amount of the order total that is added to the total when a shopper uses this payment method."
         },
+        "paymentLink": {
+          "label": "Exclude for Pay By Link payments",
+          "description": "Enable this if you do not want this payment method to be offered for Pay By Link."
+        },
         "surchargeLimit": {
           "label": "Surcharge limit",
           "description": "Enter the threshold for the total surcharge. This is the maximum surcharge that a shopper can be charged when using this payment method. Set the amount in default store currency.",
@@ -430,6 +434,21 @@
           "label": "Notifications retention period",
           "description": "Define number of days that notification logs will be stored in the system.",
           "error": "Minimum number of the retention period is 60 days."
+        },
+        "enablePayByLink": {
+          "label": "Enable Pay By Link",
+          "description": "With our Pay By Link feature you can send a payment to your customers if they do not complete the payment on Adyen during checkout process or if you wish to create an order for a customer through the shop back-office and then send a payment link to the customer."
+        },
+        "payByLinkTitle": {
+          "label": "Pay by link title",
+          "description": "Define the name of the Pay By Link payment method in shop back-office.",
+          "placeholder": "Adyen Pay By Link",
+          "error": "Pay by link title can not be empty."
+        },
+        "defaultLinkExpirationTime": {
+          "label": "Default expiration time",
+          "description": "Define the default expiration time in days.",
+          "error": "Minimum number of default expiration time in days is 1."
         }
       }
     },

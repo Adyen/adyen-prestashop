@@ -57,7 +57,8 @@ class Installer
         'AdyenVersion',
         'AdyenWebhookNotifications',
         'AdyenWebhookValidation',
-        'AdyenCapture'
+        'AdyenCapture',
+        'AdyenPaymentLink'
     ];
 
     /** @var string[] */
@@ -71,7 +72,10 @@ class Installer
         'moduleRoutes',
         'paymentReturn',
         'displayExpressCheckout',
-        'displayOrderConfirmation'
+        'displayOrderConfirmation',
+        'displayBackOfficeHeader',
+        'actionValidateOrder',
+        'sendMailAlterTemplateVars'
     ];
 
     /**

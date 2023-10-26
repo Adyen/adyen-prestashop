@@ -2,18 +2,21 @@
 
 namespace AdyenPayment\Classes\Services\Integration\PaymentProcessors;
 
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentLink\Factory\PaymentLinkRequestBuilder;
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentLink\Models\PaymentLinkRequestContext;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Factory\PaymentRequestBuilder;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\LineItem;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\StartTransactionRequestContext;
-use Adyen\Core\BusinessLogic\Domain\Integration\Processors\LineItemsProcessor as LineItemsProcessorInterface;
-use PrestaShop\PrestaShop\Adapter\Entity\Image;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\LineItemsProcessor as LineItemsProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\LineItemsProcessor as PaymentLinkLineItemsProcessorInterface;
+use Cart;
 
 /**
  * Class LineItemsProcessor
  *
  * @package AdyenPayment\Integration\PaymentProcessors
  */
-class LineItemsProcessor implements LineItemsProcessorInterface
+class LineItemsProcessor implements LineItemsProcessorInterface, PaymentLinkLineItemsProcessorInterface
 {
     /**
      * @param PaymentRequestBuilder $builder
@@ -23,7 +26,25 @@ class LineItemsProcessor implements LineItemsProcessorInterface
      */
     public function process(PaymentRequestBuilder $builder, StartTransactionRequestContext $context): void
     {
-        $cart = new \Cart($context->getReference());
+        $cart = new Cart($context->getReference());
+
+        $builder->setLineItems($this->getLineItemsFromCart($cart));
+    }
+
+    public function processPaymentLink(PaymentLinkRequestBuilder $builder, PaymentLinkRequestContext $context): void
+    {
+        $cart = new Cart($context->getReference());
+
+        $builder->setLineItems($this->getLineItemsFromCart($cart));
+    }
+
+    /**
+     * @param Cart $cart
+     *
+     * @return LineItem[]
+     */
+    private function getLineItemsFromCart(Cart $cart): array
+    {
         $basketContent = $cart->getProducts();
         $lineItems = [];
 
@@ -47,6 +68,6 @@ class LineItemsProcessor implements LineItemsProcessorInterface
             );
         }
 
-        $builder->setLineItems($lineItems);
+        return $lineItems;
     }
 }

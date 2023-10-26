@@ -700,12 +700,25 @@ class AdyenOfficial extends PaymentModule
 
     /**
      * Hook for adding JS && CSS to admin controllers.
+     *
+     * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      */
     public function hookActionAdminControllerSetMedia(): void
     {
         $order = new \Order((int)Tools::getValue('id_order'));
 
-        if ($order->module !== $this->name) {
+        $currentController = Tools::getValue('controller');
+
+        if ($currentController === 'AdminOrders') {
+            $this->getContext()->controller->addJS(
+                [
+                    $this->getPathUri() . $this->getVersionHandler()->backofficeOrderJS()
+                ]
+            );
+        }
+        if ($order->module !== $this->name &&
+            !\AdyenPayment\Classes\Services\OrderStatusHandler::shouldGeneratePaymentLinkForNonAdyenOrder($order)) {
+
             return;
         }
 
@@ -834,6 +847,114 @@ class AdyenOfficial extends PaymentModule
                 ]
             ]
         ];
+    }
+
+    /**
+     * Hook for displaying header data used in BO.
+     *
+     * @return false|string Header HTML data as string
+     * @throws \PrestaShopException
+     * @throws Exception
+     */
+    public function hookDisplayBackOfficeHeader(): string
+    {
+        if (!$this->isEnabled($this->name) || Tools::getValue('controller') !== 'AdminOrders') {
+            return '';
+        }
+        $generalSettings = \Adyen\Core\BusinessLogic\AdminAPI\AdminAPI::get()->generalSettings((string)\Context::getContext()->shop->id)->getGeneralSettings();
+
+        if (!$generalSettings->isSuccessful() || !$generalSettings->toArray()['enablePayByLink']) {
+            return '';
+        }
+        $expirationTime = $generalSettings->toArray()['defaultLinkExpirationTime'];
+        $date = Adyen\Core\Infrastructure\Utility\TimeProvider::getInstance()->getCurrentLocalTime()->add(
+            new DateInterval('P' . $expirationTime . 'D')
+        )->format("Y-m-d");
+        $this->getContext()->smarty->assign(['payByLinkTitle' => $generalSettings->toArray()['payByLinkTitle'], 'expirationDate' => $date]);
+
+        return $this->display($this->getPathUri(), $this->getVersionHandler()->backofficeOrderTemplate());
+    }
+
+
+    /**
+     * @param array $params
+     *
+     * @return void
+     *
+     * @throws \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Exceptions\InvalidMerchantReferenceException
+     */
+    public function hookActionValidateOrder(array $params): void
+    {
+        if (!isset($this->getContext()->controller) ||
+            'admin' !== $this->getContext()->controller->controller_type ||
+            $params['order']->module !== $this->name) {
+
+            return;
+        }
+
+        $expiresAt = \Tools::getValue('adyen-expires-at-date');
+        /** @var \Order $order */
+        $order = $params['order'];
+        $currency = new  \Currency($order->id_currency);
+        $paymentLink = \Adyen\Core\BusinessLogic\AdminAPI\AdminAPI::get()->paymentLink((string)$order->id_shop)
+            ->createPaymentLink(
+                new \Adyen\Core\BusinessLogic\AdminAPI\PaymentLink\Request\CreatePaymentLinkRequest
+                ($order->getOrdersTotalPaid(), $currency->iso_code, $order->id_cart, new \DateTime($expiresAt)));
+
+        if ($paymentLink->isSuccessful()) {
+            \AdyenPayment\Classes\Utility\CookieService::set(
+                'successMessage',
+                $this->l('Payment link successfully generated.')
+            );
+
+            return;
+        }
+
+        \AdyenPayment\Classes\Utility\CookieService::set(
+            'errorMessage',
+            $this->l('Payment link generation failed. Reason: ') . $paymentLink->toArray()['errorMessage'] ?? ''
+        );
+    }
+
+    /**
+     * Hook for altering email template variables before sending.
+     *
+     * @param array $params Array of parameters including template_vars array and cart
+     *
+     * @return void
+     *
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
+     *
+     * @throws \Exception
+     */
+    public function hookSendMailAlterTemplateVars(array &$params): void
+    {
+        if (isset($params['template_vars']['{adyen_payment_link}']) || !isset($params['template_vars']['{id_order}'])) {
+
+            return;
+        }
+
+        $order = new \Order($params['template_vars']['{id_order}']);
+
+        if ($order->module !== $this->name) {
+            return;
+        }
+
+        $transactionDetails = \AdyenPayment\Classes\Services\TransactionDetailsHandler::getTransactionDetails($order);
+
+        if (empty($transactionDetails)) {
+            return;
+        }
+
+        $reversedDetails = array_reverse($transactionDetails);
+        $authorisationDetail = $reversedDetails[array_search(
+            \Adyen\Webhook\EventCodes::AUTHORISATION,
+            array_column($reversedDetails, 'eventCode'),
+            true
+        )];
+
+        $params['template_vars']['{adyen_payment_link}'] = $authorisationDetail['paymentLink'];
     }
 
     /**
@@ -1182,7 +1303,8 @@ class AdyenOfficial extends PaymentModule
     {
         $order = new Order($orderId);
 
-        if ($order->module !== $this->name) {
+        if ($order->module !== $this->name &&
+            !\AdyenPayment\Classes\Services\OrderStatusHandler::shouldGeneratePaymentLinkForNonAdyenOrder($order)) {
             return '';
         }
 
@@ -1210,20 +1332,18 @@ class AdyenOfficial extends PaymentModule
     {
         $order = new \Order($orderId);
 
-        if ($order->module !== $this->name) {
+        if ($order->module !== $this->name &&
+            !\AdyenPayment\Classes\Services\OrderStatusHandler::shouldGeneratePaymentLinkForNonAdyenOrder($order)) {
             return $this->display(__FILE__, 'adyen-empty-tab.tpl');
         }
 
         $currency = new \Currency($order->id_currency);
         $transactionDetails = \AdyenPayment\Classes\Services\TransactionDetailsHandler::getTransactionDetails($order);
 
-        if (empty($transactionDetails)) {
-            return $this->display(__FILE__, 'adyen-empty-tab.tpl');
-        }
-
-        $authorisationDetail = $transactionDetails[array_search(
+        $reversedDetails = array_reverse($transactionDetails);
+        $authorisationDetail = $reversedDetails[array_search(
             \Adyen\Webhook\EventCodes::AUTHORISATION,
-            array_column($transactionDetails, 'eventCode'),
+            array_column($reversedDetails, 'eventCode'),
             true
         )];
 
@@ -1243,13 +1363,17 @@ class AdyenOfficial extends PaymentModule
             'riskScore' => $authorisationDetail['riskScore'] ?? '',
             'captureAvailable' => $authorisationDetail['captureSupported'] ?? '',
             'capturableAmount' => $authorisationDetail['capturableAmount'] ?? '',
-            'currency' => $currency->symbol,
+            'currency' => $currency->symbol ?? ($currency->sign ?? ''),
             'currencyISO' => $currency->iso_code,
             'transactionHistory' => $transactionDetails,
             'captureURL' => $this->getAction('AdyenCapture', 'captureOrder', ['ajax' => true]),
             'orderId' => $orderId,
             'adyenLink' => $authorisationDetail['viewOnAdyenUrl'] ?? '',
-            'refundSupported' => $authorisationDetail['refund'] ?? false
+            'refundSupported' => $authorisationDetail['refund'] ?? false,
+            'adyenPaymentLink' => $authorisationDetail['paymentLink'],
+            'adyenGeneratePaymentLink' => $this->getAction('AdyenPaymentLink', 'generatePaymentLink', ['ajax' => true]),
+            'shouldDisplayPaymentLink' => $authorisationDetail['displayPaymentLink'] ?? true,
+            'isAdyenOrder' => $order->module === $this->name
         ]);
 
         return $this->display(__FILE__, $this->getVersionHandler()->tabContent());

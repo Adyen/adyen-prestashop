@@ -66,6 +66,31 @@ class OrderStatusHandler
     }
 
     /**
+     * If order is in cancelled or failed status return true.
+     *
+     * @param Order $order
+     *
+     * @return bool
+     *
+     * @throws RepositoryClassException
+     */
+    public static function shouldGeneratePaymentLinkForNonAdyenOrder(Order $order): bool
+    {
+        Bootstrap::init();
+        $orderStatusMapping = StoreContext::doWithStore(
+            (string)$order->id_shop,
+            [self::orderStatusMappingService(), 'getOrderStatusMappingSettings']
+        );
+
+        if ((int)$order->current_state === (int)$orderStatusMapping[PaymentStates::STATE_CANCELLED] ||
+            (int)$order->current_state === (int)$orderStatusMapping[PaymentStates::STATE_FAILED]) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * @param Order $order
      * @param bool $captureSupported
      * @param float $capturableAmount

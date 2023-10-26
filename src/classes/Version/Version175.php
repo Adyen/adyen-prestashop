@@ -307,4 +307,20 @@ class Version175 implements VersionHandler
             $orderDetail->update();
         }
     }
+
+    /**
+     * @return string
+     */
+    public function backofficeOrderJS(): string
+    {
+        return 'views/js/admin/adyen-backoffice-order-175.js';
+    }
+
+    /**
+     * @return string
+     */
+    public function backofficeOrderTemplate(): string
+    {
+        return 'adyen-backoffice-order-creation-175.tpl';
+    }
 }
