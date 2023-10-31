@@ -43,13 +43,6 @@ class AdyenPaymentLinkController extends AdyenBaseController
             AdyenPrestaShopUtility::dieJson($response);
         }
 
-        if ($order->module !== $this->module->name) {
-            $order->module = $this->module->name;
-            $order->payment = Module::getModuleName($this->module->name);;
-
-            $order->update();
-        }
-
         CookieService::set(
             'successMessage',
             $this->module->l('Payment link successfully generated.')

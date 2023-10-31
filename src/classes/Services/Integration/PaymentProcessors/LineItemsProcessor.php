@@ -26,25 +26,22 @@ class LineItemsProcessor implements LineItemsProcessorInterface, PaymentLinkLine
      */
     public function process(PaymentRequestBuilder $builder, StartTransactionRequestContext $context): void
     {
-        $cart = new Cart($context->getReference());
-
-        $builder->setLineItems($this->getLineItemsFromCart($cart));
+        $builder->setLineItems($this->getLineItemsFromCart((int)$context->getReference()));
     }
 
     public function processPaymentLink(PaymentLinkRequestBuilder $builder, PaymentLinkRequestContext $context): void
     {
-        $cart = new Cart($context->getReference());
-
-        $builder->setLineItems($this->getLineItemsFromCart($cart));
+        $builder->setLineItems($this->getLineItemsFromCart((int)$context->getReference()));
     }
 
     /**
-     * @param Cart $cart
+     * @param int $cartId
      *
      * @return LineItem[]
      */
-    private function getLineItemsFromCart(Cart $cart): array
+    private function getLineItemsFromCart(int $cartId): array
     {
+        $cart = new Cart($cartId);
         $basketContent = $cart->getProducts();
         $lineItems = [];
 

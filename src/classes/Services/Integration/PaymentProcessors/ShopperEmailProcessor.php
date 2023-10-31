@@ -26,10 +26,7 @@ class ShopperEmailProcessor implements ShopperEmailProcessorInterface, PaymentLi
      */
     public function process(PaymentRequestBuilder $builder, StartTransactionRequestContext $context): void
     {
-        $cart = new Cart($context->getReference());
-        $email = $this->getCustomersEmailFromCart($cart);
-
-        if ($email) {
+        if ($email = $this->getCustomersEmailFromCart((int)$context->getReference())) {
             $builder->setShopperEmail($email);
         }
     }
@@ -42,25 +39,22 @@ class ShopperEmailProcessor implements ShopperEmailProcessorInterface, PaymentLi
      */
     public function processPaymentLink(PaymentLinkRequestBuilder $builder, PaymentLinkRequestContext $context): void
     {
-        $cart = new Cart($context->getReference());
-        $email = $this->getCustomersEmailFromCart($cart);
-
-        if ($email) {
+        if ($email = $this->getCustomersEmailFromCart((int)$context->getReference())) {
             $builder->setShopperEmail($email);
         }
     }
 
     /**
-     * @param Cart $cart
+     * @param int $cartId
      *
      * @return string|null
      */
-    private function getCustomersEmailFromCart(Cart $cart): ?string
+    private function getCustomersEmailFromCart(int $cartId): ?string
     {
+        $cart = new Cart($cartId);
         $customer = new Customer($cart->id_customer);
 
         if (!$customer || !isset($customer->email)) {
-
             return null;
         }
 

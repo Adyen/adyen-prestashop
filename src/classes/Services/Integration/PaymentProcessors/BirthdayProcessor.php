@@ -11,7 +11,6 @@ use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\Sh
 use Cart;
 use Customer;
 
-
 /**
  * Class BirthdayProcessor
  *
@@ -27,10 +26,7 @@ class BirthdayProcessor implements BirthdayProcessorInterface, PaymentLinkShoppe
      */
     public function process(PaymentRequestBuilder $builder, StartTransactionRequestContext $context): void
     {
-        $cart = new Cart($context->getReference());
-        $customersBirthday = $this->getCustomersBirthdayFromCart($cart);
-
-        if ($customersBirthday) {
+        if ($customersBirthday = $this->getCustomersBirthdayFromCartId($context->getReference())) {
             $builder->setDateOfBirth($customersBirthday);
         }
     }
@@ -43,21 +39,19 @@ class BirthdayProcessor implements BirthdayProcessorInterface, PaymentLinkShoppe
      */
     public function processPaymentLink(PaymentLinkRequestBuilder $builder, PaymentLinkRequestContext $context): void
     {
-        $cart = new Cart($context->getReference());
-        $customersBirthday = $this->getCustomersBirthdayFromCart($cart);
-
-        if ($customersBirthday) {
+        if ($customersBirthday = $this->getCustomersBirthdayFromCartId((int)$context->getReference())) {
             $builder->setDateOfBirth($customersBirthday);
         }
     }
 
     /**
-     * @param Cart $cart
+     * @param int $cartId
      *
      * @return string|null
      */
-    private function getCustomersBirthdayFromCart(Cart $cart): ?string
+    private function getCustomersBirthdayFromCartId(int $cartId): ?string
     {
+        $cart = new Cart($cartId);
         $customer = new Customer($cart->id_customer);
 
         if (!$customer || strtotime($customer->birthday) < 0 || !strtotime($customer->birthday)) {

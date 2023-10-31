@@ -19,7 +19,8 @@ use Shop;
  *
  * @package AdyenPayment\Integration\PaymentProcessors
  */
-class ShopperReferenceProcessor implements ShopperReferenceProcessorInterface, PaymentLinkShopperReferenceProcessorInterface
+class ShopperReferenceProcessor implements ShopperReferenceProcessorInterface,
+                                           PaymentLinkShopperReferenceProcessorInterface
 {
     /**
      * @param PaymentRequestBuilder $builder
@@ -29,10 +30,7 @@ class ShopperReferenceProcessor implements ShopperReferenceProcessorInterface, P
      */
     public function process(PaymentRequestBuilder $builder, StartTransactionRequestContext $context): void
     {
-        $cart = new Cart($context->getReference());
-        $shopperReference = $this->getShopperRefferenceFromCart($cart);
-
-        if($shopperReference) {
+        if ($shopperReference = $this->getShopperRefferenceFromCart($context->getReference())) {
             $builder->setShopperReference($shopperReference);
         }
     }
@@ -45,10 +43,7 @@ class ShopperReferenceProcessor implements ShopperReferenceProcessorInterface, P
      */
     public function processPaymentLink(PaymentLinkRequestBuilder $builder, PaymentLinkRequestContext $context): void
     {
-        $cart = new Cart($context->getReference());
-        $shopperReference = $this->getShopperRefferenceFromCart($cart);
-
-        if($shopperReference) {
+        if ($shopperReference = $this->getShopperRefferenceFromCart($context->getReference())) {
             $builder->setShopperReference($shopperReference);
         }
     }
@@ -58,8 +53,9 @@ class ShopperReferenceProcessor implements ShopperReferenceProcessorInterface, P
      *
      * @return ShopperReference|null
      */
-    private function getShopperRefferenceFromCart(Cart $cart): ?ShopperReference
+    private function getShopperRefferenceFromCart(int $cartId): ?ShopperReference
     {
+        $cart = new Cart($cartId);
         $customer = new Customer($cart->id_customer);
 
         if (!$customer) {

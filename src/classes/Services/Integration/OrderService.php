@@ -14,6 +14,7 @@ use AdyenPayment\Classes\Services\RefundHandler;
 use AdyenPayment\Classes\Version\Contract\VersionHandler;
 use Cart;
 use Db;
+use Module;
 use Order;
 use OrderHistory;
 use PrestaShop\PrestaShop\Adapter\Entity\Currency;
@@ -47,20 +48,12 @@ class OrderService implements OrderServiceInterface
      * @param string $merchantReference
      *
      * @return bool
-     *
-     * @throws PrestaShopException
-     * @throws PrestaShopDatabaseException
-     * @throws QueryFilterInvalidParamException
      */
     public function orderExists(string $merchantReference): bool
     {
         $cart = new Cart((int)$merchantReference);
 
-        $orderId = $this->getIdByCartId((int)$merchantReference);
-
-        return $cart->orderExists() && (new Order(
-                $orderId
-            ))->module === 'adyenofficial' && (int)$cart->id_shop === (int)StoreContext::getInstance()->getStoreId() &&
+        return $cart->orderExists() && (int)$cart->id_shop === (int)StoreContext::getInstance()->getStoreId() &&
             $this->transactionHistoryRepository->getTransactionHistory($merchantReference);
     }
 
@@ -122,6 +115,33 @@ class OrderService implements OrderServiceInterface
     public function getOrderUrl(string $merchantReference): string
     {
         return $this->versionHandler->getOrderUrl($merchantReference);
+    }
+
+    /**
+     * @param Webhook $webhook
+     *
+     * @return void
+     *
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    public function updateOrderPayment(Webhook $webhook): void
+    {
+        $idOrder = (int)$this->getIdByCartId((int)$webhook->getMerchantReference());
+
+        if (!$idOrder) {
+            return;
+        }
+
+        $order = new Order($idOrder);
+        $adyenModule = Module::getInstanceByName('adyenofficial');
+
+        if ($order->module !== $adyenModule->name) {
+            $order->module = $adyenModule->name;
+            $order->payment = $adyenModule->displayName;
+
+            $order->update();
+        }
     }
 
     /**

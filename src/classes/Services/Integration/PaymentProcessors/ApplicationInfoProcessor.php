@@ -18,7 +18,8 @@ use Module;
  *
  * @package AdyenPayment\Classes\Services\Integration\PaymentProcessors
  */
-class ApplicationInfoProcessor implements ApplicationInfoProcessorInterface, PaymentLinkApplicationInfoProcessorInterface
+class ApplicationInfoProcessor implements ApplicationInfoProcessorInterface,
+                                          PaymentLinkApplicationInfoProcessorInterface
 {
     /**
      * @param PaymentRequestBuilder $builder
@@ -28,12 +29,7 @@ class ApplicationInfoProcessor implements ApplicationInfoProcessorInterface, Pay
      */
     public function process(PaymentRequestBuilder $builder, StartTransactionRequestContext $context): void
     {
-        $shopName = Configuration::get('PS_SHOP_NAME');
-        $moduleInstance = Module::getInstanceByName('adyenofficial');
-
-        $shopName && $builder->setApplicationInfo(
-            new ApplicationInfo(new ExternalPlatform($shopName, _PS_VERSION_), $moduleInstance->version ?? null)
-        );
+        $builder->setApplicationInfo($this->getApplicationInfo());
     }
 
     /**
@@ -44,11 +40,17 @@ class ApplicationInfoProcessor implements ApplicationInfoProcessorInterface, Pay
      */
     public function processPaymentLink(PaymentLinkRequestBuilder $builder, PaymentLinkRequestContext $context): void
     {
+        $builder->setApplicationInfo($this->getApplicationInfo());
+    }
+
+    /**
+     * @return ApplicationInfo
+     */
+    private function getApplicationInfo(): ApplicationInfo
+    {
         $shopName = Configuration::get('PS_SHOP_NAME');
         $moduleInstance = Module::getInstanceByName('adyenofficial');
 
-        $shopName && $builder->setApplicationInfo(
-            new ApplicationInfo(new ExternalPlatform($shopName, _PS_VERSION_), $moduleInstance->version ?? null)
-        );
+        return new ApplicationInfo(new ExternalPlatform($shopName, _PS_VERSION_), $moduleInstance->version ?? null);
     }
 }

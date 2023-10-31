@@ -27,10 +27,7 @@ class ShopperNameProcessor implements ShopperNameProcessorInterface, PaymentLink
      */
     public function process(PaymentRequestBuilder $builder, StartTransactionRequestContext $context): void
     {
-        $cart = new Cart($context->getReference());
-        $shopperName = $this->getCustomersNameFromCart($cart);
-
-        if ($shopperName) {
+        if ($shopperName = $this->getCustomersNameFromCart((int)$context->getReference())) {
             $builder->setShopperName($shopperName);
         }
     }
@@ -43,25 +40,22 @@ class ShopperNameProcessor implements ShopperNameProcessorInterface, PaymentLink
      */
     public function processPaymentLink(PaymentLinkRequestBuilder $builder, PaymentLinkRequestContext $context): void
     {
-        $cart = new Cart($context->getReference());
-        $shopperName = $this->getCustomersNameFromCart($cart);
-
-        if ($shopperName) {
+        if ($shopperName = $this->getCustomersNameFromCart((int)$context->getReference())) {
             $builder->setShopperName($shopperName);
         }
     }
 
     /**
-     * @param Cart $cart
+     * @param int $cartId
      *
      * @return ShopperName|null
      */
-    private function getCustomersNameFromCart(Cart $cart): ?ShopperName
+    private function getCustomersNameFromCart(int $cartId): ?ShopperName
     {
+        $cart = new Cart($cartId);
         $customer = new Customer($cart->id_customer);
 
         if (!$customer) {
-
             return null;
         }
 
