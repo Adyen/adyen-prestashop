@@ -119,6 +119,7 @@
             </div>
         </div>
     {/if}
+
     <div class="table-container">
         <h2>{l s='Transaction history' mod='adyenofficial'}</h2>
         <table class="table">
@@ -141,7 +142,8 @@
         </table>
     </div>
     {else}
-        {if $shouldDisplayPaymentLink}
+        {if $shouldDisplayPaymentLink && !$adyenPaymentLink}
+            <div class="form-group input-group">
                 <input type="hidden" name="adyen-payment-link-amount"
                        value="{html_entity_decode($capturableAmount|escape:'html':'UTF-8')}">
                 <input type="hidden" name="adyen-orderId"
@@ -151,6 +153,24 @@
                 <button class="btn btn-default" type="button" id="adyen-generate-payment-link-button">
                     <i class="icon-link"></i>
                     {l s='Generate a payment link' mod='adyenofficial'}</button>
+            </div>
+        {/if}
+
+        {if $shouldDisplayPaymentLink && $adyenPaymentLink}
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-lg-6" style="display: flex; align-items: center;">
+                        <input type="text"
+                               name="adyenPaymentLinkInput"
+                               value="{$adyenPaymentLink}"
+                               id="adyen-payment-link"
+                               disabled>
+                        <button name="adyenPaymentLinkButton" class="btn btn-primary" id="adyen-copy-payment-link">
+                            {l s='COPY PAYMENT LINK' mod='adyenofficial'}
+                        </button>
+                    </div>
+                </div>
+            </div>
         {/if}
     {/if}
 </div>
