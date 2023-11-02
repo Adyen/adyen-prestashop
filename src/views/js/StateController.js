@@ -21,6 +21,7 @@ if (!window.AdyenFE) {
      * @property {string} stateUrl
      * @property {string} storesUrl
      * @property {string} currentStoreUrl
+     * @property {string} switchContextUrl
      * @property {string} connectionDetailsUrl
      * @property {string} merchantsUrl
      * @property {string} versionUrl
@@ -288,10 +289,15 @@ if (!window.AdyenFE) {
                                 return Promise.resolve(true);
                             },
                             (storeId) => {
-                                setStoreId(storeId);
-                                window.location.hash = '';
-                                this.enableSidebar();
-                                this.display();
+                                if (storeId !== getStoreId()) {
+                                    api.get(configuration.switchContextUrl.replace('{storeId}', storeId)).then(
+                                        /** @param {Store|Store[]} response */
+                                        (response) => {
+                                            setStoreId(storeId);
+                                            location.reload();
+                                        }
+                                    );
+                                }
                             }
                         )
                     );
@@ -362,9 +368,9 @@ if (!window.AdyenFE) {
             const container = templateService.getHeaderSection();
             templateService.clearComponent(container);
             enabled &&
-                container.append(
-                    elementGenerator.createFlashMessage(['maintenance.title', 'maintenance.description'], 'warning')
-                );
+            container.append(
+                elementGenerator.createFlashMessage(['maintenance.title', 'maintenance.description'], 'warning')
+            );
         };
 
         /**

@@ -4,6 +4,7 @@ namespace AdyenPayment\Classes\Services\Integration;
 
 use Adyen\Core\BusinessLogic\Domain\Configuration\Configuration;
 use AdyenPayment\Classes\Utility\Url;
+use Module;
 
 /**
  * Class ConfigurationService
@@ -12,7 +13,7 @@ use AdyenPayment\Classes\Utility\Url;
  */
 class ConfigService extends Configuration
 {
-    private const INTEGRATION_NAME = 'Presta Shop';
+    private const INTEGRATION_NAME = 'PrestaShop';
 
     const MIN_LOG_LEVEL = 1;
 
@@ -36,7 +37,7 @@ class ConfigService extends Configuration
      */
     public function getIntegrationVersion(): string
     {
-        return '5.0.0';
+        return _PS_VERSION_;
     }
 
     /**
@@ -52,7 +53,9 @@ class ConfigService extends Configuration
      */
     public function getPluginName(): string
     {
-        return 'AdyenPayment';
+        $module = Module::getInstanceByName('adyenofficial');
+
+        return $module->displayName . ' ' . $this->getIntegrationName();
     }
 
     /**
@@ -60,7 +63,8 @@ class ConfigService extends Configuration
      */
     public function getPluginVersion(): string
     {
-        // TODO: Implement getPluginVersion() method.
-        return '';
+        $module = Module::getInstanceByName('adyenofficial');
+
+        return $module->version;
     }
 }
