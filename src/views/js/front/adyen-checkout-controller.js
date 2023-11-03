@@ -178,8 +178,21 @@
                     return;
                 }
 
+                if (storedPaymentMethodId && paymentType !== 'scheme') {
+                    sessionStorage.setItem('adyen-payment-method-state-data', JSON.stringify({
+                        'paymentMethod': {
+                            'type': paymentType,
+                            'storedPaymentMethodId': storedPaymentMethodId
+                        },
+                    }));
+
+                    config.onStateChange();
+
+                    return;
+                }
+
                 let paymentMethodConfig = findSpecificPaymentMethodConfig(paymentType) ||
-                    findStoredPaymentMethodConfig(checkoutInstance, storedPaymentMethodId);
+                    findStoredPaymentMethodConfig(checkoutInstance, storedPaymentMethodId, paymentType);
 
                 // Configuration on the checkout instance level does not work for amazonpay, copy it on component level
                 if ('amazonpay' === paymentType && checkoutInstance.options.paymentMethodsConfiguration[paymentType]) {
@@ -282,7 +295,7 @@
             return paymentMethodSpecificConfig[paymentType] || null;
         };
 
-        const findStoredPaymentMethodConfig = (checkoutInstance, storedPaymentMethodId) => {
+        const findStoredPaymentMethodConfig = (checkoutInstance, storedPaymentMethodId, paymentType) => {
             if (!storedPaymentMethodId) {
                 return null;
             }

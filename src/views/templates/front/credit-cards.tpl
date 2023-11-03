@@ -1,7 +1,7 @@
 {extends file='customer/page.tpl'}
 
 {block name='page_title'}
-    {l s='Stored credit cards (' mod='adyenofficial'} {$numberOfStoredPaymentMethods} {l s=')' d='Shop.Theme.Customeraccount'}
+    {l s='Stored payment methods (' mod='adyenofficial'} {$numberOfStoredPaymentMethods} {l s=')' d='Shop.Theme.Customeraccount'}
 {/block}
 
 {block name='page_content'}
@@ -9,30 +9,60 @@
         {if $storedPaymentMethods}
             <input type="hidden" id="adyen-delete-url" value="{$deletionUrl|escape:'html':'UTF-8'}">
             {foreach $storedPaymentMethods as $storedPaymentMethod}
-                <div class="col-lg-6 col-md-6 col-sm-6">
-                    {block name='stored_card'}
-                        <article id="stored_card-{$storedPaymentMethod.id}"
-                                 data-id-stored_card="{$storedPaymentMethod.id}">
-                            <div class="stored-credit-card-div">
-                                <div class="stored-credit-card-info">
-                                    <h4>**** **** **** {$storedPaymentMethod.lastFour}</h4>
-                                    <label>{$storedPaymentMethod.name}</label><br>
-                                    <label>{l s='Expires' mod='adyenofficial'} {$storedPaymentMethod.expiryDate}</label>
-                                </div>
-
-                                {block name='stored_card_block_item_actions'}
-                                    <div class="text-sm-center stored-credit-card-button">
-                                        <button class="btn btn-primary center-block adyen-delete-btn"
-                                                data-adyen-method-id="{$storedPaymentMethod.id}">
-                                            <i class="material-icons shopping-cart" aria-hidden="true">delete</i>
-                                            {l s='Delete' mod='adyenofficial'}
-                                        </button>
+                {if $storedPaymentMethod.isCreditCard}
+                    <div class="col-lg-6 col-md-6 col-sm-6">
+                        {block name='stored_card'}
+                            <article id="stored_card-{$storedPaymentMethod.id}"
+                                     data-id-stored_card="{$storedPaymentMethod.id}">
+                                <div class="stored-credit-card-div">
+                                    <div class="stored-credit-card-info">
+                                        <h4>**** **** **** {$storedPaymentMethod.lastFour}</h4>
+                                        <label>{$storedPaymentMethod.name} <img src="{$storedPaymentMethod.logo}" alt=""
+                                                                                width="40" height="30"></label><br>
+                                        <label>{l s='Expires' mod='adyenofficial'} {$storedPaymentMethod.expiryDate}</label>
                                     </div>
-                                {/block}
-                            </div>
-                        </article>
-                    {/block}
-                </div>
+
+                                    {block name='stored_card_block_item_actions'}
+                                        <div class="text-sm-center stored-credit-card-button">
+                                            <button class="btn btn-primary center-block adyen-delete-btn"
+                                                    data-adyen-method-id="{$storedPaymentMethod.id}">
+                                                <i class="material-icons shopping-cart" aria-hidden="true">delete</i>
+                                                {l s='Delete' mod='adyenofficial'}
+                                            </button>
+                                        </div>
+                                    {/block}
+                                </div>
+                            </article>
+                        {/block}
+                    </div>
+                {else}
+                    <div class="col-lg-6 col-md-6 col-sm-6">
+                        {block name='stored_payment'}
+                            <article id="stored_card-{$storedPaymentMethod.name}"
+                                     data-id-stored_card="{$storedPaymentMethod.name}">
+                                <div class="stored-credit-card-div">
+                                    <div class="stored-credit-card-info">
+                                        <h4>{l s='Recurring payment method' mod='adyenofficial'}</h4>
+                                        <label>{$storedPaymentMethod.name} <img src="{$storedPaymentMethod.logo}"
+                                                                                alt="" width="40" height="30">
+                                        </label><br>
+                                        <label>{l s='Created on: ' mod='adyenofficial'} {$storedPaymentMethod.createdAt}</label>
+                                        <br>
+                                    </div>
+                                    {block name='stored_card_block_item_actions'}
+                                        <div class="text-sm-center stored-credit-card-button">
+                                            <button class="btn btn-primary center-block adyen-delete-btn"
+                                                    data-adyen-method-id="{$storedPaymentMethod.id}">
+                                                <i class="material-icons shopping-cart" aria-hidden="true">delete</i>
+                                                {l s='Delete' mod='adyenofficial'}
+                                            </button>
+                                        </div>
+                                    {/block}
+                                </div>
+                            </article>
+                        {/block}
+                    </div>
+                {/if}
                 <div id="adyen-modal-{$storedPaymentMethod.id}" class="modal modal-vcenter adyen-modal"
                      data-backdrop="static"
                      data-keyboard="false" style="display: none;" aria-hidden="true">

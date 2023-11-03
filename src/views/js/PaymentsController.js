@@ -242,6 +242,8 @@ if (!window.AdyenFE) {
         'bcmc_mobile'
     ];
 
+    const supportsRecurringPayments = ['ach', 'applepay', 'directdebit_GB', 'bcmc_mobile', 'eps', 'gcash', 'giropay', 'paywithgoogle', 'ideal', 'klarna', 'klarna_account', 'klarna_paynow', 'momo_wallet', 'paypal', 'sepadirectdebit', 'directEbanking', 'trustly', 'twint', 'vipps', 'zip'];
+
     /**
      * @typedef AdditionalDataConfig
      * @property {boolean?} showLogos
@@ -266,6 +268,8 @@ if (!window.AdyenFE) {
      * @typedef PaymentMethodConfiguration
      * @property {boolean} isNew
      * @property {boolean} excludeFromPayByLink
+     * @property {boolean} enableTokenization
+     * @property {string} tokenType
      * @property {string} methodId
      * @property {string} code
      * @property {string?} name
@@ -1011,6 +1015,34 @@ if (!window.AdyenFE) {
                                 : ''
                         },
                         {
+                            name: 'enableTokenization',
+                            value: changedMethod.enableTokenization,
+                            type: 'checkbox',
+                            label: 'payments.configure.fields.tokenization.label',
+                            description: 'payments.configure.fields.tokenization.description',
+                            className: !supportsRecurringPayments.some((item) => item === changedMethod.code)
+                                ? 'adls--hidden'
+                                : ''
+                        },
+                        {
+                            name: 'tokenType',
+                            value: changedMethod.tokenType,
+                            type: 'dropdown',
+                            label: 'payments.configure.fields.tokenType.label',
+                            description: 'payments.configure.fields.tokenType.description',
+                            placeholder: 'payments.configure.fields.tokenType.placeholder',
+                            error: 'payments.configure.fields.tokenType.error',
+                            options: [
+                                {label: 'payments.configure.fields.tokenType.cardOnFile', value: 'CardOnFile'},
+                                {
+                                    label: 'payments.configure.fields.tokenType.unscheduledCardOnFile',
+                                    value: 'UnscheduledCardOnFile'
+                                },
+                                {label: 'payments.configure.fields.tokenType.subscription', value: 'Subscription'}
+                            ],
+                            className: !changedMethod.enableTokenization ? 'adls--hidden' : '',
+                        },
+                        {
                             name: 'logo',
                             value: changedMethod.logo,
                             type: 'file',
@@ -1026,6 +1058,7 @@ if (!window.AdyenFE) {
             );
 
             handleDependencies('surchargeType', changedMethod.surchargeType);
+            handleDependencies('enableTokenization', changedMethod.enableTokenization);
         };
 
         /**
@@ -1398,6 +1431,10 @@ if (!window.AdyenFE) {
                 handleFieldVisibility('minimumAmount', value);
                 handleFieldVisibility('numberOfInstallments', value);
             }
+
+            if (prop === 'enableTokenization') {
+                handleFieldVisibility('tokenType', value);
+            }
         };
 
         /**
@@ -1438,6 +1475,10 @@ if (!window.AdyenFE) {
                 data.percentSurcharge = '';
                 data.fixedSurcharge = '';
                 data.surchargeLimit = '';
+            }
+
+            if (!data.enableTokenization) {
+                data.tokenType = '';
             }
 
             const postData = new FormData();
@@ -1544,6 +1585,11 @@ if (!window.AdyenFE) {
                 result.push(...validateRequiredField(['gatewayMerchantId', 'merchantId']));
             } else if (changedMethod.code === 'oney') {
                 result.push(...validateRequiredField(['supportedInstallments']));
+            }
+
+            if (changedMethod.enableTokenization) {
+                const tokenInput = page.querySelector('[name="tokenType"]');
+                result.push(validator.validateRequiredField(tokenInput));
             }
 
             return !result.includes(false);

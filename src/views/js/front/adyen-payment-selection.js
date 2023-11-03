@@ -56,9 +56,11 @@ $(document).ready(function () {
 
         if (stored) {
             checkoutController.mount(type, form, paymentMethodId);
-        } else {
-            checkoutController.mount(type, form);
+
+            return;
         }
+
+        checkoutController.mount(type, form);
     }
 
     function handleStateChange() {

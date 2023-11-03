@@ -3,19 +3,41 @@
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\PaymentMethodsRequest;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\ShopperReference;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Proxies\PaymentsProxy;
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Proxies\StoredDetailsProxy;
+use Adyen\Core\BusinessLogic\Domain\Connection\Repositories\ConnectionSettingsRepository;
 use Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext;
+use Adyen\Core\BusinessLogic\Domain\Payment\Services\PaymentService;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\Bootstrap;
+use AdyenPayment\Classes\Services\CheckoutHandler;
 use AdyenPayment\Classes\Services\Domain\CreditCardsService;
 use AdyenPayment\Classes\Utility\Url;
 
 /**
  * Class AdyenOfficialCreditCardsModuleFrontController
  */
-class AdyenOfficialCreditCardsModuleFrontController extends ModuleFrontController
+class AdyenOfficialStoredMethodsModuleFrontController extends ModuleFrontController
 {
+    /**
+     * @var ConnectionSettingsRepository
+     */
     private $connectionSettingsRepository;
+
+    /**
+     * @var PaymentService
+     */
+    private $paymentService;
+
+    /**
+     * @var PaymentsProxy
+     */
+    private $paymentsProxy;
+
+    /**
+     * @var StoredDetailsProxy
+     */
+    private $storedDetailsProxy;
 
     /**
      * @throws RepositoryClassException
@@ -26,9 +48,7 @@ class AdyenOfficialCreditCardsModuleFrontController extends ModuleFrontControlle
 
         Bootstrap::init();
 
-        $this->connectionSettingsRepository = ServiceRegister::getService(
-            Adyen\Core\BusinessLogic\Domain\Connection\Repositories\ConnectionSettingsRepository::class
-        );
+        $this->connectionSettingsRepository = ServiceRegister::getService(ConnectionSettingsRepository::class);
     }
 
     /**
@@ -66,7 +86,7 @@ class AdyenOfficialCreditCardsModuleFrontController extends ModuleFrontControlle
         $breadcrumb['links'][] = $this->addMyAccountToBreadcrumb();
 
         $breadcrumb['links'][] = [
-            'title' => $this->trans('Stored credit cards', [], 'Shop.Theme.Global')
+            'title' => $this->trans('Stored payment methods', [], 'Shop.Theme.Global')
         ];
 
         return $breadcrumb;
@@ -74,44 +94,72 @@ class AdyenOfficialCreditCardsModuleFrontController extends ModuleFrontControlle
 
     /**
      * @return void
+     * @throws Exception
      */
     private function renderStoredCards(): void
     {
-        $proxy = ServiceRegister::getService(PaymentsProxy::class);
-        $creditCardsService = ServiceRegister::getService(CreditCardsService::class);
+        $this->paymentService = ServiceRegister::getService(PaymentService::class);
+        $this->paymentsProxy = ServiceRegister::getService(PaymentsProxy::class);
+        $this->storedDetailsProxy = ServiceRegister::getService(StoredDetailsProxy::class);
         $connectionSettings = $this->connectionSettingsRepository->getConnectionSettings()->getActiveConnectionData();
-        $shop = \Shop::getShop(\Context::getContext()->shop->id);
+        $shop = Shop::getShop(Context::getContext()->shop->id);
+        $shopperReference = ShopperReference::parse(
+            $shop['domain'] . '_' . Context::getContext()->shop->id . '_' . Context::getContext()->customer->id
+        );
 
-
-        $paymentMethods = $proxy->getAvailablePaymentMethods(
+        $paymentMethods = $this->paymentsProxy->getAvailablePaymentMethods(
             new PaymentMethodsRequest(
                 $connectionSettings->getMerchantId(),
                 ['scheme'],
                 null,
                 null,
                 null,
-                ShopperReference::parse(
-                    $shop['domain'] . '_' . \Context::getContext()->shop->id . '_' . \Context::getContext(
-                    )->customer->id
-                )
+                $shopperReference
             )
+        );
 
+        $storedPayments = $this->storedDetailsProxy->getStoredPaymentDetails(
+            $shopperReference,
+            $connectionSettings->getMerchantId()
         );
 
         $storedPaymentMethodsInfo = [];
 
-        if ($creditCardsService->creditCardEnabled()) {
+        if ($configuredPaymentMethod = $this->paymentService->getPaymentMethodByCode(
+            PaymentService::CREDIT_CARD_CODE
+        )) {
             foreach ($paymentMethods->getStoredPaymentMethodsResponse() as $method) {
                 $storedPayment = [
                     'id' => $method->getMetadata()['id'],
                     'lastFour' => $method->getMetadata()['lastFour'],
                     'name' => $method->getMetadata()['name'],
                     'expiryDate' => $method->getMetadata()['expiryMonth'] . '/' . $method->getMetadata()['expiryYear'],
-
+                    'isCreditCard' => true,
+                    'logo' => $configuredPaymentMethod->getLogo()
                 ];
 
                 $storedPaymentMethodsInfo[] = $storedPayment;
             }
+        }
+
+        foreach ($storedPayments as $method) {
+            $methodCode = $method->getMetadata()['RecurringDetail']['variant'];
+            $configuredPaymentMethod = $this->paymentService->getPaymentMethodByCode($methodCode);
+            if (!$configuredPaymentMethod) {
+                continue;
+            }
+
+            $storedPayment = [
+                'id' => $method->getMetadata()['RecurringDetail']['recurringDetailReference'],
+                'name' => $configuredPaymentMethod->getName(),
+                'createdAt' => (new DateTime($method->getMetaData()['RecurringDetail']['creationDate']))->format(
+                    'Y-m-d'
+                ),
+                'isCreditCard' => false,
+                'logo' => $configuredPaymentMethod->getLogo()
+            ];
+
+            $storedPaymentMethodsInfo[] = $storedPayment;
         }
 
         $this->context->smarty->assign(
@@ -119,9 +167,9 @@ class AdyenOfficialCreditCardsModuleFrontController extends ModuleFrontControlle
                 'storedPaymentMethods' => $storedPaymentMethodsInfo,
                 'numberOfStoredPaymentMethods' => count($storedPaymentMethodsInfo),
                 'deletionUrl' => Url::getFrontUrl(
-                    'carddelete',
+                    'storedmethoddelete',
                     [
-                        'customerId' => \Context::getContext()->customer->id
+                        'customerId' => Context::getContext()->customer->id
                     ]
                 )
             ]

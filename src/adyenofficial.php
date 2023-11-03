@@ -378,6 +378,73 @@ class AdyenOfficial extends PaymentModule
                 }
             }
 
+            foreach ($config->getRecurringPaymentMethodResponse() as $method) {
+                $paymentOption = new \PrestaShop\PrestaShop\Core\Payment\PaymentOption();
+                $logo = '';
+                $description = '';
+                $name = '';
+                $currency = new Currency($cart->id_currency);
+                foreach ($availablePaymentMethods as $availablePaymentMethod) {
+                    if ($availablePaymentMethod->getCode() === $method->getName()) {
+                        $logo = $availablePaymentMethod->getLogo();
+                        $description = $availablePaymentMethod->getDescription();
+                        $name = $availablePaymentMethod->getName();
+                        $surchargeLimit = Tools::ps_round(
+                            \AdyenPayment\Classes\SurchargeCalculator::calculateSurcharge(
+                                $availablePaymentMethod,
+                                $currency->conversion_rate,
+                                \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount::fromFloat(
+                                    $cart->getOrderTotal(),
+                                    \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency::fromIsoCode(
+                                        $currency->iso_code
+                                    )
+                                )
+                            ),
+                            $precision
+                        );
+
+                        break;
+                    }
+                }
+                $this->getContext()->smarty->assign([
+                    'paymentMethodId' => $method->getMetaData()['RecurringDetail']['recurringDetailReference'],
+                    'paymentMethodType' => $method->getType(),
+                    'configURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl(
+                        'paymentconfig',
+                        ['cartId' => \Context::getContext()->cart->id]
+                    ),
+                    'paymentActionURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl('payment'),
+                    'paymentRedirectActionURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl(
+                        'paymentredirect',
+                        ['adyenPaymentType' => $method->getType()]
+                    ),
+                    'stored' => true,
+                    'description' => $description,
+                    'prestaVersion' => _PS_VERSION_,
+                    'checkoutUrl' => $this->context->link->getPageLink('order', true, null)
+                ]);
+
+                $paymentOption->setForm(
+                    $this->getContext()->smarty->fetch($this->getTemplatePath('payment_method.tpl'))
+                );
+                $paymentOption->setLogo($logo);
+                $paymentOption->setModuleName($this->name);
+                $paymentOption->setCallToActionText(
+                    (sprintf(
+                            $this->l('Pay by saved %s created on: %s'),
+                            $name,
+                            (new \DateTime($method->getMetaData()['RecurringDetail']['creationDate']))->format('Y-m-d')
+                        ) . ($surchargeLimit ? " (+$surchargeLimit" . $currency->sign . ')' : ''))
+                );
+                $paymentOption->setForm(
+                    $this->getContext()->smarty->fetch($this->getTemplatePath('payment_method.tpl'))
+                );
+                $paymentOption->setLogo($logo);
+                $paymentOption->setModuleName($this->name);
+
+                $paymentOptions[] = $paymentOption;
+            }
+
             foreach ($availablePaymentMethods as $method) {
                 $paymentOption = new \PrestaShop\PrestaShop\Core\Payment\PaymentOption();
                 $this->getContext()->smarty->assign([
@@ -463,7 +530,7 @@ class AdyenOfficial extends PaymentModule
 
         $this->context->smarty->assign(
             [
-                'creditCards' => \AdyenPayment\Classes\Utility\Url::getFrontUrl('creditcards')
+                'storedMethods' => \AdyenPayment\Classes\Utility\Url::getFrontUrl('storedmethods')
             ]
         );
 
@@ -483,7 +550,7 @@ class AdyenOfficial extends PaymentModule
         $this->getContext()->controller->addJS($this->getPathUri() . 'views/js/front/adyen-donations-controller.js');
         $this->getContext()->controller->addJS($this->getPathUri() . 'views/js/front/adyen-donations-selection.js');
         $this->getContext()->controller->addJS($this->getPathUri() . 'views/js/front/adyen-payment-selection.js');
-        $this->getContext()->controller->addJS($this->getPathUri() . 'views/js/front/adyen-delete-card.js');
+        $this->getContext()->controller->addJS($this->getPathUri() . 'views/js/front/adyen-delete-stored-method.js');
         $this->getContext()->controller->addJS(
             $this->getPathUri() . 'views/js/front/adyen-payment-additional-action.js'
         );

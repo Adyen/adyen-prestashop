@@ -27,7 +27,6 @@ use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\LineIt
 use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\ShopperEmailProcessor as ShopperEmailProcessorInterface;
 use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\ShopperLocaleProcessor as ShopperLocaleProcessorInterface;
 use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\ShopperNameProcessor as ShopperNameProcessorInterface;
-use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\ShopperReferenceProcessor as ShopperReferenceProcessorInterface;
 use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\ApplicationInfoProcessor as ApplicationInfoProcessorInterface;
 use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\AddressProcessor as PaymentLinkAddressProcessorInterface;
 use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\ApplicationInfoProcessor as PaymentLinkApplicationInfoProcessorInterface;
@@ -72,7 +71,6 @@ use AdyenPayment\Classes\Repositories\OrderRepository;
 use AdyenPayment\Classes\Repositories\PaymentMethodRepository;
 use AdyenPayment\Classes\Repositories\QueueItemRepository;
 use AdyenPayment\Classes\Repositories\TransactionLogRepository;
-use AdyenPayment\Classes\Services\Domain\CreditCardsService;
 use AdyenPayment\Classes\Services\Domain\WebhookSynchronizationService;
 use AdyenPayment\Classes\Services\Integration\ConfigService;
 use AdyenPayment\Classes\Services\Integration\Logger\LoggerService;
@@ -256,13 +254,6 @@ class Bootstrap extends BootstrapComponent
                 return new Version177();
             }
         );
-
-        ServiceRegister::registerService(
-            CreditCardsService::class,
-            static function () {
-                return new CreditCardsService(RepositoryRegistry::getRepository(PaymentMethod::getClassName()));
-            }
-        );
     }
 
     /**
@@ -336,13 +327,6 @@ class Bootstrap extends BootstrapComponent
             ShopperNameProcessorInterface::class,
             static function () {
                 return new ShopperNameProcessor();
-            }
-        );
-
-        ServiceRegister::registerService(
-            ShopperReferenceProcessorInterface::class,
-            static function () {
-                return new ShopperReferenceProcessor();
             }
         );
 
