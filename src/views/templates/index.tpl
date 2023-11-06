@@ -90,7 +90,7 @@
             switchContextUrl: '{$urls.stores.switchContextUrl}',
             stateUrl: '{$urls.integration.stateUrl}',
             versionUrl: '{$urls.version.versionUrl}',
-            downloadVersionUrl: 'https://logeecom.com/wp-content/uploads/2016/09/logo-white.png',
+            downloadVersionUrl: 'https://github.com/Adyen/adyen-prestashop/releases',
             pageConfiguration: pageConfiguration,
             templates: {
                 'sidebar': {$sidebar|json_encode}

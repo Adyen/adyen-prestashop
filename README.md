@@ -1,6 +1,13 @@
 # Adyen Payment plugin for PrestaShop
 Use Adyen's plugin for PrestaShop to offer frictionless payments online, in-app, and in-store.
 
+Note: if you are still using an older version of the Adyen Prestashop integration (below v5.0) please refer to [this documentation](https://github.com/Adyen/adyen-prestashop/wiki/Home/ab7b1ee3c889c2b1fc3395cf21f55fcfcdfac1b2).
+
+#### Important information ####
+Support deprecation plan for old plugins Prestashop (below major release v5.0):
+1. Only critical functionality and security updates until June 2024.
+2. Only critical security updates from June 2024 until June 2025.
+3. Support will be fully suspended for old Prestashop plugins from June 2025 onwards.
 ## Contributing
 We strongly encourage you to join us in contributing to this repository so everyone can benefit from:
 * New features and functionality

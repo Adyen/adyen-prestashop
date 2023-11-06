@@ -66,7 +66,9 @@ $(document).ready(function () {
     function handleStateChange() {
         let paymentForm = $("#pay-with-" + paymentId + "-form");
         let prestaVersion = paymentForm.find('[name=adyen-presta-version]').val();
-        if (checkoutController.isPaymentMethodStateValid() && $(formConditions).find('[type=checkbox]').is(":checked")) {
+        let checkbox = $(formConditions).find('[type=checkbox]');
+
+        if (checkoutController.isPaymentMethodStateValid() && ((checkbox.length && checkbox.is(":checked")) || !checkbox.length)) {
 
             let addData = paymentForm.find('[name=adyen-additional-data]');
             addData.val(checkoutController.getPaymentMethodStateData())

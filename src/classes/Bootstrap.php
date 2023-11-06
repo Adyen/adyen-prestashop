@@ -71,12 +71,12 @@ use AdyenPayment\Classes\Repositories\OrderRepository;
 use AdyenPayment\Classes\Repositories\PaymentMethodRepository;
 use AdyenPayment\Classes\Repositories\QueueItemRepository;
 use AdyenPayment\Classes\Repositories\TransactionLogRepository;
+use AdyenPayment\Classes\Services\Domain\CreditCardsService;
 use AdyenPayment\Classes\Services\Domain\WebhookSynchronizationService;
 use AdyenPayment\Classes\Services\Integration\ConfigService;
 use AdyenPayment\Classes\Services\Integration\Logger\LoggerService;
 use AdyenPayment\Classes\Services\Integration\OrderService;
 use AdyenPayment\Classes\Services\Integration\PaymentProcessors\AddressProcessor;
-use AdyenPayment\Classes\Services\Integration\PaymentProcessors\ApplicationInfoProcessor;
 use AdyenPayment\Classes\Services\Integration\PaymentProcessors\BasketItemsProcessor;
 use AdyenPayment\Classes\Services\Integration\PaymentProcessors\BirthdayProcessor;
 use AdyenPayment\Classes\Services\Integration\PaymentProcessors\DeviceFingerprintProcessor;
@@ -327,13 +327,6 @@ class Bootstrap extends BootstrapComponent
             ShopperNameProcessorInterface::class,
             static function () {
                 return new ShopperNameProcessor();
-            }
-        );
-
-        ServiceRegister::registerService(
-            ApplicationInfoProcessorInterface::class,
-            static function () {
-                return new ApplicationInfoProcessor();
             }
         );
 
