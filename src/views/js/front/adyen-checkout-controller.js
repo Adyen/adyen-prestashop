@@ -192,7 +192,7 @@
                 }
 
                 let paymentMethodConfig = findSpecificPaymentMethodConfig(paymentType) ||
-                    findStoredPaymentMethodConfig(checkoutInstance, storedPaymentMethodId, paymentType);
+                    findStoredPaymentMethodConfig(checkoutInstance, storedPaymentMethodId);
 
                 // Configuration on the checkout instance level does not work for amazonpay, copy it on component level
                 if ('amazonpay' === paymentType && checkoutInstance.options.paymentMethodsConfiguration[paymentType]) {
@@ -295,7 +295,7 @@
             return paymentMethodSpecificConfig[paymentType] || null;
         };
 
-        const findStoredPaymentMethodConfig = (checkoutInstance, storedPaymentMethodId, paymentType) => {
+        const findStoredPaymentMethodConfig = (checkoutInstance, storedPaymentMethodId) => {
             if (!storedPaymentMethodId) {
                 return null;
             }
