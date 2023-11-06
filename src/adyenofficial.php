@@ -949,6 +949,7 @@ class AdyenOfficial extends PaymentModule
      * @return void
      *
      * @throws \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Exceptions\InvalidMerchantReferenceException
+     * @throws \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode
      */
     public function hookActionValidateOrder(array $params): void
     {
