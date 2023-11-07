@@ -11,7 +11,8 @@ runs:
       run: ./dist/deploy.sh
     - name: Copy to build cache
       shell: bash
-      run: cp -R ../adyenofficial.zip ~/.build
+      working-directory: ../
+      run: cp -R adyenofficial.zip ~/.build
     - name: Store ZIP file in Github
       uses: actions/upload-artifact@v3
       with:
