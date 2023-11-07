@@ -34,7 +34,7 @@ inputs:
     required: true
   _ZIP_FILE:
     description: 'This is the defined filename of the ZIP file that we use for the installation of the plugin'
-    default: '~/.build/AdyenPayment.zip'
+    default: '~/.build/adyenofficial.zip'
     required: false
 runs:
   using: "composite"
