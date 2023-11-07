@@ -18,7 +18,7 @@ class ConfigurationRepository
     /**
      * @throws \PrestaShopDatabaseException
      */
-    public function isStoreInMaintenanceMode(int $storeId): bool
+    public function isStoreInMaintenanceMode(int $storeId, int $numberOfShops): bool
     {
         $maintenanceMode = false;
         $query = 'SELECT *
@@ -26,6 +26,16 @@ class ConfigurationRepository
                     WHERE `name` = "PS_SHOP_ENABLE"';
 
         $manuallyManagedStores = \Db::getInstance()->executeS($query);
+
+        if ($numberOfShops === 1) {
+            $filteredStores = array_filter($manuallyManagedStores, static function ($store) {
+                return $store['id_shop'] === null;
+            });
+
+            $defaultConfig = reset($filteredStores);
+
+            return !$defaultConfig['value'];
+        }
 
         foreach ($manuallyManagedStores as $manualStore) {
             if ($manualStore['id_shop'] === (string)$storeId && $manualStore['value'] === null) {

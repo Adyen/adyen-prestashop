@@ -38,8 +38,9 @@ class StoreService implements StoreServiceInterface
      */
     public function __construct(
         ConfigurationRepository $configurationRepository,
-        RepositoryInterface $connectionRepository
-    ) {
+        RepositoryInterface     $connectionRepository
+    )
+    {
         $this->configurationRepository = $configurationRepository;
         $this->connectionRepository = $connectionRepository;
     }
@@ -184,7 +185,7 @@ class StoreService implements StoreServiceInterface
      */
     private function isStoreInMaintenanceMode(int $storeId): bool
     {
-        return $this->configurationRepository->isStoreInMaintenanceMode($storeId);
+        return $this->configurationRepository->isStoreInMaintenanceMode($storeId, count(Shop::getShops()));
     }
 
     /**
