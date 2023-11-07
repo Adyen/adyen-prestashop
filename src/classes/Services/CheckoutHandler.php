@@ -3,6 +3,7 @@
 namespace AdyenPayment\Classes\Services;
 
 use Address as PrestaAddress;
+use Adyen\Core\BusinessLogic\AdminAPI\Response\TranslatableErrorResponse;
 use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
 use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutConfig\Request\PaymentCheckoutConfigRequest;
 use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutConfig\Response\PaymentCheckoutConfigResponse;
@@ -35,13 +36,13 @@ class CheckoutHandler
     /**
      * @param PrestaCart $cart
      *
-     * @return PaymentCheckoutConfigResponse
+     * @return PaymentCheckoutConfigResponse | TranslatableErrorResponse
      *
      * @throws InvalidCurrencyCode
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      */
-    public static function getPaymentCheckoutConfig(PrestaCart $cart): PaymentCheckoutConfigResponse
+    public static function getPaymentCheckoutConfig(PrestaCart $cart)
     {
         $currency = new PrestaCurrency($cart->id_currency);
         $addressInvoice = new PrestaAddress($cart->id_address_invoice);
