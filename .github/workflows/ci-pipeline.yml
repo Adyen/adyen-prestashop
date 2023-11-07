@@ -1,0 +1,72 @@
+﻿name: CI Pipeline Prestashop
+on:
+  push:
+    branches:
+      - feature/cicd
+jobs:
+  build:
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    name: Build environment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone Code
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 7.4
+      - name: Create Cache Directories
+        run: |
+          mkdir -p ~/.build
+      - name: Mount Build Cache
+        uses: actions/cache@v3
+        with:
+          key: cache-plugin-${{ github.run_id }}
+          path: ~/.build
+      - name: Build Plugin
+        uses: ./.github/actions/build_plugin
+  
+  run:
+    name: E2E | Prestashop ${{ matrix.prestashop }}, PHP ${{ matrix.php }}
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - prestashop: '5.6.10'
+            php: '7.4'
+            port: 80
+          - prestashop: '5.7.18'
+            php: '7.4'
+            port: 80
+    steps:
+      - name: Clone Code
+        uses: actions/checkout@v3
+        with:
+          path: main
+
+      - name: Mount Build Cache
+        uses: actions/cache@v3
+        with:
+          key: cache-plugin-${{ github.run_id }}
+          path: ~/.build
+
+
+      - name: E2E Tests, Prestashop ${{ matrix.shopware }}
+        uses: ./main/.github/actions/run_e2e
+        with:
+          PRESTASHOP: ${{ matrix.shopware }}
+          PHP: ${{ matrix.php }}
+          NODE: 20
+          PORT: ${{ matrix.port }}
+          GH_PAT: ${{ secrets.GH_PAT }}
+          API_KEY_TEST: ${{ secrets.API_KEY_TEST }}
+          API_KEY_LIVE: ${{ secrets.API_KEY_LIVE }}
+          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          

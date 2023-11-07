@@ -1,0 +1,117 @@
+﻿name: 'Run E2E Tests'
+description: "Runs Adyen Prestashop E2E Tests"
+
+inputs:
+  GH_PAT:
+    description: "Personal access token for the repository"
+    required: true
+  PRESTASHOP:
+    description: "The Prestashop version that is used to run the tests."
+    required: true
+  MYSQL:
+    description: "The Mysql version"
+    required: true  
+  PHP:
+    description: "The PHP Version that is used for the Shopware container."
+    required: true
+  API_KEY_TEST:
+    description: "The test api key for adyen."
+    required: true
+  API_KEY_LIVE:
+    description: "The live api key for adyen."
+    required: true
+  ADMIN_USERNAME:
+    description: "The username for the backoffice."
+    required: true
+  ADMIN_PASSWORD:
+    description: "The password for the backoffice."
+    required: true
+  PORT:
+    description: "The port of the shop."
+    required: true
+  NODE:
+    description: "The Node Version that is used for the E2E Tests."
+    required: true
+  _ZIP_FILE:
+    description: 'This is the defined filename of the ZIP file that we use for the installation of the plugin'
+    default: '~/.build/AdyenPayment.zip'
+    required: false
+runs:
+  using: "composite"
+  steps:
+
+    - name: Download Docker
+      shell: bash
+      run: docker pull -q dockware/play:${{ inputs.SHOPWARE }}
+
+    - name: Start Docker
+      shell: bash
+      run: |
+        docker network create -d bridge prestashop-network
+        docker run --name db --network=prestashop-network --env MYSQL_ROOT_PASSWORD=prestashop --env MYSQL_DATABASE=prestashop -d mysql:${{inputs.MYSQL}}
+        docker run -p ${{ inputs.PORT }}:80 --name prestashop --network=prestashop-network \
+        --env PHP_VERSION=${{ inputs.PHP }} --env DB_NAME=prestashop --env DB_SERVER=db --env DB_PASSWD=prestashop --env PS_FOLDER_INSTALL=install  \
+        --env PS_INSTALL_AUTO=1 --env PS_DOMAIN=localhost:{{inputs.PORT}} --env PS_FOLDER_ADMIN=admin1 \
+        -d prestashop/prestashop:${{ inputs.PRESTASHOP }}
+        sleep 30
+        
+    - name: Upload ZIP File to Docker
+      shell: bash
+      run: |
+        docker cp ${{ inputs._ZIP_FILE }} shop:/var/www/html/modules/adyenofficial.zip
+        docker exec shop bash -c 'cd /var/www/html/custom/plugins && unzip -qq -o adyenofficial.zip'
+
+
+    - name: Install Plugin
+      shell: bash
+      run: |
+        docker exec shop bash -c 'rm -rf /var/www/html/install'
+        docker exec shop bash -c 'php bin/console prestashop:module install AdyenPayment'
+        docker exec shop bash -c 'php bin/console prestashop:module enable AdyenPayment'
+        docker exec shop bash -c 'chmod -R 755 /var/www/html'
+
+    - name: Clone Code
+      uses: actions/checkout@v3
+      with:
+        repository: logeecom-dev/adyen-shopware5-e2e-tests
+        path: tests
+        token: ${{ inputs.GH_PAT }}
+
+    - name: Setup Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ inputs.NODE }}
+
+    - name: Install Node dependencies
+      working-directory: ./tests
+      run:
+        npm install
+      shell: bash
+
+    - name: Install common
+      shell: bash
+      run: npm install https://${{inputs.GH_PAT}}@github.com/logeecom-dev/adyen-common-e2e-tests
+
+    - name: Install Playwright Browsers
+      working-directory: ./tests
+      shell: bash
+      run: npx playwright install --with-deps > /dev/null
+
+    - name: Run Playwright tests
+      shell: bash
+      working-directory: ./tests
+      run: npm run test
+      env:
+        API_KEY_TEST: ${{ inputs.API_KEY_TEST }}
+        API_KEY_LIVE: ${{ inputs.API_KEY_LIVE }}
+        PORT: ${{ inputs.PORT }}
+        ADMIN_USERNAME: ${{ inputs.ADMIN_USERNAME }}
+        ADMIN_PASSWORD: ${{ inputs.ADMIN_PASSWORD }}
+        TEST_PATH: "/AdyenTest/index"
+        ADMIN_PATH: "/backend"
+    - uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: playwright-report-Shopware-${{ inputs.SHOPWARE }}-PHP-${{ inputs.PHP }}
+        path: ./tests/playwright-report/
+        retention-days: 30  
