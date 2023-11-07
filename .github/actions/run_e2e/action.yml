@@ -42,7 +42,7 @@ runs:
 
     - name: Download Docker
       shell: bash
-      run: docker pull -q dockware/play:${{ inputs.SHOPWARE }}
+      run: docker pull -q prestashop/prestashop:${{ inputs.PRESTASHOP }}
 
     - name: Start Docker
       shell: bash
@@ -73,7 +73,7 @@ runs:
     - name: Clone Code
       uses: actions/checkout@v3
       with:
-        repository: logeecom-dev/adyen-shopware5-e2e-tests
+        repository: logeecom-dev/adyen-prestashop-e2e-tests
         path: tests
         token: ${{ inputs.GH_PAT }}
 
@@ -108,7 +108,7 @@ runs:
         ADMIN_USERNAME: ${{ inputs.ADMIN_USERNAME }}
         ADMIN_PASSWORD: ${{ inputs.ADMIN_PASSWORD }}
         TEST_PATH: "/AdyenTest/index"
-        ADMIN_PATH: "/backend"
+        ADMIN_PATH: "/admin1"
     - uses: actions/upload-artifact@v3
       if: always()
       with:
