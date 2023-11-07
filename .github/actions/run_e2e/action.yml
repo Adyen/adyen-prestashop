@@ -43,12 +43,22 @@ runs:
     - name: Download Docker
       shell: bash
       run: docker pull -q prestashop/prestashop:${{ inputs.PRESTASHOP }}
-
-    - name: Start Docker
+    
+    - name: Download MySql
+      shell: bash
+      run: docker pull -q mysql:${{inputs.MYSQL}}
+   
+    - name: Create network 
+      shell: bash
+      run:  docker network create -d bridge prestashop-network
+    
+    - name: Run Db
+      shell: bash
+      run: docker run --name db --network=prestashop-network --env MYSQL_ROOT_PASSWORD=prestashop --env MYSQL_DATABASE=prestashop -d mysql:${{inputs.MYSQL}}
+      
+    - name: Start Shop
       shell: bash
       run: |
-        docker network create -d bridge prestashop-network
-        docker run --name db --network=prestashop-network --env MYSQL_ROOT_PASSWORD=prestashop --env MYSQL_DATABASE=prestashop -d mysql:${{inputs.MYSQL}}
         docker run -p ${{ inputs.PORT }}:80 --name prestashop --network=prestashop-network \
         --env PHP_VERSION=${{ inputs.PHP }} --env DB_NAME=prestashop --env DB_SERVER=db --env DB_PASSWD=prestashop --env PS_FOLDER_INSTALL=install  \
         --env PS_INSTALL_AUTO=1 --env PS_DOMAIN=localhost:{{inputs.PORT}} --env PS_FOLDER_ADMIN=admin1 \
