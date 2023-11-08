@@ -64,10 +64,7 @@ runs:
         --env PS_INSTALL_AUTO=1 --env PS_DOMAIN=localhost --env PS_FOLDER_ADMIN=admin1 \
         -d prestashop/prestashop:${{ inputs.PRESTASHOP }}
         sleep 30
-    - name: Log shop
-      shell: bash
-      run: docker logs prestashop
-      
+   
     - name: Upload ZIP File to Docker
       shell: bash
       run: |
@@ -81,7 +78,7 @@ runs:
         
         docker exec prestashop bash -c 'php bin/console prestashop:module install adyenofficial'
         docker exec prestashop bash -c 'php bin/console prestashop:module enable adyenofficial'
-        docker exec prestashop bash -c 'chmod -R 755 /var/www/html'
+        docker exec prestashop bash -c 'chmod -R 777 /var/www/html'
 
     - name: Clone Code
       uses: actions/checkout@v3
@@ -125,6 +122,6 @@ runs:
     - uses: actions/upload-artifact@v3
       if: always()
       with:
-        name: playwright-report-Shopware-${{ inputs.SHOPWARE }}-PHP-${{ inputs.PHP }}
+        name: playwright-report-Prestashop-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}
         path: ./tests/playwright-report/
         retention-days: 30  
