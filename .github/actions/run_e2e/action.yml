@@ -66,7 +66,7 @@ runs:
         sleep 30
     - name: Log shop
       shell: bash
-      run: docker log prestashop
+      run: docker logs prestashop
       
     - name: Upload ZIP File to Docker
       shell: bash
