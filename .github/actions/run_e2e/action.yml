@@ -72,13 +72,13 @@ runs:
       shell: bash
       run: |
         docker cp ${{ inputs._ZIP_FILE }} prestashop:/var/www/html/modules/adyenofficial.zip
-        docker exec prestashop bash -c 'cd /var/www/html/custom/plugins && unzip -qq -o adyenofficial.zip'
+        docker exec prestashop bash -c 'cd /var/www/html/modules && unzip -qq -o adyenofficial.zip'
 
 
     - name: Install Plugin
       shell: bash
       run: |
-        docker exec prestashop bash -c 'rm -rf /var/www/html/install'
+        
         docker exec prestashop bash -c 'php bin/console prestashop:module install AdyenPayment'
         docker exec prestashop bash -c 'php bin/console prestashop:module enable AdyenPayment'
         docker exec prestashop bash -c 'chmod -R 755 /var/www/html'
