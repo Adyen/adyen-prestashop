@@ -61,7 +61,7 @@ runs:
       run: |
         docker run -p ${{ inputs.PORT }}:80 --name prestashop --network=prestashop-network \
         --env PHP_VERSION=${{ inputs.PHP }} --env DB_NAME=prestashop --env DB_SERVER=db --env DB_PASSWD=prestashop --env PS_FOLDER_INSTALL=install  \
-        --env PS_INSTALL_AUTO=1 --env PS_DOMAIN=localhost:{{inputs.PORT}} --env PS_FOLDER_ADMIN=admin1 \
+        --env PS_INSTALL_AUTO=1 --env PS_DOMAIN=localhost --env PS_FOLDER_ADMIN=admin1 \
         -d prestashop/prestashop:${{ inputs.PRESTASHOP }}
         sleep 30
     - name: Log shop
