@@ -117,6 +117,7 @@ runs:
         PORT: ${{ inputs.PORT }}
         ADMIN_USERNAME: ${{ inputs.ADMIN_USERNAME }}
         ADMIN_PASSWORD: ${{ inputs.ADMIN_PASSWORD }}
+        BACKEND_SHOP_URL: "localhost"
         TEST_PATH: "/AdyenTest/index"
         ADMIN_PATH: "/admin1"
     - uses: actions/upload-artifact@v3
