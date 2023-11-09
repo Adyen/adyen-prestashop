@@ -60,7 +60,7 @@ if (!window.AdyenFE) {
 
             window.addEventListener('hashchange', updateStateOnHashChange, false);
 
-            api.get(!getStoreId() ? configuration.currentStoreUrl : configuration.storesUrl, () => null, true)
+            api.get(configuration.currentStoreUrl, () => null, true)
                 .then(
                     /** @param {Store|Store[]} response */
                     (response) => {

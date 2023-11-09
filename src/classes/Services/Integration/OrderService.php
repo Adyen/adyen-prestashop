@@ -51,11 +51,15 @@ class OrderService implements OrderServiceInterface
      * @param string $merchantReference
      *
      * @return bool
+     *
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     public function orderExists(string $merchantReference): bool
     {
         $cart = new Cart((int)$merchantReference);
-        $order = Order::getByCartId($merchantReference);
+        $idOrder = (int)$this->getIdByCartId((int)$merchantReference);
+        $order = new Order($idOrder);
 
         return $cart->orderExists() &&
             $order->module === 'adyenofficial' &&
@@ -126,6 +130,8 @@ class OrderService implements OrderServiceInterface
     }
 
     /**
+     * This function must be used for fetching order id from cart because PrestaShop function: Order::getByCartId won't work for multistore.
+     *
      * @param int $cartId
      *
      * @return false|string|null
