@@ -7,7 +7,6 @@ use Adyen\Core\BusinessLogic\Domain\Integration\Order\OrderService as OrderServi
 use Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use Adyen\Core\BusinessLogic\Domain\TransactionHistory\Repositories\TransactionHistoryRepository;
 use Adyen\Core\BusinessLogic\Domain\Webhook\Models\Webhook;
-use Adyen\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Adyen\Webhook\EventCodes;
 use AdyenPayment\Classes\Services\RefundHandler;
