@@ -38,6 +38,10 @@ class OrderService implements OrderServiceInterface
      */
     private $versionHandler;
 
+    /**
+     * @param TransactionHistoryRepository $transactionLogRepository
+     * @param VersionHandler $versionHandler
+     */
     public function __construct(TransactionHistoryRepository $transactionLogRepository, VersionHandler $versionHandler)
     {
         $this->transactionHistoryRepository = $transactionLogRepository;
@@ -48,12 +52,20 @@ class OrderService implements OrderServiceInterface
      * @param string $merchantReference
      *
      * @return bool
+     *
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     public function orderExists(string $merchantReference): bool
     {
         $cart = new Cart((int)$merchantReference);
+        $idOrder = (int)$this->getIdByCartId((int)$merchantReference);
+        $order = new Order($idOrder);
 
-        return $cart->orderExists() && (int)$cart->id_shop === (int)StoreContext::getInstance()->getStoreId() &&
+        return $cart->orderExists() &&
+            isset($order->current_state) &&
+            (int)$order->current_state !== 0 &&
+            (int)$cart->id_shop === (int)StoreContext::getInstance()->getStoreId() &&
             $this->transactionHistoryRepository->getTransactionHistory($merchantReference);
     }
 
@@ -145,6 +157,8 @@ class OrderService implements OrderServiceInterface
     }
 
     /**
+     * This function must be used for fetching order id from cart because PrestaShop function: Order::getByCartId won't work for multistore.
+     *
      * @param int $cartId
      *
      * @return false|string|null
