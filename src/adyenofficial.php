@@ -1445,7 +1445,7 @@ class AdyenOfficial extends PaymentModule
             'refundSupported' => $authorisationDetail['refund'] ?? false,
             'adyenPaymentLink' => $authorisationDetail['paymentLink'],
             'adyenGeneratePaymentLink' => $this->getAction('AdyenPaymentLink', 'generatePaymentLink', ['ajax' => true]),
-            'shouldDisplayPaymentLink' => $authorisationDetail['displayPaymentLink'] ?? true,
+            'shouldDisplayPaymentLink' => $authorisationDetail['displayPaymentLink'] ?? false,
             'isAdyenOrder' => $order->module === $this->name
         ]);
 
