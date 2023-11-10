@@ -71,5 +71,7 @@ jobs:
           API_KEY_LIVE: ${{ secrets.API_KEY_LIVE }}
           ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          PRESTASHOP_TEST_REPO: ${{secrets.PRESTASHOP_TEST_REPO}}
+          COMMON_TEST_REPO: ${{secrets.COMMON_TEST_REPO}}
           MYSQL: ${{matrix.mysql}}
           

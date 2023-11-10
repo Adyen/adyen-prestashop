@@ -32,6 +32,12 @@ inputs:
   NODE:
     description: "The Node Version that is used for the E2E Tests."
     required: true
+  PRESTASHOP_TEST_REPO:
+    description: "The repository housing the shopware5 e2e tests"
+    required: true
+  COMMON_TEST_REPO:
+    description: "The repository housing the common part of the e2e tests"
+    required: true
   _ZIP_FILE:
     description: 'This is the defined filename of the ZIP file that we use for the installation of the plugin'
     default: '~/.build/adyenofficial.zip'
@@ -83,7 +89,7 @@ runs:
     - name: Clone Code
       uses: actions/checkout@v3
       with:
-        repository: logeecom-dev/adyen-prestashop-e2e-tests
+        repository: ${{inputs.PRESTASHOP_TEST_REPO}}
         path: tests
         token: ${{ inputs.GH_PAT }}
 
@@ -100,7 +106,7 @@ runs:
 
     - name: Install common
       shell: bash
-      run: npm install https://${{inputs.GH_PAT}}@github.com/logeecom-dev/adyen-common-e2e-tests
+      run: npm install https://${{inputs.GH_PAT}}@github.com/${{inputs.COMMON_TEST_REPO}}
 
     - name: Install Playwright Browsers
       working-directory: ./tests
@@ -126,3 +132,8 @@ runs:
         name: playwright-report-Prestashop-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}
         path: ./tests/playwright-report/
         retention-days: 30  
+    - name: Remove Ayden plugin
+      shell: bash
+      run: |
+        docker exec prestashop bash -c 'php bin/console prestashop:module uninstall adyenofficial'
+        docker exec prestashop bash -c 'rm -rf /var/www/html/modules/adyenofficial'
