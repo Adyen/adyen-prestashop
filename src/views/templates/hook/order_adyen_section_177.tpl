@@ -148,7 +148,7 @@
         </table>
     </div>
     {else}
-        {if $shouldDisplayPaymentLink && !$adyenPaymentLink}
+        {if $shouldDisplayPaymentLinkForNonAdyenOrder && !$adyenPaymentLink}
             <div class="form-group">
                 <input type="hidden" name="adyen-payment-link-amount"
                        value="{html_entity_decode($capturableAmount|escape:'html':'UTF-8')}">
@@ -162,7 +162,7 @@
             </div>
         {/if}
 
-        {if $shouldDisplayPaymentLink && $adyenPaymentLink}
+        {if $shouldDisplayPaymentLinkForNonAdyenOrder && $adyenPaymentLink}
             <div class="form-group input-group">
                 <input type="text"
                        name="adyenPaymentLinkInput"

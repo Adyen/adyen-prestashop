@@ -1421,6 +1421,8 @@ class AdyenOfficial extends PaymentModule
         )];
 
         $lastDetail = end($transactionDetails);
+        $generalSettings = \Adyen\Core\BusinessLogic\AdminAPI\AdminAPI::get()->generalSettings((string)\Context::getContext()->shop->id)->getGeneralSettings();
+        $paymentLinkEnabled = $generalSettings->isSuccessful() && $generalSettings->toArray()['enablePayByLink'];
 
         \AdyenPayment\Classes\Bootstrap::init();
         $this->getContext()->smarty->assign([
@@ -1446,7 +1448,8 @@ class AdyenOfficial extends PaymentModule
             'adyenPaymentLink' => $authorisationDetail['paymentLink'],
             'adyenGeneratePaymentLink' => $this->getAction('AdyenPaymentLink', 'generatePaymentLink', ['ajax' => true]),
             'shouldDisplayPaymentLink' => $authorisationDetail['displayPaymentLink'] ?? false,
-            'isAdyenOrder' => $order->module === $this->name
+            'isAdyenOrder' => $order->module === $this->name,
+            'shouldDisplayPaymentLinkForNonAdyenOrder' => $authorisationDetail['displayPaymentLink'] ?? $paymentLinkEnabled
         ]);
 
         return $this->display(__FILE__, $this->getVersionHandler()->tabContent());
