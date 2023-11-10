@@ -81,9 +81,9 @@ runs:
     - name: Install Plugin
       shell: bash
       run: |
-        
         docker exec prestashop bash -c 'php bin/console prestashop:module install adyenofficial'
         docker exec prestashop bash -c 'php bin/console prestashop:module enable adyenofficial'
+        docker exec prestashop bash -c 'php bin/console prestashop:module disable welcome'
         docker exec prestashop bash -c 'chmod -R 777 /var/www/html'
 
     - name: Clone Code
