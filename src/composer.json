@@ -41,7 +41,7 @@
     "php": "^7.2|^7.4|^8.0",
     "ext-json": "*",
     "ext-zip": "*",
-    "adyen/integration-core": "1.0.4",
+    "adyen/integration-core": "dev-feature/test_endpoint",
     "ext-simplexml": "*",
     "ext-openssl": "*"
   },
@@ -62,7 +62,7 @@
     {
       "type": "vcs",
       "no-api": true,
-      "url": "git@github.com:Adyen/adyen-php-plugin-core.git"
+      "url": "git@github.com:logeecom-dev/adyen-php-plugin-core.git"
     }
   ]
 }
