@@ -46,6 +46,10 @@ class ZipGenerator
             $filesNames['AUTO_TEST'],
             json_encode($autoTestReport, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
         );
+        $zip->addFromString(
+            $filesNames['QUEUE'],
+            json_encode($info['queueItems'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+        );
         $zip->addFromString($filesNames['LOGS'], $logs);
 
         $zip->close();
