@@ -141,7 +141,8 @@ if (!window.AdyenFE) {
 
             form.append(
                 generator.createElement('div', 'adlp-flash-message-wrapper'),
-                generator.createElement('h2', '', `connection.title${merchantPage ? '_merchant' : ''}`),
+                generator.createElement('h2', '', `connection.title${merchantPage ? '_merchant' : ''}`,
+                    {dataset: {heading: `${merchantPage ? "merchant-account" : "setup"}`}}),
                 generator.createElement(
                     'p',
                     'adlp-merchant-account-description',
