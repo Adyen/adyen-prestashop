@@ -185,7 +185,7 @@ class StoreService implements StoreServiceInterface
      */
     private function isStoreInMaintenanceMode(int $storeId): bool
     {
-        return $this->configurationRepository->isStoreInMaintenanceMode($storeId, count(Shop::getShops()));
+        return $this->configurationRepository->isStoreInMaintenanceMode($storeId);
     }
 
     /**
