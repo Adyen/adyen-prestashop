@@ -7,7 +7,6 @@ use Adyen\Core\BusinessLogic\Domain\Integration\Order\OrderService as OrderServi
 use Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use Adyen\Core\BusinessLogic\Domain\TransactionHistory\Repositories\TransactionHistoryRepository;
 use Adyen\Core\BusinessLogic\Domain\Webhook\Models\Webhook;
-use Adyen\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Adyen\Webhook\EventCodes;
 use AdyenPayment\Classes\Services\RefundHandler;
@@ -16,6 +15,7 @@ use Cart;
 use Db;
 use Order;
 use OrderHistory;
+use Exception;
 use PrestaShop\PrestaShop\Adapter\Entity\Currency;
 use PrestaShopDatabaseException;
 use PrestaShopException;
@@ -54,6 +54,7 @@ class OrderService implements OrderServiceInterface
      *
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
+     * @throws Exception
      */
     public function orderExists(string $merchantReference): bool
     {
@@ -61,12 +62,20 @@ class OrderService implements OrderServiceInterface
         $idOrder = (int)$this->getIdByCartId((int)$merchantReference);
         $order = new Order($idOrder);
 
-        return $cart->orderExists() &&
-            $order->module === 'adyenofficial' &&
-            isset($order->current_state) &&
-            (int)$order->current_state !== 0 &&
-            (int)$cart->id_shop === (int)StoreContext::getInstance()->getStoreId() &&
-            $this->transactionHistoryRepository->getTransactionHistory($merchantReference);
+        if (!$cart->orderExists() ||
+            (int)$cart->id_shop !== (int)StoreContext::getInstance()->getStoreId() ||
+            $order->module !== 'adyenofficial' ||
+            !$this->transactionHistoryRepository->getTransactionHistory($merchantReference)) {
+            return false;
+        }
+
+        if (!isset($order->current_state) || (int)$order->current_state === 0) {
+            throw new Exception(
+                'Order with cart ID:' . $merchantReference . ' can not be updated, because order is still not completed. Order is not in initial state.'
+            );
+        }
+
+        return true;
     }
 
     /**
