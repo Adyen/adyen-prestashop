@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<prestashop xmlns:xlink="http://www.w3.org/1999/xlink">
+    <shop_url>
+        <id>1</id>
+        <id_shop>1</id_shop>
+        <active>1</active>
+        <main>1</main>
+        <domain>{host}</domain>
+        <domain_ssl>{host}</domain_ssl>
+        <physical_uri>/</physical_uri>
+    </shop_url>
+</prestashop>

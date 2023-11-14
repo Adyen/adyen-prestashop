@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<prestashop xmlns:xlink="http://www.w3.org/1999/xlink">
+    <shop>
+        <id>1</id>
+        <id_shop_group>1</id_shop_group>
+        <id_category>1</id_category>
+        <active>1</active>
+        <name>Substore1</name>
+        <theme_name>classic</theme_name>
+    </shop>
+</prestashop>
