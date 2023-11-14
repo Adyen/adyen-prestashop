@@ -106,7 +106,7 @@ runs:
 
     - name: Install common
       shell: bash
-      run: npm install https://${{inputs.GH_PAT}}@github.com/${{inputs.COMMON_TEST_REPO}}
+      run: npm install https://${{inputs.GH_PAT}}@github.com/${{inputs.COMMON_TEST_REPO}}#feature/prestashop
 
     - name: Install Playwright Browsers
       working-directory: ./tests
