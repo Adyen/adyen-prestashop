@@ -36,6 +36,7 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
      */
     public function postProcess()
     {
+        throw new Exception('TEST EXCEPTION');
         $payload = json_decode(Tools::file_get_contents('php://input'), true);
         $url = $payload['url'] ?? '';
         $testApiKey = $payload['testApiKey'] ?? '';
