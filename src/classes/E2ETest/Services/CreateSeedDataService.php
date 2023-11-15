@@ -10,6 +10,8 @@ use Adyen\Core\BusinessLogic\E2ETest\Services\CreateSeedDataService as BaseCreat
 use AdyenPayment\Classes\E2ETest\Http\ShopsTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\TestProxy;
 use Configuration;
+use Module;
+use Shop;
 
 /**
  * Class CreateSeedDataService
@@ -83,6 +85,20 @@ class CreateSeedDataService extends BaseCreateSeedDataService
             $data = str_replace('{host}', parse_url($this->baseUrl)['host'], $data);
             $this->shopProxy->createShopUrl(['data' => $data]);
         }
+
+        $this->enableModuleInNewSubStore();
+    }
+
+    /**
+     * Enables module in second substore
+     *
+     * @return void
+     */
+    private function enableModuleInNewSubStore(): void
+    {
+        Shop::setContext(1, 2);
+        $module = Module::getInstanceByName('adyenofficial');
+        $module->enable();
     }
 
     /**
