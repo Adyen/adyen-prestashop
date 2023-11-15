@@ -2,7 +2,6 @@
 
 namespace AdyenPayment\Classes\E2ETest\Services;
 
-use Adyen\Core\Infrastructure\Configuration\ConfigurationManager;
 use Adyen\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use Adyen\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Adyen\Core\Infrastructure\Http\HttpClient;

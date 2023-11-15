@@ -38,7 +38,7 @@ class TestProxy
     public function __construct(HttpClient $httpClient, string $baseUrl, string $credentials)
     {
         $this->httpClient = $httpClient;
-        $this->baseUrl = 'https://' . trim(str_replace(['http:', 'https:'], '', $baseUrl), '/');
+        $this->baseUrl = 'http://' . trim(str_replace(['http:', 'https:'], '', $baseUrl), '/');
         $this->credentials = $credentials;
     }
 
@@ -162,7 +162,7 @@ class TestProxy
      */
     protected function getEncodedBody(HttpRequest $request): string
     {
-        return (string)$request->getBody()['data'];
+        return array_key_exists('data', $request->getBody()) ? (string)$request->getBody()['data'] : '';
     }
 
     /**

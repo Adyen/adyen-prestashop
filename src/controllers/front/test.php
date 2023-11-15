@@ -62,6 +62,8 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
         } catch (HttpRequestException $exception) {
             header('HTTP/1.1 503 Service Unavailable');
             die(json_encode(['message' => $exception->getMessage()]));
+        } catch (Exception $exception) {
+            die(json_encode(['message' => $exception->getMessage()]));
         } finally {
             header('Content-Type: application/json');
         }
