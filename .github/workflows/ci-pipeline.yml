@@ -66,6 +66,7 @@ jobs:
           PHP: ${{ matrix.php }}
           NODE: 20
           PORT: ${{ matrix.port }}
+          NGROK: ${{ secrets.NGROK }}
           GH_PAT: ${{ secrets.GH_PAT }}
           API_KEY_TEST: ${{ secrets.API_KEY_TEST }}
           API_KEY_LIVE: ${{ secrets.API_KEY_LIVE }}
