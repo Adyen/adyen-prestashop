@@ -50,6 +50,9 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
             $adyenApiService->verifyManagementAPI($testApiKey, $liveApiKey);
             $authorizationService = new AuthorizationService();
             $credentials = $authorizationService->getAuthorizationCredentials();
+            if($credentials){
+                throw new InvalidDataException('Credentials: ' . $credentials);
+            }
             $createSeedDataService = new CreateSeedDataService($url, $credentials);
             $createSeedDataService->createInitialData();
             die(json_encode(['message' => 'The initial data setup was successfully completed.']));
