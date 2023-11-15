@@ -83,7 +83,9 @@ class OrderStatusHandler
         );
 
         if ((int)$order->current_state === (int)$orderStatusMapping[PaymentStates::STATE_CANCELLED] ||
-            (int)$order->current_state === (int)$orderStatusMapping[PaymentStates::STATE_FAILED]) {
+            (int)$order->current_state === (int)$orderStatusMapping[PaymentStates::STATE_FAILED] ||
+            (int)$order->current_state === (int)$orderStatusMapping[PaymentStates::STATE_NEW]) {
+
             return true;
         }
 
