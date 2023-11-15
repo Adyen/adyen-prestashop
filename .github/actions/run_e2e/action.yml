@@ -29,6 +29,9 @@ inputs:
   PORT:
     description: "The port of the shop."
     required: true
+  NGROK:
+    description: "The token of the ngrok."
+    required: true
   NODE:
     description: "The Node Version that is used for the E2E Tests."
     required: true
@@ -121,6 +124,7 @@ runs:
         API_KEY_TEST: ${{ inputs.API_KEY_TEST }}
         API_KEY_LIVE: ${{ inputs.API_KEY_LIVE }}
         PORT: ${{ inputs.PORT }}
+        NGROK: ${{ inputs.NGROK }}
         ADMIN_USERNAME: ${{ inputs.ADMIN_USERNAME }}
         ADMIN_PASSWORD: ${{ inputs.ADMIN_PASSWORD }}
         BACKEND_SHOP_URL: "localhost"
