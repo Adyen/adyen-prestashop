@@ -30,6 +30,7 @@ class AuthorizationService
         $apiAccess->save();
         $permissions = [
             'shops' => ['GET' => 1, 'POST' => 1, 'PUT' => 1, 'DELETE' => 1, 'HEAD' => 1],
+            'shop_urls' => ['GET' => 1, 'POST' => 1, 'PUT' => 1, 'DELETE' => 1, 'HEAD' => 1],
         ];
         WebserviceKey::setPermissionForAccount($apiAccess->id, $permissions);
 
