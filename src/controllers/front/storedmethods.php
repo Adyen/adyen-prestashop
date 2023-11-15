@@ -145,7 +145,7 @@ class AdyenOfficialStoredMethodsModuleFrontController extends ModuleFrontControl
         foreach ($storedPayments as $method) {
             $methodCode = $method->getMetadata()['RecurringDetail']['variant'];
             $configuredPaymentMethod = $this->paymentService->getPaymentMethodByCode($methodCode);
-            if (!$configuredPaymentMethod) {
+            if (!$configuredPaymentMethod || !$configuredPaymentMethod->getEnableTokenization()) {
                 continue;
             }
 

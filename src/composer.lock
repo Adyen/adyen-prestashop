@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:Adyen/adyen-php-plugin-core.git",
-                "reference": "d95af2b64ddd5d307d1f6de53d4155b69fe5072d"
+                "reference": "fe93b8e08680cef894cfb7572589215056715733"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Adyen/adyen-php-plugin-core/zipball/d95af2b64ddd5d307d1f6de53d4155b69fe5072d",
-                "reference": "d95af2b64ddd5d307d1f6de53d4155b69fe5072d",
+                "url": "https://api.github.com/repos/Adyen/adyen-php-plugin-core/zipball/fe93b8e08680cef894cfb7572589215056715733",
+                "reference": "fe93b8e08680cef894cfb7572589215056715733",
                 "shasum": ""
             },
             "require": {
@@ -48,7 +48,7 @@
                 "proprietary"
             ],
             "description": "Core Adyen integration library",
-            "time": "2023-11-15T10:22:54+00:00"
+            "time": "2023-11-15T15:46:53+00:00"
         },
         {
             "name": "adyen/php-webhook-module",
