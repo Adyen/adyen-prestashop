@@ -97,7 +97,7 @@
             {/foreach}
         {else}
             <div class="alert alert-info" role="alert" data-alert="info">
-                {l s='No stored credit cards are available.' mod='adyenofficial'}
+                {l s='No stored payment methods are available.' mod='adyenofficial'}
             </div>
         {/if}
         <div class="clearfix"></div>
