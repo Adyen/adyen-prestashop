@@ -83,7 +83,7 @@ runs:
       run: |
         docker exec prestashop bash -c 'php bin/console prestashop:module install adyenofficial'
         docker exec prestashop bash -c 'php bin/console prestashop:module enable adyenofficial'
-        docker exec prestashop bash -c 'php bin/console prestashop:module disable welcome'
+        docker exec -d prestashop bash -c 'php bin/console prestashop:module disable welcome'
         docker exec prestashop bash -c 'chmod -R 777 /var/www/html'
 
     - name: Clone Code
@@ -124,7 +124,7 @@ runs:
         ADMIN_USERNAME: ${{ inputs.ADMIN_USERNAME }}
         ADMIN_PASSWORD: ${{ inputs.ADMIN_PASSWORD }}
         BACKEND_SHOP_URL: "localhost"
-        TEST_PATH: "/AdyenTest/index"
+        TEST_PATH: "/module/adyenofficial/test"
         ADMIN_PATH: "/admin1"
     - uses: actions/upload-artifact@v3
       if: always()
