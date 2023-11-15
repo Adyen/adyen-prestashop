@@ -1010,13 +1010,12 @@ class AdyenOfficial extends PaymentModule
 
         $order = new \Order($params['template_vars']['{id_order}']);
 
-        if ($order->module !== $this->name) {
-            return;
-        }
-
+        \AdyenPayment\Classes\Bootstrap::init();
         $transactionDetails = \AdyenPayment\Classes\Services\TransactionDetailsHandler::getTransactionDetails($order);
 
         if (empty($transactionDetails)) {
+            $params['template_vars']['{adyen_payment_link}'] = '';
+
             return;
         }
 
