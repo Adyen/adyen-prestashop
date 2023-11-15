@@ -72,15 +72,17 @@ class CreateSeedDataService extends BaseCreateSeedDataService
     public function createSubStores(): void
     {
         $shops = $this->shopProxy->getSubStores();
-        if (!array_key_exists('shops', $shops) || count($shops['shops']) > 1) {
-            return;
+        if (array_key_exists('shops', $shops) && count($shops['shops']) === 1) {
+            $data = $this->readFomXMLFile('create_shop');
+            $this->shopProxy->createSubStore(['data' => $data]);
         }
 
-        $data = $this->readFomXMLFile('create_shop');
-        $this->shopProxy->createSubStore(['data' => $data]);
-        $data = $this->readFomXMLFile('create_shop_url');
-        $data = str_replace('{host}', parse_url($this->baseUrl)['host'], $data);
-        $this->shopProxy->createShopUrl(['data' => $data]);
+        $shopUrls = $this->shopProxy->getSubStoreUrls();
+        if (array_key_exists('shop_urls', $shopUrls) && count($shopUrls['shop_urls']) === 1) {
+            $data = $this->readFomXMLFile('create_shop_url');
+            $data = str_replace('{host}', parse_url($this->baseUrl)['host'], $data);
+            $this->shopProxy->createShopUrl(['data' => $data]);
+        }
     }
 
     /**

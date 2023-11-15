@@ -50,6 +50,19 @@ class ShopsTestProxy extends TestProxy
 
     /**
      *
+     * Creates request to get existing subStore urls from system
+     *
+     * @throws HttpRequestException
+     */
+    public function getSubStoreUrls(): array
+    {
+        $httpRequest = new HttpRequest("/api/shop_urls");
+
+        return $this->get($httpRequest)->decodeBodyToArray();
+    }
+
+    /**
+     *
      * Creates request to add new subStore
      *
      * @throws HttpRequestException
