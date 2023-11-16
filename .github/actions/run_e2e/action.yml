@@ -85,11 +85,10 @@ runs:
       shell: bash
       run: |
         docker exec prestashop bash -c 'php bin/console prestashop:module install adyenofficial'
-        sleep 60
         docker exec prestashop bash -c 'php bin/console prestashop:module enable adyenofficial'
         docker exec -d prestashop bash -c 'php bin/console prestashop:module disable welcome'
         docker exec prestashop bash -c 'chmod -R 777 /var/www/html'
-        sleep 60
+        sleep 120
 
     - name: Clone Code
       uses: actions/checkout@v3
