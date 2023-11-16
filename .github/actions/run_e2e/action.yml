@@ -63,14 +63,14 @@ runs:
     
     - name: Run Db
       shell: bash
-      run: docker run --name db --network=prestashop-network --env MYSQL_ROOT_PASSWORD=prestashop --env MYSQL_DATABASE=prestashop -d mysql:${{inputs.MYSQL}}
+      run: docker run -p 8001:3306 --name db --network=prestashop-network --env MYSQL_ROOT_PASSWORD=prestashop --env MYSQL_DATABASE=prestashop -d mysql:${{inputs.MYSQL}}
       
     - name: Start Shop
       shell: bash
       run: |
         docker run -p ${{ inputs.PORT }}:80 --name prestashop --network=prestashop-network \
         --env PHP_VERSION=${{ inputs.PHP }} --env DB_NAME=prestashop --env DB_SERVER=db --env DB_PASSWD=prestashop --env PS_FOLDER_INSTALL=install  \
-        --env PS_INSTALL_AUTO=1 --env PS_DOMAIN=localhost --env PS_FOLDER_ADMIN=admin1 \
+        --env PS_INSTALL_AUTO=1 --env PS_DOMAIN=localhost --env PS_FOLDER_ADMIN=admin1 --env DATABASE_URL=jdbc:mysql://localhost:8001/prestashop \
         -d prestashop/prestashop:${{ inputs.PRESTASHOP }}
         sleep 60
    
