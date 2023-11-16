@@ -405,7 +405,7 @@ if (!window.AdyenFE) {
             page.append(
                 generator.createElement('div', 'adl-payment-methods-header', '', null, [
                     generator.createElement('div', '', '', null, [
-                        generator.createElement('h2', '', 'payments.active.title',
+                        generator.createElement('h2', 'adlp-main-title', 'payments.active.title',
                             {dataset: {heading:  "active-payment-methods"}}),
                         generator.createElement('p', '', 'payments.active.description')
                     ]),
