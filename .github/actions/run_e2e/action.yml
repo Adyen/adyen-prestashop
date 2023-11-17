@@ -93,7 +93,7 @@ runs:
         docker exec prestashop bash -c 'php bin/console prestashop:module install adyenofficial'
         docker exec prestashop bash -c 'php bin/console prestashop:module enable adyenofficial'
         docker exec -d prestashop bash -c 'php bin/console prestashop:module disable welcome'
-        docker exec prestashop bash -c 'chmod -R 777 /var/www/html'
+       
         sleep 120
 
     - name: Docker logs after chmod
@@ -125,7 +125,9 @@ runs:
       working-directory: ./tests
       shell: bash
       run: npx playwright install --with-deps > /dev/null
-
+    - name: Change permissions
+      shell: bash
+      run:  docker exec prestashop bash -c 'chmod -R 777 /var/www/html'
     - name: Run Playwright tests
       shell: bash
       working-directory: ./tests
@@ -155,8 +157,13 @@ runs:
       with:
         name: php-error-log-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}
         path: ./error/
-
+    - uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: docker-error-log-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}
+        path: ./error.log
     - name: Remove Ayden plugin
+      if: always()
       shell: bash
       run: |
         docker exec prestashop bash -c 'php bin/console prestashop:module uninstall adyenofficial'
