@@ -148,7 +148,9 @@ runs:
         retention-days: 30  
     - name: Add docker logs to file
       shell: bash
-      run: docker logs prestashop >& ./error/dockerLogs.log
+      run: |
+        chmod 777 -R ./error
+        docker logs prestashop >& ./error/dockerLogs.log
       if: always()
     - uses: actions/upload-artifact@v3
       if: always()
