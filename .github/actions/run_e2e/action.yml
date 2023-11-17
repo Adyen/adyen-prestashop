@@ -146,7 +146,7 @@ runs:
         name: playwright-report-Prestashop-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}
         path: ./tests/playwright-report/
         retention-days: 30  
-    - uses: actions/upload-articaft@v3
+    - uses: actions/upload-artifact@v3
       if: always()
       with:
         name: php-error-log-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}
