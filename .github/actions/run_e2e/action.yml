@@ -146,11 +146,15 @@ runs:
         name: playwright-report-Prestashop-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}
         path: ./tests/playwright-report/
         retention-days: 30  
+    - name: Add docker logs to file
+      shell: bash
+      run: docker logs prestashop >& ./error/dockerLogs.log
     - uses: actions/upload-artifact@v3
       if: always()
       with:
         name: php-error-log-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}
         path: ./error/
+
     - name: Remove Ayden plugin
       shell: bash
       run: |
