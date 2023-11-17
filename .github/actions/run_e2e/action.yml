@@ -94,7 +94,8 @@ runs:
         docker exec prestashop bash -c 'php bin/console prestashop:module enable adyenofficial'
         docker exec -d prestashop bash -c 'php bin/console prestashop:module disable welcome'
         docker exec prestashop bash -c 'chmod -R 777 /var/www/html/var/cache/prod'
-        docker exec prestashop bash -c 'chmod -R 777 /var/www/html/vendor
+        docker exec prestashop bash -c 'chmod -R 777 /var/www/html/var/cache'
+        docker exec prestashop bash -c 'chmod 777 /var/www/html/var/cache/prod/appParameters.php'
         sleep 80
 
     - name: Docker logs after chmod
@@ -149,9 +150,7 @@ runs:
         retention-days: 30  
     - name: Add docker logs to file
       shell: bash
-      run: |
-        chmod 777 -R ./error
-        docker logs prestashop >& ./error/dockerLogs.log
+      run: docker logs prestashop >& ./dockerLogs.log
       if: always()
     - uses: actions/upload-artifact@v3
       if: always()
