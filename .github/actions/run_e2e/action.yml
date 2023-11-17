@@ -68,7 +68,7 @@ runs:
     - name: Start Shop
       shell: bash
       run: |
-        docker run -p ${{ inputs.PORT }}:80 --name prestashop --network=prestashop-network \
+        docker run -p ${{ inputs.PORT }}:80 -v ./error:/var/log/apache2/ --name prestashop --network=prestashop-network \
         --env PHP_VERSION=${{ inputs.PHP }} --env DB_NAME=prestashop --env DB_SERVER=db --env DB_PASSWD=prestashop --env PS_FOLDER_INSTALL=install  \
         --env PS_INSTALL_AUTO=1 --env PS_DOMAIN=localhost --env PS_FOLDER_ADMIN=admin1 \
         -d prestashop/prestashop:${{ inputs.PRESTASHOP }}
@@ -146,6 +146,11 @@ runs:
         name: playwright-report-Prestashop-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}
         path: ./tests/playwright-report/
         retention-days: 30  
+    - uses: actions/upload-articaft@v3
+      if: always()
+      with:
+        name: php-error-log-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}
+        path: ./error/
     - name: Remove Ayden plugin
       shell: bash
       run: |
