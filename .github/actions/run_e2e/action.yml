@@ -161,7 +161,7 @@ runs:
       if: always()
       with:
         name: docker-error-log-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}
-        path: ./error.log
+        path: ./dockerLogs.log
     - name: Remove Ayden plugin
       if: always()
       shell: bash
