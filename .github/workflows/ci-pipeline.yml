@@ -38,7 +38,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - prestashop: '1.7.8.0-apache'
+          - prestashop: '1.7.8.5-apache'
             php: '7.4'
             port: 80
             mysql: 5.7
