@@ -122,6 +122,9 @@ class Version177 implements VersionHandler
         $orderDetail->product_quantity_return += $quantityRefunded;
         $orderDetail->product_quantity_reinjected += $quantityRefunded;
 
+        $orderDetail->total_refunded_tax_incl = round($orderDetail->total_refunded_tax_incl, 2);
+        $orderDetail->total_refunded_tax_excl = round($orderDetail->total_refunded_tax_excl, 2);
+
         $orderDetail->update();
     }
 
