@@ -68,11 +68,11 @@ runs:
     - name: Start Shop
       shell: bash
       run: |
-        docker run -p ${{ inputs.PORT }}:80 --name prestashop --network=prestashop-network \
+        docker run -p ${{ inputs.PORT }}:80 -v ./error:/var/log/apache2/ --name prestashop --network=prestashop-network \
         --env PHP_VERSION=${{ inputs.PHP }} --env DB_NAME=prestashop --env DB_SERVER=db --env DB_PASSWD=prestashop --env PS_FOLDER_INSTALL=install  \
         --env PS_INSTALL_AUTO=1 --env PS_DOMAIN=localhost --env PS_FOLDER_ADMIN=admin1 \
         -d prestashop/prestashop:${{ inputs.PRESTASHOP }}
-        sleep 60
+        sleep 80
    
     - name: Extend memory
       shell: bash
@@ -93,9 +93,12 @@ runs:
         docker exec prestashop bash -c 'php bin/console prestashop:module install adyenofficial'
         docker exec prestashop bash -c 'php bin/console prestashop:module enable adyenofficial'
         docker exec -d prestashop bash -c 'php bin/console prestashop:module disable welcome'
-        docker exec prestashop bash -c 'chmod -R 777 /var/www/html/var/cache'
-        sleep 60
+        docker exec prestashop bash -c 'chmod -R 777 /var/www/html'
+        sleep 120
 
+    - name: Docker logs after chmod
+      shell: bash
+      run: docker logs prestashop
     - name: Clone Code
       uses: actions/checkout@v3
       with:
@@ -143,6 +146,16 @@ runs:
         name: playwright-report-Prestashop-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}
         path: ./tests/playwright-report/
         retention-days: 30  
+    - name: Add docker logs to file
+      shell: bash
+      run: docker logs prestashop >& ./dockerLogs.log
+      if: always()
+    - uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: php-error-log-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}
+        path: ./error/
+
     - name: Remove Ayden plugin
       shell: bash
       run: |
