@@ -89,6 +89,8 @@ runs:
         docker exec -d prestashop bash -c 'php bin/console prestashop:module disable welcome'
         docker exec prestashop bash -c 'chmod -R 777 /var/www/html/var/cache'
         sleep 60
+        docker exec -d prestashop bash -c 'chmod -R 777 /var/www/html/modules'
+        sleep 60
 
     - name: Clone Code
       uses: actions/checkout@v3
