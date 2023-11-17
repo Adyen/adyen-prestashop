@@ -72,7 +72,7 @@ runs:
         --env PHP_VERSION=${{ inputs.PHP }} --env DB_NAME=prestashop --env DB_SERVER=db --env DB_PASSWD=prestashop --env PS_FOLDER_INSTALL=install  \
         --env PS_INSTALL_AUTO=1 --env PS_DOMAIN=localhost --env PS_FOLDER_ADMIN=admin1 \
         -d prestashop/prestashop:${{ inputs.PRESTASHOP }}
-        sleep 60
+        sleep 120
    
     - name: Upload ZIP File to Docker
       shell: bash
@@ -88,8 +88,6 @@ runs:
         docker exec prestashop bash -c 'php bin/console prestashop:module enable adyenofficial'
         docker exec -d prestashop bash -c 'php bin/console prestashop:module disable welcome'
         docker exec prestashop bash -c 'chmod -R 777 /var/www/html/var/cache'
-        sleep 60
-        docker exec -d prestashop bash -c 'chmod -R 777 /var/www/html/modules'
         sleep 60
 
     - name: Clone Code
