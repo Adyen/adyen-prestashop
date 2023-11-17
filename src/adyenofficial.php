@@ -48,16 +48,16 @@ class AdyenOfficial extends PaymentModule
         $this->tab = 'payments_gateways';
         $this->version = '5.0.6';
 
-        $this->author = $this->l('Adyen');
+        $this->author = 'Adyen';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = ['min' => '1.7.5.0', 'max' => _PS_VERSION_];
         $this->bootstrap = true;
 
         parent::__construct();
 
-        $this->displayName = $this->l('Adyen');
-        $this->description = $this->l('Accept all payments offered by Adyen');
-        $this->confirmUninstall = $this->l('Are you sure you want to uninstall?');
+        $this->displayName = 'Adyen';
+        $this->description = 'Accept all payments offered by Adyen';
+        $this->confirmUninstall = 'Are you sure you want to uninstall?';
     }
 
     /**
