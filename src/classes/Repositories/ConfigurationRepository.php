@@ -27,6 +27,16 @@ class ConfigurationRepository
 
         $manuallyManagedStores = \Db::getInstance()->executeS($query);
 
+        if (count(Shop::getShops()) === 1) {
+            $filteredStores = array_filter($manuallyManagedStores, static function ($store) {
+                return $store['id_shop'] === null;
+            });
+
+            $defaultConfig = reset($filteredStores);
+
+            return !$defaultConfig['value'];
+        }
+
         foreach ($manuallyManagedStores as $manualStore) {
             if ($manualStore['id_shop'] === (string)$storeId && $manualStore['value'] === null) {
                 $maintenanceMode = true;
