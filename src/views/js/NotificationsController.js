@@ -394,7 +394,7 @@ if (!window.AdyenFE) {
                     ]);
                     tableWrapper.append(spinnerWrapper);
 
-                    api.get(`${configuration[`get${type}EventsNotifications`]}?page=${page}&limit=${limit}`, () => null)
+                    api.get(`${configuration[`get${type}EventsNotifications`]}&page=${page}&limit=${limit}`, () => null)
                         .then((newPage) => {
                             nextPageAvailable = newPage?.nextPageAvailable;
 
