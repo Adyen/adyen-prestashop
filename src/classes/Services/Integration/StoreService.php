@@ -38,8 +38,9 @@ class StoreService implements StoreServiceInterface
      */
     public function __construct(
         ConfigurationRepository $configurationRepository,
-        RepositoryInterface $connectionRepository
-    ) {
+        RepositoryInterface     $connectionRepository
+    )
+    {
         $this->configurationRepository = $configurationRepository;
         $this->connectionRepository = $connectionRepository;
     }

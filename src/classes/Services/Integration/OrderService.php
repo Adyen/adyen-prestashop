@@ -7,15 +7,17 @@ use Adyen\Core\BusinessLogic\Domain\Integration\Order\OrderService as OrderServi
 use Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use Adyen\Core\BusinessLogic\Domain\TransactionHistory\Repositories\TransactionHistoryRepository;
 use Adyen\Core\BusinessLogic\Domain\Webhook\Models\Webhook;
-use Adyen\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
+use Adyen\Core\Infrastructure\Utility\TimeProvider;
 use Adyen\Webhook\EventCodes;
 use AdyenPayment\Classes\Services\RefundHandler;
 use AdyenPayment\Classes\Version\Contract\VersionHandler;
 use Cart;
+use DateTime;
 use Db;
 use Order;
 use OrderHistory;
+use Exception;
 use PrestaShop\PrestaShop\Adapter\Entity\Currency;
 use PrestaShopDatabaseException;
 use PrestaShopException;
@@ -54,6 +56,7 @@ class OrderService implements OrderServiceInterface
      *
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
+     * @throws Exception
      */
     public function orderExists(string $merchantReference): bool
     {
@@ -61,12 +64,22 @@ class OrderService implements OrderServiceInterface
         $idOrder = (int)$this->getIdByCartId((int)$merchantReference);
         $order = new Order($idOrder);
 
-        return $cart->orderExists() &&
-            $order->module === 'adyenofficial' &&
-            isset($order->current_state) &&
-            (int)$order->current_state !== 0 &&
-            (int)$cart->id_shop === (int)StoreContext::getInstance()->getStoreId() &&
-            $this->transactionHistoryRepository->getTransactionHistory($merchantReference);
+        if (!$cart->orderExists() ||
+            (int)$cart->id_shop !== (int)StoreContext::getInstance()->getStoreId() ||
+            !$this->transactionHistoryRepository->getTransactionHistory($merchantReference)) {
+            return false;
+        }
+
+        if (!isset($order->current_state) || (int)$order->current_state === 0) {
+            $orderCreationTime = new DateTime($order->date_add);
+            $now = TimeProvider::getInstance()->getCurrentLocalTime();
+            $passedTimeSinceOrderCreation = $now->getTimestamp() - $orderCreationTime->getTimestamp();
+            throw new Exception(
+                'Order with cart ID:' . $merchantReference . ' can not be updated, because order is still not initialized. Order is not in initial state after ' . $passedTimeSinceOrderCreation . ' seconds since its creation.'
+            );
+        }
+
+        return true;
     }
 
     /**
@@ -79,13 +92,14 @@ class OrderService implements OrderServiceInterface
      * @throws PrestaShopException
      * @throws InvalidCurrencyCode
      * @throws RepositoryClassException
+     * @throws Exception
      */
     public function updateOrderStatus(Webhook $webhook, string $statusId): void
     {
         $idOrder = (int)$this->getIdByCartId((int)$webhook->getMerchantReference());
 
         if (!$idOrder) {
-            return;
+            throw new Exception('Order for cart id: ' . $webhook->getMerchantReference() . ' could not be found.');
         }
 
         $order = new Order($idOrder);
@@ -96,6 +110,12 @@ class OrderService implements OrderServiceInterface
             $history->id_employee = "0";
             $history->changeIdOrderState((int)$statusId, $idOrder, true);
             $history->add();
+            $updatedState = $this->getOrderCurrentState($idOrder);
+            if ((int)$updatedState !== (int)$statusId) {
+                throw new Exception(
+                    'Order status update failed. Adyen tried to change order state id to ' . $statusId . ' but PrestaShop API failed to update order to desired status. '
+                );
+            }
         }
 
         if ($webhook->getEventCode() === EventCodes::REFUND && $webhook->isSuccess()) {
@@ -143,6 +163,24 @@ class OrderService implements OrderServiceInterface
                                  SELECT `id_order`
                                  FROM `" . _DB_PREFIX_ . "orders`
                                  WHERE `id_cart` = '" . $cartId . "'
+                                 "
+        );
+    }
+
+    /**
+     * Gets current order status for order with id provided as parameter.
+     *
+     * @param int $orderId
+     *
+     * @return false|string|null
+     */
+    private function getOrderCurrentState(int $orderId)
+    {
+        return Db::getInstance()->getValue(
+            "
+                                 SELECT `current_state`
+                                 FROM `" . _DB_PREFIX_ . "orders`
+                                 WHERE `id_order` = '" . $orderId . "'
                                  "
         );
     }
