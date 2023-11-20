@@ -22,9 +22,6 @@ rm -rf ./adyenofficial/config.xml
 rm -rf ./adyenofficial/vendor/adyen/integration-core/.gitignore
 rm -rf ./adyenofficial/vendor/adyen/integration-core/tests
 rm -rf ./adyenofficial/vendor/adyen/integration-core/README.md
-rm -rf ./adyenofficial/controllers/front/test.php
-rm -rf ./adyenofficial/classes/E2ETest
-rm -rf ./adyenofficial/vendor/adyen/integration-core/src/BusinessLogic/E2ETest
 
 echo -e "\e[32mSTEP 4:\e[0m Adding PrestaShop mandatory index.php file to all folders..."
 php "$PWD/lib/autoindex/index.php" "$PWD/adyenofficial" >/dev/null

@@ -8,7 +8,7 @@ runs:
       run: sudo chmod 755 -R ./dist
     - name: Build plugin
       shell: bash
-      run: ./dist/deploy.sh
+      run: ./dist/deploy-test.sh
     - name: Copy to build cache
       shell: bash
       run: cp -R adyenofficial.zip ~/.build
