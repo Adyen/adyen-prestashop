@@ -66,7 +66,6 @@ class OrderService implements OrderServiceInterface
 
         if (!$cart->orderExists() ||
             (int)$cart->id_shop !== (int)StoreContext::getInstance()->getStoreId() ||
-            $order->module !== 'adyenofficial' ||
             !$this->transactionHistoryRepository->getTransactionHistory($merchantReference)) {
             return false;
         }
@@ -93,13 +92,14 @@ class OrderService implements OrderServiceInterface
      * @throws PrestaShopException
      * @throws InvalidCurrencyCode
      * @throws RepositoryClassException
+     * @throws Exception
      */
     public function updateOrderStatus(Webhook $webhook, string $statusId): void
     {
         $idOrder = (int)$this->getIdByCartId((int)$webhook->getMerchantReference());
 
         if (!$idOrder) {
-            return;
+            throw new Exception('Order for cart id: ' . $webhook->getMerchantReference() . ' could not be found.');
         }
 
         $order = new Order($idOrder);
@@ -110,6 +110,12 @@ class OrderService implements OrderServiceInterface
             $history->id_employee = "0";
             $history->changeIdOrderState((int)$statusId, $idOrder, true);
             $history->add();
+            $updatedState = $this->getOrderCurrentState($idOrder);
+            if ((int)$updatedState !== (int)$statusId) {
+                throw new Exception(
+                    'Order status update failed. Adyen tried to change order state id to ' . $statusId . ' but PrestaShop API failed to update order to desired status. '
+                );
+            }
         }
 
         if ($webhook->getEventCode() === EventCodes::REFUND && $webhook->isSuccess()) {
@@ -157,6 +163,24 @@ class OrderService implements OrderServiceInterface
                                  SELECT `id_order`
                                  FROM `" . _DB_PREFIX_ . "orders`
                                  WHERE `id_cart` = '" . $cartId . "'
+                                 "
+        );
+    }
+
+    /**
+     * Gets current order status for order with id provided as parameter.
+     *
+     * @param int $orderId
+     *
+     * @return false|string|null
+     */
+    private function getOrderCurrentState(int $orderId)
+    {
+        return Db::getInstance()->getValue(
+            "
+                                 SELECT `current_state`
+                                 FROM `" . _DB_PREFIX_ . "orders`
+                                 WHERE `id_order` = '" . $orderId . "'
                                  "
         );
     }
