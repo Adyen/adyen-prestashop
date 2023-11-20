@@ -94,7 +94,7 @@ runs:
         docker exec prestashop bash -c 'php bin/console prestashop:module enable adyenofficial'
         docker exec -d prestashop bash -c 'php bin/console prestashop:module disable welcome'
        
-        sleep 120
+       
 
     - name: Docker logs after chmod
       shell: bash
@@ -157,11 +157,13 @@ runs:
       with:
         name: php-error-log-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}
         path: ./error/
+        retention-days: 30
     - uses: actions/upload-artifact@v3
       if: always()
       with:
         name: docker-error-log-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}
         path: ./dockerLogs.log
+        retention-days: 30
     - name: Remove Ayden plugin
       if: always()
       shell: bash
