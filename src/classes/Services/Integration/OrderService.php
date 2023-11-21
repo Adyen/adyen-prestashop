@@ -13,6 +13,7 @@ use Adyen\Webhook\EventCodes;
 use AdyenPayment\Classes\Services\RefundHandler;
 use AdyenPayment\Classes\Version\Contract\VersionHandler;
 use Cart;
+use Configuration;
 use DateTime;
 use Db;
 use Order;
@@ -21,6 +22,7 @@ use Exception;
 use PrestaShop\PrestaShop\Adapter\Entity\Currency;
 use PrestaShopDatabaseException;
 use PrestaShopException;
+use Shop;
 
 /**
  * Class OrderService.
@@ -101,8 +103,8 @@ class OrderService implements OrderServiceInterface
         if (!$idOrder) {
             throw new Exception('Order for cart id: ' . $webhook->getMerchantReference() . ' could not be found.');
         }
-
         $order = new Order($idOrder);
+        $this->setTimezone($order->id_shop);
 
         if ((int)$statusId && (int)$statusId !== (int)$order->current_state) {
             $history = new OrderHistory();
@@ -182,6 +184,25 @@ class OrderService implements OrderServiceInterface
                                  FROM `" . _DB_PREFIX_ . "orders`
                                  WHERE `id_order` = '" . $orderId . "'
                                  "
+        );
+    }
+
+    /**
+     * @param int $storeId
+     *
+     * @return void
+     */
+    private function setTimezone(int $storeId): void {
+        $shop = new Shop($storeId);
+
+        @date_default_timezone_set(
+            Configuration::get(
+                'PS_TIMEZONE',
+                null,
+                $shop->id_shop_group,
+                $shop->id,
+                Configuration::get('PS_TIMEZONE')
+            )
         );
     }
 }
