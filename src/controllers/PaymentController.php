@@ -258,7 +258,8 @@ class PaymentController extends \ModuleFrontController
             null,
             [],
             null,
-            true
+            true,
+            $cart->secure_key
         );
         $order = new Order($this->module->currentOrder);
         if ((int)$order->id_carrier !== (int)$cart->id_carrier) {
