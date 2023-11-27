@@ -1,10 +1,12 @@
 {
   "newSubStores": [
     {
-      "subStore": "substore2"
+      "subStore": "substore2",
+      "id" : "2"
     },
     {
-      "subStore": "substore3"
+      "subStore": "substore3",
+      "id" : "3"
     }
   ],
   "countries": [

@@ -77,12 +77,12 @@ class CreateInitialSeedDataService extends BaseCreateSeedDataService
     {
         $shops = $this->shopProxy->getSubStores();
         $shopUrls = $this->shopProxy->getSubStoreUrls();
-        $newSubStores = array_column($this->readFromJSONFile()['newSubStores'] ?? [], 'subStore');
+        $newSubStores =$this->readFromJSONFile()['newSubStores'] ?? [];
 
         if (array_key_exists('shops', $shops) && count($shops['shops']) === 1) {
             foreach ($newSubStores as $newSubStore) {
                 $data = $this->readFomXMLFile('create_shop');
-                $data = str_replace('{name}', $newSubStore, $data);
+                $data = str_replace('{name}', $newSubStore['subStore'], $data);
                 $this->shopProxy->createSubStore(['data' => $data]);
             }
         }
@@ -92,12 +92,14 @@ class CreateInitialSeedDataService extends BaseCreateSeedDataService
                 $data = $this->readFomXMLFile('create_shop_url');
                 $data = str_replace(
                     [
+                        '{id_shop}',
                         '{host}',
                         '{virtual_uri}'
                     ],
                     [
+                        $newSubStore['id'],
                         parse_url($this->baseUrl)['host'],
-                        $newSubStore . '/'
+                        $newSubStore['subStore'] . '/'
                     ],
                     $data
                 );
