@@ -38,7 +38,8 @@ class TestProxy
     public function __construct(HttpClient $httpClient, string $baseUrl, string $credentials)
     {
         $this->httpClient = $httpClient;
-        $this->baseUrl = 'http://' . trim(str_replace(['http:', 'https:'], '', $baseUrl), '/');
+        $protocol = ($baseUrl === 'localhost') ? 'http://' : 'https://';
+        $this->baseUrl = $baseUrl === $protocol . trim(str_replace(['http:', 'https:'], '', $baseUrl), '/');
         $this->credentials = $credentials;
     }
 

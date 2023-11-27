@@ -28,6 +28,7 @@ use AdyenPayment\Classes\E2ETest\Http\AddressTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\CountryTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\CurrencyTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\CustomerTestProxy;
+use Configuration;
 use Currency;
 use PrestaShop\PrestaShop\Adapter\Entity\Country;
 
@@ -62,10 +63,11 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
      */
     public function __construct(string $credentials)
     {
-        $this->countryTestProxy = new CountryTestProxy($this->getHttpClient(), 'localhost', $credentials);
-        $this->currencyTestProxy = new CurrencyTestProxy($this->getHttpClient(), 'localhost', $credentials);
-        $this->customerTestProxy = new CustomerTestProxy($this->getHttpClient(), 'localhost', $credentials);
-        $this->addressTestProxy = new AddressTestProxy($this->getHttpClient(), 'localhost', $credentials);
+        $host = Configuration::get('PS_SHOP_DOMAIN');
+        $this->countryTestProxy = new CountryTestProxy($this->getHttpClient(), $host, $credentials);
+        $this->currencyTestProxy = new CurrencyTestProxy($this->getHttpClient(), $host, $credentials);
+        $this->customerTestProxy = new CustomerTestProxy($this->getHttpClient(), $host, $credentials);
+        $this->addressTestProxy = new AddressTestProxy($this->getHttpClient(), $host, $credentials);
     }
 
     /**

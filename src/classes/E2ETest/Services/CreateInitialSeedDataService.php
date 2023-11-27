@@ -61,7 +61,10 @@ class CreateInitialSeedDataService extends BaseCreateSeedDataService
         $data = $this->readFomXMLFile('update_shop');
         $this->shopProxy->updateDefaultShopName(['data' => $data]);
         $data = $this->readFomXMLFile('update_shop_url');
-        $data = str_replace('{host}', parse_url($this->baseUrl)['host'], $data);
+        $host = parse_url($this->baseUrl)['host'];
+        Configuration::updateValue('PS_SHOP_DOMAIN', $host);
+        Configuration::updateValue('PS_SHOP_DOMAIN_SSL', $host);
+        $data = str_replace('{host}', $host, $data);
         $this->shopProxy->updateShopUrl(['data' => $data]);
     }
 
