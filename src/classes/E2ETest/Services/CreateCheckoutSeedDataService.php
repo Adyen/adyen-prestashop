@@ -101,94 +101,31 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
     }
 
     /**
-     * Creates customer and address in database
+     * Creates the integration configuration - authorization data and payment methods
      *
-     * @throws HttpRequestException
+     * @throws EmptyConnectionDataException
+     * @throws ApiKeyCompanyLevelException
+     * @throws MerchantDoesNotExistException
+     * @throws InvalidModeException
+     * @throws EmptyStoreException
+     * @throws InvalidApiKeyException
+     * @throws MerchantIdChangedException
+     * @throws ClientKeyGenerationFailedException
+     * @throws FailedToGenerateHmacException
+     * @throws UserDoesNotHaveNecessaryRolesException
+     * @throws InvalidAllowedOriginException
+     * @throws ApiCredentialsDoNotExistException
+     * @throws InvalidConnectionSettingsException
+     * @throws ModeChangedException
+     * @throws ConnectionSettingsNotFoundException
+     * @throws FailedToRegisterWebhookException
+     * @throws PaymentMethodDataEmptyException
      */
-    private function createCustomerAndAddress(): void
+    private function createIntegrationConfigurations(string $testApiKey): void
     {
-        $customer = $this->readFromJSONFile()['customer'] ?? [];
-        $this->createCustomer($customer);
-        $this->createCustomerAddress($customer);
-    }
-
-    /**
-     * Creates customer
-     *
-     * @throws HttpRequestException
-     */
-    private function createCustomer(array $customer): void
-    {
-        $data = $this->readFomXMLFile('create_customer');
-        $data = str_replace(
-            [
-                '{id_default_group}',
-                '{id_lang}',
-                '{passwd}',
-                '{lastname}',
-                '{firstname}',
-                '{email}',
-                '{id_gender}',
-                '{birthday}',
-                '{active}',
-                '{is_guest}',
-                '{id_shop}',
-                '{id_shop_group}'
-            ],
-            [
-                $customer['defaultGroupId'],
-                $customer['langId'],
-                $customer['password'],
-                $customer['lastName'],
-                $customer['firstName'],
-                $customer['email'],
-                $customer['genderId'],
-                $customer['birthday'],
-                1,
-                0,
-                1,
-                1
-            ],
-            $data
-        );
-
-        $this->customerTestProxy->createCustomer(['data' => $data]);
-    }
-
-    /**
-     * Creates customer's address
-     *
-     * @throws HttpRequestException
-     */
-    private function createCustomerAddress(array $customer): void
-    {
-        $addressData = $customer['address'];
-        $data = $this->readFomXMLFile('create_address');
-        $data = str_replace(
-            [
-                '{id_customer}',
-                '{id_country}',
-                '{alias}',
-                '{lastname}',
-                '{firstname}',
-                '{address1}',
-                '{postcode}',
-                '{city}'
-            ],
-            [
-                20,
-                Country::getByIso($addressData['country']),
-                $addressData['alias'],
-                $customer['lastName'],
-                $customer['firstName'],
-                $addressData['address'],
-                $addressData['postalCode'],
-                $addressData['city'],
-            ],
-            $data
-        );
-
-        $this->addressTestProxy->createAddress(['data' => $data]);
+        $createIntegrationDataService = new CreateIntegrationDataService('./modules/adyenofficial');
+        $createIntegrationDataService->createConnectionAndWebhookConfiguration($testApiKey);
+        $createIntegrationDataService->createAllPaymentMethodsFromTestData();
     }
 
     /**
@@ -254,7 +191,6 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
 
             $this->createCurrency($currency);
         }
-
     }
 
     /**
@@ -344,31 +280,94 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
     }
 
     /**
-     * Creates the integration configuration - authorization data and payment methods
+     * Creates customer and address in database
      *
-     * @throws EmptyConnectionDataException
-     * @throws ApiKeyCompanyLevelException
-     * @throws MerchantDoesNotExistException
-     * @throws InvalidModeException
-     * @throws EmptyStoreException
-     * @throws InvalidApiKeyException
-     * @throws MerchantIdChangedException
-     * @throws ClientKeyGenerationFailedException
-     * @throws FailedToGenerateHmacException
-     * @throws UserDoesNotHaveNecessaryRolesException
-     * @throws InvalidAllowedOriginException
-     * @throws ApiCredentialsDoNotExistException
-     * @throws InvalidConnectionSettingsException
-     * @throws ModeChangedException
-     * @throws ConnectionSettingsNotFoundException
-     * @throws FailedToRegisterWebhookException
-     * @throws PaymentMethodDataEmptyException
+     * @throws HttpRequestException
      */
-    private function createIntegrationConfigurations(string $testApiKey): void
+    private function createCustomerAndAddress(): void
     {
-        $createIntegrationDataService = new CreateIntegrationDataService('./modules/adyenofficial');
-        $createIntegrationDataService->createConnectionAndWebhookConfiguration($testApiKey);
-        $createIntegrationDataService->createAllPaymentMethodsFromTestData();
+        $customer = $this->readFromJSONFile()['customer'] ?? [];
+        $this->createCustomer($customer);
+        $this->createCustomerAddress($customer);
+    }
+
+    /**
+     * Creates customer
+     *
+     * @throws HttpRequestException
+     */
+    private function createCustomer(array $customer): void
+    {
+        $data = $this->readFomXMLFile('create_customer');
+        $data = str_replace(
+            [
+                '{id_default_group}',
+                '{id_lang}',
+                '{passwd}',
+                '{lastname}',
+                '{firstname}',
+                '{email}',
+                '{id_gender}',
+                '{birthday}',
+                '{active}',
+                '{is_guest}',
+                '{id_shop}',
+                '{id_shop_group}'
+            ],
+            [
+                $customer['defaultGroupId'],
+                $customer['langId'],
+                $customer['password'],
+                $customer['lastName'],
+                $customer['firstName'],
+                $customer['email'],
+                $customer['genderId'],
+                $customer['birthday'],
+                1,
+                0,
+                1,
+                1
+            ],
+            $data
+        );
+
+        $this->customerTestProxy->createCustomer(['data' => $data]);
+    }
+
+    /**
+     * Creates customer's address
+     *
+     * @throws HttpRequestException
+     */
+    private function createCustomerAddress(array $customer): void
+    {
+        $addressData = $customer['address'];
+        $data = $this->readFomXMLFile('create_address');
+        $data = str_replace(
+            [
+                '{id_customer}',
+                '{id_country}',
+                '{alias}',
+                '{lastname}',
+                '{firstname}',
+                '{address1}',
+                '{postcode}',
+                '{city}'
+            ],
+            [
+                1,
+                Country::getByIso($addressData['country']),
+                $addressData['alias'],
+                $customer['lastName'],
+                $customer['firstName'],
+                $addressData['address'],
+                $addressData['postalCode'],
+                $addressData['city'],
+            ],
+            $data
+        );
+
+        $this->addressTestProxy->createAddress(['data' => $data]);
     }
 
     /**
