@@ -6,7 +6,6 @@ use Adyen\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use Adyen\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Adyen\Core\Infrastructure\Http\HttpClient;
 use Adyen\Core\Infrastructure\ServiceRegister;
-use Adyen\Core\BusinessLogic\E2ETest\Services\CreateSeedDataService as BaseCreateSeedDataService;
 use AdyenPayment\Classes\E2ETest\Http\ShopsTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\TestProxy;
 use Configuration;
@@ -18,7 +17,7 @@ use Shop;
  *
  * @package AdyenPayment\E2ETest\Services
  */
-class CreateSeedDataService extends BaseCreateSeedDataService
+class CreateInitialSeedDataService extends BaseCreateSeedDataService
 {
     /**
      * @var TestProxy
@@ -99,18 +98,6 @@ class CreateSeedDataService extends BaseCreateSeedDataService
         Shop::setContext(1, 2);
         $module = Module::getInstanceByName('adyenofficial');
         $module->enable();
-    }
-
-    /**
-     * @param string $fileName
-     * @return string
-     */
-    private function readFomXMLFile(string $fileName): string
-    {
-        return file_get_contents(
-            './modules/adyenofficial/classes/E2ETest/Data/' . $fileName . '.xml',
-            FILE_USE_INCLUDE_PATH
-        );
     }
 
     /**

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<prestashop xmlns:xlink="http://www.w3.org/1999/xlink">
+    <country>
+        <id>{id}</id>
+        <id_zone>{id_zone}</id_zone>
+        <iso_code>{iso_code}</iso_code>
+        <active>{active}</active>
+        <contains_states>{contains_states}</contains_states>
+        <need_identification_number>{need_identification_number}</need_identification_number>
+        <display_tax_label>{display_tax_label}</display_tax_label>
+        <name>
+            <language id="1">{language1}</language>
+            <language id="2">{language2}</language>
+        </name>
+    </country>
+</prestashop>
