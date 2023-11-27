@@ -10,7 +10,6 @@
         <display_tax_label>{display_tax_label}</display_tax_label>
         <name>
             <language id="1">{language1}</language>
-            <language id="2">{language2}</language>
         </name>
     </country>
 </prestashop>

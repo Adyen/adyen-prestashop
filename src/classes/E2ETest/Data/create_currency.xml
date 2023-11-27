@@ -3,12 +3,10 @@
     <currency>
         <names>
             <language id="1">{language1}</language>
-            <language id="2">{language2}</language>
         </names>
         <name notFilterable="true">{name}</name>
         <symbol>
             <language id="1">{symbol_language1}</language>
-            <language id="2">{symbol_language2}</language>
         </symbol>
         <iso_code>{iso_code}</iso_code>
         <precision>{precision}</precision>

@@ -153,7 +153,8 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
                     '{active}',
                     '{contains_states}',
                     '{need_identification_number}',
-                    '{display_tax_label}'
+                    '{display_tax_label}',
+                    '{language1}'
                 ],
                 [
                     $countryId,
@@ -162,15 +163,11 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
                     1,
                     $countryData['contains_states'],
                     $countryData['need_identification_number'],
-                    $countryData['display_tax_label']
+                    $countryData['display_tax_label'],
+                    $countryData['name']
                 ],
                 $data
             );
-            $countryNames = $countryData['name'];
-            foreach ($countryNames as $countryName) {
-                $id = $countryName['id'];
-                $data = str_replace("{language$id}", $countryName['value'], $data);
-            }
 
             $this->countryTestProxy->updateCountry($countryId, ['data' => $data]);
         }
@@ -217,6 +214,8 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
                 '{precision}',
                 '{conversion_rate}',
                 '{active}',
+                '{language1}',
+                '{symbol_language1}'
             ],
             [
                 $currencyId,
@@ -224,22 +223,12 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
                 $isoCode,
                 $currencyData['precision'],
                 $currencyData['conversion_rate'],
-                1
+                1,
+                $currencyData['names'],
+                $currencyData['symbol']
             ],
             $data
         );
-
-        $currencyNames = $currencyData['names'];
-        foreach ($currencyNames as $currencyName) {
-            $id = $currencyName['id'];
-            $data = str_replace("{language$id}", $currencyName['value'], $data);
-        }
-
-        $currencySymbols = $currencyData['symbol'];
-        foreach ($currencySymbols as $currencySymbol) {
-            $id = $currencySymbol['id'];
-            $data = str_replace("{symbol_language$id}", $currencySymbol['value'], $data);
-        }
 
         $this->currencyTestProxy->updateCurrency($currencyId, ['data' => $data]);
     }
@@ -256,9 +245,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
             [
                 '{name}',
                 '{language1}',
-                '{language2}',
                 '{symbol_language1}',
-                '{symbol_language2}',
                 '{iso_code}',
                 '{precision}',
                 '{conversion_rate}',
@@ -267,8 +254,6 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
             [
                 $currencyTestData['name'],
                 $currencyTestData['name'],
-                $currencyTestData['name'],
-                $currencyTestData['symbol'],
                 $currencyTestData['symbol'],
                 $currencyTestData['isoCode'],
                 $currencyTestData['precision'],
