@@ -115,7 +115,7 @@ class OrderService implements OrderServiceInterface
             $updatedState = $this->getOrderCurrentState($idOrder);
             if ((int)$updatedState !== (int)$statusId) {
                 throw new Exception(
-                    'Order status update failed. Adyen tried to change order state id to ' . $statusId . ' but PrestaShop API failed to update order to desired status. '
+                    'Order status update failed for order with ID: ' . $idOrder . '. Adyen tried to change order state id to ' . $statusId . ' but PrestaShop API failed to update order to desired status. '
                 );
             }
         }
@@ -192,7 +192,8 @@ class OrderService implements OrderServiceInterface
      *
      * @return void
      */
-    private function setTimezone(int $storeId): void {
+    private function setTimezone(int $storeId): void
+    {
         $shop = new Shop($storeId);
 
         @date_default_timezone_set(
