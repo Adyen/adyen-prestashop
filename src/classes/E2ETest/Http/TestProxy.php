@@ -39,7 +39,7 @@ class TestProxy
     {
         $this->httpClient = $httpClient;
         $protocol = ($baseUrl === 'localhost') ? 'http://' : 'https://';
-        $this->baseUrl = $baseUrl === $protocol . trim(str_replace(['http:', 'https:'], '', $baseUrl), '/');
+        $this->baseUrl = $protocol . trim(str_replace(['http:', 'https:'], '', $baseUrl), '/');
         $this->credentials = $credentials;
     }
 
