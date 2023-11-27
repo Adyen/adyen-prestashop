@@ -15,14 +15,17 @@ class CustomerTestProxy extends TestProxy
     /**
      * Creates request to create customer in database
      *
+     * @param array $customerData
+     * @return array
      * @throws HttpRequestException
      */
-    public function createCustomer(array $customerData): void
+    public function createCustomer(array $customerData): array
     {
         $httpRequest = new HttpRequest(
             "/api/customers",
             $customerData
         );
-        $this->post($httpRequest)->decodeBodyToArray();
+
+        return $this->post($httpRequest)->decodeBodyToArray();
     }
 }

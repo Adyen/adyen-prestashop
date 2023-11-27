@@ -15,15 +15,18 @@ class CurrencyTestProxy extends TestProxy
     /**
      * Creates request to create currency
      *
+     * @param array $currencyData
+     * @return array
      * @throws HttpRequestException
      */
-    public function createCurrency(array $currencyData): void
+    public function createCurrency(array $currencyData): array
     {
         $httpRequest = new HttpRequest(
             "/api/currencies",
             $currencyData
         );
-        $this->post($httpRequest)->decodeBodyToArray();
+
+        return $this->post($httpRequest)->decodeBodyToArray();
     }
 
 

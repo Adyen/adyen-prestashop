@@ -29,8 +29,11 @@ use AdyenPayment\Classes\E2ETest\Http\CountryTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\CurrencyTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\CustomerTestProxy;
 use Configuration;
-use Currency;
+use Module;
+use PaymentModule;
+use PrestaShop\PrestaShop\Adapter\Entity\Currency;
 use PrestaShop\PrestaShop\Adapter\Entity\Country;
+use Shop;
 
 /**
  * Class CreateCheckoutSeedDataService
@@ -171,6 +174,9 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
 
             $this->countryTestProxy->updateCountry($countryId, ['data' => $data]);
         }
+
+        $moduleId = Module::getInstanceByName('adyenofficial')->id;
+        Country::addModuleRestrictions([], [], [['id_module' => $moduleId]]);
     }
 
     /**
@@ -263,7 +269,12 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
             $data
         );
 
-        $this->currencyTestProxy->createCurrency(['data' => $data]);
+        $createdCurrency = $this->currencyTestProxy->createCurrency(['data' => $data])['currency'];
+        if ($createdCurrency) {
+            $createdCurrencyId = (int)$createdCurrency['id'];
+            $moduleId = Module::getInstanceByName('adyenofficial')->id;
+            PaymentModule::addCurrencyPermissions($createdCurrencyId, [$moduleId]);
+        }
     }
 
     /**
@@ -274,16 +285,18 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
     private function createCustomerAndAddress(): void
     {
         $customer = $this->readFromJSONFile()['customer'] ?? [];
-        $this->createCustomer($customer);
-        $this->createCustomerAddress($customer);
+        $createdCustomerId = $this->createCustomer($customer);
+        $this->createCustomerAddress($customer, $createdCustomerId);
     }
 
     /**
      * Creates customer
      *
+     * @param array $customer
+     * @return string
      * @throws HttpRequestException
      */
-    private function createCustomer(array $customer): void
+    private function createCustomer(array $customer): string
     {
         $data = $this->readFomXMLFile('create_customer');
         $data = str_replace(
@@ -318,15 +331,23 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
             $data
         );
 
-        $this->customerTestProxy->createCustomer(['data' => $data]);
+        $createdCustomer = $this->customerTestProxy->createCustomer(['data' => $data])['customer'];
+        if ($createdCustomer) {
+            return $createdCustomer['id'];
+        }
+
+        return '';
     }
 
     /**
      * Creates customer's address
      *
+     * @param array $customer
+     * @param string $createdCustomerId
+     * @return void
      * @throws HttpRequestException
      */
-    private function createCustomerAddress(array $customer): void
+    private function createCustomerAddress(array $customer, string $createdCustomerId): void
     {
         $addressData = $customer['address'];
         $data = $this->readFomXMLFile('create_address');
@@ -342,7 +363,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
                 '{city}'
             ],
             [
-                1,
+                $createdCustomerId,
                 Country::getByIso($addressData['country']),
                 $addressData['alias'],
                 $customer['lastName'],
