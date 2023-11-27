@@ -1,4 +1,12 @@
 {
+  "newSubStores": [
+    {
+      "subStore": "substore2"
+    },
+    {
+      "subStore": "substore3"
+    }
+  ],
   "countries": [
     {
       "iso": "DE"

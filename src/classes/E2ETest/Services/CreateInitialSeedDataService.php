@@ -76,16 +76,33 @@ class CreateInitialSeedDataService extends BaseCreateSeedDataService
     public function createSubStores(): void
     {
         $shops = $this->shopProxy->getSubStores();
+        $shopUrls = $this->shopProxy->getSubStoreUrls();
+        $newSubStores = array_column($this->readFromJSONFile()['newSubStores'] ?? [], 'subStore');
+
         if (array_key_exists('shops', $shops) && count($shops['shops']) === 1) {
-            $data = $this->readFomXMLFile('create_shop');
-            $this->shopProxy->createSubStore(['data' => $data]);
+            foreach ($newSubStores as $newSubStore) {
+                $data = $this->readFomXMLFile('create_shop');
+                $data = str_replace('{name}', $newSubStore, $data);
+                $this->shopProxy->createSubStore(['data' => $data]);
+            }
         }
 
-        $shopUrls = $this->shopProxy->getSubStoreUrls();
         if (array_key_exists('shop_urls', $shopUrls) && count($shopUrls['shop_urls']) === 1) {
-            $data = $this->readFomXMLFile('create_shop_url');
-            $data = str_replace('{host}', parse_url($this->baseUrl)['host'], $data);
-            $this->shopProxy->createShopUrl(['data' => $data]);
+            foreach ($newSubStores as $newSubStore) {
+                $data = $this->readFomXMLFile('create_shop_url');
+                $data = str_replace(
+                    [
+                        '{host}',
+                        '{virtual_uri}'
+                    ],
+                    [
+                        parse_url($this->baseUrl)['host'],
+                        $newSubStore . '/'
+                    ],
+                    $data
+                );
+                $this->shopProxy->createShopUrl(['data' => $data]);
+            }
         }
 
         $this->enableModuleInNewSubStore();
