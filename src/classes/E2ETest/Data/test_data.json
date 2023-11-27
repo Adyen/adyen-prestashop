@@ -10,57 +10,44 @@
       "iso": "IT"
     }
   ],
-  "customer":     {
-    "groupKey": "EK",
-    "shopId": 1,
-    "encoderName": "bcrypt",
-    "password": "First132.",
-    "active": true,
+  "customer": {
+    "firstName": "test",
+    "lastName": "test",
     "email": "testExist@de.com",
-    "languageId": "1",
-    "salutation": "ms",
-    "firstname": "test",
-    "lastname": "test",
-    "defaultShippingAddress":{
-      "street":"test 123",
-      "zipcode": "10115",
+    "password": "First132.",
+    "genderId": 2,
+    "birthday": "1970-05-31",
+    "defaultGroupId" : 3,
+    "langId" : 1,
+    "address" : {
+      "address": "test 123",
       "city": "Berlin",
       "country": "DE",
-      "salutation": "ms",
-      "firstname": "test",
-      "lastname": "test"
-    },
-    "defaultBillingAddress":{
-      "street":"test 123",
-      "zipcode": "10115",
-      "city": "Berlin",
-      "country": "DE",
-      "salutation": "ms",
-      "firstname": "test",
-      "lastname": "test"
+      "postalCode": "10115",
+      "alias": "My address"
     }
   },
-  "currencies" : [
+  "currencies": [
     {
-      "isoCode" : "EUR",
-      "name" : "Euro",
-      "conversionRate" : 1,
-      "symbol" : "€",
-      "precision" : 2
+      "isoCode": "EUR",
+      "name": "Euro",
+      "conversionRate": 1,
+      "symbol": "€",
+      "precision": 2
     },
     {
-      "isoCode" : "GBP",
-      "name" : "British Pound",
-      "conversionRate" : 0.87,
-      "symbol" : "£",
-      "precision" : 2
+      "isoCode": "GBP",
+      "name": "British Pound",
+      "conversionRate": 0.87,
+      "symbol": "£",
+      "precision": 2
     },
     {
-      "isoCode" : "USD",
-      "name" : "United States Dollar",
-      "conversionRate" : 1.09,
-      "symbol" : "$",
-      "precision" : 2
+      "isoCode": "USD",
+      "name": "United States Dollar",
+      "conversionRate": 1.09,
+      "symbol": "$",
+      "precision": 2
     }
   ]
 }

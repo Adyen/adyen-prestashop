@@ -24,8 +24,10 @@ use Adyen\Core\BusinessLogic\E2ETest\Services\CreateIntegrationDataService;
 use Adyen\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use Adyen\Core\Infrastructure\Http\HttpClient;
 use Adyen\Core\Infrastructure\ServiceRegister;
+use AdyenPayment\Classes\E2ETest\Http\AddressTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\CountryTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\CurrencyTestProxy;
+use AdyenPayment\Classes\E2ETest\Http\CustomerTestProxy;
 use Currency;
 use PrestaShop\PrestaShop\Adapter\Entity\Country;
 
@@ -44,6 +46,14 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
      * @var CurrencyTestProxy
      */
     private $currencyTestProxy;
+    /**
+     * @var CustomerTestProxy
+     */
+    private $customerTestProxy;
+    /**
+     * @var AddressTestProxy
+     */
+    private $addressTestProxy;
 
     /**
      * CreateCheckoutSeedDataService constructor
@@ -54,6 +64,8 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
     {
         $this->countryTestProxy = new CountryTestProxy($this->getHttpClient(), 'localhost', $credentials);
         $this->currencyTestProxy = new CurrencyTestProxy($this->getHttpClient(), 'localhost', $credentials);
+        $this->customerTestProxy = new CustomerTestProxy($this->getHttpClient(), 'localhost', $credentials);
+        $this->addressTestProxy = new AddressTestProxy($this->getHttpClient(), 'localhost', $credentials);
     }
 
     /**
@@ -85,6 +97,98 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
         $this->createIntegrationConfigurations($testApiKey);
         $this->activateCountries();
         $this->addCurrencies();
+        $this->createCustomerAndAddress();
+    }
+
+    /**
+     * Creates customer and address in database
+     *
+     * @throws HttpRequestException
+     */
+    private function createCustomerAndAddress(): void
+    {
+        $customer = $this->readFromJSONFile()['customer'] ?? [];
+        $this->createCustomer($customer);
+        $this->createCustomerAddress($customer);
+    }
+
+    /**
+     * Creates customer
+     *
+     * @throws HttpRequestException
+     */
+    private function createCustomer(array $customer): void
+    {
+        $data = $this->readFomXMLFile('create_customer');
+        $data = str_replace(
+            [
+                '{id_default_group}',
+                '{id_lang}',
+                '{passwd}',
+                '{lastname}',
+                '{firstname}',
+                '{email}',
+                '{id_gender}',
+                '{birthday}',
+                '{active}',
+                '{is_guest}',
+                '{id_shop}',
+                '{id_shop_group}'
+            ],
+            [
+                $customer['defaultGroupId'],
+                $customer['langId'],
+                $customer['password'],
+                $customer['lastName'],
+                $customer['firstName'],
+                $customer['email'],
+                $customer['genderId'],
+                $customer['birthday'],
+                1,
+                0,
+                1,
+                1
+            ],
+            $data
+        );
+
+        $this->customerTestProxy->createCustomer(['data' => $data]);
+    }
+
+    /**
+     * Creates customer's address
+     *
+     * @throws HttpRequestException
+     */
+    private function createCustomerAddress(array $customer): void
+    {
+        $addressData = $customer['address'];
+        $data = $this->readFomXMLFile('create_address');
+        $data = str_replace(
+            [
+                '{id_customer}',
+                '{id_country}',
+                '{alias}',
+                '{lastname}',
+                '{firstname}',
+                '{address1}',
+                '{postcode}',
+                '{city}'
+            ],
+            [
+                20,
+                Country::getByIso($addressData['country']),
+                $addressData['alias'],
+                $customer['lastName'],
+                $customer['firstName'],
+                $addressData['address'],
+                $addressData['postalCode'],
+                $addressData['city'],
+            ],
+            $data
+        );
+
+        $this->addressTestProxy->createAddress(['data' => $data]);
     }
 
     /**

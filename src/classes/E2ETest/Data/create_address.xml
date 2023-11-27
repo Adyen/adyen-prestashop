@@ -1,0 +1,12 @@
+<prestashop xmlns:xlink="http://www.w3.org/1999/xlink">
+    <address>
+        <id_customer>{id_customer}</id_customer>
+        <id_country>{id_country}</id_country>
+        <alias>{alias}</alias>
+        <lastname>{lastname}</lastname>
+        <firstname>{firstname}</firstname>
+        <address1>{address1}</address1>
+        <postcode>{postcode}</postcode>
+        <city>{city}</city>
+    </address>
+</prestashop>
