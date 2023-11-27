@@ -105,17 +105,19 @@ class CreateInitialSeedDataService extends BaseCreateSeedDataService
             }
         }
 
-        $this->enableModuleInNewSubStore();
+        $this->enableModuleInNewSubStore(2);
+        $this->enableModuleInNewSubStore(3);
     }
 
     /**
-     * Enables module in second substore
+     * Enables module in given subStore
      *
+     * @param int $subStoreId
      * @return void
      */
-    private function enableModuleInNewSubStore(): void
+    private function enableModuleInNewSubStore(int $subStoreId): void
     {
-        Shop::setContext(1, 2);
+        Shop::setContext(1, $subStoreId);
         $module = Module::getInstanceByName('adyenofficial');
         $module->enable();
     }
