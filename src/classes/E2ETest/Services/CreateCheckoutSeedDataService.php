@@ -25,6 +25,8 @@ use Adyen\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use Adyen\Core\Infrastructure\Http\HttpClient;
 use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\E2ETest\Http\CountryTestProxy;
+use AdyenPayment\Classes\E2ETest\Http\CurrencyTestProxy;
+use Currency;
 use PrestaShop\PrestaShop\Adapter\Entity\Country;
 
 /**
@@ -39,9 +41,9 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
      */
     private $countryTestProxy;
     /**
-     * @var string
+     * @var CurrencyTestProxy
      */
-    private $baseUrl;
+    private $currencyTestProxy;
 
     /**
      * CreateCheckoutSeedDataService constructor
@@ -51,6 +53,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
     public function __construct(string $credentials)
     {
         $this->countryTestProxy = new CountryTestProxy($this->getHttpClient(), 'localhost', $credentials);
+        $this->currencyTestProxy = new CurrencyTestProxy($this->getHttpClient(), 'localhost', $credentials);
     }
 
     /**
@@ -81,6 +84,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
 
         $this->createIntegrationConfigurations($testApiKey);
         $this->activateCountries();
+        $this->addCurrencies();
     }
 
     /**
@@ -127,6 +131,112 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
 
             $this->countryTestProxy->updateCountry($countryId, ['data' => $data]);
         }
+    }
+
+    /**
+     * Activates currencies if already exist and create new currencies if they don't
+     *
+     * @throws HttpRequestException
+     */
+    private function addCurrencies(): void
+    {
+        $currencies = $this->readFromJSONFile()['currencies'] ?? [];
+        foreach ($currencies as $currency) {
+            if (Currency::exists($currency['isoCode'])) {
+                $this->updateExistingCurrency($currency['isoCode']);
+
+                continue;
+            }
+
+            $this->createCurrency($currency);
+        }
+
+    }
+
+    /**
+     * Activates existing currency
+     *
+     * @throws HttpRequestException
+     */
+    private function updateExistingCurrency(string $isoCode): void
+    {
+        $currencyId = Currency::getIdByIsoCode($isoCode);
+        $currencyData = $this->currencyTestProxy->getCurrencyData($currencyId)['currency'];
+        if (!$currencyData || $currencyData['active'] === '1') {
+            return;
+        }
+
+        $data = $this->readFomXMLFile('update_currency');
+        $data = str_replace(
+            [
+                '{id}',
+                '{name}',
+                '{iso_code}',
+                '{precision}',
+                '{conversion_rate}',
+                '{active}',
+            ],
+            [
+                $currencyId,
+                $currencyData['name'],
+                $isoCode,
+                $currencyData['precision'],
+                $currencyData['conversion_rate'],
+                1
+            ],
+            $data
+        );
+
+        $currencyNames = $currencyData['names'];
+        foreach ($currencyNames as $currencyName) {
+            $id = $currencyName['id'];
+            $data = str_replace("{language$id}", $currencyName['value'], $data);
+        }
+
+        $currencySymbols = $currencyData['symbol'];
+        foreach ($currencySymbols as $currencySymbol) {
+            $id = $currencySymbol['id'];
+            $data = str_replace("{symbol_language$id}", $currencySymbol['value'], $data);
+        }
+
+        $this->currencyTestProxy->updateCurrency($currencyId, ['data' => $data]);
+    }
+
+    /**
+     * Creates new currency
+     *
+     * @throws HttpRequestException
+     */
+    private function createCurrency(array $currencyTestData): void
+    {
+        $data = $this->readFomXMLFile('create_currency');
+        $data = str_replace(
+            [
+                '{name}',
+                '{language1}',
+                '{language2}',
+                '{symbol_language1}',
+                '{symbol_language2}',
+                '{iso_code}',
+                '{precision}',
+                '{conversion_rate}',
+                '{active}',
+            ],
+            [
+                $currencyTestData['name'],
+                $currencyTestData['name'],
+                $currencyTestData['name'],
+                $currencyTestData['symbol'],
+                $currencyTestData['symbol'],
+                $currencyTestData['isoCode'],
+                $currencyTestData['precision'],
+                $currencyTestData['conversionRate'],
+                1
+            ],
+            $data
+        );
+
+        $this->currencyTestProxy->createCurrency(['data' => $data]);
     }
 
     /**

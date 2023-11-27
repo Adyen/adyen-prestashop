@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<prestashop xmlns:xlink="http://www.w3.org/1999/xlink">
+    <currency>
+        <names>
+            <language id="1">{language1}</language>
+            <language id="2">{language2}</language>
+        </names>
+        <name notFilterable="true">{name}</name>
+        <symbol>
+            <language id="1">{symbol_language1}</language>
+            <language id="2">{symbol_language2}</language>
+        </symbol>
+        <iso_code>{iso_code}</iso_code>
+        <precision>{precision}</precision>
+        <conversion_rate>{conversion_rate}</conversion_rate>
+        <active>{active}</active>
+    </currency>
+</prestashop>

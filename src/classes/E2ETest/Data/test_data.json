@@ -42,22 +42,25 @@
   },
   "currencies" : [
     {
-      "currency" : "GBP",
-      "name" : "British Pound",
-      "default" : false,
-      "factor" : 0.87,
-      "symbol" : "£",
-      "symbolPosition" : 0,
-      "position" : 0
+      "isoCode" : "EUR",
+      "name" : "Euro",
+      "conversionRate" : 1,
+      "symbol" : "€",
+      "precision" : 2
     },
     {
-      "currency" : "USD",
+      "isoCode" : "GBP",
+      "name" : "British Pound",
+      "conversionRate" : 0.87,
+      "symbol" : "£",
+      "precision" : 2
+    },
+    {
+      "isoCode" : "USD",
       "name" : "United States Dollar",
-      "default" : false,
-      "factor" : 1.09,
+      "conversionRate" : 1.09,
       "symbol" : "$",
-      "symbolPosition" : 0,
-      "position" : 0
+      "precision" : 2
     }
   ]
 }
