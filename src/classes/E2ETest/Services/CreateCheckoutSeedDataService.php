@@ -157,6 +157,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
                     '{contains_states}',
                     '{need_identification_number}',
                     '{display_tax_label}',
+                    '{contains_states}',
                     '{language1}'
                 ],
                 [
@@ -167,6 +168,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
                     $countryData['contains_states'],
                     $countryData['need_identification_number'],
                     $countryData['display_tax_label'],
+                    $countryData['contains_states'],
                     $countryData['name']
                 ],
                 $data

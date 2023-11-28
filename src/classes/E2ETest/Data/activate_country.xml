@@ -8,6 +8,7 @@
         <contains_states>{contains_states}</contains_states>
         <need_identification_number>{need_identification_number}</need_identification_number>
         <display_tax_label>{display_tax_label}</display_tax_label>
+        <contains_states>{contains_states}</contains_states>
         <name>
             <language id="1">{language1}</language>
         </name>
