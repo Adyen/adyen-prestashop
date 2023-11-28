@@ -2,15 +2,13 @@
 
 use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
 use Adyen\Core\BusinessLogic\CheckoutAPI\PaymentRequest\Request\StartTransactionRequest;
-use Adyen\Core\BusinessLogic\DataAccess\Payment\Exceptions\PaymentMethodNotConfiguredException;
-use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode;
-use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidPaymentMethodCodeException;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency;
 use AdyenPayment\Classes\Bootstrap;
 use AdyenPayment\Classes\Utility\Url;
 use AdyenPayment\Controllers\PaymentController;
+use Adyen\Core\Infrastructure\Logger\Logger;
 use Currency as PrestaCurrency;
 
 /**
@@ -43,8 +41,6 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
     /**
      * @return void
      *
-     * @throws InvalidCurrencyCode
-     * @throws InvalidPaymentMethodCodeException
      * @throws Exception
      */
     public function postProcess()
@@ -104,12 +100,13 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
                     'checkoutUrl' => $this->context->link->getPageLink('order', $this->ssl, null)
                 ]
             );
-        } catch (PaymentMethodNotConfiguredException $e) {
+        } catch (Throwable $e) {
+            Logger::logError(
+                'Adyen failed to create order from Cart with ID: ' . $cart->id . ' Reason: ' . $e->getMessage()
+            );
             $message = $this->module->l('Your payment could not be processed, please resubmit order.', self::FILE_NAME);
             $this->errors[] = $message;
-            $this->redirectWithNotifications(
-                Context::getContext()->link->getPageLink('order')
-            );
+            $this->redirectWithNotifications(Context::getContext()->link->getPageLink('order'));
         }
     }
 
