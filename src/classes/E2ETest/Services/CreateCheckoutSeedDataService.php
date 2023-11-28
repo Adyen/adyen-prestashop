@@ -164,7 +164,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
                     $countryData['id_zone'],
                     $countriesIsoCode,
                     1,
-                    $countryData['contains_states'],
+                    $countryData['contains_states'] ?? 0,
                     $countryData['need_identification_number'],
                     $countryData['display_tax_label'],
                     $countryData['name']
