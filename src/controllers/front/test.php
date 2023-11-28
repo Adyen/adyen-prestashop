@@ -57,8 +57,8 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
                 throw new InvalidDataException('Url, test api key and live api key are required parameters.');
             }
 
-            $adyenApiService = new AdyenAPIService();
-            $adyenApiService->verifyManagementAPI();
+//            $adyenApiService = new AdyenAPIService();
+//            $adyenApiService->verifyManagementAPI();
             $authorizationService = new AuthorizationService();
             $credentials = $authorizationService->getAuthorizationCredentials();
             $createSeedDataService = new CreateInitialSeedDataService($url, $credentials);
