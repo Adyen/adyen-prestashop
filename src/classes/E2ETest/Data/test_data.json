@@ -20,6 +20,11 @@
       "iso": "FR"
     }
   ],
+  "deactivateCountries": [
+    {
+      "iso": "US"
+    }
+  ],
   "customer": {
     "firstName": "test",
     "lastName": "test",

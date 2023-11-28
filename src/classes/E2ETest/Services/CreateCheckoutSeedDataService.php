@@ -101,6 +101,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
 
         $this->createIntegrationConfigurations($testApiKey);
         $this->activateCountries();
+        $this->deactivateCountries();
         $this->addCurrencies();
         $this->createCustomerAndAddress();
     }
@@ -147,7 +148,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
                 return;
             }
 
-            $data = $this->readFomXMLFile('activate_country');
+            $data = $this->readFomXMLFile('update_country');
             $data = str_replace(
                 [
                     '{id}',
@@ -177,6 +178,49 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
 
         $moduleId = Module::getInstanceByName('adyenofficial')->id;
         Country::addModuleRestrictions([], [], [['id_module' => $moduleId]]);
+    }
+
+    /**
+     * @throws HttpRequestException
+     */
+    private function deactivateCountries(): void
+    {
+        $countriesIsoCodes = array_column($this->readFromJSONFile()['deactivateCountries'] ?? [], 'iso');
+        foreach ($countriesIsoCodes as $countriesIsoCode) {
+            $countryId = Country::getByIso($countriesIsoCode);
+            $countryData = $this->countryTestProxy->getCountryData($countryId)['country'];
+
+            if (!$countryData) {
+                return;
+            }
+
+            $data = $this->readFomXMLFile('update_country');
+            $data = str_replace(
+                [
+                    '{id}',
+                    '{id_zone}',
+                    '{iso_code}',
+                    '{active}',
+                    '{contains_states}',
+                    '{need_identification_number}',
+                    '{display_tax_label}',
+                    '{language1}'
+                ],
+                [
+                    $countryId,
+                    $countryData['id_zone'],
+                    $countriesIsoCode,
+                    0,
+                    $countryData['contains_states'] ?? 0,
+                    $countryData['need_identification_number'] ?? 0,
+                    $countryData['display_tax_label'],
+                    $countryData['name']
+                ],
+                $data
+            );
+
+            $this->countryTestProxy->updateCountry($countryId, ['data' => $data]);
+        }
     }
 
     /**
