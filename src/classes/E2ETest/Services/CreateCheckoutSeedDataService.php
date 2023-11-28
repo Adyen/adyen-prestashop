@@ -213,7 +213,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
                     0,
                     $countryData['contains_states'] ?? 0,
                     $countryData['need_identification_number'] ?? 0,
-                    $countryData['display_tax_label'],
+                    $countryData['display_tax_label'] ?? 0,
                     $countryData['name']
                 ],
                 $data
