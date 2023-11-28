@@ -2,7 +2,7 @@
 on:
   push:
     branches:
-      - feature/cicd
+      - feature/iteration_3
 jobs:
   build:
     permissions:
