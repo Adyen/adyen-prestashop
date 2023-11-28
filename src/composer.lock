@@ -4,24 +4,24 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d59fc544693c0a3490a8e2badf3de38c",
+    "content-hash": "3a20b84639ebd7cf2db18585ca38c2ae",
     "packages": [
         {
             "name": "adyen/integration-core",
-            "version": "1.0.6",
+            "version": "1.0.7",
             "source": {
                 "type": "git",
                 "url": "git@github.com:Adyen/adyen-php-plugin-core.git",
-                "reference": "faaa9076a3df5335fdc8830869d161a1b3766736"
+                "reference": "f1e2a776608b4ad3934645197031e2db010c5f8a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Adyen/adyen-php-plugin-core/zipball/faaa9076a3df5335fdc8830869d161a1b3766736",
-                "reference": "faaa9076a3df5335fdc8830869d161a1b3766736",
+                "url": "https://api.github.com/repos/Adyen/adyen-php-plugin-core/zipball/f1e2a776608b4ad3934645197031e2db010c5f8a",
+                "reference": "f1e2a776608b4ad3934645197031e2db010c5f8a",
                 "shasum": ""
             },
             "require": {
-                "adyen/php-webhook-module": "0.1.0",
+                "adyen/php-webhook-module": "0.2.0",
                 "ext-ctype": "*",
                 "ext-json": "*",
                 "php": ">=7.2"
@@ -48,20 +48,20 @@
                 "proprietary"
             ],
             "description": "Core Adyen integration library",
-            "time": "2023-11-14T15:07:26+00:00"
+            "time": "2023-11-28T10:25:27+00:00"
         },
         {
             "name": "adyen/php-webhook-module",
-            "version": "0.1.0",
+            "version": "0.2.0",
             "source": {
                 "type": "git",
                 "url": "git@github.com:logeecom/adyen-php-webhook-module.git",
-                "reference": "0ab11cbccbd0ee187fb6f4f643e4cf8747f938ac"
+                "reference": "0b94d935c98b8e91a4c6f5586657ed1de71bbd9d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/logeecom/adyen-php-webhook-module/zipball/0ab11cbccbd0ee187fb6f4f643e4cf8747f938ac",
-                "reference": "0ab11cbccbd0ee187fb6f4f643e4cf8747f938ac",
+                "url": "https://api.github.com/repos/logeecom/adyen-php-webhook-module/zipball/0b94d935c98b8e91a4c6f5586657ed1de71bbd9d",
+                "reference": "0b94d935c98b8e91a4c6f5586657ed1de71bbd9d",
                 "shasum": ""
             },
             "require": {
@@ -91,7 +91,7 @@
                 }
             ],
             "description": "Webhook module for Adyen Payment Integrations",
-            "time": "2023-01-23T12:47:14+00:00"
+            "time": "2023-11-27T12:06:55+00:00"
         }
     ],
     "packages-dev": [
@@ -1461,16 +1461,16 @@
         },
         {
             "name": "theseer/tokenizer",
-            "version": "1.2.1",
+            "version": "1.2.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/theseer/tokenizer.git",
-                "reference": "34a41e998c2183e22995f158c581e7b5e755ab9e"
+                "reference": "b2ad5003ca10d4ee50a12da31de12a5774ba6b96"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/theseer/tokenizer/zipball/34a41e998c2183e22995f158c581e7b5e755ab9e",
-                "reference": "34a41e998c2183e22995f158c581e7b5e755ab9e",
+                "url": "https://api.github.com/repos/theseer/tokenizer/zipball/b2ad5003ca10d4ee50a12da31de12a5774ba6b96",
+                "reference": "b2ad5003ca10d4ee50a12da31de12a5774ba6b96",
                 "shasum": ""
             },
             "require": {
@@ -1499,7 +1499,7 @@
             "description": "A small library for converting tokenized PHP source code into XML and potentially other formats",
             "support": {
                 "issues": "https://github.com/theseer/tokenizer/issues",
-                "source": "https://github.com/theseer/tokenizer/tree/1.2.1"
+                "source": "https://github.com/theseer/tokenizer/tree/1.2.2"
             },
             "funding": [
                 {
@@ -1507,7 +1507,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2021-07-28T10:34:58+00:00"
+            "time": "2023-11-20T00:12:19+00:00"
         }
     ],
     "aliases": [],
