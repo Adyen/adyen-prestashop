@@ -1,11 +1,11 @@
 {
   "newSubStores": [
     {
-      "subStore": "substore2",
+      "subStore": "subStore2",
       "id" : "2"
     },
     {
-      "subStore": "substore3",
+      "subStore": "subStore3",
       "id" : "3"
     }
   ],
