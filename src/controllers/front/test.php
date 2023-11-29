@@ -51,14 +51,16 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
     private function handleInitialSeedDataRequest(array $payload): void
     {
         $url = $payload['url'] ?? '';
+        $testApiKey = $payload['testApiKey'] ?? '';
+        $liveApiKey = $payload['liveApiKey'] ?? '';
 
         try {
-            if ($url === '') {
+            if ($url === '' || $testApiKey === '' || $liveApiKey === '') {
                 throw new InvalidDataException('Url, test api key and live api key are required parameters.');
             }
 
             $adyenApiService = new AdyenAPIService();
-            $adyenApiService->verifyManagementAPI();
+            $adyenApiService->verifyManagementAPI($testApiKey, $liveApiKey);
             $authorizationService = new AuthorizationService();
             $credentials = $authorizationService->getAuthorizationCredentials();
             $createSeedDataService = new CreateInitialSeedDataService($url, $credentials);

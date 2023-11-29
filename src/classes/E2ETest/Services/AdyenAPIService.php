@@ -21,13 +21,15 @@ class AdyenAPIService
     /**
      * Verifies if Adyen Management API is stable
      *
+     * @param string $testApiKey
+     * @param string $liveApiKey
      * @return void
      * @throws HttpRequestException
      */
-    public function verifyManagementAPI(): void
+    public function verifyManagementAPI(string $testApiKey, string $liveApiKey): void
     {
-        $this->verifyTestManagementAPI(getenv('API_KEY_TEST'));
-        $this->verifyLiveManagementAPI(getenv('API_KEY_LIVE'));
+        $this->verifyTestManagementAPI($testApiKey);
+        $this->verifyLiveManagementAPI($liveApiKey);
     }
 
     /**
