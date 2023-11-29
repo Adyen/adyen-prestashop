@@ -1,10 +1,8 @@
 <?php
 
-use Adyen\Core\Infrastructure\Configuration\ConfigurationManager;
 use Adyen\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use Adyen\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
-use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\Bootstrap;
 use AdyenPayment\Classes\E2ETest\Exception\InvalidDataException;
 use AdyenPayment\Classes\E2ETest\Services\AdyenAPIService;
@@ -37,7 +35,7 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
      * @throws QueryFilterInvalidParamException
      * @throws Exception
      */
-    public function postProcess(): void
+    public function postProcess()
     {
         $payload = json_decode(Tools::file_get_contents('php://input'), true);
 
@@ -85,17 +83,8 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
         }
     }
 
-    /**
-     * @throws QueryFilterInvalidParamException
-     */
     private function handleCheckoutSeedDataRequest(array $payload): void
     {
-        $checkoutSeedData = $this->getConfigurationManager()->getConfigValue('checkoutSeedData');
-        if ($checkoutSeedData) {
-            return;
-        }
-
-        $this->getConfigurationManager()->saveConfigValue('checkoutSeedData', true);
         $testApiKey = $payload['testApiKey'] ?? '';
 
         try {
@@ -123,13 +112,5 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
         } finally {
             header('Content-Type: application/json');
         }
-    }
-
-    /**
-     * @return ConfigurationManager
-     */
-    private function getConfigurationManager(): ConfigurationManager
-    {
-        return ServiceRegister::getService(ConfigurationManager::CLASS_NAME);
     }
 }
