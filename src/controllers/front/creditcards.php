@@ -82,7 +82,6 @@ class AdyenOfficialCreditCardsModuleFrontController extends ModuleFrontControlle
         $connectionSettings = $this->connectionSettingsRepository->getConnectionSettings()->getActiveConnectionData();
         $shop = \Shop::getShop(\Context::getContext()->shop->id);
 
-
         $paymentMethods = $proxy->getAvailablePaymentMethods(
             new PaymentMethodsRequest(
                 $connectionSettings->getMerchantId(),
@@ -95,7 +94,6 @@ class AdyenOfficialCreditCardsModuleFrontController extends ModuleFrontControlle
                     )->customer->id
                 )
             )
-
         );
 
         $storedPaymentMethodsInfo = [];
@@ -107,7 +105,6 @@ class AdyenOfficialCreditCardsModuleFrontController extends ModuleFrontControlle
                     'lastFour' => $method->getMetadata()['lastFour'],
                     'name' => $method->getMetadata()['name'],
                     'expiryDate' => $method->getMetadata()['expiryMonth'] . '/' . $method->getMetadata()['expiryYear'],
-
                 ];
 
                 $storedPaymentMethodsInfo[] = $storedPayment;
@@ -118,12 +115,7 @@ class AdyenOfficialCreditCardsModuleFrontController extends ModuleFrontControlle
             [
                 'storedPaymentMethods' => $storedPaymentMethodsInfo,
                 'numberOfStoredPaymentMethods' => count($storedPaymentMethodsInfo),
-                'deletionUrl' => Url::getFrontUrl(
-                    'carddelete',
-                    [
-                        'customerId' => \Context::getContext()->customer->id
-                    ]
-                )
+                'deletionUrl' => Url::getFrontUrl('carddelete')
             ]
         );
     }
