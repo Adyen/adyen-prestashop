@@ -1,5 +1,6 @@
 <?php
 
+use Adyen\Core\BusinessLogic\AdminAPI\AdminAPI;
 use Adyen\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use Adyen\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
@@ -67,7 +68,10 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
             $createSeedDataService->createInitialData();
             $createSeedDataService = new CreateCheckoutSeedDataService($credentials);
             $createSeedDataService->crateCheckoutPrerequisitesData($testApiKey);
-            die(json_encode(['message' => 'The initial data setup was successfully completed.']));
+            die(json_encode(['message' => 'The initial data setup was successfully completed. Saved config: ' .
+                json_encode(AdminAPI::get()->connection(1)->getConnectionSettings()->toArray())  . ' payment methods: ' .
+                json_encode(AdminAPI::get()->payment(1)->getConfiguredPaymentMethods())
+            ]));
         } catch (InvalidDataException $exception) {
             AdyenPrestaShopUtility::die400(
                 [
