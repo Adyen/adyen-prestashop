@@ -65,6 +65,8 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
             $credentials = $authorizationService->getAuthorizationCredentials();
             $createSeedDataService = new CreateInitialSeedDataService($url, $credentials);
             $createSeedDataService->createInitialData();
+            $createSeedDataService = new CreateCheckoutSeedDataService($credentials);
+            $createSeedDataService->crateCheckoutPrerequisitesData($testApiKey);
             die(json_encode(['message' => 'The initial data setup was successfully completed.']));
         } catch (InvalidDataException $exception) {
             AdyenPrestaShopUtility::die400(
