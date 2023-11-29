@@ -39,6 +39,12 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
             $config = CheckoutHandler::getExpressCheckoutConfig($cart);
             $cart->delete();
         }
+        $customer = new Customer(Context::getContext()->customer->id);
+        if ((int)$customer->id !== (int)$cart->id_customer) {
+            AdyenPrestaShopUtility::die400(
+                ['message' => 'Cart with ID: ' . $cart->id . ' is not associated with customer' . ($customer->id ? ' with ID: ' . $customer->id : '. Customer is not logged in.')]
+            );
+        }
 
         AdyenPrestaShopUtility::dieJson($config);
     }

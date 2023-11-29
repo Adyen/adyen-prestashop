@@ -28,9 +28,9 @@ class AdyenOfficialCardDeleteModuleFrontController extends ModuleFrontController
      */
     public function postProcess(): void
     {
-        $customerId = \Tools::getValue('customerId');
+        $customerId = \Context::getContext()->customer->id;
         $cardId = \Tools::getValue('cardId');
-        if ($cardId === '') {
+        if (empty($cardId)) {
             AdyenPrestaShopUtility::die404(
                 [
                     'message' => 'Disable action could not be processed, invalid request.'
@@ -38,7 +38,7 @@ class AdyenOfficialCardDeleteModuleFrontController extends ModuleFrontController
             );
         }
 
-        if ($customerId === '') {
+        if (empty($customerId)) {
             AdyenPrestaShopUtility::die404(
                 [
                     'message' => 'Disable action could not be processed, customer not found.'
