@@ -12,6 +12,7 @@ use AdyenPayment\Classes\E2ETest\Services\CreateCheckoutSeedDataService;
 use AdyenPayment\Classes\E2ETest\Services\CreateInitialSeedDataService;
 use AdyenPayment\Classes\Utility\AdyenPrestaShopUtility;
 use AdyenPayment\Classes\Utility\Url;
+use PrestaShop\PrestaShop\Adapter\Entity\Country;
 
 /**
  * Class AdyenOfficialTestModuleFrontController
@@ -71,7 +72,8 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
             $createSeedDataService->crateCheckoutPrerequisitesData($testApiKey);
             die(json_encode(['message' => 'The initial data setup was successfully completed. Saved config: ' .
                 json_encode(AdminAPI::get()->connection(1)->getConnectionSettings()->toArray()) . ' payment methods: ' .
-                json_encode(AdminAPI::get()->payment(1)->getConfiguredPaymentMethods()->toArray())
+                json_encode(AdminAPI::get()->payment(1)->getConfiguredPaymentMethods()->toArray()) . ' countries: ' .
+                json_encode(Country::getCountries(1, true))
             ]));
         } catch (InvalidDataException $exception) {
             AdyenPrestaShopUtility::die400(
