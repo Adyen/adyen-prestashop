@@ -69,11 +69,9 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
             $createSeedDataService->createInitialData();
             $createSeedDataService = new CreateCheckoutSeedDataService($credentials);
             $createSeedDataService->crateCheckoutPrerequisitesData($testApiKey);
-            die(json_encode(['message' => 'Webhook url: ' . Url::getFrontUrl('webhook', ['storeId' => 1])
-                .
-                ' The initial data setup was successfully completed. Saved config: ' .
+            die(json_encode(['message' => 'The initial data setup was successfully completed. Saved config: ' .
                 json_encode(AdminAPI::get()->connection(1)->getConnectionSettings()->toArray()) . ' payment methods: ' .
-                json_encode(AdminAPI::get()->payment(1)->getConfiguredPaymentMethods())
+                json_encode(AdminAPI::get()->payment(1)->getConfiguredPaymentMethods()->toArray())
             ]));
         } catch (InvalidDataException $exception) {
             AdyenPrestaShopUtility::die400(
