@@ -177,7 +177,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
         }
 
         $moduleId = Module::getInstanceByName('adyenofficial')->id;
-        $countries = Country::getCountries(1, true);
+        $countries = Country::getCountriesByIdShop(1, 1);
         Country::addModuleRestrictions([], $countries, [['id_module' => $moduleId]]);
     }
 
