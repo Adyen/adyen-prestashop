@@ -14,7 +14,7 @@ class ShopsTestProxy extends TestProxy
 {
 
     /**
-     * Creates request to update shop name for default substore
+     * Creates request to update subStore
      *
      * @throws HttpRequestException
      */
@@ -25,7 +25,7 @@ class ShopsTestProxy extends TestProxy
     }
 
     /**
-     * Creates request to update base url for default substore
+     * Creates request to update subStore url
      *
      * @throws HttpRequestException
      */
@@ -75,7 +75,7 @@ class ShopsTestProxy extends TestProxy
 
     /**
      *
-     * Creates request to add new subStore
+     * Creates request to add new subStore url
      *
      * @throws HttpRequestException
      */

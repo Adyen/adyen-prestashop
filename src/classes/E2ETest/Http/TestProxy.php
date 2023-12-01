@@ -32,7 +32,7 @@ class TestProxy
      * Proxy constructor.
      *
      * @param HttpClient $httpClient
-     * @param string $baseUrl Shopware base url
+     * @param string $baseUrl PrestaShop base url
      * @param string $credentials Authorization header credentials
      */
     public function __construct(HttpClient $httpClient, string $baseUrl, string $credentials)

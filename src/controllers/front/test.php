@@ -42,17 +42,6 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
     {
         $payload = json_decode(Tools::file_get_contents('php://input'), true);
 
-        if ($payload['checkoutSeedDataRequest']) {
-            $this->handleCheckoutSeedDataRequest($payload);
-
-            return;
-        }
-
-        $this->handleInitialSeedDataRequest($payload);
-    }
-
-    private function handleInitialSeedDataRequest(array $payload): void
-    {
         $url = $payload['url'] ?? '';
         $testApiKey = $payload['testApiKey'] ?? '';
         $liveApiKey = $payload['liveApiKey'] ?? '';
@@ -71,37 +60,6 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
             $createSeedDataService = new CreateCheckoutSeedDataService($credentials);
             $createSeedDataService->crateCheckoutPrerequisitesData($testApiKey);
             die(json_encode(['message' => 'The initial data setup was successfully completed.']));
-        } catch (InvalidDataException $exception) {
-            AdyenPrestaShopUtility::die400(
-                [
-                    'message' => $exception->getMessage()
-                ]
-            );
-        } catch (HttpRequestException $exception) {
-            header('HTTP/1.1 503 Service Unavailable');
-            die(json_encode(['message' => $exception->getMessage()]));
-        } catch (Exception $exception) {
-            header('HTTP/1.1 500 Internal Server Error');
-            die(json_encode(['message' => $exception->getMessage()]));
-        } finally {
-            header('Content-Type: application/json');
-        }
-    }
-
-    private function handleCheckoutSeedDataRequest(array $payload): void
-    {
-        $testApiKey = $payload['testApiKey'] ?? '';
-
-        try {
-            if ($testApiKey === '') {
-                throw new InvalidDataException('Test api key is required parameter.');
-            }
-
-            $authorizationService = new AuthorizationService();
-            $credentials = $authorizationService->getAuthorizationCredentials();
-            $createSeedDataService = new CreateCheckoutSeedDataService($credentials);
-            $createSeedDataService->crateCheckoutPrerequisitesData($testApiKey);
-            die(json_encode(['message' => 'The checkout data setup was successfully completed.']));
         } catch (InvalidDataException $exception) {
             AdyenPrestaShopUtility::die400(
                 [
