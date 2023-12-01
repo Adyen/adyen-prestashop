@@ -10,11 +10,10 @@ use Adyen\Core\BusinessLogic\Domain\Payment\Services\PaymentService;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\Bootstrap;
-use AdyenPayment\Classes\Services\Domain\CreditCardsService;
 use AdyenPayment\Classes\Utility\Url;
 
 /**
- * Class AdyenOfficialCreditCardsModuleFrontController
+ * Class AdyenOfficialStoredMethodsModuleFrontController
  */
 class AdyenOfficialStoredMethodsModuleFrontController extends ModuleFrontController
 {
@@ -57,7 +56,7 @@ class AdyenOfficialStoredMethodsModuleFrontController extends ModuleFrontControl
     {
         parent::initContent();
         Tools::clearAllCache();
-        $this->setTemplate('module:adyenofficial/views/templates/front/credit-cards.tpl');
+        $this->setTemplate('module:adyenofficial/views/templates/front/stored-methods.tpl');
     }
 
     /**

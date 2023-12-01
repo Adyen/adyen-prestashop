@@ -242,7 +242,7 @@ if (!window.AdyenFE) {
         'bcmc_mobile'
     ];
 
-    const supportsRecurringPayments = ['ach', 'applepay', 'directdebit_GB', 'bcmc_mobile', 'eps', 'gcash', 'giropay', 'paywithgoogle', 'ideal', 'klarna', 'klarna_account', 'klarna_paynow', 'momo_wallet', 'paypal', 'sepadirectdebit', 'directEbanking', 'trustly', 'twint', 'vipps', 'zip'];
+    const supportsRecurringPayments = ['ach', 'applepay', 'directdebit_GB', 'bcmc_mobile', 'eps', 'gcash', 'giropay', 'paywithgoogle', 'ideal', 'klarna', 'klarna_account', 'klarna_paynow', 'sepadirectdebit', 'directEbanking', 'twint', 'vipps', 'zip'];
 
     /**
      * @typedef AdditionalDataConfig
@@ -404,7 +404,7 @@ if (!window.AdyenFE) {
                         label: method.name,
                         className: 'adlm--left-aligned',
                         renderer: (cell) =>
-                            cell.prepend(generator.createElement('img', 'adlp-payment-logo', '', { src: method.logo }))
+                            cell.prepend(generator.createElement('img', 'adlp-payment-logo', '', {src: method.logo}))
                     },
                     {
                         label: method.currencies?.length <= 2 ? method.currencies?.join(', ') : '',
@@ -724,7 +724,7 @@ if (!window.AdyenFE) {
                         label: translationService.translate('payments.filter.currencies.label'),
                         labelPlural: translationService.translate('payments.filter.currencies.labelPlural'),
                         values: activeFilters.currencies || [],
-                        options: currencies.map((c) => ({ value: c, label: c })),
+                        options: currencies.map((c) => ({value: c, label: c})),
                         selectPlaceholder: 'payments.filter.currencies.selectPlaceholder',
                         onChange: (values) => changeFilter('currencies', values)
                     }),
@@ -852,7 +852,7 @@ if (!window.AdyenFE) {
                             )
                         ]
                     ),
-                    generator.createElement('img', 'adlp-payment-logo', '', { src: method.logo })
+                    generator.createElement('img', 'adlp-payment-logo', '', {src: method.logo})
                 ]),
                 generator.createElement(
                     'p',
@@ -965,10 +965,10 @@ if (!window.AdyenFE) {
                             description: 'payments.configure.fields.surchargeType.description',
                             placeholder: 'payments.configure.fields.surchargeType.placeholder',
                             options: [
-                                { label: 'payments.configure.fields.surchargeType.none', value: 'none' },
-                                { label: 'payments.configure.fields.surchargeType.fixed', value: 'fixed' },
-                                { label: 'payments.configure.fields.surchargeType.percent', value: 'percent' },
-                                { label: 'payments.configure.fields.surchargeType.combined', value: 'combined' }
+                                {label: 'payments.configure.fields.surchargeType.none', value: 'none'},
+                                {label: 'payments.configure.fields.surchargeType.fixed', value: 'fixed'},
+                                {label: 'payments.configure.fields.surchargeType.percent', value: 'percent'},
+                                {label: 'payments.configure.fields.surchargeType.combined', value: 'combined'}
                             ]
                         },
                         {
@@ -1138,11 +1138,11 @@ if (!window.AdyenFE) {
                         'oneyFields',
                         'supportedInstallments',
                         [
-                            { label: 'oneyValues.3x', value: '3' },
-                            { label: 'oneyValues.4x', value: '4' },
-                            { label: 'oneyValues.6x', value: '6' },
-                            { label: 'oneyValues.10x', value: '10' },
-                            { label: 'oneyValues.12x', value: '12' }
+                            {label: 'oneyValues.3x', value: '3'},
+                            {label: 'oneyValues.4x', value: '4'},
+                            {label: 'oneyValues.6x', value: '6'},
+                            {label: 'oneyValues.10x', value: '10'},
+                            {label: 'oneyValues.12x', value: '12'}
                         ],
                         'adlm--inline',
                         false,
@@ -1161,10 +1161,10 @@ if (!window.AdyenFE) {
                     getRadioField('installmentFields', 'installments'),
                     getRadioField('installmentFields', 'installmentAmounts'),
                     getMultiselectField('installmentFields', 'installmentCountries', [
-                        { label: 'countries.BR', value: 'BR' },
-                        { label: 'countries.MX', value: 'MX' },
-                        { label: 'countries.TK', value: 'TK' },
-                        { label: 'countries.JP', value: 'JP' }
+                        {label: 'countries.BR', value: 'BR'},
+                        {label: 'countries.MX', value: 'MX'},
+                        {label: 'countries.TK', value: 'TK'},
+                        {label: 'countries.JP', value: 'JP'}
                     ]),
                     getNumberField('installmentFields', 'minimumAmount', '', false, 0.01, 0.01),
                     getTextField('installmentFields', 'numberOfInstallments')
@@ -1201,8 +1201,8 @@ if (!window.AdyenFE) {
                 label: `payments.configure.fields.${type}.${name}.label`,
                 description: `payments.configure.fields.${type}.${name}.description`,
                 options: [
-                    { label: 'general.yes', value: '1' },
-                    { label: 'general.no', value: '0' }
+                    {label: 'general.yes', value: '1'},
+                    {label: 'general.no', value: '0'}
                 ],
                 onChange: (value) => handleConfigMethodChange(name, value === '1', true)
             };
@@ -1305,7 +1305,7 @@ if (!window.AdyenFE) {
                 footer: true,
                 canClose: true,
                 buttons: [
-                    { type: 'secondary', label: 'general.cancel', onClick: () => modal.close() },
+                    {type: 'secondary', label: 'general.cancel', onClick: () => modal.close()},
                     {
                         type: 'primary',
                         className: 'adlm--destructive',
@@ -1544,12 +1544,12 @@ if (!window.AdyenFE) {
 
             if (['fixed', 'combined'].includes(changedMethod.surchargeType)) {
                 changedMethod.fixedSurcharge &&
-                    result.push(validator.validateNumber(page.querySelector('[name="fixedSurcharge"]')));
+                result.push(validator.validateNumber(page.querySelector('[name="fixedSurcharge"]')));
             }
 
             if (['percent', 'combined'].includes(changedMethod.surchargeType)) {
                 changedMethod.percentSurcharge &&
-                    result.push(validator.validateNumber(page.querySelector('[name="percentSurcharge"]')));
+                result.push(validator.validateNumber(page.querySelector('[name="percentSurcharge"]')));
                 if (changedMethod.surchargeLimit) {
                     const surchargeLimitField = page.querySelector('[name="surchargeLimit"]');
                     if (changedMethod.surchargeType === 'combined') {
@@ -1568,9 +1568,9 @@ if (!window.AdyenFE) {
                 }
 
                 changedMethod.paymentType === 'creditOrDebitCard' &&
-                    result.push(
-                        validator.validateNumberList(page.querySelector('[name="numberOfInstallments"]'), true, false)
-                    );
+                result.push(
+                    validator.validateNumberList(page.querySelector('[name="numberOfInstallments"]'), true, false)
+                );
             }
 
             if (changedMethod.paymentType === 'creditOrDebitCard') {
@@ -1647,7 +1647,7 @@ if (!window.AdyenFE) {
          *
          * @param {{ storeId: string }} config
          */
-        this.display = ({ storeId }) => {
+        this.display = ({storeId}) => {
             configuration.getConfiguredPaymentsUrl = configuration.getConfiguredPaymentsUrl.replace(
                 '{storeId}',
                 storeId

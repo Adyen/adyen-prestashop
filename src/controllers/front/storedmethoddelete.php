@@ -8,7 +8,7 @@ use AdyenPayment\Classes\Bootstrap;
 use AdyenPayment\Classes\Utility\AdyenPrestaShopUtility;
 
 /**
- * Class AdyenOfficialCardDeleteModuleFrontController
+ * Class AdyenOfficialStoredMethodDeleteModuleFrontController
  */
 class AdyenOfficialStoredMethodDeleteModuleFrontController extends ModuleFrontController
 {
