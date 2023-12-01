@@ -8,7 +8,10 @@ use Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use Adyen\Core\BusinessLogic\Domain\Stores\Exceptions\InvalidShopOrderDataException;
 use Adyen\Core\BusinessLogic\Domain\Stores\Models\Store;
 use Adyen\Core\BusinessLogic\Domain\Stores\Models\StoreOrderStatus;
+use Adyen\Core\Infrastructure\Configuration\ConfigurationManager;
+use Adyen\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Adyen\Core\Infrastructure\ORM\Interfaces\RepositoryInterface;
+use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\Repositories\ConfigurationRepository;
 use AdyenPayment\Classes\Services\AdyenOrderStatusMapping;
 use Module;
@@ -47,6 +50,7 @@ class StoreService implements StoreServiceInterface
 
     /**
      * @inheritDoc
+     * @throws QueryFilterInvalidParamException
      */
     public function getStoreDomain(): string
     {
@@ -54,10 +58,26 @@ class StoreService implements StoreServiceInterface
         $shop = \Shop::getShop($storeId);
 
         if (strpos($shop['domain'], '/') === false) {
-            return \Tools::getShopProtocol() . $shop['domain'];
+            $domain = \Tools::getShopProtocol() . $shop['domain'];
+
+            // only for test purposes
+            $testHostname = $this->getConfigurationManager()->getConfigValue('testHostname');
+            if($testHostname){
+                $domain = str_replace('localhost', $testHostname, $domain);
+            }
+
+            return $domain;
         }
 
-        return \Tools::getShopProtocol() . substr($shop['domain'], 0, strpos($shop['domain'], '/'));
+        $domain = \Tools::getShopProtocol() . substr($shop['domain'], 0, strpos($shop['domain'], '/'));
+
+        // only for test purposes
+        $testHostname = $this->getConfigurationManager()->getConfigValue('testHostname');
+        if($testHostname){
+            $domain = str_replace('localhost', $testHostname, $domain);
+        }
+
+        return $domain;
     }
 
     /**
@@ -213,5 +233,13 @@ class StoreService implements StoreServiceInterface
                 $orderState['name']
             );
         }, $orderStates);
+    }
+
+    /**
+     * @return ConfigurationManager
+     */
+    private function getConfigurationManager(): ConfigurationManager
+    {
+        return ServiceRegister::getService(ConfigurationManager::CLASS_NAME);
     }
 }

@@ -25,6 +25,8 @@ class WebhookUrlService implements WebhookUrlServiceInterface
     public function getWebhookUrl(): string
     {
         $url = Url::getFrontUrl('webhook', ['storeId' => StoreContext::getInstance()->getStoreId()]);
+
+        // only for test purposes
         $testHostname = $this->getConfigurationManager()->getConfigValue('testHostname');
         if($testHostname){
             $url = str_replace('localhost', $testHostname, $url);
@@ -35,7 +37,6 @@ class WebhookUrlService implements WebhookUrlServiceInterface
 
     /**
      * @return ConfigurationManager
-     *
      */
     private function getConfigurationManager(): ConfigurationManager
     {
