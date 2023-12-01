@@ -10,7 +10,6 @@ use Adyen\Core\BusinessLogic\Domain\Payment\Services\PaymentService;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\Bootstrap;
-use AdyenPayment\Classes\Services\CheckoutHandler;
 use AdyenPayment\Classes\Services\Domain\CreditCardsService;
 use AdyenPayment\Classes\Utility\Url;
 
@@ -94,6 +93,7 @@ class AdyenOfficialStoredMethodsModuleFrontController extends ModuleFrontControl
 
     /**
      * @return void
+     *
      * @throws Exception
      */
     private function renderStoredCards(): void
@@ -166,12 +166,7 @@ class AdyenOfficialStoredMethodsModuleFrontController extends ModuleFrontControl
             [
                 'storedPaymentMethods' => $storedPaymentMethodsInfo,
                 'numberOfStoredPaymentMethods' => count($storedPaymentMethodsInfo),
-                'deletionUrl' => Url::getFrontUrl(
-                    'storedmethoddelete',
-                    [
-                        'customerId' => Context::getContext()->customer->id
-                    ]
-                )
+                'deletionUrl' => Url::getFrontUrl('storedmethoddelete')
             ]
         );
     }

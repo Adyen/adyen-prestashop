@@ -29,9 +29,9 @@ class AdyenOfficialStoredMethodDeleteModuleFrontController extends ModuleFrontCo
      */
     public function postProcess(): void
     {
-        $customerId = Tools::getValue('customerId');
+        $customerId = Context::getContext()->customer->id;
         $methodId = Tools::getValue('methodId');
-        if ($methodId === '') {
+        if (empty($methodId)) {
             AdyenPrestaShopUtility::die404(
                 [
                     'message' => 'Disable action could not be processed, invalid request.'
@@ -39,7 +39,7 @@ class AdyenOfficialStoredMethodDeleteModuleFrontController extends ModuleFrontCo
             );
         }
 
-        if ($customerId === '') {
+        if (empty($customerId)) {
             AdyenPrestaShopUtility::die404(
                 [
                     'message' => 'Disable action could not be processed, customer not found.'

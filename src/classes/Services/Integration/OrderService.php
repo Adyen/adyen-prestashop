@@ -13,6 +13,7 @@ use Adyen\Webhook\EventCodes;
 use AdyenPayment\Classes\Services\RefundHandler;
 use AdyenPayment\Classes\Version\Contract\VersionHandler;
 use Cart;
+use Configuration;
 use DateTime;
 use Db;
 use Module;
@@ -22,6 +23,7 @@ use Exception;
 use PrestaShop\PrestaShop\Adapter\Entity\Currency;
 use PrestaShopDatabaseException;
 use PrestaShopException;
+use Shop;
 
 /**
  * Class OrderService.
@@ -93,16 +95,17 @@ class OrderService implements OrderServiceInterface
      * @throws PrestaShopException
      * @throws InvalidCurrencyCode
      * @throws RepositoryClassException
+     * @throws Exception
      */
     public function updateOrderStatus(Webhook $webhook, string $statusId): void
     {
         $idOrder = (int)$this->getIdByCartId((int)$webhook->getMerchantReference());
 
         if (!$idOrder) {
-            return;
+            throw new Exception('Order for cart id: ' . $webhook->getMerchantReference() . ' could not be found.');
         }
-
         $order = new Order($idOrder);
+        $this->setTimezone($order->id_shop);
 
         if ((int)$statusId && (int)$statusId !== (int)$order->current_state) {
             $history = new OrderHistory();
@@ -110,6 +113,12 @@ class OrderService implements OrderServiceInterface
             $history->id_employee = "0";
             $history->changeIdOrderState((int)$statusId, $idOrder, true);
             $history->add();
+            $updatedState = $this->getOrderCurrentState($idOrder);
+            if ((int)$updatedState !== (int)$statusId) {
+                throw new Exception(
+                    'Order status update failed for order with ID: ' . $idOrder . '. Adyen tried to change order state id to ' . $statusId . ' but PrestaShop API failed to update order to desired status. '
+                );
+            }
         }
 
         if ($webhook->getEventCode() === EventCodes::REFUND && $webhook->isSuccess()) {
@@ -185,6 +194,44 @@ class OrderService implements OrderServiceInterface
                                  FROM `" . _DB_PREFIX_ . "orders`
                                  WHERE `id_cart` = '" . $cartId . "'
                                  "
+        );
+    }
+
+    /**
+     * Gets current order status for order with id provided as parameter.
+     *
+     * @param int $orderId
+     *
+     * @return false|string|null
+     */
+    private function getOrderCurrentState(int $orderId)
+    {
+        return Db::getInstance()->getValue(
+            "
+                                 SELECT `current_state`
+                                 FROM `" . _DB_PREFIX_ . "orders`
+                                 WHERE `id_order` = '" . $orderId . "'
+                                 "
+        );
+    }
+
+    /**
+     * @param int $storeId
+     *
+     * @return void
+     */
+    private function setTimezone(int $storeId): void
+    {
+        $shop = new Shop($storeId);
+
+        @date_default_timezone_set(
+            Configuration::get(
+                'PS_TIMEZONE',
+                null,
+                $shop->id_shop_group,
+                $shop->id,
+                Configuration::get('PS_TIMEZONE')
+            )
         );
     }
 }
