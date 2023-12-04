@@ -10,7 +10,7 @@ inputs:
     required: true
   MYSQL:
     description: "The Mysql version"
-    required: true  
+    required: true
   PHP:
     description: "The PHP Version that is used for the Shopware container."
     required: true
@@ -52,19 +52,19 @@ runs:
     - name: Download Docker
       shell: bash
       run: docker pull -q prestashop/prestashop:${{ inputs.PRESTASHOP }}
-    
+
     - name: Download MySql
       shell: bash
       run: docker pull -q mysql:${{inputs.MYSQL}}
-   
-    - name: Create network 
+
+    - name: Create network
       shell: bash
-      run:  docker network create -d bridge prestashop-network
-    
+      run: docker network create -d bridge prestashop-network
+
     - name: Run Db
       shell: bash
       run: docker run --name db --network=prestashop-network --env MYSQL_ROOT_PASSWORD=prestashop --env MYSQL_DATABASE=prestashop -d mysql:${{inputs.MYSQL}}
-      
+
     - name: Start Shop
       shell: bash
       run: |
@@ -73,7 +73,7 @@ runs:
         --env PS_INSTALL_AUTO=1 --env PS_DOMAIN=localhost --env PS_FOLDER_ADMIN=admin1 \
         -d prestashop/prestashop:${{ inputs.PRESTASHOP }}
         sleep 80
-   
+
     - name: Extend memory
       shell: bash
       run: |
@@ -93,8 +93,8 @@ runs:
         docker exec prestashop bash -c 'php bin/console prestashop:module install adyenofficial'
         docker exec prestashop bash -c 'php bin/console prestashop:module enable adyenofficial'
         docker exec -d prestashop bash -c 'php bin/console prestashop:module disable welcome'
-       
-       
+
+
 
     - name: Docker logs after chmod
       shell: bash
@@ -128,7 +128,7 @@ runs:
       run: npx playwright install --with-deps > /dev/null
     - name: Change permissions
       shell: bash
-      run:  docker exec prestashop bash -c 'chmod -R 777 /var/www/html'
+      run: docker exec prestashop bash -c 'chmod -R 777 /var/www/html'
     - name: Run Playwright tests
       shell: bash
       working-directory: ./tests
@@ -142,13 +142,14 @@ runs:
         ADMIN_PASSWORD: ${{ inputs.ADMIN_PASSWORD }}
         BACKEND_SHOP_URL: "localhost"
         TEST_PATH: "/module/adyenofficial/test"
+        WEBHOOK_PATH: "/module/adyenofficial/webhook?storeId=1"
         ADMIN_PATH: "/admin1"
     - uses: actions/upload-artifact@v3
       if: always()
       with:
         name: playwright-report-Prestashop-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}
         path: ./tests/playwright-report/
-        retention-days: 30  
+        retention-days: 30
     - name: Add docker logs to file
       shell: bash
       run: docker logs prestashop >& ./dockerLogs.log
