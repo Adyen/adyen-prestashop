@@ -105,7 +105,7 @@ runs:
         repository: logeecom-dev/adyen-prestashop-e2e-tests
         path: tests
         token: ${{ inputs.GH_PAT }}
-        ref: feature/iteration_3
+        ref: feature/express-checkout
 
     - name: Setup Node
       uses: actions/setup-node@v3
