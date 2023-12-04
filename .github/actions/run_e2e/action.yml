@@ -102,7 +102,7 @@ runs:
     - name: Clone Code
       uses: actions/checkout@v3
       with:
-        repository: ${{inputs.PRESTASHOP_TEST_REPO}}
+        repository: logeecom-dev/adyen-prestashop-e2e-tests
         path: tests
         token: ${{ inputs.GH_PAT }}
         ref: feature/iteration_3
@@ -120,7 +120,7 @@ runs:
 
     - name: Install common
       shell: bash
-      run: npm install https://${{inputs.GH_PAT}}@github.com/${{inputs.COMMON_TEST_REPO}}#feature/iteration_3
+      run: npm install https://${{inputs.GH_PAT}}@github.com/logeecom-dev/adyen-common-e2e-tests#feature/express-checkout
 
     - name: Install Playwright Browsers
       working-directory: ./tests
