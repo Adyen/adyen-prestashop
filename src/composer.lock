@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:Adyen/adyen-php-plugin-core.git",
-                "reference": "cf27ae683d0300b8ccd2ff96ffb3f6509e94fbb3"
+                "reference": "130a789e890045180cd061912a8938669992fdc7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Adyen/adyen-php-plugin-core/zipball/cf27ae683d0300b8ccd2ff96ffb3f6509e94fbb3",
-                "reference": "cf27ae683d0300b8ccd2ff96ffb3f6509e94fbb3",
+                "url": "https://api.github.com/repos/Adyen/adyen-php-plugin-core/zipball/130a789e890045180cd061912a8938669992fdc7",
+                "reference": "130a789e890045180cd061912a8938669992fdc7",
                 "shasum": ""
             },
             "require": {
@@ -48,7 +48,7 @@
                 "proprietary"
             ],
             "description": "Core Adyen integration library",
-            "time": "2023-12-01T14:38:34+00:00"
+            "time": "2023-12-04T10:33:22+00:00"
         },
         {
             "name": "adyen/php-webhook-module",
@@ -634,16 +634,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "8.5.35",
+            "version": "8.5.36",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "c14b7dce827341b330519db07cf9bd16461dec1a"
+                "reference": "9652df58e06a681429d8cfdaec3c43d6de581d5a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/c14b7dce827341b330519db07cf9bd16461dec1a",
-                "reference": "c14b7dce827341b330519db07cf9bd16461dec1a",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/9652df58e06a681429d8cfdaec3c43d6de581d5a",
+                "reference": "9652df58e06a681429d8cfdaec3c43d6de581d5a",
                 "shasum": ""
             },
             "require": {
@@ -712,7 +712,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/8.5.35"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/8.5.36"
             },
             "funding": [
                 {
@@ -728,7 +728,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-12-01T06:08:41+00:00"
+            "time": "2023-12-01T16:52:15+00:00"
         },
         {
             "name": "sebastian/code-unit-reverse-lookup",

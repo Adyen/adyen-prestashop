@@ -242,7 +242,7 @@ if (!window.AdyenFE) {
         'bcmc_mobile'
     ];
 
-    const supportsRecurringPayments = ['ach', 'applepay', 'directdebit_GB', 'bcmc_mobile', 'eps', 'gcash', 'giropay', 'paywithgoogle', 'ideal', 'klarna', 'klarna_account', 'klarna_paynow', 'sepadirectdebit', 'directEbanking', 'twint', 'vipps', 'zip'];
+    const supportsRecurringPayments = ['ach', 'applepay', 'directdebit_GB',  'gcash',  'paywithgoogle', 'ideal', 'klarna', 'klarna_account', 'klarna_paynow', 'sepadirectdebit', 'directEbanking'];
 
     /**
      * @typedef AdditionalDataConfig
