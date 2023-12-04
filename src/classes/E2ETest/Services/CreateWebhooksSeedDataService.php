@@ -2,6 +2,7 @@
 
 namespace AdyenPayment\Classes\E2ETest\Services;
 
+use Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use Adyen\Core\BusinessLogic\Domain\Webhook\Repositories\WebhookConfigRepository;
 use Adyen\Core\Infrastructure\ServiceRegister;
 
@@ -13,15 +14,16 @@ use Adyen\Core\Infrastructure\ServiceRegister;
 class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
 {
     /**
-     * Returns username, password and hmac values from database
-     *
      * @throws \Exception
      */
     public function getWebhookAuthorizationData(): array
     {
-        $webhookConfig = $this->getWebhookConfigRepository()->getWebhookConfig();
+        $webhookConfig = StoreContext::doWithStore(1, function () {
+            return $this->getWebhookConfigRepository()->getWebhookConfig();
+        });
+
         $authData = [];
-        if ($webhookConfig){
+        if ($webhookConfig) {
             $authData['username'] = $webhookConfig->getUsername();
             $authData['password'] = $webhookConfig->getPassword();
             $authData['hmac'] = $webhookConfig->getHmac();
