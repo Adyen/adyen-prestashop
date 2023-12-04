@@ -69,9 +69,14 @@ class Installer
         'displayCustomerAccount',
         'actionOrderSlipAdd',
         'moduleRoutes',
-        'paymentReturn',
         'displayExpressCheckout',
-        'displayOrderConfirmation'
+        'displayOrderConfirmation',
+        'displayPaymentReturn'
+    ];
+
+    /** @var string[] */
+    private static $deprecated_hooks = [
+        'paymentReturn'
     ];
 
     /**
@@ -312,6 +317,9 @@ class Installer
     {
         $result = true;
 
+        foreach (self::$deprecated_hooks as $hook) {
+            $result = $result && $this->module->unregisterHook($hook);
+        }
         foreach (array_merge(self::$hooks, $this->getVersionHandler()->hooks()) as $hook) {
             $result = $result && $this->module->registerHook($hook);
         }
