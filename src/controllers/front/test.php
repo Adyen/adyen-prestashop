@@ -1,6 +1,5 @@
 <?php
 
-use Adyen\Core\BusinessLogic\AdminAPI\AdminAPI;
 use Adyen\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use Adyen\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
@@ -10,8 +9,8 @@ use AdyenPayment\Classes\E2ETest\Services\AdyenAPIService;
 use AdyenPayment\Classes\E2ETest\Services\AuthorizationService;
 use AdyenPayment\Classes\E2ETest\Services\CreateCheckoutSeedDataService;
 use AdyenPayment\Classes\E2ETest\Services\CreateInitialSeedDataService;
+use AdyenPayment\Classes\E2ETest\Services\CreateWebhooksSeedDataService;
 use AdyenPayment\Classes\Utility\AdyenPrestaShopUtility;
-use AdyenPayment\Classes\Utility\Url;
 use PrestaShop\PrestaShop\Adapter\Entity\Country;
 
 /**
@@ -59,7 +58,12 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
             $createSeedDataService->createInitialData();
             $createSeedDataService = new CreateCheckoutSeedDataService($credentials);
             $createSeedDataService->crateCheckoutPrerequisitesData($testApiKey);
-            die(json_encode(['message' => 'The initial data setup was successfully completed.']));
+            $createWebhookSeedDataService = new CreateWebhooksSeedDataService();
+            $webhookData = $createWebhookSeedDataService->getWebhookAuthorizationData();
+            die(json_encode(array_merge(
+                $webhookData,
+                ['message' => 'The initial data setup was successfully completed.']
+            )));
         } catch (InvalidDataException $exception) {
             AdyenPrestaShopUtility::die400(
                 [

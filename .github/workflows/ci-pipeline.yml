@@ -2,7 +2,7 @@
 on:
   push:
     branches:
-      - feature/iteration_3
+      - feature/webhooks
 jobs:
   build:
     permissions:
