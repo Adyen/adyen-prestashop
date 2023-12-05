@@ -77,9 +77,9 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
 
             $this->verifyManagementApi($testApiKey, $liveApiKey);
             $credentials = $this->getAuthorizationCredentials();
-            $shopProxy = new ShopsTestProxy($this->getHttpClient(), 'localhost', $credentials);
-            $this->createInitialSeedData($url, $shopProxy);
             $host = Configuration::get('PS_SHOP_DOMAIN');
+            $shopProxy = new ShopsTestProxy($this->getHttpClient(), $host, $credentials);
+            $this->createInitialSeedData($url, $shopProxy);
             $countryTestProxy = new CountryTestProxy($this->getHttpClient(), $host, $credentials);
             $currencyTestProxy = new CurrencyTestProxy($this->getHttpClient(), $host, $credentials);
             $customerTestProxy = new CustomerTestProxy($this->getHttpClient(), $host, $credentials);
