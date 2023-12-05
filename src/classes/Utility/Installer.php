@@ -57,7 +57,8 @@ class Installer
         'AdyenVersion',
         'AdyenWebhookNotifications',
         'AdyenWebhookValidation',
-        'AdyenCapture'
+        'AdyenCapture',
+        'AdyenPaymentLink'
     ];
 
     /** @var string[] */
@@ -69,9 +70,17 @@ class Installer
         'displayCustomerAccount',
         'actionOrderSlipAdd',
         'moduleRoutes',
-        'paymentReturn',
         'displayExpressCheckout',
-        'displayOrderConfirmation'
+        'displayBackOfficeHeader',
+        'actionValidateOrder',
+        'sendMailAlterTemplateVars',
+        'displayOrderConfirmation',
+        'displayPaymentReturn'
+    ];
+
+    /** @var string[] */
+    private static $deprecated_hooks = [
+        'paymentReturn'
     ];
 
     /**
@@ -311,6 +320,10 @@ class Installer
     private function addHooks(): bool
     {
         $result = true;
+
+        foreach (self::$deprecated_hooks as $hook) {
+            $result = $result && $this->module->unregisterHook($hook);
+        }
 
         foreach (array_merge(self::$hooks, $this->getVersionHandler()->hooks()) as $hook) {
             $result = $result && $this->module->registerHook($hook);

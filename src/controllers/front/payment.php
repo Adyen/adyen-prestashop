@@ -2,6 +2,7 @@
 
 use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
 use Adyen\Core\BusinessLogic\CheckoutAPI\PaymentRequest\Request\StartTransactionRequest;
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\ShopperReference;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency;
@@ -75,7 +76,9 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
                         'paymentredirect',
                         ['adyenMerchantReference' => $cart->id, 'adyenPaymentType' => $type]
                     ),
-                    $additionalData
+                    $additionalData,
+                    [],
+                    $this->getShopperReferenceFromCart($cart)
                 )
             );
 
@@ -129,5 +132,23 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
     protected function getCurrentCart(): Cart
     {
         return new Cart($this->context->cart->id);
+    }
+
+    /**
+     * @param Cart $cart
+     *
+     * @return ShopperReference|null
+     */
+    private function getShopperReferenceFromCart(Cart $cart): ?ShopperReference
+    {
+        $customer = new Customer($cart->id_customer);
+
+        if (!$customer) {
+            return null;
+        }
+
+        $shop = Shop::getShop(Context::getContext()->shop->id);
+
+        return ShopperReference::parse($shop['domain'] . '_' . Context::getContext()->shop->id . '_' . $customer->id);
     }
 }

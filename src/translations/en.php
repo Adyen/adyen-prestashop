@@ -71,7 +71,7 @@ $_MODULE['<{adyenofficial}prestashop>credit-cards_e37c90c41b82b2e549b50a5ff00233
 $_MODULE['<{adyenofficial}prestashop>credit-cards_68e3a7518abac62f198b00d49b99b00e'] = 'Are you sure you want to delete this stored credit card?';
 $_MODULE['<{adyenofficial}prestashop>credit-cards_b885cd9618ca50834bbb3cb67dad63d7'] = 'Disable action could not be processed, invalid request.';
 $_MODULE['<{adyenofficial}prestashop>credit-cards_ea4788705e6873b424c65e91c2846b19'] = 'Cancel';
-$_MODULE['<{adyenofficial}prestashop>credit-cards_220d7af65e5b5b3c02f2bec1b8585684'] = 'No stored credit cards are available.';
+$_MODULE['<{adyenofficial}prestashop>credit-cards_220d7af65e5b5b3c02f2bec1b8585684'] = 'No stored payment methods are available.';
 $_MODULE['<{adyenofficial}prestashop>paymentcontroller_12ff593c1e09443c870cde46c5b633e6'] = 'Your payment could not be processed, please resubmit order.';
 $_MODULE['<{adyenofficial}prestashop>paymentcontroller_70a2468998d90207df5ed8727c31e7b2'] = 'Surcharge test';
 $_MODULE['<{adyenofficial}prestashop>adyencapturecontroller_16908db06cfc98850ed170742a49eaa1'] = 'Capture request successfully sent to Adyen.';

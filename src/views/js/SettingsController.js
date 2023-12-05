@@ -10,6 +10,9 @@ if (!window.AdyenFE) {
      * @property {number | null} captureDelay
      * @property {string | null} shipmentStatus
      * @property {number} retentionPeriod
+     * @property {boolean} enablePayByLink
+     * @property {string | null} payByLinkTitle
+     * @property {string | null} defaultLinkExpirationTime
      */
 
     /**
@@ -72,6 +75,8 @@ if (!window.AdyenFE) {
     function SettingsController(configuration) {
         /** @type AjaxServiceType */
         const api = AdyenFE.ajaxService;
+
+        const translationService = AdyenFE.translationService;
 
         const { templateService, elementGenerator: generator, validationService: validator, utilities } = AdyenFE;
         /** @type string */
@@ -245,6 +250,39 @@ if (!window.AdyenFE) {
                                             validationRule: 'required,integer,minValue|60'
                                         },
                                         error: 'settings.general.fields.retentionPeriod.error'
+                                    },
+                                    {
+                                        name: 'enablePayByLink',
+                                        value: settings.enablePayByLink,
+                                        type: 'checkbox',
+                                        onChange: (value) => handleChange('enablePayByLink', value)
+                                    },
+                                    {
+                                        name: 'payByLinkTitle',
+                                        value: settings.payByLinkTitle,
+                                        type: 'text',
+                                        dataset: {
+                                            validationRule: 'required,integer,minValue|60'
+                                        },
+                                        placeholder: translationService.translate(
+                                            `settings.general.fields.payByLinkTitle.placeholder`
+                                        ),
+                                        className: !settings.enablePayByLink ? 'adls--hidden' : '',
+                                        error: translationService.translate(
+                                            'settings.general.fields.payByLinkTitle.error'
+                                        )
+                                    },
+                                    {
+                                        name: 'defaultLinkExpirationTime',
+                                        value: settings.defaultLinkExpirationTime,
+                                        type: 'number',
+                                        min: 1,
+                                        step: 1,
+                                        dataset: {
+                                            validationRule: 'required,integer,minValue|1'
+                                        },
+                                        error: 'settings.general.fields.defaultLinkExpirationTime.error',
+                                        className: !settings.enablePayByLink ? 'adls--hidden' : ''
                                     }
                                 ].map(
                                     /** @param {FormField} config */
@@ -292,6 +330,10 @@ if (!window.AdyenFE) {
                      * @param {{statusName: string, statusId: string}[]} orderStatuses
                      **/
                     (orderStatuses) => {
+                        orderStatuses = [
+                            { statusId: null, statusName: 'settings.orderStatusMapping.none' },
+                            ...orderStatuses
+                        ];
                         renderPageForm(
                             'adlp-order-status-mapping',
                             'orderStatusMapping',
@@ -404,16 +446,16 @@ if (!window.AdyenFE) {
                 ...formFields,
                 useFooter
                     ? generator.createFormFooter(
-                          handleSave,
-                          () => {
-                              if (numberOfChanges > 0) {
-                                  return renderPage();
-                              } else {
-                                  scrollToTop();
-                              }
-                          },
-                          'general.discardChanges'
-                      )
+                        handleSave,
+                        () => {
+                            if (numberOfChanges > 0) {
+                                return renderPage();
+                            } else {
+                                scrollToTop();
+                            }
+                        },
+                        'general.discardChanges'
+                    )
                     : ''
             ]);
 
@@ -537,6 +579,11 @@ if (!window.AdyenFE) {
                 handleFieldVisibility('charityWebsite', value);
                 handleFieldVisibility('backgroundImage', value);
                 handleFieldVisibility('logo', value);
+            }
+
+            if (prop === 'enablePayByLink') {
+                handleFieldVisibility('payByLinkTitle', value);
+                handleFieldVisibility('defaultLinkExpirationTime', value);
             }
         };
 
@@ -727,7 +774,7 @@ if (!window.AdyenFE) {
                                             : 'failedIntegrationValidation'
                                     }`,
                                     'settings.system.messages.downloadReportText|' +
-                                        configuration.downloadIntegrationReportUrl
+                                    configuration.downloadIntegrationReportUrl
                                 ],
                                 response?.status ? 'success' : 'error'
                             );
@@ -768,8 +815,8 @@ if (!window.AdyenFE) {
                     showMessage(
                         [
                             'settings.system.messages.' +
-                                (response?.status ? 'success' : 'failed') +
-                                'WebhookValidation',
+                            (response?.status ? 'success' : 'failed') +
+                            'WebhookValidation',
                             'settings.system.messages.downloadReportText|' + configuration.downloadWebhookReportUrl
                         ],
                         response?.status ? 'success' : 'error'
@@ -829,6 +876,10 @@ if (!window.AdyenFE) {
                 if (data.capture !== 'delayed') {
                     data.captureDelay = null;
                 }
+                if (!changedSettings.enablePayByLink) {
+                    data.payByLinkTitle = '';
+                    data.defaultLinkExpirationTime = '';
+                }
                 promise = api.post(configuration.saveSettingsUrl, data);
             }
 
@@ -857,19 +908,23 @@ if (!window.AdyenFE) {
             if (!prop || prop === 'captureDelay') {
                 result.push(
                     captureInput.value !== 'delayed' ||
-                        validator.validateNumber(form.querySelector('[name="captureDelay"]'))
+                    validator.validateNumber(form.querySelector('[name="captureDelay"]'))
                 );
             }
 
             if (!prop || prop === 'shipmentStatus') {
                 result.push(
                     captureInput.value !== 'manual' ||
-                        validator.validateRequiredField(form.querySelector('[name="shipmentStatus"]'))
+                    validator.validateRequiredField(form.querySelector('[name="shipmentStatus"]'))
                 );
             }
 
             if (!prop || prop === 'retentionPeriod') {
                 result.push(validator.validateNumber(form.querySelector('[name="retentionPeriod"]')));
+            }
+
+            if (changedSettings.enablePayByLink && (!prop || prop === 'payByLinkTitle')) {
+                result.push(validator.validateRequiredField(form.querySelector('[name="payByLinkTitle"]')));
             }
 
             if (!prop) {
@@ -890,14 +945,14 @@ if (!window.AdyenFE) {
                 const fields = prop
                     ? [prop]
                     : [
-                          'charityName',
-                          'logo',
-                          'backgroundImage',
-                          'charityDescription',
-                          'charityMerchantAccount',
-                          'charityWebsite',
-                          'donationAmount'
-                      ];
+                        'charityName',
+                        'logo',
+                        'backgroundImage',
+                        'charityDescription',
+                        'charityMerchantAccount',
+                        'charityWebsite',
+                        'donationAmount'
+                    ];
 
                 const result = [];
                 fields.forEach((fieldName) => {

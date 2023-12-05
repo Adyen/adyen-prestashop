@@ -18,16 +18,22 @@ use Adyen\Core\BusinessLogic\DataAccess\Webhook\Entities\WebhookConfig;
 use Adyen\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
 use Adyen\Core\BusinessLogic\Domain\Integration\Order\OrderService as OrderServiceInterface;
 use Adyen\Core\BusinessLogic\Domain\Integration\Payment\ShopPaymentService as ShopPaymentServiceInterface;
-use Adyen\Core\BusinessLogic\Domain\Integration\Processors\AddressProcessor as AddressProcessorInterface;
-use Adyen\Core\BusinessLogic\Domain\Integration\Processors\BasketItemsProcessor as BasketItemsProcessorInterface;
-use Adyen\Core\BusinessLogic\Domain\Integration\Processors\BirthdayProcessor as BirthdayProcessorInterface;
-use Adyen\Core\BusinessLogic\Domain\Integration\Processors\DeviceFingerprintProcessor as DeviceFingerprintProcessorInterface;
-use Adyen\Core\BusinessLogic\Domain\Integration\Processors\L2L3DataProcessor as L2L3DataProcessorInterface;
-use Adyen\Core\BusinessLogic\Domain\Integration\Processors\LineItemsProcessor as LineItemsProcessorInterface;
-use Adyen\Core\BusinessLogic\Domain\Integration\Processors\ShopperEmailProcessor as ShopperEmailProcessorInterface;
-use Adyen\Core\BusinessLogic\Domain\Integration\Processors\ShopperLocaleProcessor as ShopperLocaleProcessorInterface;
-use Adyen\Core\BusinessLogic\Domain\Integration\Processors\ShopperNameProcessor as ShopperNameProcessorInterface;
-use Adyen\Core\BusinessLogic\Domain\Integration\Processors\ShopperReferenceProcessor as ShopperReferenceProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\AddressProcessor as AddressProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\BasketItemsProcessor as BasketItemsProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\BirthdayProcessor as BirthdayProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\DeviceFingerprintProcessor as DeviceFingerprintProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\L2L3DataProcessor as L2L3DataProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\LineItemsProcessor as LineItemsProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\ShopperEmailProcessor as ShopperEmailProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\ShopperLocaleProcessor as ShopperLocaleProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\ShopperNameProcessor as ShopperNameProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\AddressProcessor as PaymentLinkAddressProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\LineItemsProcessor as PaymentLinkLineItemsProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\ShopperBirthdayProcessor as PaymentLinkShopperBirthdayProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\ShopperEmailProcessor as PaymentLinkShopperEmailProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\ShopperLocaleProcessor as PaymentLinkShopperLocaleProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\ShopperNameProcessor as PaymentLinkShopperNameProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\ShopperReferenceProcessor as PaymentLinkShopperReferenceProcessorInterface;
 use Adyen\Core\BusinessLogic\Domain\Integration\Store\StoreService as StoreServiceInterface;
 use Adyen\Core\BusinessLogic\Domain\Integration\SystemInfo\SystemInfoService as SystemInfoServiceInterface;
 use Adyen\Core\BusinessLogic\Domain\Integration\Version\VersionService as VersionServiceInterface;
@@ -63,7 +69,6 @@ use AdyenPayment\Classes\Repositories\OrderRepository;
 use AdyenPayment\Classes\Repositories\PaymentMethodRepository;
 use AdyenPayment\Classes\Repositories\QueueItemRepository;
 use AdyenPayment\Classes\Repositories\TransactionLogRepository;
-use AdyenPayment\Classes\Services\Domain\CreditCardsService;
 use AdyenPayment\Classes\Services\Domain\WebhookSynchronizationService;
 use AdyenPayment\Classes\Services\Integration\ConfigService;
 use AdyenPayment\Classes\Services\Integration\Logger\LoggerService;
@@ -246,13 +251,6 @@ class Bootstrap extends BootstrapComponent
                 return new Version177();
             }
         );
-
-        ServiceRegister::registerService(
-            CreditCardsService::class,
-            static function () {
-                return new CreditCardsService(RepositoryRegistry::getRepository(PaymentMethod::getClassName()));
-            }
-        );
     }
 
     /**
@@ -330,7 +328,49 @@ class Bootstrap extends BootstrapComponent
         );
 
         ServiceRegister::registerService(
-            ShopperReferenceProcessorInterface::class,
+            PaymentLinkAddressProcessorInterface::class,
+            static function () {
+                return new AddressProcessor();
+            }
+        );
+
+        ServiceRegister::registerService(
+            PaymentLinkLineItemsProcessorInterface::class,
+            static function () {
+                return new LineItemsProcessor();
+            }
+        );
+
+        ServiceRegister::registerService(
+            PaymentLinkShopperBirthdayProcessorInterface::class,
+            static function () {
+                return new BirthdayProcessor();
+            }
+        );
+
+        ServiceRegister::registerService(
+            PaymentLinkShopperEmailProcessorInterface::class,
+            static function () {
+                return new ShopperEmailProcessor();
+            }
+        );
+
+        ServiceRegister::registerService(
+            PaymentLinkShopperLocaleProcessorInterface::class,
+            static function () {
+                return new ShopperLocaleProcessor();
+            }
+        );
+
+        ServiceRegister::registerService(
+            PaymentLinkShopperNameProcessorInterface::class,
+            static function () {
+                return new ShopperNameProcessor();
+            }
+        );
+
+        ServiceRegister::registerService(
+            PaymentLinkShopperReferenceProcessorInterface::class,
             static function () {
                 return new ShopperReferenceProcessor();
             }

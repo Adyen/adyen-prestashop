@@ -2,39 +2,51 @@
 
 namespace AdyenPayment\Classes\Services\Integration\PaymentProcessors;
 
-use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Factory\PaymentRequestBuilder;
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentLink\Factory\PaymentLinkRequestBuilder;
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentLink\Models\PaymentLinkRequestContext;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\ShopperReference;
-use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\StartTransactionRequestContext;
-use Adyen\Core\BusinessLogic\Domain\Integration\Processors\ShopperReferenceProcessor as ShopperReferenceProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\ShopperReferenceProcessor as PaymentLinkShopperReferenceProcessorInterface;
+use Cart;
+use Context;
+use Customer;
+use Shop;
 
 /**
  * Class ShopperReferenceProcessor
  *
  * @package AdyenPayment\Integration\PaymentProcessors
  */
-class ShopperReferenceProcessor implements ShopperReferenceProcessorInterface
+class ShopperReferenceProcessor implements PaymentLinkShopperReferenceProcessorInterface
 {
     /**
-     * @param PaymentRequestBuilder $builder
-     * @param StartTransactionRequestContext $context
+     * @param PaymentLinkRequestBuilder $builder
+     * @param PaymentLinkRequestContext $context
      *
      * @return void
      */
-    public function process(PaymentRequestBuilder $builder, StartTransactionRequestContext $context): void
+    public function processPaymentLink(PaymentLinkRequestBuilder $builder, PaymentLinkRequestContext $context): void
     {
-        $cart = new \Cart($context->getReference());
-        $customer = new \Customer($cart->id_customer);
+        if ($shopperReference = $this->getShopperReferenceFromCart($context->getReference())) {
+            $builder->setShopperReference($shopperReference);
+        }
+    }
+
+    /**
+     * @param int $cartId
+     *
+     * @return ShopperReference|null
+     */
+    private function getShopperReferenceFromCart(int $cartId): ?ShopperReference
+    {
+        $cart = new Cart($cartId);
+        $customer = new Customer($cart->id_customer);
 
         if (!$customer) {
-            return;
+            return null;
         }
 
-        $shop = \Shop::getShop(\Context::getContext()->shop->id);
+        $shop = Shop::getShop(Context::getContext()->shop->id);
 
-        $builder->setShopperReference(
-            ShopperReference::parse(
-                $shop['domain'] . '_' . \Context::getContext()->shop->id . '_' . $customer->id
-            )
-        );
+        return ShopperReference::parse($shop['domain'] . '_' . Context::getContext()->shop->id . '_' . $customer->id);
     }
 }

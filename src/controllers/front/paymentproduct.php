@@ -2,6 +2,7 @@
 
 use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
 use Adyen\Core\BusinessLogic\CheckoutAPI\PaymentRequest\Request\StartTransactionRequest;
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\ShopperReference;
 use Adyen\Core\Infrastructure\Logger\Logger;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount;
@@ -78,11 +79,11 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
                         Currency::fromIsoCode($currency->iso_code ?? 'EUR')
                     ),
                     (string)$cart->id,
-                    Url::getFrontUrl(
-                        'paymentredirect',
-                        ['adyenMerchantReference' => $cart->id, 'adyenPaymentType' => $type]
+                    Url::getFrontUrl('paymentredirect', ['adyenMerchantReference' => $cart->id, 'adyenPaymentType' => $type]
                     ),
-                    $additionalData
+                    $additionalData,
+                    [],
+                    $this->getShopperReferenceFromCart($cart)
                 )
             );
 
@@ -194,5 +195,23 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
         $cart->update();
 
         return $cart;
+    }
+
+    /**
+     * @param Cart $cart
+     *
+     * @return ShopperReference|null
+     */
+    private function getShopperReferenceFromCart(Cart $cart): ?ShopperReference
+    {
+        $customer = new Customer($cart->id_customer);
+
+        if (!$customer) {
+            return null;
+        }
+
+        $shop = Shop::getShop(Context::getContext()->shop->id);
+
+        return ShopperReference::parse($shop['domain'] . '_' . Context::getContext()->shop->id . '_' . $customer->id);
     }
 }

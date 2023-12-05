@@ -16,6 +16,7 @@ use Cart;
 use Configuration;
 use DateTime;
 use Db;
+use Module;
 use Order;
 use OrderHistory;
 use Exception;
@@ -149,6 +150,33 @@ class OrderService implements OrderServiceInterface
     public function getOrderUrl(string $merchantReference): string
     {
         return $this->versionHandler->getOrderUrl($merchantReference);
+    }
+
+    /**
+     * @param Webhook $webhook
+     *
+     * @return void
+     *
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    public function updateOrderPayment(Webhook $webhook): void
+    {
+        $idOrder = (int)$this->getIdByCartId((int)$webhook->getMerchantReference());
+
+        if (!$idOrder) {
+            return;
+        }
+
+        $order = new Order($idOrder);
+        $adyenModule = Module::getInstanceByName('adyenofficial');
+
+        if ($order->module !== $adyenModule->name) {
+            $order->module = $adyenModule->name;
+            $order->payment = $adyenModule->displayName;
+
+            $order->update();
+        }
     }
 
     /**

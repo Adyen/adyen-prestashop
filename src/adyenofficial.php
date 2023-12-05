@@ -46,11 +46,11 @@ class AdyenOfficial extends PaymentModule
     {
         $this->name = 'adyenofficial';
         $this->tab = 'payments_gateways';
-        $this->version = '5.0.9';
+        $this->version = '5.1.0';
 
         $this->author = $this->l('Adyen');
         $this->need_instance = 0;
-        $this->ps_versions_compliancy = ['min' => '1.7.5.0', 'max' => _PS_VERSION_];
+        $this->ps_versions_compliancy = ['min' => '1.7.5.0', 'max' => '8.1.2'];
         $this->bootstrap = true;
 
         parent::__construct();
@@ -383,6 +383,73 @@ class AdyenOfficial extends PaymentModule
                 }
             }
 
+            foreach ($config->getRecurringPaymentMethodResponse() as $method) {
+                $paymentOption = new \PrestaShop\PrestaShop\Core\Payment\PaymentOption();
+                $logo = '';
+                $description = '';
+                $name = '';
+                $currency = new Currency($cart->id_currency);
+                foreach ($availablePaymentMethods as $availablePaymentMethod) {
+                    if ($availablePaymentMethod->getCode() === $method->getName()) {
+                        $logo = $availablePaymentMethod->getLogo();
+                        $description = $availablePaymentMethod->getDescription();
+                        $name = $availablePaymentMethod->getName();
+                        $surchargeLimit = Tools::ps_round(
+                            \AdyenPayment\Classes\SurchargeCalculator::calculateSurcharge(
+                                $availablePaymentMethod,
+                                $currency->conversion_rate,
+                                \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount::fromFloat(
+                                    $cart->getOrderTotal(),
+                                    \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency::fromIsoCode(
+                                        $currency->iso_code
+                                    )
+                                )
+                            ),
+                            $precision
+                        );
+
+                        break;
+                    }
+                }
+                $this->getContext()->smarty->assign([
+                    'paymentMethodId' => $method->getMetaData()['RecurringDetail']['recurringDetailReference'],
+                    'paymentMethodType' => $method->getType(),
+                    'configURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl(
+                        'paymentconfig',
+                        ['cartId' => \Context::getContext()->cart->id]
+                    ),
+                    'paymentActionURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl('payment'),
+                    'paymentRedirectActionURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl(
+                        'paymentredirect',
+                        ['adyenPaymentType' => $method->getType()]
+                    ),
+                    'stored' => true,
+                    'description' => $description,
+                    'prestaVersion' => _PS_VERSION_,
+                    'checkoutUrl' => $this->context->link->getPageLink('order', true, null)
+                ]);
+
+                $paymentOption->setForm(
+                    $this->getContext()->smarty->fetch($this->getTemplatePath('payment_method.tpl'))
+                );
+                $paymentOption->setLogo($logo);
+                $paymentOption->setModuleName($this->name);
+                $paymentOption->setCallToActionText(
+                    (sprintf(
+                            $this->l('Pay by saved %s created on: %s'),
+                            $name,
+                            (new \DateTime($method->getMetaData()['RecurringDetail']['creationDate']))->format('Y-m-d')
+                        ) . ($surchargeLimit ? " (+$surchargeLimit" . $currency->sign . ')' : ''))
+                );
+                $paymentOption->setForm(
+                    $this->getContext()->smarty->fetch($this->getTemplatePath('payment_method.tpl'))
+                );
+                $paymentOption->setLogo($logo);
+                $paymentOption->setModuleName($this->name);
+
+                $paymentOptions[] = $paymentOption;
+            }
+
             foreach ($availablePaymentMethods as $method) {
                 $paymentOption = new \PrestaShop\PrestaShop\Core\Payment\PaymentOption();
                 $this->getContext()->smarty->assign([
@@ -440,19 +507,25 @@ class AdyenOfficial extends PaymentModule
      *
      * @return false|string|null
      */
-    public function hookPaymentReturn(array $params)
-    {
-        return $this->displayAdyenOrderConfirmation($params);
-    }
-
-    /**
-     * @param array $params
-     *
-     * @return false|string|null
-     */
     public function hookDisplayPaymentReturn(array $params)
     {
-        return $this->displayAdyenOrderConfirmation($params);
+        if (!$this->active) {
+            return null;
+        }
+
+        $this->context->smarty->assign(
+            ['adyenAction' => \AdyenPayment\Classes\Utility\CookieService::get('adyenAction')]
+        );
+        $this->context->smarty->assign(
+            [
+                'checkoutConfigUrl' => AdyenPayment\Classes\Utility\Url::getFrontUrl(
+                    'paymentconfig',
+                    ['cartId' => \AdyenPayment\Classes\Utility\CookieService::get('cartId')]
+                )
+            ]
+        );
+
+        return $this->display(__FILE__, '/views/templates/front/adyen-order-confirmation.tpl');
     }
 
     /**
@@ -468,7 +541,7 @@ class AdyenOfficial extends PaymentModule
 
         $this->context->smarty->assign(
             [
-                'creditCards' => \AdyenPayment\Classes\Utility\Url::getFrontUrl('creditcards')
+                'storedMethods' => \AdyenPayment\Classes\Utility\Url::getFrontUrl('storedmethods')
             ]
         );
 
@@ -488,7 +561,7 @@ class AdyenOfficial extends PaymentModule
         $this->getContext()->controller->addJS($this->getPathUri() . 'views/js/front/adyen-donations-controller.js');
         $this->getContext()->controller->addJS($this->getPathUri() . 'views/js/front/adyen-donations-selection.js');
         $this->getContext()->controller->addJS($this->getPathUri() . 'views/js/front/adyen-payment-selection.js');
-        $this->getContext()->controller->addJS($this->getPathUri() . 'views/js/front/adyen-delete-card.js');
+        $this->getContext()->controller->addJS($this->getPathUri() . 'views/js/front/adyen-delete-stored-method.js');
         $this->getContext()->controller->addJS(
             $this->getPathUri() . 'views/js/front/adyen-payment-additional-action.js'
         );
@@ -705,12 +778,25 @@ class AdyenOfficial extends PaymentModule
 
     /**
      * Hook for adding JS && CSS to admin controllers.
+     *
+     * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      */
     public function hookActionAdminControllerSetMedia(): void
     {
         $order = new \Order((int)Tools::getValue('id_order'));
 
-        if ($order->module !== $this->name) {
+        $currentController = Tools::getValue('controller');
+
+        if ($currentController === 'AdminOrders') {
+            $this->getContext()->controller->addJS(
+                [
+                    $this->getPathUri() . $this->getVersionHandler()->backofficeOrderJS()
+                ]
+            );
+        }
+        if ($order->module !== $this->name &&
+            !\AdyenPayment\Classes\Services\OrderStatusHandler::shouldGeneratePaymentLinkForNonAdyenOrder($order)) {
+
             return;
         }
 
@@ -789,32 +875,6 @@ class AdyenOfficial extends PaymentModule
     }
 
     /**
-     * @param array $params
-     *
-     * @return false|string|null
-     */
-    private function displayAdyenOrderConfirmation(array $params)
-    {
-        if (!$this->active) {
-            return null;
-        }
-
-        $this->context->smarty->assign(
-            ['adyenAction' => \AdyenPayment\Classes\Utility\CookieService::get('adyenAction')]
-        );
-        $this->context->smarty->assign(
-            [
-                'checkoutConfigUrl' => AdyenPayment\Classes\Utility\Url::getFrontUrl(
-                    'paymentconfig',
-                    ['cartId' => \AdyenPayment\Classes\Utility\CookieService::get('cartId')]
-                )
-            ]
-        );
-
-        return $this->display(__FILE__, '/views/templates/front/adyen-order-confirmation.tpl');
-    }
-
-    /**
      * @return array[]
      *
      * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
@@ -839,6 +899,114 @@ class AdyenOfficial extends PaymentModule
                 ]
             ]
         ];
+    }
+
+    /**
+     * Hook for displaying header data used in BO.
+     *
+     * @return false|string Header HTML data as string
+     * @throws \PrestaShopException
+     * @throws Exception
+     */
+    public function hookDisplayBackOfficeHeader(): string
+    {
+        if (!$this->isEnabled($this->name) || Tools::getValue('controller') !== 'AdminOrders') {
+            return '';
+        }
+        $generalSettings = \Adyen\Core\BusinessLogic\AdminAPI\AdminAPI::get()->generalSettings((string)\Context::getContext()->shop->id)->getGeneralSettings();
+
+        if (!$generalSettings->isSuccessful() || !$generalSettings->toArray()['enablePayByLink']) {
+            return '';
+        }
+        $expirationTime = $generalSettings->toArray()['defaultLinkExpirationTime'];
+        $date = Adyen\Core\Infrastructure\Utility\TimeProvider::getInstance()->getCurrentLocalTime()->add(
+            new DateInterval('P' . $expirationTime . 'D')
+        )->format("Y-m-d");
+        $this->getContext()->smarty->assign(['payByLinkTitle' => $generalSettings->toArray()['payByLinkTitle'], 'expirationDate' => $date]);
+
+        return $this->display($this->getPathUri(), $this->getVersionHandler()->backofficeOrderTemplate());
+    }
+
+
+    /**
+     * @param array $params
+     *
+     * @return void
+     *
+     * @throws \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Exceptions\InvalidMerchantReferenceException
+     * @throws \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode
+     */
+    public function hookActionValidateOrder(array $params): void
+    {
+        if (!isset($this->getContext()->controller) ||
+            'admin' !== $this->getContext()->controller->controller_type ||
+            $params['order']->module !== $this->name) {
+
+            return;
+        }
+
+        $expiresAt = \Tools::getValue('adyen-expires-at-date');
+        /** @var \Order $order */
+        $order = $params['order'];
+        $currency = new  \Currency($order->id_currency);
+        $paymentLink = \Adyen\Core\BusinessLogic\AdminAPI\AdminAPI::get()->paymentLink((string)$order->id_shop)
+            ->createPaymentLink(
+                new \Adyen\Core\BusinessLogic\AdminAPI\PaymentLink\Request\CreatePaymentLinkRequest
+                ($order->getOrdersTotalPaid(), $currency->iso_code, $order->id_cart, new \DateTime($expiresAt)));
+
+        if ($paymentLink->isSuccessful()) {
+            \AdyenPayment\Classes\Utility\CookieService::set(
+                'successMessage',
+                $this->l('Payment link successfully generated.')
+            );
+
+            return;
+        }
+
+        \AdyenPayment\Classes\Utility\CookieService::set(
+            'errorMessage',
+            $this->l('Payment link generation failed. Reason: ') . $paymentLink->toArray()['errorMessage'] ?? ''
+        );
+    }
+
+    /**
+     * Hook for altering email template variables before sending.
+     *
+     * @param array $params Array of parameters including template_vars array and cart
+     *
+     * @return void
+     *
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
+     *
+     * @throws \Exception
+     */
+    public function hookSendMailAlterTemplateVars(array &$params): void
+    {
+        if (isset($params['template_vars']['{adyen_payment_link}']) || !isset($params['template_vars']['{id_order}'])) {
+
+            return;
+        }
+
+        $order = new \Order($params['template_vars']['{id_order}']);
+
+        \AdyenPayment\Classes\Bootstrap::init();
+        $transactionDetails = \AdyenPayment\Classes\Services\TransactionDetailsHandler::getTransactionDetails($order);
+
+        if (empty($transactionDetails)) {
+            $params['template_vars']['{adyen_payment_link}'] = '';
+
+            return;
+        }
+
+        $reversedDetails = array_reverse($transactionDetails);
+        $authorisationDetail = $reversedDetails[array_search(
+            \Adyen\Webhook\EventCodes::AUTHORISATION,
+            array_column($reversedDetails, 'eventCode'),
+            true
+        )];
+
+        $params['template_vars']['{adyen_payment_link}'] = $authorisationDetail['paymentLink'];
     }
 
     /**
@@ -1187,7 +1355,8 @@ class AdyenOfficial extends PaymentModule
     {
         $order = new Order($orderId);
 
-        if ($order->module !== $this->name) {
+        if ($order->module !== $this->name &&
+            !\AdyenPayment\Classes\Services\OrderStatusHandler::shouldGeneratePaymentLinkForNonAdyenOrder($order)) {
             return '';
         }
 
@@ -1215,24 +1384,24 @@ class AdyenOfficial extends PaymentModule
     {
         $order = new \Order($orderId);
 
-        if ($order->module !== $this->name) {
+        if ($order->module !== $this->name &&
+            !\AdyenPayment\Classes\Services\OrderStatusHandler::shouldGeneratePaymentLinkForNonAdyenOrder($order)) {
             return $this->display(__FILE__, 'adyen-empty-tab.tpl');
         }
 
         $currency = new \Currency($order->id_currency);
         $transactionDetails = \AdyenPayment\Classes\Services\TransactionDetailsHandler::getTransactionDetails($order);
 
-        if (empty($transactionDetails)) {
-            return $this->display(__FILE__, 'adyen-empty-tab.tpl');
-        }
-
-        $authorisationDetail = $transactionDetails[array_search(
+        $reversedDetails = array_reverse($transactionDetails);
+        $authorisationDetail = !empty($reversedDetails) ? $reversedDetails[array_search(
             \Adyen\Webhook\EventCodes::AUTHORISATION,
-            array_column($transactionDetails, 'eventCode'),
+            array_column($reversedDetails, 'eventCode'),
             true
-        )];
+        )] : [];
 
         $lastDetail = end($transactionDetails);
+        $generalSettings = \Adyen\Core\BusinessLogic\AdminAPI\AdminAPI::get()->generalSettings((string)\Context::getContext()->shop->id)->getGeneralSettings();
+        $paymentLinkEnabled = $generalSettings->isSuccessful() && $generalSettings->toArray()['enablePayByLink'];
 
         \AdyenPayment\Classes\Bootstrap::init();
         $this->getContext()->smarty->assign([
@@ -1248,13 +1417,18 @@ class AdyenOfficial extends PaymentModule
             'riskScore' => $authorisationDetail['riskScore'] ?? '',
             'captureAvailable' => $authorisationDetail['captureSupported'] ?? '',
             'capturableAmount' => $authorisationDetail['capturableAmount'] ?? '',
-            'currency' => $currency->symbol,
+            'currency' => $currency->symbol ?? ($currency->sign ?? ''),
             'currencyISO' => $currency->iso_code,
             'transactionHistory' => $transactionDetails,
             'captureURL' => $this->getAction('AdyenCapture', 'captureOrder', ['ajax' => true]),
             'orderId' => $orderId,
             'adyenLink' => $authorisationDetail['viewOnAdyenUrl'] ?? '',
-            'refundSupported' => $authorisationDetail['refund'] ?? false
+            'refundSupported' => $authorisationDetail['refund'] ?? false,
+            'adyenPaymentLink' => $authorisationDetail['paymentLink'] ?? '',
+            'adyenGeneratePaymentLink' => $this->getAction('AdyenPaymentLink', 'generatePaymentLink', ['ajax' => true]),
+            'shouldDisplayPaymentLink' => $authorisationDetail['displayPaymentLink'] ?? false,
+            'isAdyenOrder' => $order->module === $this->name,
+            'shouldDisplayPaymentLinkForNonAdyenOrder' => $authorisationDetail['displayPaymentLink'] ?? $paymentLinkEnabled
         ]);
 
         return $this->display(__FILE__, $this->getVersionHandler()->tabContent());
