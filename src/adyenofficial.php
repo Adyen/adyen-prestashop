@@ -507,19 +507,25 @@ class AdyenOfficial extends PaymentModule
      *
      * @return false|string|null
      */
-    public function hookPaymentReturn(array $params)
-    {
-        return $this->displayAdyenOrderConfirmation($params);
-    }
-
-    /**
-     * @param array $params
-     *
-     * @return false|string|null
-     */
     public function hookDisplayPaymentReturn(array $params)
     {
-        return $this->displayAdyenOrderConfirmation($params);
+        if (!$this->active) {
+            return null;
+        }
+
+        $this->context->smarty->assign(
+            ['adyenAction' => \AdyenPayment\Classes\Utility\CookieService::get('adyenAction')]
+        );
+        $this->context->smarty->assign(
+            [
+                'checkoutConfigUrl' => AdyenPayment\Classes\Utility\Url::getFrontUrl(
+                    'paymentconfig',
+                    ['cartId' => \AdyenPayment\Classes\Utility\CookieService::get('cartId')]
+                )
+            ]
+        );
+
+        return $this->display(__FILE__, '/views/templates/front/adyen-order-confirmation.tpl');
     }
 
     /**
@@ -866,32 +872,6 @@ class AdyenOfficial extends PaymentModule
         );
 
         return $this->display(__FILE__, '/views/templates/front/adyen-donations.tpl');
-    }
-
-    /**
-     * @param array $params
-     *
-     * @return false|string|null
-     */
-    private function displayAdyenOrderConfirmation(array $params)
-    {
-        if (!$this->active) {
-            return null;
-        }
-
-        $this->context->smarty->assign(
-            ['adyenAction' => \AdyenPayment\Classes\Utility\CookieService::get('adyenAction')]
-        );
-        $this->context->smarty->assign(
-            [
-                'checkoutConfigUrl' => AdyenPayment\Classes\Utility\Url::getFrontUrl(
-                    'paymentconfig',
-                    ['cartId' => \AdyenPayment\Classes\Utility\CookieService::get('cartId')]
-                )
-            ]
-        );
-
-        return $this->display(__FILE__, '/views/templates/front/adyen-order-confirmation.tpl');
     }
 
     /**
