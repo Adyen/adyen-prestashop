@@ -76,7 +76,7 @@
                                 </button>
                             </div>
                             <div class="modal-body">
-                                <label> {l s='Are you sure you want to delete this stored credit card?' mod='adyenofficial'} </label>
+                                <label> {l s='Are you sure you want to delete this stored payment method?' mod='adyenofficial'} </label>
                                 <div class="adyen-modal-error-container adyen-hidden">
                                     <label>{l s='Disable action could not be processed, invalid request.' mod='adyenofficial'} </label>
                                 </div>

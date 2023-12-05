@@ -46,11 +46,11 @@ class AdyenOfficial extends PaymentModule
     {
         $this->name = 'adyenofficial';
         $this->tab = 'payments_gateways';
-        $this->version = '5.0.9';
+        $this->version = '5.1.0';
 
         $this->author = $this->l('Adyen');
         $this->need_instance = 0;
-        $this->ps_versions_compliancy = ['min' => '1.7.5.0', 'max' => _PS_VERSION_];
+        $this->ps_versions_compliancy = ['min' => '1.7.5.0', 'max' => '8.1.2'];
         $this->bootstrap = true;
 
         parent::__construct();
@@ -1393,11 +1393,11 @@ class AdyenOfficial extends PaymentModule
         $transactionDetails = \AdyenPayment\Classes\Services\TransactionDetailsHandler::getTransactionDetails($order);
 
         $reversedDetails = array_reverse($transactionDetails);
-        $authorisationDetail = $reversedDetails[array_search(
+        $authorisationDetail = !empty($reversedDetails) ? $reversedDetails[array_search(
             \Adyen\Webhook\EventCodes::AUTHORISATION,
             array_column($reversedDetails, 'eventCode'),
             true
-        )];
+        )] : [];
 
         $lastDetail = end($transactionDetails);
         $generalSettings = \Adyen\Core\BusinessLogic\AdminAPI\AdminAPI::get()->generalSettings((string)\Context::getContext()->shop->id)->getGeneralSettings();
@@ -1424,7 +1424,7 @@ class AdyenOfficial extends PaymentModule
             'orderId' => $orderId,
             'adyenLink' => $authorisationDetail['viewOnAdyenUrl'] ?? '',
             'refundSupported' => $authorisationDetail['refund'] ?? false,
-            'adyenPaymentLink' => $authorisationDetail['paymentLink'],
+            'adyenPaymentLink' => $authorisationDetail['paymentLink'] ?? '',
             'adyenGeneratePaymentLink' => $this->getAction('AdyenPaymentLink', 'generatePaymentLink', ['ajax' => true]),
             'shouldDisplayPaymentLink' => $authorisationDetail['displayPaymentLink'] ?? false,
             'isAdyenOrder' => $order->module === $this->name,
