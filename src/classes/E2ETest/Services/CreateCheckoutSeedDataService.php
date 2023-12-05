@@ -62,15 +62,22 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
     /**
      * CreateCheckoutSeedDataService constructor
      *
-     * @param string $credentials
+     * @param CountryTestProxy $countryTestProxy
+     * @param CurrencyTestProxy $currencyTestProxy
+     * @param CustomerTestProxy $customerTestProxy
+     * @param AddressTestProxy $addressTestProxy
      */
-    public function __construct(string $credentials)
+    public function __construct(
+        CountryTestProxy  $countryTestProxy,
+        CurrencyTestProxy $currencyTestProxy,
+        CustomerTestProxy $customerTestProxy,
+        AddressTestProxy  $addressTestProxy
+    )
     {
-        $host = Configuration::get('PS_SHOP_DOMAIN');
-        $this->countryTestProxy = new CountryTestProxy($this->getHttpClient(), $host, $credentials);
-        $this->currencyTestProxy = new CurrencyTestProxy($this->getHttpClient(), $host, $credentials);
-        $this->customerTestProxy = new CustomerTestProxy($this->getHttpClient(), $host, $credentials);
-        $this->addressTestProxy = new AddressTestProxy($this->getHttpClient(), $host, $credentials);
+        $this->countryTestProxy = $countryTestProxy;
+        $this->currencyTestProxy = $currencyTestProxy;
+        $this->customerTestProxy = $customerTestProxy;
+        $this->addressTestProxy = $addressTestProxy;
     }
 
     /**
