@@ -136,7 +136,7 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
 
             $ordersMerchantReferenceAndAmount['order_' . $index] = [
                 'merchantReference' => $cartId,
-                'amount' => $totalAmount
+                'amount' => $totalAmount * 100
             ];
             $index++;
         }
