@@ -81,10 +81,10 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
     /**
      * @throws HttpRequestException
      */
-    public function createWebhookSeedData(string $customerId): void
+    public function createWebhookSeedData(string $customerId): array
     {
         $this->createOrdersMappingConfiguration();
-        $this->createOrders($customerId);
+        return $this->createOrders($customerId);
     }
 
     private function createOrdersMappingConfiguration(): void
@@ -99,8 +99,10 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
      * @throws HttpRequestException
      * @throws Exception
      */
-    private function createOrders(string $customerId): void
+    private function createOrders(string $customerId): array
     {
+        $ordersMerchantReferenceAndAmount = [];
+        $index = 1;
         $addressId = Address::getFirstCustomerAddressId($customerId);
         $orders = $this->readFromJSONFile()['orders'] ?? [];
         foreach ($orders as $order) {
@@ -131,7 +133,15 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
                     $transactionContext->getAmount()->getCurrency(),
                     CaptureType::manual()); //read from configuration
             });
+
+            $ordersMerchantReferenceAndAmount['order_' . $index] = [
+                'merchantReference' => $cartId,
+                'amount' => $totalAmount
+            ];
+            $index++;
         }
+
+        return $ordersMerchantReferenceAndAmount;
     }
 
     /**

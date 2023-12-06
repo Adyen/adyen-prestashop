@@ -104,9 +104,10 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
                 $productTestProxy,
                 $orderTestProxy
             );
-            $createWebhookSeedDataService->createWebhookSeedData($customerId);
+            $ordersMerchantReferenceAndAmount = $createWebhookSeedDataService->createWebhookSeedData($customerId);
             $webhookData = $createWebhookSeedDataService->getWebhookAuthorizationData();
             die(json_encode(array_merge(
+                $ordersMerchantReferenceAndAmount,
                 $webhookData,
                 ['message' => 'The initial data setup was successfully completed.']
             )));
