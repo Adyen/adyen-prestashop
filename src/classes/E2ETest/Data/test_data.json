@@ -2,11 +2,11 @@
   "newSubStores": [
     {
       "subStore": "subStore2",
-      "id" : "2"
+      "id": "2"
     },
     {
       "subStore": "subStore3",
-      "id" : "3"
+      "id": "3"
     }
   ],
   "countries": [
@@ -32,9 +32,9 @@
     "password": "First132.",
     "genderId": 2,
     "birthday": "1970-05-31",
-    "defaultGroupId" : 3,
-    "langId" : 1,
-    "address" : {
+    "defaultGroupId": 3,
+    "langId": 1,
+    "address": {
       "address": "test 123",
       "city": "Berlin",
       "country": "DE",
@@ -63,6 +63,41 @@
       "conversionRate": 1.09,
       "symbol": "$",
       "precision": 2
+    }
+  ],
+  "ordersMappingConfiguration": {
+    "cancelled": "6",
+    "chargeBack": "25",
+    "failed": "8",
+    "inProgress": "3",
+    "new": "12",
+    "paid": "2",
+    "partiallyRefunded": "24",
+    "pending": "23",
+    "refunded": "7"
+  },
+  "orders": [
+    {
+      "currencyIsoCode": "EUR",
+      "orderItems": [
+        {
+          "productId": 1,
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "currencyIsoCode": "GBP",
+      "orderItems": [
+        {
+          "productId": 1,
+          "quantity": 2
+        },
+        {
+          "productId": 2,
+          "quantity": 3
+        }
+      ]
     }
   ]
 }

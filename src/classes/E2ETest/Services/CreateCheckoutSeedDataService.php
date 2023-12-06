@@ -81,36 +81,34 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
     }
 
     /**
-     * @throws EmptyConnectionDataException
-     * @throws ApiKeyCompanyLevelException
-     * @throws MerchantDoesNotExistException
-     * @throws InvalidModeException
-     * @throws EmptyStoreException
-     * @throws MerchantIdChangedException
-     * @throws InvalidApiKeyException
-     * @throws PaymentMethodDataEmptyException
-     * @throws FailedToGenerateHmacException
-     * @throws ClientKeyGenerationFailedException
-     * @throws UserDoesNotHaveNecessaryRolesException
+     * @param string $testApiKey
+     * @return string
      * @throws ApiCredentialsDoNotExistException
-     * @throws InvalidAllowedOriginException
-     * @throws InvalidConnectionSettingsException
-     * @throws ModeChangedException
+     * @throws ApiKeyCompanyLevelException
+     * @throws ClientKeyGenerationFailedException
      * @throws ConnectionSettingsNotFoundException
+     * @throws EmptyConnectionDataException
+     * @throws EmptyStoreException
+     * @throws FailedToGenerateHmacException
      * @throws FailedToRegisterWebhookException
      * @throws HttpRequestException
+     * @throws InvalidAllowedOriginException
+     * @throws InvalidApiKeyException
+     * @throws InvalidConnectionSettingsException
+     * @throws InvalidModeException
+     * @throws MerchantDoesNotExistException
+     * @throws MerchantIdChangedException
+     * @throws ModeChangedException
+     * @throws PaymentMethodDataEmptyException
+     * @throws UserDoesNotHaveNecessaryRolesException
      */
-    public function crateCheckoutPrerequisitesData(string $testApiKey): void
+    public function crateCheckoutPrerequisitesData(string $testApiKey): string
     {
-        if (count(AdminAPI::get()->connection(1)->getConnectionSettings()->toArray()) > 0) {
-            return;
-        }
-
         $this->createIntegrationConfigurations($testApiKey);
         $this->activateCountries();
         $this->deactivateCountries();
         $this->addCurrencies();
-        $this->createCustomerAndAddress();
+        return $this->createCustomerAndAddress();
     }
 
     /**
@@ -332,13 +330,16 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
     /**
      * Creates customer and address in database
      *
+     * @return string
      * @throws HttpRequestException
      */
-    private function createCustomerAndAddress(): void
+    private function createCustomerAndAddress(): string
     {
         $customer = $this->readFromJSONFile()['customer'] ?? [];
         $createdCustomerId = $this->createCustomer($customer);
         $this->createCustomerAddress($customer, $createdCustomerId);
+
+        return $createdCustomerId;
     }
 
     /**

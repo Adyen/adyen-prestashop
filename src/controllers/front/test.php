@@ -25,9 +25,12 @@ use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\Bootstrap;
 use AdyenPayment\Classes\E2ETest\Exception\InvalidDataException;
 use AdyenPayment\Classes\E2ETest\Http\AddressTestProxy;
+use AdyenPayment\Classes\E2ETest\Http\CartTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\CountryTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\CurrencyTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\CustomerTestProxy;
+use AdyenPayment\Classes\E2ETest\Http\OrderTestProxy;
+use AdyenPayment\Classes\E2ETest\Http\ProductTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\ShopsTestProxy;
 use AdyenPayment\Classes\E2ETest\Services\AdyenAPIService;
 use AdyenPayment\Classes\E2ETest\Services\AuthorizationService;
@@ -85,7 +88,7 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
             $currencyTestProxy = new CurrencyTestProxy($this->getHttpClient(), $host, $credentials);
             $customerTestProxy = new CustomerTestProxy($this->getHttpClient(), $host, $credentials);
             $addressTestProxy = new AddressTestProxy($this->getHttpClient(), $host, $credentials);
-            $this->createCheckoutSeedData(
+            $customerId = $this->createCheckoutSeedData(
                 $countryTestProxy,
                 $currencyTestProxy,
                 $customerTestProxy,
@@ -93,7 +96,15 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
                 $testApiKey
             );
 
-            $createWebhookSeedDataService = new CreateWebhooksSeedDataService();
+            $cartTestProxy = new CartTestProxy($this->getHttpClient(), $host, $credentials);
+            $productTestProxy = new ProductTestProxy($this->getHttpClient(), $host, $credentials);
+            $orderTestProxy = new OrderTestProxy($this->getHttpClient(), $host, $credentials);
+            $createWebhookSeedDataService = new CreateWebhooksSeedDataService(
+                $cartTestProxy,
+                $productTestProxy,
+                $orderTestProxy
+            );
+            $createWebhookSeedDataService->createWebhookSeedData($customerId);
             $webhookData = $createWebhookSeedDataService->getWebhookAuthorizationData();
             die(json_encode(array_merge(
                 $webhookData,
@@ -156,32 +167,38 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
     /**
      * Calls service to create checkout seed data
      *
-     * @throws EmptyConnectionDataException
-     * @throws MerchantDoesNotExistException
-     * @throws ApiKeyCompanyLevelException
-     * @throws InvalidModeException
-     * @throws EmptyStoreException
-     * @throws MerchantIdChangedException
-     * @throws InvalidApiKeyException
-     * @throws PaymentMethodDataEmptyException
-     * @throws FailedToGenerateHmacException
-     * @throws ClientKeyGenerationFailedException
-     * @throws UserDoesNotHaveNecessaryRolesException
-     * @throws InvalidAllowedOriginException
+     * @param CountryTestProxy $countryTestProxy
+     * @param CurrencyTestProxy $currencyTestProxy
+     * @param CustomerTestProxy $customerTestProxy
+     * @param AddressTestProxy $addressTestProxy
+     * @param string $testApiKey
+     * @return string
      * @throws ApiCredentialsDoNotExistException
-     * @throws InvalidConnectionSettingsException
-     * @throws HttpRequestException
-     * @throws ModeChangedException
+     * @throws ApiKeyCompanyLevelException
+     * @throws ClientKeyGenerationFailedException
      * @throws ConnectionSettingsNotFoundException
+     * @throws EmptyConnectionDataException
+     * @throws EmptyStoreException
+     * @throws FailedToGenerateHmacException
      * @throws FailedToRegisterWebhookException
+     * @throws HttpRequestException
+     * @throws InvalidAllowedOriginException
+     * @throws InvalidApiKeyException
+     * @throws InvalidConnectionSettingsException
+     * @throws InvalidModeException
+     * @throws MerchantDoesNotExistException
+     * @throws MerchantIdChangedException
+     * @throws ModeChangedException
+     * @throws PaymentMethodDataEmptyException
+     * @throws UserDoesNotHaveNecessaryRolesException
      */
     private function createCheckoutSeedData(
-        CountryTestProxy $countryTestProxy,
+        CountryTestProxy  $countryTestProxy,
         CurrencyTestProxy $currencyTestProxy,
         CustomerTestProxy $customerTestProxy,
-        AddressTestProxy $addressTestProxy,
-        string $testApiKey
-    ): void
+        AddressTestProxy  $addressTestProxy,
+        string            $testApiKey
+    ): string
     {
         $createSeedDataService = new CreateCheckoutSeedDataService(
             $countryTestProxy,
@@ -189,7 +206,8 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
             $customerTestProxy,
             $addressTestProxy
         );
-        $createSeedDataService->crateCheckoutPrerequisitesData($testApiKey);
+
+        return $createSeedDataService->crateCheckoutPrerequisitesData($testApiKey);
     }
 
     /**
