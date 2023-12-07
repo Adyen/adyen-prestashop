@@ -96,7 +96,7 @@
         },
         {
           "productId": 2,
-          "quantity": 3
+          "quantity": 4
         }
       ],
       "captureType" : "manual"
@@ -134,7 +134,7 @@
         },
         {
           "productId": 2,
-          "quantity": 3
+          "quantity": 5
         }
       ],
       "captureType" : "delayed"
