@@ -37,6 +37,7 @@ use AdyenPayment\Classes\E2ETest\Services\AuthorizationService;
 use AdyenPayment\Classes\E2ETest\Services\CreateCheckoutSeedDataService;
 use AdyenPayment\Classes\E2ETest\Services\CreateInitialSeedDataService;
 use AdyenPayment\Classes\E2ETest\Services\CreateWebhooksSeedDataService;
+use AdyenPayment\Classes\E2ETest\Services\TransactionLogService;
 use AdyenPayment\Classes\Utility\AdyenPrestaShopUtility;
 use PrestaShop\PrestaShop\Adapter\Entity\Country;
 use Configuration;
@@ -68,6 +69,12 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
     public function postProcess()
     {
         $payload = json_decode(Tools::file_get_contents('php://input'), true);
+
+        if ($payload['merchantReference'] && $payload['eventCode']) {
+            $this->verifyWebhookStatus($payload['merchantReference'], $payload['eventCode']);
+
+            return;
+        }
 
         $url = $payload['url'] ?? '';
         $testApiKey = $payload['testApiKey'] ?? '';
@@ -126,6 +133,18 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
         } finally {
             header('Content-Type: application/json');
         }
+    }
+
+    /**
+     * @throws QueryFilterInvalidParamException
+     */
+    private function verifyWebhookStatus($merchantReference, $eventCode): void
+    {
+        $transactionLogService = new TransactionLogService();
+
+        die(json_encode(array_merge(
+            ['finished' => $transactionLogService->findLogsByMerchantReference($merchantReference, $eventCode)]
+        )));
     }
 
     /**

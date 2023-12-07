@@ -271,7 +271,6 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
         $productData = $this->productTestProxy->getProductData($productId)['product'];
         $productAttributeId = $productData['cache_default_attribute'];
         $quantity = $orderItem["quantity"];
-        $totalAmount = $productData['price'] * $quantity;
         $data = $this->readFomXMLFile('create_cart_one_product');
         $data = str_replace(
             [
@@ -347,13 +346,11 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
         );
 
         $countOfOrderItems = count($orderItems);
-        $totalAmount = 0.0;
         for ($i = 1; $i <= $countOfOrderItems; $i++) {
             $productId = $orderItems[$i - 1]["productId"];
             $productData = $this->productTestProxy->getProductData($productId)['product'];
             $productAttributeId = $productData['cache_default_attribute'];
             $quantity = $orderItems[$i - 1]["quantity"];
-            $totalAmount += $productData['price'] * $quantity;
             $data = str_replace(
                 [
                     "{id_product_$i}",
