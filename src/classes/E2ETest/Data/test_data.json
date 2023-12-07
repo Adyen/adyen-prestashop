@@ -84,7 +84,8 @@
           "productId": 1,
           "quantity": 1
         }
-      ]
+      ],
+      "captureType" : "manual"
     },
     {
       "currencyIsoCode": "GBP",
@@ -97,7 +98,66 @@
           "productId": 2,
           "quantity": 3
         }
-      ]
+      ],
+      "captureType" : "manual"
+    },
+    {
+      "currencyIsoCode": "USD",
+      "orderItems": [
+        {
+          "productId": 3,
+          "quantity": 5
+        }
+      ],
+      "captureType" : "manual"
+    },
+    {
+      "currencyIsoCode": "EUR",
+      "orderItems": [
+        {
+          "productId": 3,
+          "quantity": 1
+        },
+        {
+          "productId": 4,
+          "quantity": 2
+        }
+      ],
+      "captureType" : "immediate"
+    },
+    {
+      "currencyIsoCode": "USD",
+      "orderItems": [
+        {
+          "productId": 4,
+          "quantity": 2
+        },
+        {
+          "productId": 2,
+          "quantity": 3
+        }
+      ],
+      "captureType" : "delayed"
+    },
+    {
+      "currencyIsoCode": "USD",
+      "orderItems": [
+        {
+          "productId": 3,
+          "quantity": 1
+        }
+      ],
+      "captureType" : "delayed"
+    },
+    {
+      "currencyIsoCode": "GBP",
+      "orderItems": [
+        {
+          "productId": 4,
+          "quantity": 5
+        }
+      ],
+      "captureType" : "delayed"
     }
   ]
 }

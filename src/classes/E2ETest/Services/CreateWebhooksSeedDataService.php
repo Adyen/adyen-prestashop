@@ -131,7 +131,8 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
                 $transactionHistoryService = ServiceRegister::getService(TransactionHistoryService::class);
                 $transactionHistoryService->createTransactionHistory($transactionContext->getReference(),
                     $transactionContext->getAmount()->getCurrency(),
-                    CaptureType::manual()); //read from configuration
+                    $this->getCaptureType($order['captureType'])
+                );
             });
 
             $ordersMerchantReferenceAndAmount['order_' . $index] = [
@@ -142,6 +143,19 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
         }
 
         return $ordersMerchantReferenceAndAmount;
+    }
+
+    private function getCaptureType(string $captureTypeData): CaptureType
+    {
+        if ($captureTypeData === 'manual'){
+            return CaptureType::manual();
+        }
+
+        if ($captureTypeData === 'immediate'){
+            return CaptureType::immediate();
+        }
+
+        return CaptureType::delayed();
     }
 
     /**
