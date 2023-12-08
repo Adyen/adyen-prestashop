@@ -75,4 +75,6 @@ jobs:
           PRESTASHOP_TEST_REPO: ${{secrets.PRESTASHOP_TEST_REPO}}
           COMMON_TEST_REPO: ${{secrets.COMMON_TEST_REPO}}
           MYSQL: ${{matrix.mysql}}
+          PAY_PAL_EMAIL: ${{secrets.PAY_PAL_EMAIL}}
+          PAY_PAL_PASSWORD: ${{secrets.PAY_PAL_PASSWORD}}
           

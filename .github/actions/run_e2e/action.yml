@@ -29,6 +29,12 @@ inputs:
   PORT:
     description: "The port of the shop."
     required: true
+  PAY_PAL_EMAIL:
+    description: "The email of the payPal test account."
+    required: true  
+  PAY_PAL_PASSWORD:
+    description: "The password of the payPal test account."
+    required: true
   NGROK:
     description: "The token of the ngrok."
     required: true
@@ -143,6 +149,8 @@ runs:
         BACKEND_SHOP_URL: "localhost"
         TEST_PATH: "/module/adyenofficial/test"
         ADMIN_PATH: "/admin1"
+        PAY_PAL_EMAIL: ${{ inputs.PAY_PAL_EMAIL }}
+        PAY_PAL_PASSWORD: ${{ inputs.PAY_PAL_PASSWORD }}
     - uses: actions/upload-artifact@v3
       if: always()
       with:
