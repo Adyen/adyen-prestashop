@@ -33,11 +33,11 @@ class CreateInitialSeedDataService extends BaseCreateSeedDataService
      * CreateSeedDataService constructor.
      *
      * @param string $url
-     * @param string $credentials
+     * @param ShopsTestProxy $shopsTestProxy
      */
-    public function __construct(string $url, string $credentials)
+    public function __construct(string $url, ShopsTestProxy $shopsTestProxy)
     {
-        $this->shopProxy = new ShopsTestProxy($this->getHttpClient(), 'localhost', $credentials);
+        $this->shopProxy = $shopsTestProxy;
         $this->baseUrl = $url;
     }
 

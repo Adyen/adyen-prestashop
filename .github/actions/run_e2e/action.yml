@@ -10,7 +10,7 @@ inputs:
     required: true
   MYSQL:
     description: "The Mysql version"
-    required: true  
+    required: true
   PHP:
     description: "The PHP Version that is used for the Shopware container."
     required: true
@@ -108,7 +108,7 @@ runs:
     - name: Clone Code
       uses: actions/checkout@v3
       with:
-        repository: logeecom-dev/adyen-prestashop-e2e-tests
+        repository: ${{inputs.PRESTASHOP_TEST_REPO}}
         path: tests
         token: ${{ inputs.GH_PAT }}
         ref: feature/express-checkout
@@ -126,7 +126,7 @@ runs:
 
     - name: Install common
       shell: bash
-      run: npm install https://${{inputs.GH_PAT}}@github.com/logeecom-dev/adyen-common-e2e-tests#feature/express-checkout
+      run: npm install https://${{inputs.GH_PAT}}@github.com/${{inputs.COMMON_TEST_REPO}}#feature/express-checkout
 
     - name: Install Playwright Browsers
       working-directory: ./tests
@@ -134,7 +134,7 @@ runs:
       run: npx playwright install --with-deps > /dev/null
     - name: Change permissions
       shell: bash
-      run:  docker exec prestashop bash -c 'chmod -R 777 /var/www/html'
+      run: docker exec prestashop bash -c 'chmod -R 777 /var/www/html'
     - name: Run Playwright tests
       shell: bash
       working-directory: ./tests
@@ -148,6 +148,7 @@ runs:
         ADMIN_PASSWORD: ${{ inputs.ADMIN_PASSWORD }}
         BACKEND_SHOP_URL: "localhost"
         TEST_PATH: "/module/adyenofficial/test"
+        WEBHOOK_PATH: "/module/adyenofficial/webhook?storeId=1"
         ADMIN_PATH: "/admin1"
         PAY_PAL_EMAIL: ${{ inputs.PAY_PAL_EMAIL }}
         PAY_PAL_PASSWORD: ${{ inputs.PAY_PAL_PASSWORD }}
@@ -156,7 +157,7 @@ runs:
       with:
         name: playwright-report-Prestashop-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}
         path: ./tests/playwright-report/
-        retention-days: 30  
+        retention-days: 30
     - name: Add docker logs to file
       shell: bash
       run: docker logs prestashop >& ./dockerLogs.log
