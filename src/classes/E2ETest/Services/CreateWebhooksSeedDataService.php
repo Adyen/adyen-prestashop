@@ -83,16 +83,7 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
      */
     public function createWebhookSeedData(string $customerId): array
     {
-        $this->createOrdersMappingConfiguration();
         return $this->createOrders($customerId);
-    }
-
-    private function createOrdersMappingConfiguration(): void
-    {
-        $ordersMappingConfigurationData = $this->readFromJSONFile()['ordersMappingConfiguration'] ?? [];
-        $orderStatusMapRequest = OrderMappingsRequest::parse($ordersMappingConfigurationData);
-
-        AdminAPI::get()->orderMappings(1)->saveOrderStatusMap($orderStatusMapRequest);
     }
 
     /**
