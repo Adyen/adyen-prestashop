@@ -15,19 +15,15 @@ use Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHisto
 use Adyen\Core\BusinessLogic\Domain\Webhook\Repositories\WebhookConfigRepository;
 use Adyen\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use Adyen\Core\Infrastructure\ServiceRegister;
+use Adyen\Webhook\PaymentStates;
 use AdyenPayment\Classes\E2ETest\Http\CartTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\OrderTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\ProductTestProxy;
+use AdyenPayment\Classes\Services\AdyenOrderStatusMapping;
 use Cart;
 use Currency;
-use Customer;
 use Exception;
-use PrestaShopDatabaseException;
-use PrestaShopException;
-use Product;
 use Shop;
-use Symfony\Bundle\SecurityBundle\Tests\Functional\Bundle\AclBundle\Entity\Car;
-use function Complex\add;
 
 /**
  * Class CreateWebhooksSeedDataService
@@ -89,8 +85,18 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
 
     private function createOrdersMappingConfiguration(): void
     {
-        $ordersMappingConfigurationData = $this->readFromJSONFile()['ordersMappingConfiguration'] ?? [];
-        $orderStatusMapRequest = OrderMappingsRequest::parse($ordersMappingConfigurationData);
+        $defaultOrdersStatusMap = AdyenOrderStatusMapping::getDefaultOrderStatusMap();
+        $orderStatusMapData['inProgress'] = $defaultOrdersStatusMap[PaymentStates::STATE_IN_PROGRESS];
+        $orderStatusMapData['pending'] = $defaultOrdersStatusMap[PaymentStates::STATE_PENDING];
+        $orderStatusMapData['paid'] = $defaultOrdersStatusMap[PaymentStates::STATE_PAID];
+        $orderStatusMapData['failed'] = $defaultOrdersStatusMap[PaymentStates::STATE_FAILED];
+        $orderStatusMapData['refunded'] = $defaultOrdersStatusMap[PaymentStates::STATE_REFUNDED];
+        $orderStatusMapData['partiallyRefunded'] = $defaultOrdersStatusMap[PaymentStates::STATE_PARTIALLY_REFUNDED];
+        $orderStatusMapData['cancelled'] = $defaultOrdersStatusMap[PaymentStates::STATE_CANCELLED];
+        $orderStatusMapData['new'] = $defaultOrdersStatusMap[PaymentStates::STATE_NEW];
+        $orderStatusMapData['chargeBack'] = $defaultOrdersStatusMap[PaymentStates::CHARGE_BACK];
+
+        $orderStatusMapRequest = OrderMappingsRequest::parse($orderStatusMapData);
 
         AdminAPI::get()->orderMappings(1)->saveOrderStatusMap($orderStatusMapRequest);
     }
