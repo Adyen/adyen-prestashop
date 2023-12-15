@@ -2,7 +2,7 @@
 on:
   push:
     branches:
-      - feature/webhooks
+      - feature/webhooks_extension
 jobs:
   build:
     permissions:
