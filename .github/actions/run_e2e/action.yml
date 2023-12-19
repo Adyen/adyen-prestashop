@@ -162,6 +162,10 @@ runs:
       shell: bash
       run: docker logs prestashop >& ./dockerLogs.log
       if: always()
+    - name: Add PrestaShop logs to file
+      shell: bash
+      run: docker exec prestashop bash -c "mysql -h 127.0.0.1 -u prestashop -pprestashop prestashop -e \"SELECT ps_log.message, ps_log.date_add, ps_log.date_upd FROM ps_log;\"" >& ./integrationLogs.log
+      if: always()
     - uses: actions/upload-artifact@v3
       if: always()
       with:
@@ -173,6 +177,12 @@ runs:
       with:
         name: docker-error-log-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}
         path: ./dockerLogs.log
+        retention-days: 30
+    - uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: integration-error-log-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}
+        path: ./integrationLogs.log
         retention-days: 30
     - name: Remove Ayden plugin
       if: always()
