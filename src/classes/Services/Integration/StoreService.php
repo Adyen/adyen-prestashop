@@ -196,7 +196,7 @@ class StoreService implements StoreServiceInterface
      */
     private function transformStoreOrderStatuses(array $orderStates): array
     {
-        return array_map(function ($orderState) {
+        return array_filter(array_map(function ($orderState) {
             if ($orderState['name'] === AdyenOrderStatusMapping::PRESTA_CHARGEBACK) {
                 $orderState['name'] = Module::getInstanceByName('adyenofficial')->l('Chargeback');
             }
@@ -207,10 +207,14 @@ class StoreService implements StoreServiceInterface
                 $orderState['name'] = Module::getInstanceByName('adyenofficial')->l('Partially refunded');
             }
 
+            if (empty($orderState['id_order_state']) || empty($orderState['name'])) {
+                return null;
+            }
+
             return new StoreOrderStatus(
                 $orderState['id_order_state'],
                 $orderState['name']
             );
-        }, $orderStates);
+        }, $orderStates));
     }
 }
