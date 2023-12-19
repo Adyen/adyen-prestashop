@@ -107,4 +107,14 @@ interface VersionHandler
      * @return string
      */
     public function getOrderUrl(string $merchantReference): string;
+
+    /**
+     * @return string
+     */
+    public function backofficeOrderJS(): string;
+
+    /**
+     * @return string
+     */
+    public function backofficeOrderTemplate(): string;
 }

@@ -54,7 +54,8 @@ if (!window.AdyenFE) {
         swish: 'swish',
         trustly: 'trustly',
         twint: 'twint',
-        vipps: 'vipps'
+        vipps: 'vipps',
+        alma: 'alma'
     };
 
     const methodTypes = [
@@ -152,6 +153,99 @@ if (!window.AdyenFE) {
         'US'
     ];
 
+    const supportsPaymentLink = [
+        'ach',
+        'afterpay_default',
+        'alipay',
+        'applepay',
+        'scheme',
+        'oney',
+        'clearpay',
+        'afterpay_default',
+        'klarna',
+        'klarna_account',
+        'klarna_paynow',
+        'klarna_account',
+        'multibanco',
+        'ach',
+        'sepadirectdebit',
+        'directdebit_GB',
+        'blik',
+        'eps',
+        'giropay',
+        'ideal',
+        'mbway',
+        'mobilepay',
+        'onlineBanking_PL',
+        'billdesk_online',
+        'ebanking_FI',
+        'molpay_ebanking_TH',
+        'directEbanking',
+        'applepay',
+        'trustly',
+        'alipay',
+        'bcmc',
+        'googlepay',
+        'gcash',
+        'momo_wallet',
+        'paypal',
+        'swish',
+        'vipps',
+        'zip',
+        'wechatpayQR',
+        'paywithgoogle',
+        'giftcard',
+        'auriga',
+        'babygiftcard',
+        'bloemengiftcard',
+        'cashcomgiftcard',
+        'eagleeye_voucher',
+        'entercard',
+        'expertgiftcard',
+        'fashioncheque',
+        'fijncadeau',
+        'valuelink',
+        'fleuropbloemenbon',
+        'fonqgiftcard',
+        'gallgall',
+        'givex',
+        'hallmarkcard',
+        'igive',
+        'ikano',
+        'kadowereld',
+        'kidscadeau',
+        'kindpas',
+        'leisurecard',
+        'nationalebioscoopbon',
+        'netscard',
+        'oberthur',
+        'pathegiftcard',
+        'payex',
+        'podiumcard',
+        'resursgiftcard',
+        'rotterdampas',
+        'genericgiftcard',
+        'schoolspullenpas',
+        'sparnord',
+        'sparebank',
+        'svs',
+        'universalgiftcard',
+        'vvvcadeaubon',
+        'vvvgiftcard',
+        'webshopgiftcard',
+        'winkelcheque',
+        'winterkledingpas',
+        'xponcard',
+        'yourgift',
+        'prosodie_illicado',
+        'twint',
+        'paysafecard',
+        'bcmc_mobile',
+        'alma'
+    ];
+
+    const supportsRecurringPayments = ['ach', 'applepay', 'directdebit_GB',  'gcash',  'paywithgoogle', 'ideal', 'klarna', 'klarna_account', 'klarna_paynow', 'sepadirectdebit', 'directEbanking'];
+
     /**
      * @typedef AdditionalDataConfig
      * @property {boolean?} showLogos
@@ -175,6 +269,9 @@ if (!window.AdyenFE) {
     /**
      * @typedef PaymentMethodConfiguration
      * @property {boolean} isNew
+     * @property {boolean} excludeFromPayByLink
+     * @property {boolean} enableTokenization
+     * @property {string} tokenType
      * @property {string} methodId
      * @property {string} code
      * @property {string?} name
@@ -309,7 +406,7 @@ if (!window.AdyenFE) {
                         label: method.name,
                         className: 'adlm--left-aligned',
                         renderer: (cell) =>
-                            cell.prepend(generator.createElement('img', 'adlp-payment-logo', '', { src: method.logo }))
+                            cell.prepend(generator.createElement('img', 'adlp-payment-logo', '', {src: method.logo}))
                     },
                     {
                         label: method.currencies?.length <= 2 ? method.currencies?.join(', ') : '',
@@ -629,7 +726,7 @@ if (!window.AdyenFE) {
                         label: translationService.translate('payments.filter.currencies.label'),
                         labelPlural: translationService.translate('payments.filter.currencies.labelPlural'),
                         values: activeFilters.currencies || [],
-                        options: currencies.map((c) => ({ value: c, label: c })),
+                        options: currencies.map((c) => ({value: c, label: c})),
                         selectPlaceholder: 'payments.filter.currencies.selectPlaceholder',
                         onChange: (values) => changeFilter('currencies', values)
                     }),
@@ -757,7 +854,7 @@ if (!window.AdyenFE) {
                             )
                         ]
                     ),
-                    generator.createElement('img', 'adlp-payment-logo', '', { src: method.logo })
+                    generator.createElement('img', 'adlp-payment-logo', '', {src: method.logo})
                 ]),
                 generator.createElement(
                     'p',
@@ -870,10 +967,10 @@ if (!window.AdyenFE) {
                             description: 'payments.configure.fields.surchargeType.description',
                             placeholder: 'payments.configure.fields.surchargeType.placeholder',
                             options: [
-                                { label: 'payments.configure.fields.surchargeType.none', value: 'none' },
-                                { label: 'payments.configure.fields.surchargeType.fixed', value: 'fixed' },
-                                { label: 'payments.configure.fields.surchargeType.percent', value: 'percent' },
-                                { label: 'payments.configure.fields.surchargeType.combined', value: 'combined' }
+                                {label: 'payments.configure.fields.surchargeType.none', value: 'none'},
+                                {label: 'payments.configure.fields.surchargeType.fixed', value: 'fixed'},
+                                {label: 'payments.configure.fields.surchargeType.percent', value: 'percent'},
+                                {label: 'payments.configure.fields.surchargeType.combined', value: 'combined'}
                             ]
                         },
                         {
@@ -910,6 +1007,44 @@ if (!window.AdyenFE) {
                             error: 'payments.configure.fields.surchargeLimit.error'
                         },
                         {
+                            name: 'excludeFromPayByLink',
+                            value: changedMethod.excludeFromPayByLink,
+                            type: 'checkbox',
+                            label: 'payments.configure.fields.paymentLink.label',
+                            description: 'payments.configure.fields.paymentLink.description',
+                            className: !supportsPaymentLink.some((item) => item === changedMethod.code)
+                                ? 'adls--hidden'
+                                : ''
+                        },
+                        {
+                            name: 'enableTokenization',
+                            value: changedMethod.enableTokenization,
+                            type: 'checkbox',
+                            label: 'payments.configure.fields.tokenization.label',
+                            description: 'payments.configure.fields.tokenization.description',
+                            className: !supportsRecurringPayments.some((item) => item === changedMethod.code)
+                                ? 'adls--hidden'
+                                : ''
+                        },
+                        {
+                            name: 'tokenType',
+                            value: changedMethod.tokenType,
+                            type: 'dropdown',
+                            label: 'payments.configure.fields.tokenType.label',
+                            description: 'payments.configure.fields.tokenType.description',
+                            placeholder: 'payments.configure.fields.tokenType.placeholder',
+                            error: 'payments.configure.fields.tokenType.error',
+                            options: [
+                                {label: 'payments.configure.fields.tokenType.cardOnFile', value: 'CardOnFile'},
+                                {
+                                    label: 'payments.configure.fields.tokenType.unscheduledCardOnFile',
+                                    value: 'UnscheduledCardOnFile'
+                                },
+                                {label: 'payments.configure.fields.tokenType.subscription', value: 'Subscription'}
+                            ],
+                            className: !changedMethod.enableTokenization ? 'adls--hidden' : '',
+                        },
+                        {
                             name: 'logo',
                             value: changedMethod.logo,
                             type: 'file',
@@ -925,6 +1060,7 @@ if (!window.AdyenFE) {
             );
 
             handleDependencies('surchargeType', changedMethod.surchargeType);
+            handleDependencies('enableTokenization', changedMethod.enableTokenization);
         };
 
         /**
@@ -1004,11 +1140,11 @@ if (!window.AdyenFE) {
                         'oneyFields',
                         'supportedInstallments',
                         [
-                            { label: 'oneyValues.3x', value: '3' },
-                            { label: 'oneyValues.4x', value: '4' },
-                            { label: 'oneyValues.6x', value: '6' },
-                            { label: 'oneyValues.10x', value: '10' },
-                            { label: 'oneyValues.12x', value: '12' }
+                            {label: 'oneyValues.3x', value: '3'},
+                            {label: 'oneyValues.4x', value: '4'},
+                            {label: 'oneyValues.6x', value: '6'},
+                            {label: 'oneyValues.10x', value: '10'},
+                            {label: 'oneyValues.12x', value: '12'}
                         ],
                         'adlm--inline',
                         false,
@@ -1027,10 +1163,10 @@ if (!window.AdyenFE) {
                     getRadioField('installmentFields', 'installments'),
                     getRadioField('installmentFields', 'installmentAmounts'),
                     getMultiselectField('installmentFields', 'installmentCountries', [
-                        { label: 'countries.BR', value: 'BR' },
-                        { label: 'countries.MX', value: 'MX' },
-                        { label: 'countries.TK', value: 'TK' },
-                        { label: 'countries.JP', value: 'JP' }
+                        {label: 'countries.BR', value: 'BR'},
+                        {label: 'countries.MX', value: 'MX'},
+                        {label: 'countries.TK', value: 'TK'},
+                        {label: 'countries.JP', value: 'JP'}
                     ]),
                     getNumberField('installmentFields', 'minimumAmount', '', false, 0.01, 0.01),
                     getTextField('installmentFields', 'numberOfInstallments')
@@ -1067,8 +1203,8 @@ if (!window.AdyenFE) {
                 label: `payments.configure.fields.${type}.${name}.label`,
                 description: `payments.configure.fields.${type}.${name}.description`,
                 options: [
-                    { label: 'general.yes', value: '1' },
-                    { label: 'general.no', value: '0' }
+                    {label: 'general.yes', value: '1'},
+                    {label: 'general.no', value: '0'}
                 ],
                 onChange: (value) => handleConfigMethodChange(name, value === '1', true)
             };
@@ -1171,7 +1307,7 @@ if (!window.AdyenFE) {
                 footer: true,
                 canClose: true,
                 buttons: [
-                    { type: 'secondary', label: 'general.cancel', onClick: () => modal.close() },
+                    {type: 'secondary', label: 'general.cancel', onClick: () => modal.close()},
                     {
                         type: 'primary',
                         className: 'adlm--destructive',
@@ -1297,6 +1433,10 @@ if (!window.AdyenFE) {
                 handleFieldVisibility('minimumAmount', value);
                 handleFieldVisibility('numberOfInstallments', value);
             }
+
+            if (prop === 'enableTokenization') {
+                handleFieldVisibility('tokenType', value);
+            }
         };
 
         /**
@@ -1337,6 +1477,10 @@ if (!window.AdyenFE) {
                 data.percentSurcharge = '';
                 data.fixedSurcharge = '';
                 data.surchargeLimit = '';
+            }
+
+            if (!data.enableTokenization) {
+                data.tokenType = '';
             }
 
             const postData = new FormData();
@@ -1402,12 +1546,12 @@ if (!window.AdyenFE) {
 
             if (['fixed', 'combined'].includes(changedMethod.surchargeType)) {
                 changedMethod.fixedSurcharge &&
-                    result.push(validator.validateNumber(page.querySelector('[name="fixedSurcharge"]')));
+                result.push(validator.validateNumber(page.querySelector('[name="fixedSurcharge"]')));
             }
 
             if (['percent', 'combined'].includes(changedMethod.surchargeType)) {
                 changedMethod.percentSurcharge &&
-                    result.push(validator.validateNumber(page.querySelector('[name="percentSurcharge"]')));
+                result.push(validator.validateNumber(page.querySelector('[name="percentSurcharge"]')));
                 if (changedMethod.surchargeLimit) {
                     const surchargeLimitField = page.querySelector('[name="surchargeLimit"]');
                     if (changedMethod.surchargeType === 'combined') {
@@ -1426,9 +1570,9 @@ if (!window.AdyenFE) {
                 }
 
                 changedMethod.paymentType === 'creditOrDebitCard' &&
-                    result.push(
-                        validator.validateNumberList(page.querySelector('[name="numberOfInstallments"]'), true, false)
-                    );
+                result.push(
+                    validator.validateNumberList(page.querySelector('[name="numberOfInstallments"]'), true, false)
+                );
             }
 
             if (changedMethod.paymentType === 'creditOrDebitCard') {
@@ -1443,6 +1587,11 @@ if (!window.AdyenFE) {
                 result.push(...validateRequiredField(['gatewayMerchantId', 'merchantId']));
             } else if (changedMethod.code === 'oney') {
                 result.push(...validateRequiredField(['supportedInstallments']));
+            }
+
+            if (changedMethod.enableTokenization) {
+                const tokenInput = page.querySelector('[name="tokenType"]');
+                result.push(validator.validateRequiredField(tokenInput));
             }
 
             return !result.includes(false);
@@ -1500,7 +1649,7 @@ if (!window.AdyenFE) {
          *
          * @param {{ storeId: string }} config
          */
-        this.display = ({ storeId }) => {
+        this.display = ({storeId}) => {
             configuration.getConfiguredPaymentsUrl = configuration.getConfiguredPaymentsUrl.replace(
                 '{storeId}',
                 storeId

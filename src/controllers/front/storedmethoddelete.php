@@ -2,14 +2,15 @@
 
 use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
 use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutConfig\Request\DisableStoredDetailsRequest;
+use Adyen\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionSettingsNotFountException;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use AdyenPayment\Classes\Bootstrap;
 use AdyenPayment\Classes\Utility\AdyenPrestaShopUtility;
 
 /**
- * Class AdyenOfficialCardDeleteModuleFrontController
+ * Class AdyenOfficialStoredMethodDeleteModuleFrontController
  */
-class AdyenOfficialCardDeleteModuleFrontController extends ModuleFrontController
+class AdyenOfficialStoredMethodDeleteModuleFrontController extends ModuleFrontController
 {
     /**
      * @throws RepositoryClassException
@@ -24,13 +25,13 @@ class AdyenOfficialCardDeleteModuleFrontController extends ModuleFrontController
     /**
      * @return void
      *
-     * @throws \Adyen\Core\BusinessLogic\Domain\Connection\Exceptions\ConnectionSettingsNotFountException
+     * @throws ConnectionSettingsNotFountException
      */
     public function postProcess(): void
     {
-        $customerId = \Tools::getValue('customerId');
-        $cardId = \Tools::getValue('cardId');
-        if ($cardId === '') {
+        $customerId = Context::getContext()->customer->id;
+        $methodId = Tools::getValue('methodId');
+        if (empty($methodId)) {
             AdyenPrestaShopUtility::die404(
                 [
                     'message' => 'Disable action could not be processed, invalid request.'
@@ -38,7 +39,7 @@ class AdyenOfficialCardDeleteModuleFrontController extends ModuleFrontController
             );
         }
 
-        if ($customerId === '') {
+        if (empty($customerId)) {
             AdyenPrestaShopUtility::die404(
                 [
                     'message' => 'Disable action could not be processed, customer not found.'
@@ -46,13 +47,13 @@ class AdyenOfficialCardDeleteModuleFrontController extends ModuleFrontController
             );
         }
 
-        $shop = \Shop::getShop(\Context::getContext()->shop->id);
+        $shop = Shop::getShop(Context::getContext()->shop->id);
         $disableRequest = new DisableStoredDetailsRequest(
-            $shop['domain'] . '_' . \Context::getContext()->shop->id . '_' . $customerId,
-            $cardId
+            $shop['domain'] . '_' . Context::getContext()->shop->id . '_' . $customerId,
+            $methodId
         );
 
-        $result = CheckoutAPI::get()->checkoutConfig(\Context::getContext()->shop->id)->disableStoredDetails(
+        $result = CheckoutAPI::get()->checkoutConfig(Context::getContext()->shop->id)->disableStoredDetails(
             $disableRequest
         );
 

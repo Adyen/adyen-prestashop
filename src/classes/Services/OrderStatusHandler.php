@@ -5,6 +5,7 @@ namespace AdyenPayment\Classes\Services;
 use Adyen\Core\BusinessLogic\AdminAPI\AdminAPI;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode;
 use Adyen\Core\BusinessLogic\Domain\GeneralSettings\Models\CaptureType;
+use Adyen\Core\BusinessLogic\Domain\GeneralSettings\Models\GeneralSettings;
 use Adyen\Core\BusinessLogic\Domain\GeneralSettings\Repositories\GeneralSettingsRepository;
 use Adyen\Core\BusinessLogic\Domain\Integration\Order\OrderService;
 use Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext;
@@ -63,6 +64,44 @@ class OrderStatusHandler
         if (!empty($manualCaptureId) && (int)$manualCaptureId === $newOrderStatus) {
             self::handleCapture($order, $lastItem['captureSupported'] ?? false, $lastItem['capturableAmount'] ?? 0);
         }
+    }
+
+    /**
+     * If order is in cancelled, failed or new status and if payment link is enabled return true.
+     *
+     * @param Order $order
+     *
+     * @return bool
+     *
+     * @throws RepositoryClassException
+     * @throws Exception
+     */
+    public static function shouldGeneratePaymentLinkForNonAdyenOrder(Order $order): bool
+    {
+        Bootstrap::init();
+        $orderStatusMapping = StoreContext::doWithStore(
+            (string)$order->id_shop,
+            [self::orderStatusMappingService(), 'getOrderStatusMappingSettings']
+        );
+
+        /** @var GeneralSettings|null $generalSettings */
+        $generalSettings = StoreContext::doWithStore(
+            (string)$order->id_shop,
+            [self::generalSettingsRepository(), 'getGeneralSettings']
+        );
+
+        $paymentLinkEnabled = $generalSettings && $generalSettings->isEnablePayByLink();
+
+        if ($paymentLinkEnabled && (
+                (int)$order->current_state === (int)$orderStatusMapping[PaymentStates::STATE_CANCELLED] ||
+                (int)$order->current_state === (int)$orderStatusMapping[PaymentStates::STATE_FAILED] ||
+                (int)$order->current_state === (int)$orderStatusMapping[PaymentStates::STATE_NEW])
+
+        ) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

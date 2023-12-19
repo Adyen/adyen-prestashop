@@ -24,21 +24,13 @@ class Version177 implements VersionHandler
      */
     public function hooks(): array
     {
-        $hooks = [
+        return [
             'displayAdminOrderTabContent',
             'displayAdminOrderTabLink',
             'actionOrderGridDefinitionModifier',
             'actionOrderGridPresenterModifier',
             'displayProductActions'
         ];
-
-        if (version_compare(_PS_VERSION_, '8.0.0', '>=')) {
-            $hooks[] = 'displayPaymentReturn';
-        } else {
-            $hooks[] = 'paymentReturn';
-        }
-
-        return $hooks;
     }
 
     /**
@@ -112,14 +104,18 @@ class Version177 implements VersionHandler
      */
     public function updateOrderDetail(
         OrderDetail $orderDetail,
-        float $amount,
-        float $amountWithoutTax,
-        int $quantityRefunded
-    ): void {
+        float       $amount,
+        float       $amountWithoutTax,
+        int         $quantityRefunded
+    ): void
+    {
         $orderDetail->total_refunded_tax_incl += $amount;
         $orderDetail->total_refunded_tax_excl += $amountWithoutTax;
         $orderDetail->product_quantity_return += $quantityRefunded;
         $orderDetail->product_quantity_reinjected += $quantityRefunded;
+
+        $orderDetail->total_refunded_tax_incl = round($orderDetail->total_refunded_tax_incl, 2);
+        $orderDetail->total_refunded_tax_excl = round($orderDetail->total_refunded_tax_excl, 2);
 
         $orderDetail->update();
     }
@@ -216,5 +212,21 @@ class Version177 implements VersionHandler
         }
 
         return $amount;
+    }
+
+    /**
+     * @return string
+     */
+    public function backofficeOrderJS(): string
+    {
+        return 'views/js/admin/adyen-backoffice-order-177.js';
+    }
+
+    /**
+     * @return string
+     */
+    public function backofficeOrderTemplate(): string
+    {
+        return 'adyen-backoffice-order-creation-177.tpl';
     }
 }

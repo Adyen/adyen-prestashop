@@ -2,17 +2,22 @@
 
 namespace AdyenPayment\Classes\Services\Integration\PaymentProcessors;
 
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentLink\Factory\PaymentLinkRequestBuilder;
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentLink\Models\PaymentLinkRequestContext;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Factory\PaymentRequestBuilder;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\ShopperName;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\StartTransactionRequestContext;
-use Adyen\Core\BusinessLogic\Domain\Integration\Processors\ShopperNameProcessor as ShopperNameProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\ShopperNameProcessor as ShopperNameProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\ShopperNameProcessor as PaymentLinkShopperNameProcessorInterface;
+use Cart;
+use Customer;
 
 /**
  * Class ShopperNameProcessor
  *
  * @package AdyenPayment\Integration\PaymentProcessors
  */
-class ShopperNameProcessor implements ShopperNameProcessorInterface
+class ShopperNameProcessor implements ShopperNameProcessorInterface, PaymentLinkShopperNameProcessorInterface
 {
     /**
      * @param PaymentRequestBuilder $builder
@@ -22,18 +27,41 @@ class ShopperNameProcessor implements ShopperNameProcessorInterface
      */
     public function process(PaymentRequestBuilder $builder, StartTransactionRequestContext $context): void
     {
-        $cart = new \Cart($context->getReference());
-        $customer = new \Customer($cart->id_customer);
+        if ($shopperName = $this->getCustomersNameFromCart((int)$context->getReference())) {
+            $builder->setShopperName($shopperName);
+        }
+    }
+
+    /**
+     * @param PaymentLinkRequestBuilder $builder
+     * @param PaymentLinkRequestContext $context
+     *
+     * @return void
+     */
+    public function processPaymentLink(PaymentLinkRequestBuilder $builder, PaymentLinkRequestContext $context): void
+    {
+        if ($shopperName = $this->getCustomersNameFromCart((int)$context->getReference())) {
+            $builder->setShopperName($shopperName);
+        }
+    }
+
+    /**
+     * @param int $cartId
+     *
+     * @return ShopperName|null
+     */
+    private function getCustomersNameFromCart(int $cartId): ?ShopperName
+    {
+        $cart = new Cart($cartId);
+        $customer = new Customer($cart->id_customer);
 
         if (!$customer) {
-            return;
+            return null;
         }
 
-        $shopperName = new ShopperName(
+        return new ShopperName(
             $customer->firstname ?? '',
             $customer->lastname ?? ''
         );
-
-        $builder->setShopperName($shopperName);
     }
 }

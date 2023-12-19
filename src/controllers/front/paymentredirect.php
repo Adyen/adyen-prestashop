@@ -1,7 +1,6 @@
 <?php
 
 use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
-use Adyen\Core\BusinessLogic\DataAccess\Payment\Exceptions\PaymentMethodNotConfiguredException;
 use Adyen\Core\Infrastructure\Logger\Logger;
 use AdyenPayment\Classes\Bootstrap;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
@@ -66,12 +65,13 @@ class AdyenOfficialPaymentRedirectModuleFrontController extends PaymentControlle
             }
 
             Tools::redirect($this->generateSuccessURL($cart));
-        } catch (PaymentMethodNotConfiguredException $e) {
+        } catch (Throwable $e) {
+            Logger::logError(
+                'Adyen failed to create order from Cart with ID: ' . $cart->id . ' Reason: ' . $e->getMessage()
+            );
             $message = $this->module->l('Your payment could not be processed, please resubmit order.', self::FILE_NAME);
             $this->errors[] = $message;
-            $this->redirectWithNotifications(
-                Context::getContext()->link->getPageLink('order')
-            );
+            $this->redirectWithNotifications(Context::getContext()->link->getPageLink('order'));
         }
     }
 
