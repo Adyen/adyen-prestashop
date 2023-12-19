@@ -77,7 +77,9 @@ class AdyenOrderStatusMapping
      */
     public static function getPrestaShopOrderStatusId($status)
     {
-        return static::getStatusMap()[$status] ?? null;
+        $statuses = static::getStatusMap();
+
+        return isset($statuses[$status]) ? $statuses[$status] : null;
     }
 
     /**
