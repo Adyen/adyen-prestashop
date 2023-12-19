@@ -56,7 +56,8 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
     }
 
     /**
-     * @throws Exception
+     * @return array
+     * @throws HttpRequestException
      */
     public function getWebhookAuthorizationData(): array
     {
@@ -64,12 +65,15 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
             return $this->getWebhookConfigRepository()->getWebhookConfig();
         });
 
-        $authData = [];
-        if ($webhookConfig) {
-            $authData['username'] = $webhookConfig->getUsername();
-            $authData['password'] = $webhookConfig->getPassword();
-            $authData['hmac'] = $webhookConfig->getHmac();
+        if (!$webhookConfig) {
+            throw new HttpRequestException(
+                'Hmac is undefined due to the unsuccessful creation of the webhook and hmac on the Adyen API.'
+            );
         }
+
+        $authData['username'] = $webhookConfig->getUsername();
+        $authData['password'] = $webhookConfig->getPassword();
+        $authData['hmac'] = $webhookConfig->getHmac();
 
         return $authData;
     }
@@ -153,11 +157,11 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
 
     private function getCaptureType(string $captureTypeData): CaptureType
     {
-        if ($captureTypeData === 'manual'){
+        if ($captureTypeData === 'manual') {
             return CaptureType::manual();
         }
 
-        if ($captureTypeData === 'immediate'){
+        if ($captureTypeData === 'immediate') {
             return CaptureType::immediate();
         }
 
