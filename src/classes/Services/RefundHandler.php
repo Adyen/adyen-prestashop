@@ -303,7 +303,7 @@ class RefundHandler
      */
     private static function createOrderSlip(Order $order, float $amount): OrderSlip
     {
-        $refundableProducts = $order->total_products - self::getRefundedProducts($order);
+        $refundableProducts = (float)$order->total_products_wt - self::getRefundedProducts($order);
         $totalProducts = $amount;
         $totalShipping = 0;
 
