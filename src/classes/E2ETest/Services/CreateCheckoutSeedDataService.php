@@ -111,7 +111,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
         $this->activateCountries();
         $this->deactivateCountries();
         $this->addCurrencies();
-        $this->updateProductPrice();
+        $this->updateProductPrice(1);
         return $this->createCustomerAndAddress();
     }
 
@@ -447,15 +447,20 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
     }
 
     /**
+     * @param int $subStoreId
+     *
      * @throws \PrestaShopException
      */
-    private function updateProductPrice(): void
+    private function updateProductPrice(int $subStoreId): void
     {
-        $product = new Product(3);
-        $product->price = 30.000000;
-        $result = $product->save();
-
-        echo $result;
+        Shop::setContext(1, $subStoreId);
+        $products = Product::searchByName(1, 'The adventure begins Framed poster');
+        foreach ($products as $productData) {
+            $product = new Product((int)$productData['id_product']);
+            $product->price = 30.000000;
+            $result = $product->save();
+            echo $result;
+        }
     }
 
     /**
