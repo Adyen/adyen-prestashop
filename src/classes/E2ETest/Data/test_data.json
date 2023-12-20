@@ -18,6 +18,12 @@
     },
     {
       "iso": "FR"
+    },
+    {
+      "iso": "CH"
+    },
+    {
+      "iso": "BE"
     }
   ],
   "deactivateCountries": [

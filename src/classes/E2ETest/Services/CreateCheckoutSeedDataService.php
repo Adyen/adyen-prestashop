@@ -33,6 +33,8 @@ use Module;
 use PaymentModule;
 use PrestaShop\PrestaShop\Adapter\Entity\Currency;
 use PrestaShop\PrestaShop\Adapter\Entity\Country;
+use PrestaShop\PrestaShop\Adapter\Entity\Carrier;
+use PrestaShop\PrestaShop\Adapter\Entity\Product;
 use Shop;
 
 /**
@@ -101,6 +103,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
      * @throws ModeChangedException
      * @throws PaymentMethodDataEmptyException
      * @throws UserDoesNotHaveNecessaryRolesException
+     * @throws \PrestaShopException
      */
     public function crateCheckoutPrerequisitesData(string $testApiKey): string
     {
@@ -108,6 +111,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
         $this->activateCountries();
         $this->deactivateCountries();
         $this->addCurrencies();
+        $this->updateProductPrice();
         return $this->createCustomerAndAddress();
     }
 
@@ -179,6 +183,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
             );
 
             $this->countryTestProxy->updateCountry($countryId, ['data' => $data]);
+            $this->enableCarrierInSpecificZone($countryId);
         }
 
         $moduleId = Module::getInstanceByName('adyenofficial')->id;
@@ -327,6 +332,16 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
         }
     }
 
+    private function enableCarrierInSpecificZone(string $countryId): void
+    {
+        $zoneId = Country::getIdZone($countryId);
+        $carrier = new Carrier(1);
+        $zones = $carrier->getZone($zoneId);
+        if (empty($zones)) {
+            $carrier->addZone($zoneId);
+        }
+    }
+
     /**
      * Creates customer and address in database
      *
@@ -429,6 +444,18 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
         );
 
         $this->addressTestProxy->createAddress(['data' => $data]);
+    }
+
+    /**
+     * @throws \PrestaShopException
+     */
+    private function updateProductPrice(): void
+    {
+        $product = new Product(3);
+        $product->price = 30.000000;
+        $result = $product->save();
+
+        echo $result;
     }
 
     /**
