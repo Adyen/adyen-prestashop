@@ -458,8 +458,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
         foreach ($products as $productData) {
             $product = new Product((int)$productData['id_product']);
             $product->price = 30.000000;
-            $result = $product->save();
-            echo $result;
+            $product->save();
         }
     }
 
