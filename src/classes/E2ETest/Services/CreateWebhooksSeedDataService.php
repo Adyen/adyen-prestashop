@@ -71,9 +71,9 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
             );
         }
 
-        $authData['username'] = $webhookConfig->getUsername();
-        $authData['password'] = $webhookConfig->getPassword();
-        $authData['hmac'] = $webhookConfig->getHmac();
+        $authData['username'] = $webhookConfig->getUsername() ?? '';
+        $authData['password'] = $webhookConfig->getPassword() ?? '';
+        $authData['hmac'] = $webhookConfig->getHmac() ?? '';
 
         return $authData;
     }
