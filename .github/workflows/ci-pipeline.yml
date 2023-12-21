@@ -29,9 +29,9 @@ jobs:
           path: ~/.build
       - name: Build Plugin
         uses: ./.github/actions/build_plugin
-  ##add comment
+  
   run:
-    name: E2E | Prestashop ${{ matrix.prestashop }}, PHP ${{ matrix.php }}
+    name: E2E | Prestashop ${{ matrix.prestashop }}, PHP ${{ matrix.php }}, Browser ${{matrix.browser }}
     needs: build
     runs-on: ubuntu-latest
     strategy:
