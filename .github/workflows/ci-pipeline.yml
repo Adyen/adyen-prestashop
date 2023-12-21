@@ -29,7 +29,7 @@ jobs:
           path: ~/.build
       - name: Build Plugin
         uses: ./.github/actions/build_plugin
-  
+  ##add comment
   run:
     name: E2E | Prestashop ${{ matrix.prestashop }}, PHP ${{ matrix.php }}
     needs: build
