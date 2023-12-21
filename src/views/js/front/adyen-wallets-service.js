@@ -49,7 +49,7 @@ var AdyenWallets = window.AdyenWallets || {};
                     "onAdditionalDetails": onAdditionalDetails,
                 });
 
-                if (type === 'amazonpay' && getData !== undefined) {
+                if (type === 'amazonpay') {
                     sessionStorage.amazonPayProductData = getData();
                 }
 
@@ -154,8 +154,7 @@ var AdyenWallets = window.AdyenWallets || {};
             if (productData) {
                 data = {
                     "adyen-additional-data": checkoutController[type].getPaymentMethodStateData(),
-                    "product": (type === 'amazonpay' && sessionStorage.amazonPayProductData !== undefined)
-                        ? sessionStorage.amazonPayProductData : productData
+                    "product": type === 'amazonpay' ? sessionStorage.amazonPayProductData : productData
                 };
             } else {
                 data = {
