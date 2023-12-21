@@ -6,9 +6,9 @@ use Adyen\Core\BusinessLogic\AdyenAPI\Http\Requests\HttpRequest;
 use Adyen\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
- * Class CustomerTestProxy
+ * Class CartTestProxy
  *
- * @package AdyenPayment\E2ETest\Http
+ * @package AdyenPayment\Classes\E2ETest\Http
  */
 class CartTestProxy extends TestProxy
 {

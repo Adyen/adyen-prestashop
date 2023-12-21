@@ -84,6 +84,7 @@
   },
   "orders": [
     {
+      "name" : "orderWithCaptureTypeManual1",
       "currencyIsoCode": "EUR",
       "orderItems": [
         {
@@ -94,6 +95,7 @@
       "captureType" : "manual"
     },
     {
+      "name" : "orderWithCaptureTypeManual2",
       "currencyIsoCode": "GBP",
       "orderItems": [
         {
@@ -108,6 +110,7 @@
       "captureType" : "manual"
     },
     {
+      "name" : "orderWithCaptureTypeManual3",
       "currencyIsoCode": "USD",
       "orderItems": [
         {
@@ -118,6 +121,7 @@
       "captureType" : "manual"
     },
     {
+      "name" : "orderWithCaptureTypeImmediate",
       "currencyIsoCode": "EUR",
       "orderItems": [
         {
@@ -132,6 +136,7 @@
       "captureType" : "immediate"
     },
     {
+      "name" : "orderWithCaptureTypeDelayed1",
       "currencyIsoCode": "USD",
       "orderItems": [
         {
@@ -146,6 +151,7 @@
       "captureType" : "delayed"
     },
     {
+      "name" : "orderWithCaptureTypeDelayed2",
       "currencyIsoCode": "USD",
       "orderItems": [
         {
@@ -156,6 +162,7 @@
       "captureType" : "delayed"
     },
     {
+      "name" : "orderWithCaptureTypeDelayed3",
       "currencyIsoCode": "GBP",
       "orderItems": [
         {

@@ -2,18 +2,16 @@
 
 namespace AdyenPayment\Classes\E2ETest\Services;
 
-use Configuration;
-use Module;
-use Shop;
-
 /**
- * Class CreateSeedDataService
+ * Class BaseCreateSeedDataService
  *
- * @package AdyenPayment\E2ETest\Services
+ * @package AdyenPayment\Classes\E2ETest\Services
  */
 class BaseCreateSeedDataService
 {
     /**
+     * Reads from xml file
+     *
      * @param string $fileName
      * @return string
      */

@@ -8,17 +8,16 @@ use Adyen\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 /**
  * Class ShopsTestProxy
  *
- * @package AdyenPayment\E2ETest\Http
+ * @package AdyenPayment\Classes\E2ETest\Http
  */
 class ShopsTestProxy extends TestProxy
 {
-
     /**
      * Creates request to update subStore
      *
      * @throws HttpRequestException
      */
-    public function updateDefaultShopName(array $subStoreData): void
+    public function updateSubStore(array $subStoreData): void
     {
         $httpRequest = new HttpRequest("/api/shops", $subStoreData);
         $this->put($httpRequest)->decodeBodyToArray();
@@ -29,15 +28,14 @@ class ShopsTestProxy extends TestProxy
      *
      * @throws HttpRequestException
      */
-    public function updateShopUrl(array $subStoreData): void
+    public function updateSubStoreUrl(array $subStoreData): void
     {
         $httpRequest = new HttpRequest("/api/shop_urls", $subStoreData);
         $this->put($httpRequest)->decodeBodyToArray();
     }
 
     /**
-     *
-     * Creates request to get exist subStores from system
+     * Creates request to get existing subStores from system
      *
      * @throws HttpRequestException
      */
@@ -49,7 +47,6 @@ class ShopsTestProxy extends TestProxy
     }
 
     /**
-     *
      * Creates request to get existing subStore urls from system
      *
      * @throws HttpRequestException
@@ -62,7 +59,6 @@ class ShopsTestProxy extends TestProxy
     }
 
     /**
-     *
      * Creates request to add new subStore
      *
      * @throws HttpRequestException
@@ -74,7 +70,6 @@ class ShopsTestProxy extends TestProxy
     }
 
     /**
-     *
      * Creates request to add new subStore url
      *
      * @throws HttpRequestException

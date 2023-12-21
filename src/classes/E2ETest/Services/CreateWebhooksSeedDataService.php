@@ -28,34 +28,13 @@ use Shop;
 /**
  * Class CreateWebhooksSeedDataService
  *
- * @package AdyenPayment\E2ETest\Services
+ * @package AdyenPayment\Classes\E2ETest\Services
  */
 class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
 {
     /**
-     * @var CartTestProxy
-     */
-    private $cartTestProxy;
-    /**
-     * @var ProductTestProxy
-     */
-    private $productTestProxy;
-    /**
-     * @var OrderTestProxy
-     */
-    private $orderTestProxy;
-
-    public function __construct(
-        CartTestProxy    $cartTestProxy,
-        ProductTestProxy $productTestProxy,
-        OrderTestProxy   $orderTestProxy)
-    {
-        $this->cartTestProxy = $cartTestProxy;
-        $this->productTestProxy = $productTestProxy;
-        $this->orderTestProxy = $orderTestProxy;
-    }
-
-    /**
+     * Returns webhook config data from plugin database
+     *
      * @return array
      * @throws HttpRequestException
      */
@@ -71,15 +50,18 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
             );
         }
 
-        $authData['username'] = $webhookConfig->getUsername() ?? '';
-        $authData['password'] = $webhookConfig->getPassword() ?? '';
-        $authData['hmac'] = $webhookConfig->getHmac() ?? '';
+        $authData['username'] = $webhookConfig->getUsername();
+        $authData['password'] = $webhookConfig->getPassword();
+        $authData['hmac'] = $webhookConfig->getHmac();
 
         return $authData;
     }
 
     /**
+     * Creates OrdersMappingConfiguration and orders for created existing customer
+     *
      * @throws HttpRequestException
+     * @throws \PrestaShopException
      */
     public function createWebhookSeedData(string $customerId): array
     {
@@ -87,6 +69,11 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
         return $this->createOrders($customerId);
     }
 
+    /**
+     * Creates OrdersMappingConfiguration in database
+     *
+     * @return void
+     */
     private function createOrdersMappingConfiguration(): void
     {
         $defaultOrdersStatusMap = AdyenOrderStatusMapping::getDefaultOrderStatusMap();
@@ -106,13 +93,17 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
     }
 
     /**
+     * Creates orders, transaction history details and returns array of merchant references and order amounts per order
+     *
+     * @param string $customerId
+     * @return array
      * @throws HttpRequestException
+     * @throws \PrestaShopException
      * @throws Exception
      */
     private function createOrders(string $customerId): array
     {
         $ordersMerchantReferenceAndAmount = [];
-        $index = 1;
         $addressId = Address::getFirstCustomerAddressId($customerId);
         $orders = $this->readFromJSONFile()['orders'] ?? [];
         foreach ($orders as $order) {
@@ -123,38 +114,56 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
             $cart = new Cart($cartId);
             $totalAmount = $cart->getOrderTotal();
             $this->createOrderAndUpdateState($cartData, $totalAmount);
-            StoreContext::doWithStore('1', function () use ($cartId, $totalAmount, $order) {
-                $transactionContext = new StartTransactionRequestContext(
-                    PaymentMethodCode::parse('scheme'),
-                    Amount::fromFloat(
-                        $totalAmount,
-                        \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency::fromIsoCode(
-                            $order['currencyIsoCode']
-                        )
-                    ),
-                    $cartId,
-                    '',
-                    new DataBag([]),
-                    new DataBag([])
-                );
-                /** @var TransactionHistoryService $transactionHistoryService */
-                $transactionHistoryService = ServiceRegister::getService(TransactionHistoryService::class);
-                $transactionHistoryService->createTransactionHistory($transactionContext->getReference(),
-                    $transactionContext->getAmount()->getCurrency(),
-                    $this->getCaptureType($order['captureType'])
-                );
-            });
-
-            $ordersMerchantReferenceAndAmount['order_' . $index] = [
+            $this->createTransactionHistoryForOrder($cartId, $totalAmount, $order);
+            $ordersMerchantReferenceAndAmount[$order['name']] = [
                 'merchantReference' => $cartId,
                 'amount' => $totalAmount * 100
             ];
-            $index++;
         }
 
         return $ordersMerchantReferenceAndAmount;
     }
 
+    /**
+     * Creates transaction history
+     *
+     * @param string $cartId
+     * @param float $totalAmount
+     * @param array $order
+     * @return void
+     * @throws Exception
+     */
+    private function createTransactionHistoryForOrder(string $cartId, float $totalAmount, array $order): void
+    {
+        StoreContext::doWithStore('1', function () use ($cartId, $totalAmount, $order) {
+            $transactionContext = new StartTransactionRequestContext(
+                PaymentMethodCode::parse('scheme'),
+                Amount::fromFloat(
+                    $totalAmount,
+                    \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency::fromIsoCode(
+                        $order['currencyIsoCode']
+                    )
+                ),
+                $cartId,
+                '',
+                new DataBag([]),
+                new DataBag([])
+            );
+            /** @var TransactionHistoryService $transactionHistoryService */
+            $transactionHistoryService = ServiceRegister::getService(TransactionHistoryService::class);
+            $transactionHistoryService->createTransactionHistory($transactionContext->getReference(),
+                $transactionContext->getAmount()->getCurrency(),
+                $this->getCaptureType($order['captureType'])
+            );
+        });
+    }
+
+    /**
+     * Returns capture type for specific order
+     *
+     * @param string $captureTypeData
+     * @return CaptureType
+     */
     private function getCaptureType(string $captureTypeData): CaptureType
     {
         if ($captureTypeData === 'manual') {
@@ -210,7 +219,7 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
             $data
         );
 
-        $order = $this->orderTestProxy->createOrder(['data' => $data])['order'];
+        $order = $this->getOrderTestProxy()->createOrder(['data' => $data])['order'];
 
         $data = $this->readFomXMLFile('update_order');
         $data = str_replace(
@@ -247,10 +256,12 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
             $data
         );
 
-        $this->orderTestProxy->updateOrder(['data' => $data])['order'];
+        $this->getOrderTestProxy()->updateOrder(['data' => $data])['order'];
     }
 
     /**
+     * Creates cart in shop
+     *
      * @throws HttpRequestException
      */
     private function createCart(int $customerId, int $addressId, int $currencyId, array $orderItems): array
@@ -263,6 +274,8 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
     }
 
     /**
+     * Creates cart in shop with one item
+     *
      * @param array $orderItem
      * @param int $customerId
      * @param int $addressId
@@ -278,7 +291,7 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
     ): array
     {
         $productId = $orderItem["productId"];
-        $productData = $this->productTestProxy->getProductData($productId)['product'];
+        $productData = $this->getProductTestProxy()->getProductData($productId)['product'];
         $productAttributeId = $productData['cache_default_attribute'];
         $quantity = $orderItem["quantity"];
         $data = $this->readFomXMLFile('create_cart_one_product');
@@ -312,10 +325,12 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
             $data
         );
 
-        return $this->cartTestProxy->createCart(['data' => $data]);
+        return $this->getCartTestProxy()->createCart(['data' => $data]);
     }
 
     /**
+     * Creates cart in shop with two items
+     *
      * @param array $orderItems
      * @param int $customerId
      * @param int $addressId
@@ -358,7 +373,7 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
         $countOfOrderItems = count($orderItems);
         for ($i = 1; $i <= $countOfOrderItems; $i++) {
             $productId = $orderItems[$i - 1]["productId"];
-            $productData = $this->productTestProxy->getProductData($productId)['product'];
+            $productData = $this->getProductTestProxy()->getProductData($productId)['product'];
             $productAttributeId = $productData['cache_default_attribute'];
             $quantity = $orderItems[$i - 1]["quantity"];
             $data = str_replace(
@@ -376,16 +391,38 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
             );
         }
 
-        return $this->cartTestProxy->createCart(['data' => $data]);
+        return $this->getCartTestProxy()->createCart(['data' => $data]);
     }
 
     /**
-     * Returns WebhookConfigRepository instance
-     *
      * @return WebhookConfigRepository
      */
     private function getWebhookConfigRepository(): WebhookConfigRepository
     {
         return ServiceRegister::getService(WebhookConfigRepository::class);
+    }
+
+    /**
+     * @return OrderTestProxy
+     */
+    private function getOrderTestProxy(): OrderTestProxy
+    {
+        return ServiceRegister::getService(OrderTestProxy::class);
+    }
+
+    /**
+     * @return ProductTestProxy
+     */
+    private function getProductTestProxy(): ProductTestProxy
+    {
+        return ServiceRegister::getService(ProductTestProxy::class);
+    }
+
+    /**
+     * @return CartTestProxy
+     */
+    private function getCartTestProxy(): CartTestProxy
+    {
+        return ServiceRegister::getService(CartTestProxy::class);
     }
 }

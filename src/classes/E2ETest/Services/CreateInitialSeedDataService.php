@@ -14,9 +14,9 @@ use Module;
 use Shop;
 
 /**
- * Class CreateSeedDataService
+ * Class CreateInitialSeedDataService
  *
- * @package AdyenPayment\E2ETest\Services
+ * @package AdyenPayment\Classes\E2ETest\Services
  */
 class CreateInitialSeedDataService extends BaseCreateSeedDataService
 {
@@ -33,17 +33,19 @@ class CreateInitialSeedDataService extends BaseCreateSeedDataService
      * CreateSeedDataService constructor.
      *
      * @param string $url
-     * @param ShopsTestProxy $shopsTestProxy
+     * @param string $credentials
      */
-    public function __construct(string $url, ShopsTestProxy $shopsTestProxy)
+    public function __construct(string $url, string $credentials)
     {
-        $this->shopProxy = $shopsTestProxy;
+        $host = Configuration::get('PS_SHOP_DOMAIN');
+        $this->shopProxy = new ShopsTestProxy(ServiceRegister::getService(HttpClient::class), $host, $credentials);
         $this->baseUrl = $url;
     }
 
     /**
      * @throws QueryFilterInvalidParamException
      * @throws HttpRequestException
+     * @throws \PrestaShopException
      */
     public function createInitialData(): void
     {
@@ -54,32 +56,15 @@ class CreateInitialSeedDataService extends BaseCreateSeedDataService
     }
 
     /**
-     * Updates baseUrl in database and default shop name
-     *
-     * @throws HttpRequestException
-     */
-    public function updateBaseUrlAndDefaultShopName(): void
-    {
-        $data = $this->readFomXMLFile('update_shop');
-        $this->shopProxy->updateDefaultShopName(['data' => $data]);
-        $data = $this->readFomXMLFile('update_shop_url');
-        $host = parse_url($this->baseUrl)['host'];
-        $data = str_replace('{host}', $host, $data);
-        $this->shopProxy->updateShopUrl(['data' => $data]);
-        Configuration::updateValue('PS_SHOP_DOMAIN', $host);
-        Configuration::updateValue('PS_SHOP_DOMAIN_SSL', $host);
-    }
-
-    /**
      * Creates new subStores using xml file data
      *
-     * @throws HttpRequestException
+     * @throws HttpRequestException|\PrestaShopException
      */
     public function createSubStores(): void
     {
         $shops = $this->shopProxy->getSubStores();
         $shopUrls = $this->shopProxy->getSubStoreUrls();
-        $newSubStores =$this->readFromJSONFile()['newSubStores'] ?? [];
+        $newSubStores = $this->readFromJSONFile()['newSubStores'] ?? [];
 
         if (array_key_exists('shops', $shops) && count($shops['shops']) === 1) {
             foreach ($newSubStores as $newSubStore) {
@@ -114,10 +99,28 @@ class CreateInitialSeedDataService extends BaseCreateSeedDataService
     }
 
     /**
+     * Updates baseUrl in database and default shop name
+     *
+     * @throws HttpRequestException
+     */
+    public function updateBaseUrlAndDefaultShopName(): void
+    {
+        $data = $this->readFomXMLFile('update_shop');
+        $this->shopProxy->updateSubStore(['data' => $data]);
+        $data = $this->readFomXMLFile('update_shop_url');
+        $host = parse_url($this->baseUrl)['host'];
+        $data = str_replace('{host}', $host, $data);
+        $this->shopProxy->updateSubStoreUrl(['data' => $data]);
+        Configuration::updateValue('PS_SHOP_DOMAIN', $host);
+        Configuration::updateValue('PS_SHOP_DOMAIN_SSL', $host);
+    }
+
+    /**
      * Enables module in given subStore
      *
      * @param int $subStoreId
      * @return void
+     * @throws \PrestaShopException
      */
     private function enableModuleInNewSubStore(int $subStoreId): void
     {
@@ -127,7 +130,7 @@ class CreateInitialSeedDataService extends BaseCreateSeedDataService
     }
 
     /**
-     * Saves ngrok hostname in database
+     * Saves ngrok tunnel hostname in database
      *
      * @return void
      * @throws QueryFilterInvalidParamException
@@ -139,14 +142,8 @@ class CreateInitialSeedDataService extends BaseCreateSeedDataService
     }
 
     /**
-     * @return HttpClient
-     */
-    private function getHttpClient(): HttpClient
-    {
-        return ServiceRegister::getService(HttpClient::class);
-    }
-
-    /**
+     * Returns ConfigurationManager instance
+     *
      * @return ConfigurationManager
      */
     private function getConfigurationManager(): ConfigurationManager

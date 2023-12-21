@@ -2,7 +2,6 @@
 
 namespace AdyenPayment\Classes\E2ETest\Services;
 
-use Adyen\Core\BusinessLogic\AdminAPI\AdminAPI;
 use Adyen\Core\BusinessLogic\AdyenAPI\Exceptions\ConnectionSettingsNotFoundException;
 use Adyen\Core\BusinessLogic\Domain\Connection\Exceptions\ApiCredentialsDoNotExistException;
 use Adyen\Core\BusinessLogic\Domain\Connection\Exceptions\ApiKeyCompanyLevelException;
@@ -22,13 +21,11 @@ use Adyen\Core\BusinessLogic\Domain\Webhook\Exceptions\FailedToRegisterWebhookEx
 use Adyen\Core\BusinessLogic\Domain\Webhook\Exceptions\MerchantDoesNotExistException;
 use Adyen\Core\BusinessLogic\E2ETest\Services\CreateIntegrationDataService;
 use Adyen\Core\Infrastructure\Http\Exceptions\HttpRequestException;
-use Adyen\Core\Infrastructure\Http\HttpClient;
 use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\E2ETest\Http\AddressTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\CountryTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\CurrencyTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\CustomerTestProxy;
-use Configuration;
 use Module;
 use PaymentModule;
 use PrestaShop\PrestaShop\Adapter\Entity\Currency;
@@ -44,44 +41,6 @@ use Shop;
  */
 class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
 {
-    /**
-     * @var CountryTestProxy
-     */
-    private $countryTestProxy;
-    /**
-     * @var CurrencyTestProxy
-     */
-    private $currencyTestProxy;
-    /**
-     * @var CustomerTestProxy
-     */
-    private $customerTestProxy;
-    /**
-     * @var AddressTestProxy
-     */
-    private $addressTestProxy;
-
-    /**
-     * CreateCheckoutSeedDataService constructor
-     *
-     * @param CountryTestProxy $countryTestProxy
-     * @param CurrencyTestProxy $currencyTestProxy
-     * @param CustomerTestProxy $customerTestProxy
-     * @param AddressTestProxy $addressTestProxy
-     */
-    public function __construct(
-        CountryTestProxy  $countryTestProxy,
-        CurrencyTestProxy $currencyTestProxy,
-        CustomerTestProxy $customerTestProxy,
-        AddressTestProxy  $addressTestProxy
-    )
-    {
-        $this->countryTestProxy = $countryTestProxy;
-        $this->currencyTestProxy = $currencyTestProxy;
-        $this->customerTestProxy = $customerTestProxy;
-        $this->addressTestProxy = $addressTestProxy;
-    }
-
     /**
      * @param string $testApiKey
      * @return string
@@ -105,7 +64,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
      * @throws UserDoesNotHaveNecessaryRolesException
      * @throws \PrestaShopException
      */
-    public function crateCheckoutPrerequisitesData(string $testApiKey): string
+    public function createCheckoutPrerequisitesData(string $testApiKey): string
     {
         $this->createIntegrationConfigurations($testApiKey);
         $this->activateCountries();
@@ -144,6 +103,8 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
     }
 
     /**
+     * Activates countries in shop, enables default carrier in specific zone and enables adyen module for these countries
+     *
      * @throws HttpRequestException
      */
     private function activateCountries(): void
@@ -151,7 +112,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
         $countriesIsoCodes = array_column($this->readFromJSONFile()['countries'] ?? [], 'iso');
         foreach ($countriesIsoCodes as $countriesIsoCode) {
             $countryId = Country::getByIso($countriesIsoCode);
-            $countryData = $this->countryTestProxy->getCountryData($countryId)['country'];
+            $countryData = $this->getCountryTestProxy()->getCountryData($countryId)['country'];
 
             if (!$countryData) {
                 return;
@@ -182,7 +143,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
                 $data
             );
 
-            $this->countryTestProxy->updateCountry($countryId, ['data' => $data]);
+            $this->getCountryTestProxy()->updateCountry($countryId, ['data' => $data]);
             $this->enableCarrierInSpecificZone($countryId);
         }
 
@@ -192,6 +153,8 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
     }
 
     /**
+     * Deactivates countries in shop
+     *
      * @throws HttpRequestException
      */
     private function deactivateCountries(): void
@@ -199,7 +162,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
         $countriesIsoCodes = array_column($this->readFromJSONFile()['deactivateCountries'] ?? [], 'iso');
         foreach ($countriesIsoCodes as $countriesIsoCode) {
             $countryId = Country::getByIso($countriesIsoCode);
-            $countryData = $this->countryTestProxy->getCountryData($countryId)['country'];
+            $countryData = $this->getCountryTestProxy()->getCountryData($countryId)['country'];
 
             if (!$countryData) {
                 return;
@@ -230,7 +193,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
                 $data
             );
 
-            $this->countryTestProxy->updateCountry($countryId, ['data' => $data]);
+            $this->getCountryTestProxy()->updateCountry($countryId, ['data' => $data]);
         }
     }
 
@@ -261,7 +224,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
     private function updateExistingCurrency(string $isoCode): void
     {
         $currencyId = Currency::getIdByIsoCode($isoCode);
-        $currencyData = $this->currencyTestProxy->getCurrencyData($currencyId)['currency'];
+        $currencyData = $this->getCurrencyTestProxy()->getCurrencyData($currencyId)['currency'];
         if (!$currencyData || $currencyData['active'] === '1') {
             return;
         }
@@ -291,7 +254,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
             $data
         );
 
-        $this->currencyTestProxy->updateCurrency($currencyId, ['data' => $data]);
+        $this->getCurrencyTestProxy()->updateCurrency($currencyId, ['data' => $data]);
     }
 
     /**
@@ -324,7 +287,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
             $data
         );
 
-        $createdCurrency = $this->currencyTestProxy->createCurrency(['data' => $data])['currency'];
+        $createdCurrency = $this->getCurrencyTestProxy()->createCurrency(['data' => $data])['currency'];
         if ($createdCurrency) {
             $createdCurrencyId = (int)$createdCurrency['id'];
             $moduleId = Module::getInstanceByName('adyenofficial')->id;
@@ -399,7 +362,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
             $data
         );
 
-        $createdCustomer = $this->customerTestProxy->createCustomer(['data' => $data])['customer'];
+        $createdCustomer = $this->getCustomerTestProxy()->createCustomer(['data' => $data])['customer'];
         if ($createdCustomer) {
             return $createdCustomer['id'];
         }
@@ -443,10 +406,13 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
             $data
         );
 
-        $this->addressTestProxy->createAddress(['data' => $data]);
+        $this->getAddressTestProxy()->createAddress(['data' => $data]);
     }
 
     /**
+     * Finds product by name and update its price to finish with 000 (the price is rounded to two decimal places)
+     * For the purpose of testing the BCMC mobile payment method,
+     *
      * @param int $subStoreId
      *
      * @throws \PrestaShopException
@@ -463,10 +429,34 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
     }
 
     /**
-     * @return HttpClient
+     * @return CountryTestProxy
      */
-    private function getHttpClient(): HttpClient
+    private function getCountryTestProxy(): CountryTestProxy
     {
-        return ServiceRegister::getService(HttpClient::class);
+        return ServiceRegister::getService(CountryTestProxy::class);
+    }
+
+    /**
+     * @return CurrencyTestProxy
+     */
+    private function getCurrencyTestProxy(): CurrencyTestProxy
+    {
+        return ServiceRegister::getService(CurrencyTestProxy::class);
+    }
+
+    /**
+     * @return CustomerTestProxy
+     */
+    private function getCustomerTestProxy(): CustomerTestProxy
+    {
+        return ServiceRegister::getService(CustomerTestProxy::class);
+    }
+
+    /**
+     * @return AddressTestProxy
+     */
+    private function getAddressTestProxy(): AddressTestProxy
+    {
+        return ServiceRegister::getService(AddressTestProxy::class);
     }
 }

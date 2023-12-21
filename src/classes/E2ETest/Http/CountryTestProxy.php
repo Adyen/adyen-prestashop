@@ -8,7 +8,7 @@ use Adyen\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 /**
  * Class CountryTestProxy
  *
- * @package AdyenPayment\E2ETest\Http
+ * @package AdyenPayment\Classes\E2ETest\Http
  */
 class CountryTestProxy extends TestProxy
 {

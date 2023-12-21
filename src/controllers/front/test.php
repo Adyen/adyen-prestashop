@@ -31,7 +31,6 @@ use AdyenPayment\Classes\E2ETest\Http\CurrencyTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\CustomerTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\OrderTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\ProductTestProxy;
-use AdyenPayment\Classes\E2ETest\Http\ShopsTestProxy;
 use AdyenPayment\Classes\E2ETest\Services\AdyenAPIService;
 use AdyenPayment\Classes\E2ETest\Services\AuthorizationService;
 use AdyenPayment\Classes\E2ETest\Services\CreateCheckoutSeedDataService;
@@ -39,8 +38,6 @@ use AdyenPayment\Classes\E2ETest\Services\CreateInitialSeedDataService;
 use AdyenPayment\Classes\E2ETest\Services\CreateWebhooksSeedDataService;
 use AdyenPayment\Classes\E2ETest\Services\TransactionLogService;
 use AdyenPayment\Classes\Utility\AdyenPrestaShopUtility;
-use PrestaShop\PrestaShop\Adapter\Entity\Country;
-use Configuration;
 
 /**
  * Class AdyenOfficialTestModuleFrontController
@@ -85,32 +82,12 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
                 throw new InvalidDataException('Url, test api key and live api key are required parameters.');
             }
 
-            $this->verifyManagementApi($testApiKey, $liveApiKey);
+            $this->verifyManagementAPI($testApiKey, $liveApiKey);
             $credentials = $this->getAuthorizationCredentials();
-            $host = Configuration::get('PS_SHOP_DOMAIN');
-            $shopProxy = new ShopsTestProxy($this->getHttpClient(), $host, $credentials);
-            $this->createInitialSeedData($url, $shopProxy);
-            $host = Configuration::get('PS_SHOP_DOMAIN');
-            $countryTestProxy = new CountryTestProxy($this->getHttpClient(), $host, $credentials);
-            $currencyTestProxy = new CurrencyTestProxy($this->getHttpClient(), $host, $credentials);
-            $customerTestProxy = new CustomerTestProxy($this->getHttpClient(), $host, $credentials);
-            $addressTestProxy = new AddressTestProxy($this->getHttpClient(), $host, $credentials);
-            $customerId = $this->createCheckoutSeedData(
-                $countryTestProxy,
-                $currencyTestProxy,
-                $customerTestProxy,
-                $addressTestProxy,
-                $testApiKey
-            );
-
-            $cartTestProxy = new CartTestProxy($this->getHttpClient(), $host, $credentials);
-            $productTestProxy = new ProductTestProxy($this->getHttpClient(), $host, $credentials);
-            $orderTestProxy = new OrderTestProxy($this->getHttpClient(), $host, $credentials);
-            $createWebhookSeedDataService = new CreateWebhooksSeedDataService(
-                $cartTestProxy,
-                $productTestProxy,
-                $orderTestProxy
-            );
+            $this->createInitialSeedData($url, $credentials);
+            $this->registerProxies($credentials);
+            $customerId = $this->createCheckoutSeedData($testApiKey);
+            $createWebhookSeedDataService = new CreateWebhooksSeedDataService();
             $ordersMerchantReferenceAndAmount = $createWebhookSeedDataService->createWebhookSeedData($customerId);
             $webhookData = $createWebhookSeedDataService->getWebhookAuthorizationData();
             die(json_encode(array_merge(
@@ -136,6 +113,68 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
     }
 
     /**
+     * Registers proxies for webservice rest api requests
+     *
+     * @param string $credentials
+     * @return void
+     */
+    private function registerProxies(string $credentials): void
+    {
+        $host = Configuration::get('PS_SHOP_DOMAIN');
+
+        ServiceRegister::registerService(
+            CountryTestProxy::class,
+            static function () use ($credentials, $host) {
+                return new CountryTestProxy(ServiceRegister::getService(HttpClient::class), $host, $credentials);
+            }
+        );
+
+        ServiceRegister::registerService(
+            CurrencyTestProxy::class,
+            static function () use ($credentials, $host) {
+                return new CurrencyTestProxy(ServiceRegister::getService(HttpClient::class), $host, $credentials);
+            }
+        );
+
+        ServiceRegister::registerService(
+            CustomerTestProxy::class,
+            static function () use ($credentials, $host) {
+                return new CustomerTestProxy(ServiceRegister::getService(HttpClient::class), $host, $credentials);
+            }
+        );
+
+        ServiceRegister::registerService(
+            AddressTestProxy::class,
+            static function () use ($credentials, $host) {
+                return new AddressTestProxy(ServiceRegister::getService(HttpClient::class), $host, $credentials);
+            }
+        );
+
+        ServiceRegister::registerService(
+            CartTestProxy::class,
+            static function () use ($credentials, $host) {
+                return new CartTestProxy(ServiceRegister::getService(HttpClient::class), $host, $credentials);
+            }
+        );
+
+        ServiceRegister::registerService(
+            ProductTestProxy::class,
+            static function () use ($credentials, $host) {
+                return new ProductTestProxy(ServiceRegister::getService(HttpClient::class), $host, $credentials);
+            }
+        );
+
+        ServiceRegister::registerService(
+            OrderTestProxy::class,
+            static function () use ($credentials, $host) {
+                return new OrderTestProxy(ServiceRegister::getService(HttpClient::class), $host, $credentials);
+            }
+        );
+    }
+
+    /**
+     * Calls service to verify if OrderUpdate queue item is in terminal state
+     *
      * @throws QueryFilterInvalidParamException
      */
     private function verifyWebhookStatus($merchantReference, $eventCode): void
@@ -157,8 +196,7 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
      */
     private function verifyManagementApi(string $testApiKey, string $liveApiKey): void
     {
-        $adyenApiService = new AdyenAPIService();
-        $adyenApiService->verifyManagementAPI($testApiKey, $liveApiKey);
+        (new AdyenAPIService())->verifyManagementAPI($testApiKey, $liveApiKey);
     }
 
     /**
@@ -178,21 +216,17 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
      * @throws QueryFilterInvalidParamException
      * @throws HttpRequestException
      */
-    private function createInitialSeedData(string $url, ShopsTestProxy $shopsTestProxy): void
+    private function createInitialSeedData(string $url, string $credentials): void
     {
-        $createSeedDataService = new CreateInitialSeedDataService($url, $shopsTestProxy);
-        $createSeedDataService->createInitialData();
+        (new CreateInitialSeedDataService($url, $credentials))->createInitialData();
     }
 
     /**
-     * Calls service to create checkout seed data
+     * Calls service to create checkout seed data and returns existing customer id
      *
-     * @param CountryTestProxy $countryTestProxy
-     * @param CurrencyTestProxy $currencyTestProxy
-     * @param CustomerTestProxy $customerTestProxy
-     * @param AddressTestProxy $addressTestProxy
      * @param string $testApiKey
      * @return string
+     *
      * @throws ApiCredentialsDoNotExistException
      * @throws ApiKeyCompanyLevelException
      * @throws ClientKeyGenerationFailedException
@@ -210,31 +244,11 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
      * @throws MerchantIdChangedException
      * @throws ModeChangedException
      * @throws PaymentMethodDataEmptyException
+     * @throws PrestaShopException
      * @throws UserDoesNotHaveNecessaryRolesException
      */
-    private function createCheckoutSeedData(
-        CountryTestProxy  $countryTestProxy,
-        CurrencyTestProxy $currencyTestProxy,
-        CustomerTestProxy $customerTestProxy,
-        AddressTestProxy  $addressTestProxy,
-        string            $testApiKey
-    ): string
+    private function createCheckoutSeedData(string $testApiKey): string
     {
-        $createSeedDataService = new CreateCheckoutSeedDataService(
-            $countryTestProxy,
-            $currencyTestProxy,
-            $customerTestProxy,
-            $addressTestProxy
-        );
-
-        return $createSeedDataService->crateCheckoutPrerequisitesData($testApiKey);
-    }
-
-    /**
-     * @return HttpClient
-     */
-    private function getHttpClient(): HttpClient
-    {
-        return ServiceRegister::getService(HttpClient::class);
+        return (new CreateCheckoutSeedDataService())->createCheckoutPrerequisitesData($testApiKey);
     }
 }

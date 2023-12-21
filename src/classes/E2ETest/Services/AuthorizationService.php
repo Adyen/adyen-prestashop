@@ -10,12 +10,12 @@ use WebserviceKey;
 /**
  * Class AuthorizationService
  *
- * @package AdyenPayment\E2ETest\Services
+ * @package AdyenPayment\Classes\E2ETest\Services
  */
 class AuthorizationService
 {
     /**
-     *  Returns api key for PrestaShop Webservice API calls
+     *  Generate and returns api key for PrestaShop Webservice API calls
      *
      * @return string
      * @throws PrestaShopException
@@ -45,6 +45,8 @@ class AuthorizationService
     }
 
     /**
+     * Generates random string of 32 characters
+     *
      * @throws Exception
      */
     private function getRandomString(): string

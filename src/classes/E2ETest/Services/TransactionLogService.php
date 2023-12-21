@@ -11,6 +11,11 @@ use Adyen\Core\Infrastructure\ORM\RepositoryRegistry;
 use Adyen\Core\Infrastructure\TaskExecution\QueueItem;
 use AdyenPayment\Classes\Repositories\TransactionLogRepository;
 
+/**
+ * Class TransactionLogService
+ *
+ * @package AdyenPayment\Classes\E2ETest\Services
+ */
 class TransactionLogService
 {
     /**
@@ -27,10 +32,12 @@ class TransactionLogService
     }
 
     /**
+     * Verifies if OrderUpdate queue item is in terminal state for given merchant reference and event code
+     *
      * @param string $merchantReference
      * @param string $eventCode
      * @return bool
-     * @throws QueryFilterInvalidParamException
+     * @throws QueryFilterInvalidParamException|\PrestaShopDatabaseException
      */
     public function findLogsByMerchantReference(string $merchantReference, string $eventCode): bool
     {

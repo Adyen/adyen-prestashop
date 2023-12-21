@@ -10,7 +10,7 @@ use Adyen\Core\Infrastructure\ServiceRegister;
 /**
  * Class AdyenAPIService
  *
- * @package AdyenPayment\E2ETest\Services
+ * @package AdyenPayment\Classes\E2ETest\Services
  */
 class AdyenAPIService
 {
@@ -73,6 +73,8 @@ class AdyenAPIService
     }
 
     /**
+     * Returns HttpClient instance
+     *
      * @return HttpClient
      */
     protected static function getHttpClient(): HttpClient
