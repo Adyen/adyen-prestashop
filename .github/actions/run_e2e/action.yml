@@ -26,6 +26,12 @@ inputs:
   ADMIN_PASSWORD:
     description: "The password for the backoffice."
     required: true
+  BROWSER:
+    description: "The browser that will be used for tests"
+    required: true
+  DEVICE:
+    description: "The device on which the tests will be run"
+    required: true  
   PORT:
     description: "The port of the shop."
     required: true
@@ -152,6 +158,8 @@ runs:
         ADMIN_PATH: "/admin1"
         PAY_PAL_EMAIL: ${{ inputs.PAY_PAL_EMAIL }}
         PAY_PAL_PASSWORD: ${{ inputs.PAY_PAL_PASSWORD }}
+        BROWSER: ${{ inputs.BROWSER }}
+        DEVICE: ${{ inputs.DEVICE }}
     - uses: actions/upload-artifact@v3
       if: always()
       with:
