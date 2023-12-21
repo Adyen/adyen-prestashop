@@ -15,7 +15,7 @@ This plugin supports PrestaShop versions 1.7.5.0 to 8.1.2.
 ## Documentation
 Please find the relevant documentation for
 - [How to start with Adyen](https://www.adyen.com/get-started)
-- Please use the [official documentation](https://github.com/Adyen/adyen-prestashop/wiki) of the plugin for installation and configuration guidance.
+- [Plugin Documentation](https://github.com/Adyen/adyen-prestashop/wiki) for installation and configuration guidance.
 
 ## Support
 If you have a feature request, or spotted a bug or a technical problem, create a GitHub issue. For other questions, contact our [support team](https://support.adyen.com/hc/en-us/requests/new?ticket_form_id=360000705420).
