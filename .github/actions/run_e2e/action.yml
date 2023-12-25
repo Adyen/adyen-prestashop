@@ -26,6 +26,12 @@ inputs:
   ADMIN_PASSWORD:
     description: "The password for the backoffice."
     required: true
+  BROWSER:
+    description: "The browser that will be used for tests"
+    required: true
+  DEVICE:
+    description: "The device on which the tests will be run"
+    required: true
   PORT:
     description: "The port of the shop."
     required: true
@@ -152,10 +158,12 @@ runs:
         ADMIN_PATH: "/admin1"
         PAY_PAL_EMAIL: ${{ inputs.PAY_PAL_EMAIL }}
         PAY_PAL_PASSWORD: ${{ inputs.PAY_PAL_PASSWORD }}
+        BROWSER: ${{ inputs.BROWSER }}
+        DEVICE: ${{ inputs.DEVICE }}
     - uses: actions/upload-artifact@v3
       if: always()
       with:
-        name: playwright-report-Prestashop-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}
+        name: playwright-report-Prestashop-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}-Browser-${{inputs.BROWSER}}
         path: ./tests/playwright-report/
         retention-days: 30
     - name: Add docker logs to file
@@ -169,19 +177,19 @@ runs:
     - uses: actions/upload-artifact@v3
       if: always()
       with:
-        name: php-error-log-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}
+        name: php-error-log-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}-Browser-${{inputs.BROWSER}}
         path: ./error/
         retention-days: 30
     - uses: actions/upload-artifact@v3
       if: always()
       with:
-        name: docker-error-log-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}
+        name: docker-error-log-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}-Browser-${{inputs.BROWSER}}
         path: ./dockerLogs.log
         retention-days: 30
     - uses: actions/upload-artifact@v3
       if: always()
       with:
-        name: integration-error-log-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}
+        name: integration-error-log-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}-Browser-${{inputs.BROWSER}}
         path: ./integrationLogs.log
         retention-days: 30
     - name: Remove Ayden plugin

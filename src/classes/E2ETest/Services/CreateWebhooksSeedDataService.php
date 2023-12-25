@@ -82,7 +82,7 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
         $orderStatusMapData['paid'] = $defaultOrdersStatusMap[PaymentStates::STATE_PAID];
         $orderStatusMapData['failed'] = $defaultOrdersStatusMap[PaymentStates::STATE_FAILED];
         $orderStatusMapData['refunded'] = $defaultOrdersStatusMap[PaymentStates::STATE_REFUNDED];
-        $orderStatusMapData['partiallyRefunded'] = $defaultOrdersStatusMap[PaymentStates::STATE_NEW];
+        $orderStatusMapData['partiallyRefunded'] = $defaultOrdersStatusMap[PaymentStates::STATE_PARTIALLY_REFUNDED];
         $orderStatusMapData['cancelled'] = $defaultOrdersStatusMap[PaymentStates::STATE_CANCELLED];
         $orderStatusMapData['new'] = $defaultOrdersStatusMap[PaymentStates::STATE_NEW];
         $orderStatusMapData['chargeBack'] = $defaultOrdersStatusMap[PaymentStates::CHARGE_BACK];

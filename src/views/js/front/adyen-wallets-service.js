@@ -49,6 +49,10 @@ var AdyenWallets = window.AdyenWallets || {};
                     "onAdditionalDetails": onAdditionalDetails,
                 });
 
+                if (type === 'amazonpay' && getData !== undefined) {
+                    sessionStorage.amazonPayProductData = getData();
+                }
+
                 checkoutController[type].mount(type, checkoutElements[i]);
             }
         }
@@ -58,8 +62,9 @@ var AdyenWallets = window.AdyenWallets || {};
                 return;
             }
 
-            let expressCheckout = document.getElementById('adyen-express-checkout');
-            if (!expressCheckout) {
+            let checkoutElements = document.getElementsByClassName("adyen-express-checkout-element");
+
+            if (checkoutElements.length === 0) {
                 return;
             }
 
@@ -132,19 +137,25 @@ var AdyenWallets = window.AdyenWallets || {};
         }
 
         function submitOrder(type) {
-            if (!checkoutController[type].getPaymentMethodStateData() || paymentStarted) {
+            if (!checkoutController[type].getPaymentMethodStateData() ||
+                (paymentStarted && (type === 'paywithgoogle' || type === 'googlepay' || type === 'applepay'))) {
                 return;
             }
 
             let state = JSON.parse(checkoutController[type].getPaymentMethodStateData());
             type = state ? state.paymentMethod.type : '';
-            paymentStarted = true;
-            let data = null;
+
+            if (type === 'paywithgoogle' || type === 'googlepay' || type === 'applepay') {
+                paymentStarted = true;
+            }
+
+            let data;
 
             if (productData) {
                 data = {
                     "adyen-additional-data": checkoutController[type].getPaymentMethodStateData(),
-                    "product": productData
+                    "product": (type === 'amazonpay' && sessionStorage.amazonPayProductData !== undefined)
+                        ? sessionStorage.amazonPayProductData : productData
                 };
             } else {
                 data = {
