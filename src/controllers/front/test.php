@@ -17,6 +17,9 @@ use Adyen\Core\BusinessLogic\Domain\Payment\Exceptions\PaymentMethodDataEmptyExc
 use Adyen\Core\BusinessLogic\Domain\Webhook\Exceptions\FailedToGenerateHmacException;
 use Adyen\Core\BusinessLogic\Domain\Webhook\Exceptions\FailedToRegisterWebhookException;
 use Adyen\Core\BusinessLogic\Domain\Webhook\Exceptions\MerchantDoesNotExistException;
+use Adyen\Core\BusinessLogic\E2ETest\Services\AdyenAPIService;
+use Adyen\Core\BusinessLogic\E2ETest\Services\CreateIntegrationDataService;
+use Adyen\Core\BusinessLogic\E2ETest\Services\TransactionLogService;
 use Adyen\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use Adyen\Core\Infrastructure\Http\HttpClient;
 use Adyen\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
@@ -31,12 +34,10 @@ use AdyenPayment\Classes\E2ETest\Http\CurrencyTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\CustomerTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\OrderTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\ProductTestProxy;
-use AdyenPayment\Classes\E2ETest\Services\AdyenAPIService;
 use AdyenPayment\Classes\E2ETest\Services\AuthorizationService;
 use AdyenPayment\Classes\E2ETest\Services\CreateCheckoutSeedDataService;
 use AdyenPayment\Classes\E2ETest\Services\CreateInitialSeedDataService;
 use AdyenPayment\Classes\E2ETest\Services\CreateWebhooksSeedDataService;
-use AdyenPayment\Classes\E2ETest\Services\TransactionLogService;
 use AdyenPayment\Classes\Utility\AdyenPrestaShopUtility;
 
 /**
@@ -84,6 +85,7 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
 
             $this->verifyManagementAPI($testApiKey, $liveApiKey);
             $credentials = $this->getAuthorizationCredentials();
+            $this->registerServices();
             $this->createInitialSeedData($url, $credentials);
             $this->registerProxies($credentials);
             $customerId = $this->createCheckoutSeedData($testApiKey);
@@ -110,6 +112,21 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
         } finally {
             header('Content-Type: application/json');
         }
+    }
+
+    /**
+     * Registers core services
+     *
+     * @return void
+     */
+    private function registerServices(): void
+    {
+        ServiceRegister::registerService(
+            CreateIntegrationDataService::class,
+            static function () {
+                return new CreateIntegrationDataService('./modules/adyenofficial');
+            }
+        );
     }
 
     /**

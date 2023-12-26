@@ -2,7 +2,7 @@
 
 namespace AdyenPayment\Classes\E2ETest\Services;
 
-use Adyen\Core\Infrastructure\Configuration\ConfigurationManager;
+use Adyen\Core\BusinessLogic\E2ETest\Services\CreateIntegrationDataService;
 use Adyen\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use Adyen\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Adyen\Core\Infrastructure\Http\HttpClient;
@@ -52,7 +52,7 @@ class CreateInitialSeedDataService extends BaseCreateSeedDataService
         Configuration::updateValue('PS_MULTISHOP_FEATURE_ACTIVE', 1);
         $this->createSubStores();
         $this->updateBaseUrlAndDefaultShopName();
-        $this->saveTestHostname();
+        $this->getCreateIntegrationDataService()->saveTestHostname($this->baseUrl);
     }
 
     /**
@@ -130,24 +130,12 @@ class CreateInitialSeedDataService extends BaseCreateSeedDataService
     }
 
     /**
-     * Saves ngrok tunnel hostname in database
+     * Returns CreateIntegrationDataService instance
      *
-     * @return void
-     * @throws QueryFilterInvalidParamException
+     * @return CreateIntegrationDataService
      */
-    private function saveTestHostname(): void
+    private function getCreateIntegrationDataService(): CreateIntegrationDataService
     {
-        $host = parse_url($this->baseUrl)['host'];
-        $this->getConfigurationManager()->saveConfigValue('testHostname', $host);
-    }
-
-    /**
-     * Returns ConfigurationManager instance
-     *
-     * @return ConfigurationManager
-     */
-    private function getConfigurationManager(): ConfigurationManager
-    {
-        return ServiceRegister::getService(ConfigurationManager::CLASS_NAME);
+        return ServiceRegister::getService(CreateIntegrationDataService::class);
     }
 }

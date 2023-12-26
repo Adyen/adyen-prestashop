@@ -97,7 +97,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
      */
     private function createIntegrationConfigurations(string $testApiKey): void
     {
-        $createIntegrationDataService = new CreateIntegrationDataService('./modules/adyenofficial');
+        $createIntegrationDataService = $this->getCreateIntegrationDataService();
         $createIntegrationDataService->createConnectionAndWebhookConfiguration($testApiKey);
         $createIntegrationDataService->createAllPaymentMethodsFromTestData();
     }
@@ -458,5 +458,15 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
     private function getAddressTestProxy(): AddressTestProxy
     {
         return ServiceRegister::getService(AddressTestProxy::class);
+    }
+
+    /**
+     * Returns CreateIntegrationDataService instance
+     *
+     * @return CreateIntegrationDataService
+     */
+    private function getCreateIntegrationDataService(): CreateIntegrationDataService
+    {
+        return ServiceRegister::getService(CreateIntegrationDataService::class);
     }
 }
