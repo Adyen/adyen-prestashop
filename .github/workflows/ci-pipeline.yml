@@ -2,7 +2,7 @@
 on:
   push:
     branches:
-      - feature/code_refactor
+      - feature/main_e2e_tests
 jobs:
   build:
     permissions:
