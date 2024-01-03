@@ -853,19 +853,24 @@ class AdyenOfficial extends PaymentModule
             $storeId
         )->getAdyenGivingSettings()->toArray();
 
+        $cart = new \Cart($params['order']->id_cart);
         $this->context->smarty->assign(
             [
                 'enabled' => $adyenGivingInformation['enableAdyenGiving'],
                 'donationsConfigUrl' => \AdyenPayment\Classes\Utility\Url::getFrontUrl(
                     'adyendonationsconfig',
                     [
-                        'merchantReference' => $params['order']->id_cart
+                        'merchantReference' => $cart->id,
+                        'key' => $cart->secure_key,
+                        'module' => $params['order']->module
                     ]
                 ),
                 'makeDonationsUrl' => \AdyenPayment\Classes\Utility\Url::getFrontUrl(
                     'adyenmakedonation',
                     [
-                        'merchantReference' => $params['order']->id_cart
+                        'merchantReference' => $cart->id,
+                        'key' => $cart->secure_key,
+                        'module' => $params['order']->module
                     ]
                 )
             ]
