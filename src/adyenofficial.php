@@ -513,15 +513,23 @@ class AdyenOfficial extends PaymentModule
             return null;
         }
 
-        $this->context->smarty->assign(
-            ['adyenAction' => \AdyenPayment\Classes\Utility\CookieService::get('adyenAction')]
-        );
+        $cartId = \AdyenPayment\Classes\Utility\SessionService::get('cartId');
+
         $this->context->smarty->assign(
             [
+                'adyenAction' => \AdyenPayment\Classes\Utility\SessionService::get('adyenAction'),
                 'checkoutConfigUrl' => AdyenPayment\Classes\Utility\Url::getFrontUrl(
                     'paymentconfig',
-                    ['cartId' => \AdyenPayment\Classes\Utility\CookieService::get('cartId')]
-                )
+                    ['cartId' => $cartId]
+                ),
+                'additionalDataUrl' => AdyenPayment\Classes\Utility\Url::getFrontUrl(
+                    'paymentredirect',
+                    [
+                        'adyenMerchantReference' => $cartId,
+                        'adyenPaymentType' => \AdyenPayment\Classes\Utility\SessionService::get('adyenPaymentMethodType')
+                    ]
+                ),
+                'checkoutUrl' => $this->context->link->getPageLink('order', true, null)
             ]
         );
 
@@ -575,7 +583,7 @@ class AdyenOfficial extends PaymentModule
         if ($this->context->controller->php_self === 'order') {
             $this->getContext()->controller->addJS($this->getPathUri() . 'views/js/front/adyen-wallets.js');
 
-            if ($message = $this->l(\AdyenPayment\Classes\Utility\CookieService::get('errorMessage'))) {
+            if ($message = $this->l(\AdyenPayment\Classes\Utility\SessionService::get('errorMessage'))) {
                 $this->getContext()->controller->errors[] = $message;
             }
         }
@@ -588,7 +596,7 @@ class AdyenOfficial extends PaymentModule
                 $this->getPathUri() . 'views/js/front/adyen-wallets-service.js'
             );
 
-            if ($message = $this->l(\AdyenPayment\Classes\Utility\CookieService::get('errorMessage'))) {
+            if ($message = $this->l(\AdyenPayment\Classes\Utility\SessionService::get('errorMessage'))) {
                 $this->getContext()->controller->errors[] = $message;
             }
         }
@@ -601,7 +609,7 @@ class AdyenOfficial extends PaymentModule
                 $this->getPathUri() . 'views/js/front/adyen-wallets-service.js'
             );
 
-            if ($message = $this->l(\AdyenPayment\Classes\Utility\CookieService::get('errorMessage'))) {
+            if ($message = $this->l(\AdyenPayment\Classes\Utility\SessionService::get('errorMessage'))) {
                 $this->getContext()->controller->warning[] = $message;
             }
         }
@@ -800,10 +808,10 @@ class AdyenOfficial extends PaymentModule
             return;
         }
 
-        if ($message = $this->l(\AdyenPayment\Classes\Utility\CookieService::get('errorMessage'))) {
+        if ($message = $this->l(\AdyenPayment\Classes\Utility\SessionService::get('errorMessage'))) {
             $this->getContext()->controller->errors[] = $message;
         }
-        if ($message = $this->l(\AdyenPayment\Classes\Utility\CookieService::get('successMessage'))) {
+        if ($message = $this->l(\AdyenPayment\Classes\Utility\SessionService::get('successMessage'))) {
             $this->getContext()->controller->informations[] = $message;
         }
 
@@ -960,7 +968,7 @@ class AdyenOfficial extends PaymentModule
                 ($order->getOrdersTotalPaid(), $currency->iso_code, $order->id_cart, new \DateTime($expiresAt)));
 
         if ($paymentLink->isSuccessful()) {
-            \AdyenPayment\Classes\Utility\CookieService::set(
+            \AdyenPayment\Classes\Utility\SessionService::set(
                 'successMessage',
                 $this->l('Payment link successfully generated.')
             );
@@ -968,7 +976,7 @@ class AdyenOfficial extends PaymentModule
             return;
         }
 
-        \AdyenPayment\Classes\Utility\CookieService::set(
+        \AdyenPayment\Classes\Utility\SessionService::set(
             'errorMessage',
             $this->l('Payment link generation failed. Reason: ') . $paymentLink->toArray()['errorMessage'] ?? ''
         );

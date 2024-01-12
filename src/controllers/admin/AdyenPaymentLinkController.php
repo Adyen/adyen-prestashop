@@ -4,7 +4,7 @@ use Adyen\Core\BusinessLogic\AdminAPI\AdminAPI;
 use Adyen\Core\BusinessLogic\AdminAPI\PaymentLink\Request\CreatePaymentLinkRequest;
 use Adyen\Core\BusinessLogic\Domain\TransactionHistory\Exceptions\InvalidMerchantReferenceException;
 use AdyenPayment\Classes\Utility\AdyenPrestaShopUtility;
-use AdyenPayment\Classes\Utility\CookieService;
+use AdyenPayment\Classes\Utility\SessionService;
 use Currency as PrestaCurrency;
 
 require_once rtrim(_PS_MODULE_DIR_, '/') . '/adyenofficial/vendor/autoload.php';
@@ -36,14 +36,14 @@ class AdyenPaymentLinkController extends AdyenBaseController
 
         if (!$response->isSuccessful()) {
 
-            CookieService::set(
+            SessionService::set(
                 'errorMessage',
                 $this->module->l('Payment link generation failed. Reason: ') . $response->toArray()['errorMessage'] ?? ''
             );
             AdyenPrestaShopUtility::dieJson($response);
         }
 
-        CookieService::set(
+        SessionService::set(
             'successMessage',
             $this->module->l('Payment link successfully generated.')
         );

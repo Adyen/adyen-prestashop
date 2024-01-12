@@ -17,7 +17,7 @@ use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\Repositories\ProductRepository;
 use AdyenPayment\Classes\Services\CheckoutHandler;
 use AdyenPayment\Classes\SurchargeCalculator;
-use AdyenPayment\Classes\Utility\CookieService;
+use AdyenPayment\Classes\Utility\SessionService;
 use Carrier;
 use Cart;
 use Context;
@@ -111,7 +111,7 @@ class PaymentController extends \ModuleFrontController
         $message = $this->module->l('Your payment could not be processed, please resubmit order.', $fileName);
 
         if ($this->isAjaxRequest()) {
-            CookieService::set(
+            SessionService::set(
                 'errorMessage',
                 $message
             );
@@ -176,11 +176,12 @@ class PaymentController extends \ModuleFrontController
             );
         }
 
-        if ($response->shouldPresentToShopper() || $response->isRecieved()) {
+        if ($response->shouldPresentToShopper() || $response->isRecieved() || $response->isPending()) {
             $this->saveOrder($type, $cart);
 
-            CookieService::set('cartId', $cart->id);
-            CookieService::set('adyenAction', json_encode($response->getAction()));
+            SessionService::set('cartId', $cart->id);
+            SessionService::set('adyenAction', json_encode($response->getAction()));
+            SessionService::set('adyenPaymentMethodType', $type);
             Tools::redirect($this->generateSuccessURL($cart));
         }
     }
@@ -233,6 +234,10 @@ class PaymentController extends \ModuleFrontController
             throw new PaymentMethodNotConfiguredException(new TranslatableLabel('Payment method not configured.', ''));
         }
 
+        if ($cart->orderExists()) {
+            return;
+        }
+
         $idCarrier = CheckoutHandler::getCarrierId($cart);
         $total = $cart->getOrderTotal(true, Cart::BOTH, null, $idCarrier);
         $shouldCalculateSurcharge = $this->methodHasSurcharge($method);
@@ -261,6 +266,7 @@ class PaymentController extends \ModuleFrontController
             true,
             $cart->secure_key
         );
+
         $order = new Order($this->module->currentOrder);
         if ((int)$order->id_carrier !== (int)$cart->id_carrier) {
             $this->updateShippingCost($order, $cart->getPackageShippingCost(), $idCarrier, (int)$inProgressPaymentId);

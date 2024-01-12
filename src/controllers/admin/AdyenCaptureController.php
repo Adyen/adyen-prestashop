@@ -4,7 +4,7 @@ use Adyen\Core\BusinessLogic\AdminAPI\AdminAPI;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode;
 use Adyen\Core\BusinessLogic\Domain\TransactionHistory\Exceptions\InvalidMerchantReferenceException;
 use AdyenPayment\Classes\Utility\AdyenPrestaShopUtility;
-use AdyenPayment\Classes\Utility\CookieService;
+use AdyenPayment\Classes\Utility\SessionService;
 
 /**
  * Class AdyenCaptureController
@@ -35,7 +35,7 @@ class AdyenCaptureController extends AdyenBaseController
         );
 
         if ($response->isSuccessful()) {
-            CookieService::set(
+            SessionService::set(
                 'successMessage',
                 $this->module->l('Capture request successfully sent to Adyen.')
             );
@@ -43,7 +43,7 @@ class AdyenCaptureController extends AdyenBaseController
             AdyenPrestaShopUtility::dieJson($response);
         }
 
-        CookieService::set(
+        SessionService::set(
             'errorMessage',
             $this->module->l('Capture request failed. Please check Adyen configuration. Reason: ') . $response->toArray(
             )['errorMessage'] ?? ''
