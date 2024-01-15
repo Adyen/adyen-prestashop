@@ -40,6 +40,7 @@ class AdyenOfficialPaymentRedirectModuleFrontController extends PaymentControlle
         );
 
         $cart = $this->getCurrentCart();
+        $page = Tools::getValue('adyenPage');
 
         if (!\Validate::isLoadedObject($cart)) {
             Tools::redirect($this->context->link->getPageLink('order', $this->ssl));
@@ -49,12 +50,16 @@ class AdyenOfficialPaymentRedirectModuleFrontController extends PaymentControlle
             ->paymentRequest((string)$cart->id_shop)
             ->updatePaymentDetails(array_key_exists('details', $requestData) ? $requestData : ['details' => $requestData]);
 
-        if (!$response->isSuccessful()) {
+        if (!$response->isSuccessful() && $page !== 'thankYou') {
             $message = $this->module->l('Your payment could not be processed, please resubmit order.', self::FILE_NAME);
             $this->errors[] = $message;
             $this->redirectWithNotifications(
                 Context::getContext()->link->getPageLink('order')
             );
+        }
+
+        if (!$response->isSuccessful() && $page === 'thankYou') {
+            return;
         }
 
         try {

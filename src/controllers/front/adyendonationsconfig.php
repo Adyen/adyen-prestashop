@@ -30,13 +30,30 @@ class AdyenOfficialAdyenDonationsConfigModuleFrontController extends ModuleFront
     public function postProcess(): void
     {
         $merchantReference = Tools::getValue('merchantReference');
+        $key = Tools::getValue('key');
+        $module = Tools::getValue('module');
+        $orderId = Order::getIdByCartId((int)($merchantReference));
         $cart = new Cart($merchantReference);
-        $customer = new Customer(Context::getContext()->customer->id);
-        if ((int)$customer->id !== (int)$cart->id_customer) {
+        $order = new Order((int)($orderId));
+
+        if (!$merchantReference || !$key || !$module) {
             AdyenPrestaShopUtility::die400(
-                ['message' => 'Cart with ID: ' . $cart->id . ' is not associated with customer' . ($customer->id ? ' with ID: ' . $customer->id : '. Customer is not logged in.')]
+                ['message' => 'There are request parameters missing.']
             );
         }
+
+        if ($module !== $order->module) {
+            AdyenPrestaShopUtility::die400(
+                ['message' => 'Module does not match the requested orders module.']
+            );
+        }
+
+        if ($key !== $order->secure_key) {
+            AdyenPrestaShopUtility::die400(
+                ['message' => 'Key does not match the requested orders secure key.']
+            );
+        }
+
         $currency = new Currency($cart->id_currency);
         $currencyFactor = $currency->conversion_rate;
 

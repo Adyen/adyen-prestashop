@@ -15,7 +15,7 @@ use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Adyen\Core\Infrastructure\ServiceRegister;
 use Adyen\Webhook\PaymentStates;
 use AdyenPayment\Classes\Bootstrap;
-use AdyenPayment\Classes\Utility\CookieService;
+use AdyenPayment\Classes\Utility\SessionService;
 use Currency;
 use Exception;
 use Module;
@@ -185,7 +185,7 @@ class OrderStatusHandler
      */
     private static function setSuccessMessage(string $message): void
     {
-        CookieService::set('successMessage', $message);
+        SessionService::set('successMessage', $message);
     }
 
     /**
@@ -195,7 +195,7 @@ class OrderStatusHandler
      */
     private static function setErrorMessage(string $message): void
     {
-        CookieService::set('errorMessage', $message);
+        SessionService::set('errorMessage', $message);
     }
 
     /**

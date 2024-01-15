@@ -34,10 +34,12 @@ class AdyenOfficialPaymentConfigModuleFrontController extends ModuleFrontControl
         $cart = new Cart($cartId > 0 ? $cartId : Context::getContext()->cart->id);
         $customer = new Customer(Context::getContext()->customer->id);
 
+        if (!$cart->id || !(int)$customer->id) {
+            AdyenPrestaShopUtility::die400(['message' => 'Invalid parameters.']);
+        }
+
         if ((int)$customer->id !== (int)$cart->id_customer) {
-            AdyenPrestaShopUtility::die400(
-                ['message' => 'Cart with ID: ' . $cart->id . ' is not associated with customer' . ($customer->id ? ' with ID: ' . $customer->id : '. Customer is not logged in.')]
-            );
+            AdyenPrestaShopUtility::die400(['message' => 'Invalid parameters.']);
         }
 
         $config = CheckoutHandler::getPaymentCheckoutConfig($cart);

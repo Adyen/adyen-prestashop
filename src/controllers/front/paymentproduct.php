@@ -9,7 +9,7 @@ use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency;
 use AdyenPayment\Classes\Bootstrap;
 use AdyenPayment\Classes\Services\CheckoutHandler;
-use AdyenPayment\Classes\Utility\CookieService;
+use AdyenPayment\Classes\Utility\SessionService;
 use AdyenPayment\Classes\Utility\Url;
 use AdyenPayment\Controllers\PaymentController;
 use Currency as PrestaCurrency;
@@ -119,7 +119,7 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
     private function redirectBack(string $fileName, int $productId): void
     {
         $message = $this->module->l('Your payment could not be processed, please resubmit order.', $fileName);
-        CookieService::set(
+        SessionService::set(
             'errorMessage',
             $message
         );
