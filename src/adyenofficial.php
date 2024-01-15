@@ -526,10 +526,10 @@ class AdyenOfficial extends PaymentModule
                     'paymentredirect',
                     [
                         'adyenMerchantReference' => $cartId,
-                        'adyenPaymentType' => \AdyenPayment\Classes\Utility\SessionService::get('adyenPaymentMethodType')
+                        'adyenPaymentType' => \AdyenPayment\Classes\Utility\SessionService::get('adyenPaymentMethodType'),
+                        'adyenPage' => 'thankYou'
                     ]
                 ),
-                'checkoutUrl' => $this->context->link->getPageLink('order', true, null)
             ]
         );
 

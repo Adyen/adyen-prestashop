@@ -4,7 +4,6 @@
                value="{$checkoutConfigUrl|escape:'html':'UTF-8'}">
         <div id="adyen-additional-action" style="display: none;" type="text/html">{$adyenAction|unescape:'html'}</div>
         <input type="hidden" id="adyen-additional-data-url" value="{$additionalDataUrl|escape:'html':'UTF-8'}">
-        <input type="hidden" id="adyen-checkout-url" value="{$checkoutUrl|escape:'html':'UTF-8'}">
         <div id="adyen-additional-data"></div>
     </div>
 {/if}
