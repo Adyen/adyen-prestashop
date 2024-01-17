@@ -68,9 +68,8 @@ class OrderService implements OrderServiceInterface
         $order = new Order($idOrder);
 
         if (!$cart->orderExists() ||
-            (int)$cart->id_shop !== (int)StoreContext::getInstance()->getStoreId() ||
             !$this->transactionHistoryRepository->getTransactionHistory($merchantReference)) {
-            return false;
+            throw new Exception('Order with cart ID: ' . $merchantReference . ' still not created.');
         }
 
         if (!isset($order->current_state) || (int)$order->current_state === 0) {
