@@ -59,6 +59,7 @@ use Adyen\Core\Infrastructure\Serializer\Serializer;
 use Adyen\Core\Infrastructure\ServiceRegister;
 use Adyen\Core\Infrastructure\TaskExecution\Process;
 use Adyen\Core\Infrastructure\TaskExecution\QueueItem;
+use AdyenPayment\Classes\Proxies\GithubProxy;
 use AdyenPayment\Classes\Repositories\AdyenGivingRepository;
 use AdyenPayment\Classes\Repositories\BaseRepository;
 use AdyenPayment\Classes\Repositories\BaseRepositoryWithConditionalDelete;
@@ -116,6 +117,22 @@ class Bootstrap extends BootstrapComponent
         self::initServices();
         self::initPaymentRequestProcessors();
         self::initRepositories();
+    }
+
+    protected static function initProxies(): void
+    {
+        parent::initProxies();
+
+        ServiceRegister::registerService(
+            GithubProxy::class,
+            static function () {
+                return new GithubProxy(
+                    ServiceRegister::getService(HttpClient::class),
+                    'https://api.github.com',
+                    ''
+                );
+            }
+        );
     }
 
     /**
