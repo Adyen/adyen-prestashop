@@ -11,7 +11,7 @@ $(document).ready(function () {
         url = new URL(location.href),
         amazonCheckoutSessionId = url.searchParams.get('amazonCheckoutSessionId'),
         formConditions = document.getElementById('conditions-to-approve'),
-        checkBox = $(formConditions).find('[type=checkbox]'),
+        checkBox = $(formConditions).find('[name="conditions_to_approve[terms-and-conditions]"]'),
         paymentStarted = false,
         paymentOptions = $('input[name="payment-option"]');
 
@@ -20,10 +20,9 @@ $(document).ready(function () {
     }
 
     if (amazonCheckoutSessionId) {
-        let checkbox = $(formConditions).find('[type=checkbox]');
-        if (!checkbox.is(':checked')) {
+        if (checkBox && !checkBox.is(':checked')) {
             // If not checked, set it to checked
-            checkbox.prop('checked', true);
+            checkBox.prop('checked', true);
         }
 
         checkoutController = new AdyenComponents.CheckoutController({
@@ -79,7 +78,7 @@ $(document).ready(function () {
         }
 
         type = paymentForm.find('[name=adyen-type]').val();
-        if (!submitButtonReplacingComponents.includes(type) || !checkBox.is(":checked")) {
+        if (!submitButtonReplacingComponents.includes(type) || (checkBox.length && !checkBox.is(":checked"))) {
             return;
         }
 
@@ -121,7 +120,8 @@ $(document).ready(function () {
 
     function onPayButtonClick(resolve, reject) {
         formConditions = document.getElementById('conditions-to-approve');
-        let checked = $(formConditions).find('[type=checkbox]').is(":checked");
+        let checkbox = $(formConditions).find('[name="conditions_to_approve[terms-and-conditions]"]');
+        let checked = !checkbox.length ? true : checkbox.is(":checked");
 
         return checked ? resolve() : reject();
     }

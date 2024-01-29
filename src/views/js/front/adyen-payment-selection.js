@@ -3,7 +3,7 @@ $(document).ready(function () {
     let divPlaceOrder = document.getElementById('payment-confirmation');
     let placeOrder = $(divPlaceOrder).find('[type=submit]');
     let formConditions = document.getElementById('conditions-to-approve');
-    let checkBox = $(formConditions).find('[type=checkbox]');
+    let checkBox = $(formConditions).find('[name="conditions_to_approve[terms-and-conditions]"]');
     let checkoutController = null;
     let paymentId = 0;
     let paymentOptions = $('input[name="payment-option"]');
@@ -66,7 +66,7 @@ $(document).ready(function () {
     function handleStateChange() {
         let paymentForm = $("#pay-with-" + paymentId + "-form");
         let prestaVersion = paymentForm.find('[name=adyen-presta-version]').val();
-        let checkbox = $(formConditions).find('[type=checkbox]');
+        let checkbox = $(formConditions).find('[name="conditions_to_approve[terms-and-conditions]"]');
 
         if (checkoutController.isPaymentMethodStateValid() && ((checkbox.length && checkbox.is(":checked")) || !checkbox.length)) {
 
