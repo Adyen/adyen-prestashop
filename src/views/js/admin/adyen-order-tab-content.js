@@ -45,8 +45,8 @@ $(document).ready(function () {
     }
 
     function disableRefundButtons() {
-        let prestaVersion =  $('input[name="adyen-presta-version"]').val();
-        if(prestaVersion < '1.7.7') {
+        let prestaVersion = $('input[name="adyen-presta-version"]').val();
+        if (prestaVersion < '1.7.7') {
             $('#desc-order-partial_refund').attr('disabled', 'disabled');
             $('#desc-order-standard_refund').attr('disabled', 'disabled');
 
@@ -58,18 +58,35 @@ $(document).ready(function () {
     }
 
     function disableCheckbox() {
-        let prestaVersion =  $('input[name="adyen-presta-version"]').val();
-        if(prestaVersion < '1.7.7') {
+        let prestaVersion = $('input[name="adyen-presta-version"]').val();
+        if (prestaVersion < '1.7.7') {
             let generateCreditSlipCheckbox = $('#generateCreditSlip');
             if (!generateCreditSlipCheckbox.is(':checked')) {
                 generateCreditSlipCheckbox.prop('checked', true);
             }
             $('#spanShippingBack').css('display', 'block');
 
-            generateCreditSlipCheckbox.on('click', function(event) {
+            generateCreditSlipCheckbox.on('click', function (event) {
                 event.preventDefault();
                 $('#spanShippingBack').css('display', 'block');
             });
         }
     }
+
+    $('#adyen-copy-payment-link').click(function () {
+        navigator.clipboard.writeText($("#adyen-payment-link").val());
+    });
+
+    $('#adyen-generate-payment-link-button').click(function () {
+        const endpointURL = $('input[name="adyen-generate-payment-link-url"]').val();
+        const orderId = $('input[name="adyen-orderId"]').val();
+        const amount = $('input[name="adyen-payment-link-amount"]').val();
+
+        Adyen.adyenAjaxService().post(endpointURL, {
+            'orderId': orderId,
+            'amount': amount
+        }, (response, status) => {
+            location.reload();
+        });
+    });
 });

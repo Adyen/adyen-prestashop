@@ -4,7 +4,7 @@ namespace AdyenPayment\Classes\Services\Integration\PaymentProcessors;
 
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Factory\PaymentRequestBuilder;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\StartTransactionRequestContext;
-use Adyen\Core\BusinessLogic\Domain\Integration\Processors\DeviceFingerprintProcessor as DeviceFingerprintProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\DeviceFingerprintProcessor as DeviceFingerprintProcessorInterface;
 
 /**
  * Class DeviceFingerprintProcessor
@@ -21,6 +21,5 @@ class DeviceFingerprintProcessor implements DeviceFingerprintProcessorInterface
      */
     public function process(PaymentRequestBuilder $builder, StartTransactionRequestContext $context): void
     {
-        // TODO: Implement process() method.
     }
 }

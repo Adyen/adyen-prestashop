@@ -11,7 +11,7 @@ use Adyen\Core\BusinessLogic\Domain\TransactionHistory\Exceptions\InvalidMerchan
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\Bootstrap;
-use AdyenPayment\Classes\Utility\CookieService;
+use AdyenPayment\Classes\Utility\SessionService;
 use AdyenPayment\Classes\Version\Contract\VersionHandler;
 use Currency as PrestaCurrency;
 use Db;
@@ -303,7 +303,7 @@ class RefundHandler
      */
     private static function createOrderSlip(Order $order, float $amount): OrderSlip
     {
-        $refundableProducts = $order->total_products - self::getRefundedProducts($order);
+        $refundableProducts = (float)$order->total_products_wt - self::getRefundedProducts($order);
         $totalProducts = $amount;
         $totalShipping = 0;
 
@@ -352,7 +352,7 @@ class RefundHandler
      */
     private static function setSuccessMessage(string $message): void
     {
-        CookieService::set('successMessage', $message);
+        SessionService::set('successMessage', $message);
     }
 
     /**
@@ -362,7 +362,7 @@ class RefundHandler
      */
     private static function setErrorMessage(string $message): void
     {
-        CookieService::set('errorMessage', $message);
+        SessionService::set('errorMessage', $message);
     }
 
     /**

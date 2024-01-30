@@ -236,7 +236,7 @@ if (!window.AdyenFE) {
                         (response) => {
                             data.merchants = response.map((merchant) => ({
                                 value: merchant.merchantId,
-                                label: merchant.merchantName
+                                label: merchant.merchantName + ' (' + merchant.merchantId + ')'
                             }));
 
                             renderForm(data);

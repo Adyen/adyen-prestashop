@@ -13,14 +13,17 @@ use Adyen\Webhook\EventCodes;
 use AdyenPayment\Classes\Services\RefundHandler;
 use AdyenPayment\Classes\Version\Contract\VersionHandler;
 use Cart;
+use Configuration;
 use DateTime;
 use Db;
+use Module;
 use Order;
 use OrderHistory;
 use Exception;
 use PrestaShop\PrestaShop\Adapter\Entity\Currency;
 use PrestaShopDatabaseException;
 use PrestaShopException;
+use Shop;
 
 /**
  * Class OrderService.
@@ -65,9 +68,8 @@ class OrderService implements OrderServiceInterface
         $order = new Order($idOrder);
 
         if (!$cart->orderExists() ||
-            (int)$cart->id_shop !== (int)StoreContext::getInstance()->getStoreId() ||
             !$this->transactionHistoryRepository->getTransactionHistory($merchantReference)) {
-            return false;
+            throw new Exception('Order with cart ID: ' . $merchantReference . ' still not created.');
         }
 
         if (!isset($order->current_state) || (int)$order->current_state === 0) {
@@ -101,8 +103,8 @@ class OrderService implements OrderServiceInterface
         if (!$idOrder) {
             throw new Exception('Order for cart id: ' . $webhook->getMerchantReference() . ' could not be found.');
         }
-
         $order = new Order($idOrder);
+        $this->setTimezone($order->id_shop);
 
         if ((int)$statusId && (int)$statusId !== (int)$order->current_state) {
             $history = new OrderHistory();
@@ -113,7 +115,7 @@ class OrderService implements OrderServiceInterface
             $updatedState = $this->getOrderCurrentState($idOrder);
             if ((int)$updatedState !== (int)$statusId) {
                 throw new Exception(
-                    'Order status update failed. Adyen tried to change order state id to ' . $statusId . ' but PrestaShop API failed to update order to desired status. '
+                    'Order status update failed for order with ID: ' . $idOrder . '. Adyen tried to change order state id to ' . $statusId . ' but PrestaShop API failed to update order to desired status. '
                 );
             }
         }
@@ -150,6 +152,33 @@ class OrderService implements OrderServiceInterface
     }
 
     /**
+     * @param Webhook $webhook
+     *
+     * @return void
+     *
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    public function updateOrderPayment(Webhook $webhook): void
+    {
+        $idOrder = (int)$this->getIdByCartId((int)$webhook->getMerchantReference());
+
+        if (!$idOrder) {
+            return;
+        }
+
+        $order = new Order($idOrder);
+        $adyenModule = Module::getInstanceByName('adyenofficial');
+
+        if ($order->module !== $adyenModule->name) {
+            $order->module = $adyenModule->name;
+            $order->payment = $adyenModule->displayName;
+
+            $order->update();
+        }
+    }
+
+    /**
      * This function must be used for fetching order id from cart because PrestaShop function: Order::getByCartId won't work for multistore.
      *
      * @param int $cartId
@@ -182,6 +211,26 @@ class OrderService implements OrderServiceInterface
                                  FROM `" . _DB_PREFIX_ . "orders`
                                  WHERE `id_order` = '" . $orderId . "'
                                  "
+        );
+    }
+
+    /**
+     * @param int $storeId
+     *
+     * @return void
+     */
+    private function setTimezone(int $storeId): void
+    {
+        $shop = new Shop($storeId);
+
+        @date_default_timezone_set(
+            Configuration::get(
+                'PS_TIMEZONE',
+                null,
+                $shop->id_shop_group,
+                $shop->id,
+                Configuration::get('PS_TIMEZONE')
+            )
         );
     }
 }

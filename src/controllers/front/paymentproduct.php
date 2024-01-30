@@ -2,14 +2,14 @@
 
 use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
 use Adyen\Core\BusinessLogic\CheckoutAPI\PaymentRequest\Request\StartTransactionRequest;
-use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode;
-use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidPaymentMethodCodeException;
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\ShopperReference;
+use Adyen\Core\Infrastructure\Logger\Logger;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency;
 use AdyenPayment\Classes\Bootstrap;
 use AdyenPayment\Classes\Services\CheckoutHandler;
-use AdyenPayment\Classes\Utility\CookieService;
+use AdyenPayment\Classes\Utility\SessionService;
 use AdyenPayment\Classes\Utility\Url;
 use AdyenPayment\Controllers\PaymentController;
 use Currency as PrestaCurrency;
@@ -44,8 +44,6 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
     /**
      * @return void
      *
-     * @throws InvalidCurrencyCode
-     * @throws InvalidPaymentMethodCodeException
      * @throws Exception
      */
     public function postProcess()
@@ -72,37 +70,56 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
         ) : [];
         $type = !empty($additionalData['paymentMethod']['type']) ? $additionalData['paymentMethod']['type'] : '';
         $currency = new PrestaCurrency($currencyId);
+        try {
+            $response = CheckoutApi::get()->paymentRequest((string)$cart->id_shop)->startTransaction(
+                new StartTransactionRequest(
+                    $type,
+                    Amount::fromFloat(
+                        $this->getOrderTotal($cart, $type),
+                        Currency::fromIsoCode($currency->iso_code ?? 'EUR')
+                    ),
+                    (string)$cart->id,
+                    Url::getFrontUrl('paymentredirect', ['adyenMerchantReference' => $cart->id, 'adyenPaymentType' => $type]
+                    ),
+                    $additionalData,
+                    [],
+                    $this->getShopperReferenceFromCart($cart)
+                )
+            );
 
-        $response = CheckoutApi::get()->paymentRequest((string)$cart->id_shop)->startTransaction(
-            new StartTransactionRequest(
-                $type,
-                Amount::fromFloat(
-                    $this->getOrderTotal($cart, $type),
-                    Currency::fromIsoCode($currency->iso_code ?? 'EUR')
-                ),
-                (string)$cart->id,
-                Url::getFrontUrl('paymentredirect', ['adyenMerchantReference' => $cart->id, 'adyenPaymentType' => $type]
-                ),
-                $additionalData
-            )
-        );
+            if (!$response->isSuccessful()) {
+                $product = new \Product($product['id_product'] ?? 0);
+                $this->handleNotSuccessfulPayment(self::FILE_NAME, $product->getLink());
+            }
 
-        if (!$response->isSuccessful()) {
-            $product = new \Product($product['id_product'] ?? 0);
-            $this->handleNotSuccessfulPayment(self::FILE_NAME, $product->getLink());
+            if (!$response->isAdditionalActionRequired()) {
+                $this->handleSuccessfulPaymentWithoutAdditionalData($type, $cart);
+            }
+
+            $this->handleSuccessfulPaymentWithAdditionalData($response, $type, $cart);
+        } catch (Throwable $e) {
+            Logger::logError(
+                'Adyen failed to create order from Cart with ID: ' . $cart->id . ' Reason: ' . $e->getMessage()
+            );
+            $message = $this->module->l('Your payment could not be processed, please resubmit order.', self::FILE_NAME);
+            $this->errors[] = $message;
+            $this->redirectWithNotifications(Context::getContext()->link->getPageLink('order'));
         }
-
-        if (!$response->isAdditionalActionRequired()) {
-            $this->handleSuccessfulPaymentWithoutAdditionalData($type, $cart);
-        }
-
-        $this->handleSuccessfulPaymentWithAdditionalData($response, $type, $cart);
     }
 
+    /**
+     * @param string $fileName
+     * @param int $productId
+     *
+     * @return void
+     *
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
     private function redirectBack(string $fileName, int $productId): void
     {
         $message = $this->module->l('Your payment could not be processed, please resubmit order.', $fileName);
-        CookieService::set(
+        SessionService::set(
             'errorMessage',
             $message
         );
@@ -125,6 +142,7 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
     /**
      * @param Cart $cart
      * @param $product
+     *
      * @return void
      */
     private function addProductToCart(Cart $cart, $product)
@@ -140,7 +158,9 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
     /**
      * @param int $currencyId
      * @param int $langId
+     *
      * @return Cart
+     *
      * @throws PrestaShopException
      */
     private function createEmptyCart(int $currencyId, int $langId): Cart
@@ -160,7 +180,9 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
      * @param int $deliveryAddressId
      * @param int $invoiceAddressId
      * @param Cart $cart
+     *
      * @return Cart
+     *
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      */
@@ -173,5 +195,23 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
         $cart->update();
 
         return $cart;
+    }
+
+    /**
+     * @param Cart $cart
+     *
+     * @return ShopperReference|null
+     */
+    private function getShopperReferenceFromCart(Cart $cart): ?ShopperReference
+    {
+        $customer = new Customer($cart->id_customer);
+
+        if (!$customer) {
+            return null;
+        }
+
+        $shop = Shop::getShop(Context::getContext()->shop->id);
+
+        return ShopperReference::parse($shop['domain'] . '_' . Context::getContext()->shop->id . '_' . $customer->id);
     }
 }

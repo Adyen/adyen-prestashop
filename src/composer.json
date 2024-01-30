@@ -1,7 +1,6 @@
 {
   "name": "adyen/prestashop",
   "description": "Adyen plugin Presta Shop",
-  "version" : "5.0.0",
   "type": "prestashop-plugin",
   "keywords": [
     "adyen",

@@ -42,7 +42,7 @@ $(document).ready(function () {
             dataType: 'json',
             url: ($('#adyen-delete-url')[0]).value,
             data: {
-                cardId: methodId
+                methodId: methodId
             },
             success: function (response) {
                 window.location.reload();
