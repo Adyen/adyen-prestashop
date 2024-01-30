@@ -103,6 +103,7 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
             $cart = new Cart($cartId);
             $totalAmount = $cart->getOrderTotal();
             $this->createOrderAndUpdateState($cartData, $totalAmount);
+            $totalAmount = round($totalAmount, 2);
             $this->getCreateIntegrationDataService()->createTransactionHistoryForOrder(
                 $cartId,
                 $totalAmount,
