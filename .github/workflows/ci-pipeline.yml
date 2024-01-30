@@ -44,7 +44,7 @@ jobs:
             mysql: 5.7
             browser: 'chromium'
             device: 'Desktop Chrome'
-          - prestashop: '8-apache'
+          - prestashop: '8.1.2-apache'
             php: '7.4'
             port: 80
             mysql: 5.7
