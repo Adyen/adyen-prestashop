@@ -2,7 +2,7 @@
 on:
   push:
     branches:
-      - feature/main_e2e_tests
+      - feature/e2e_tests
 jobs:
   build:
     permissions:
