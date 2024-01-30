@@ -40,7 +40,7 @@
     "php": "^7.2|^7.4|^8.0",
     "ext-json": "*",
     "ext-zip": "*",
-    "adyen/integration-core": "dev-feature/test_endpoint",
+    "adyen/integration-core": "dev-main",
     "ext-simplexml": "*",
     "ext-openssl": "*"
   },
