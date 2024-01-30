@@ -20,6 +20,12 @@ inputs:
   API_KEY_LIVE:
     description: "The live api key for adyen."
     required: true
+  MERCHANT_ACCOUNT_TEST:
+    description: "The adyen test account on merchant level."
+    required: true
+  MERCHANT_ACCOUNT_LIVE:
+    description: "The adyen live account on merchant level."
+    required: true
   ADMIN_USERNAME:
     description: "The username for the backoffice."
     required: true
@@ -148,6 +154,8 @@ runs:
       env:
         API_KEY_TEST: ${{ inputs.API_KEY_TEST }}
         API_KEY_LIVE: ${{ inputs.API_KEY_LIVE }}
+        MERCHANT_ACCOUNT_TEST: ${{ inputs.MERCHANT_ACCOUNT_TEST }}
+        MERCHANT_ACCOUNT_LIVE: ${{ inputs.MERCHANT_ACCOUNT_LIVE }}
         PORT: ${{ inputs.PORT }}
         NGROK: ${{ inputs.NGROK }}
         ADMIN_USERNAME: ${{ inputs.ADMIN_USERNAME }}

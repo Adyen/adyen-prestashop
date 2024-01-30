@@ -74,6 +74,8 @@ jobs:
           GH_PAT: ${{ secrets.GH_PAT }}
           API_KEY_TEST: ${{ secrets.API_KEY_TEST }}
           API_KEY_LIVE: ${{ secrets.API_KEY_LIVE }}
+          MERCHANT_ACCOUNT_TEST: ${{ secrets.MERCHANT_ACCOUNT_TEST }}
+          MERCHANT_ACCOUNT_LIVE: ${{ secrets.MERCHANT_ACCOUNT_LIVE }}
           ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           PRESTASHOP_TEST_REPO: ${{secrets.PRESTASHOP_TEST_REPO}}
