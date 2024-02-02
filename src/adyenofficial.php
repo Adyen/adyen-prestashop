@@ -46,11 +46,11 @@ class AdyenOfficial extends PaymentModule
     {
         $this->name = 'adyenofficial';
         $this->tab = 'payments_gateways';
-        $this->version = '5.1.5';
+        $this->version = '5.1.6';
 
         $this->author = $this->l('Adyen');
         $this->need_instance = 0;
-        $this->ps_versions_compliancy = ['min' => '1.7.5.0', 'max' => '8.1.2'];
+        $this->ps_versions_compliancy = ['min' => '1.7.5.0', 'max' => '8.1.3'];
         $this->bootstrap = true;
 
         parent::__construct();
@@ -303,8 +303,7 @@ class AdyenOfficial extends PaymentModule
         $store = $cart->id_shop;
         $paymentOptions = [];
 
-        if ($cart->id_address_delivery !== "0" && $cart->id_address_invoice !== "0" &&
-            $cart->id_carrier !== "0" && $storeService->checkStoreConnection($store)) {
+        if ($cart->id_address_invoice !== "0" && $storeService->checkStoreConnection($store)) {
             $config = \AdyenPayment\Classes\Services\CheckoutHandler::getPaymentCheckoutConfig($params['cart']);
 
             if (!$config->isSuccessful()) {
