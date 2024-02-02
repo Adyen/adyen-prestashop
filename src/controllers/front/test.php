@@ -25,6 +25,7 @@ use Adyen\Core\Infrastructure\Http\HttpClient;
 use Adyen\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Adyen\Core\Infrastructure\ServiceRegister;
+use Adyen\Webhook\Receiver\HmacSignature;
 use AdyenPayment\Classes\Bootstrap;
 use AdyenPayment\Classes\E2ETest\Exception\InvalidDataException;
 use AdyenPayment\Classes\E2ETest\Http\AddressTestProxy;
@@ -67,6 +68,12 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
     public function postProcess()
     {
         $payload = json_decode(Tools::file_get_contents('php://input'), true);
+
+        if ($payload['getHmacSignature'] && $payload['data']) {
+            $this->getHmacSignature($payload['data']);
+
+            return;
+        }
 
         if ($payload['merchantReference'] && $payload['eventCode']) {
             $this->verifyWebhookStatus($payload['merchantReference'], $payload['eventCode']);
@@ -190,11 +197,39 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
     }
 
     /**
+     * Returns hmac signature for given data
+     *
+     * @param array $data
+     * @return void
+     * @throws HttpRequestException
+     * @throws \Adyen\Webhook\Exception\InvalidDataException
+     */
+    private function getHmacSignature(array $data): void
+    {
+        ServiceRegister::registerService(
+            CreateIntegrationDataService::class,
+            static function () {
+                return new CreateIntegrationDataService('./custom/plugins/AdyenPayment');
+            }
+        );
+        $createWebhookDataService = new CreateWebhooksSeedDataService();
+        $hmac = $createWebhookDataService->getWebhookAuthorizationData()['hmac'];
+        $hmacSignature = new HmacSignature();
+        unset($data["additionalData"]);
+        die(json_encode(array_merge(
+            ['hmacSignature' => $hmacSignature->calculateNotificationHMAC($hmac, $data)]
+        )));
+    }
+
+    /**
      * Calls service to verify if OrderUpdate queue item is in terminal state
      *
+     * @param string $merchantReference
+     * @param string $eventCode
+     * @return void
      * @throws QueryFilterInvalidParamException
      */
-    private function verifyWebhookStatus($merchantReference, $eventCode): void
+    private function verifyWebhookStatus(string $merchantReference, string $eventCode): void
     {
         $transactionLogService = new TransactionLogService();
 
