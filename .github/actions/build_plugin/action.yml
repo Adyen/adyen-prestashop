@@ -1,0 +1,20 @@
+﻿name: 'Build Plugin'
+description: "Builds the Plugin"
+runs:
+  using: "composite"
+  steps:
+    - name: Change access rights
+      shell: bash
+      run: sudo chmod 755 -R ./dist
+    - name: Build plugin
+      shell: bash
+      run: ./dist/deploy-test.sh
+    - name: Copy to build cache
+      shell: bash
+      run: cp -R adyenofficial.zip ~/.build
+    - name: Store ZIP file in Github
+      uses: actions/upload-artifact@v3
+      with:
+        name: AdyenPayment-Prestashop
+        retention-days: 4
+        path: ~/.build

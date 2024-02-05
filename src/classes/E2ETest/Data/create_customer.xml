@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<prestashop xmlns:xlink="http://www.w3.org/1999/xlink">
+    <customer>
+        <id_default_group>{id_default_group}</id_default_group>
+        <id_lang>{id_lang}</id_lang>
+        <passwd>{passwd}</passwd>
+        <lastname>{lastname}</lastname>
+        <firstname>{firstname}</firstname>
+        <email>{email}</email>
+        <id_gender>{id_gender}</id_gender>
+        <birthday>{birthday}</birthday>
+        <active>{active}</active>
+        <is_guest>{is_guest}</is_guest>
+        <id_shop>{id_shop}</id_shop>
+        <id_shop_group>{id_shop_group}</id_shop_group>
+    </customer>
+</prestashop>

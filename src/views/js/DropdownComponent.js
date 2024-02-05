@@ -56,7 +56,8 @@ if (!window.AdyenFE.components) {
                 const listItem = generator.createElement(
                     'li',
                     'adlp-dropdown-list-item' + (option === selectedItem ? ' adls--selected' : ''),
-                    option.label
+                    option.label,
+                    { dataset: { value: option.value } }
                 );
                 list.append(listItem);
 
@@ -78,7 +79,8 @@ if (!window.AdyenFE.components) {
         const wrapper = generator.createElement('div', 'adl-single-select-dropdown');
 
         const selectButton = generator.createElement('button', 'adlp-dropdown-button adlp-field-component', '', {
-            type: 'button'
+            type: 'button',
+            dataset: {selection:  "merchant-account-selection"}
         });
         const selectedItem = options.find((option) => option.value === value);
         const buttonSpan = generator.createElement(

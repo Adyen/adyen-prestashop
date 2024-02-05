@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<prestashop xmlns:xlink="http://www.w3.org/1999/xlink">
+    <cart>
+        <id_address_delivery>{id_address_delivery}</id_address_delivery>
+        <id_address_invoice>{id_address_invoice}</id_address_invoice>
+        <id_currency>{id_currency}</id_currency>
+        <id_customer>{id_customer}</id_customer>
+        <id_lang>{id_lang}</id_lang>
+        <id_shop_group>{id_shop_group}</id_shop_group>
+        <id_shop>{id_shop}</id_shop>
+        <id_carrier>{id_carrier}</id_carrier>
+        <associations>
+            <cart_rows nodeType="cart_row" virtualEntity="true">
+                <cart_row>
+                    <id_product>{id_product_1}</id_product>
+                    <id_product_attribute>{id_product_attribute_1}</id_product_attribute>
+                    <id_address_delivery>{id_address_delivery}</id_address_delivery>
+                    <quantity>{quantity_1}</quantity>
+                </cart_row>
+                <cart_row>
+                    <id_product>{id_product_2}</id_product>
+                    <id_product_attribute>{id_product_attribute_2}</id_product_attribute>
+                    <id_address_delivery>{id_address_delivery}</id_address_delivery>
+                    <quantity>{quantity_2}</quantity>
+                </cart_row>
+            </cart_rows>
+        </associations>
+    </cart>
+</prestashop>

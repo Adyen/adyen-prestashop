@@ -502,11 +502,13 @@ if (!window.AdyenFE) {
             page.append(
                 generator.createElement('div', 'adl-payment-methods-header', '', null, [
                     generator.createElement('div', '', '', null, [
-                        generator.createElement('h2', '', 'payments.active.title'),
+                        generator.createElement('h2', 'adlp-main-title', 'payments.active.title',
+                            {dataset: {heading:  "active-payment-methods"}}),
                         generator.createElement('p', '', 'payments.active.description')
                     ]),
                     generator.createButton({
                         type: 'primary',
+                        name: 'addMethodsButton',
                         className: 'adlp-add-methods-button',
                         label: 'payments.active.addMethod',
                         onClick: () => switchPage(renderChooseMethodPage)
@@ -630,7 +632,8 @@ if (!window.AdyenFE) {
                                 size: 'small',
                                 className: 'adlt--add-button adlm--blue adlm--no-wrap',
                                 label: 'payments.list.actionsAdd',
-                                onClick: () => switchPage(() => renderPaymentConfigForm(method))
+                                onClick: () => switchPage(() => renderPaymentConfigForm(method)),
+                                dataset: { code: method.code }
                             })
                         );
                     })

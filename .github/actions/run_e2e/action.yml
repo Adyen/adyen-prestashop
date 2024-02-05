@@ -1,0 +1,208 @@
+﻿name: 'Run E2E Tests'
+description: "Runs Adyen Prestashop E2E Tests"
+
+inputs:
+  GH_PAT:
+    description: "Personal access token for the repository"
+    required: true
+  PRESTASHOP:
+    description: "The Prestashop version that is used to run the tests."
+    required: true
+  MYSQL:
+    description: "The Mysql version"
+    required: true
+  PHP:
+    description: "The PHP Version that is used for the Shopware container."
+    required: true
+  API_KEY_TEST:
+    description: "The test api key for adyen."
+    required: true
+  API_KEY_LIVE:
+    description: "The live api key for adyen."
+    required: true
+  MERCHANT_ACCOUNT_TEST:
+    description: "The adyen test account on merchant level."
+    required: true
+  MERCHANT_ACCOUNT_LIVE:
+    description: "The adyen live account on merchant level."
+    required: true
+  ADMIN_USERNAME:
+    description: "The username for the backoffice."
+    required: true
+  ADMIN_PASSWORD:
+    description: "The password for the backoffice."
+    required: true
+  BROWSER:
+    description: "The browser that will be used for tests"
+    required: true
+  DEVICE:
+    description: "The device on which the tests will be run"
+    required: true
+  PORT:
+    description: "The port of the shop."
+    required: true
+  PAY_PAL_EMAIL:
+    description: "The email of the payPal test account."
+    required: true  
+  PAY_PAL_PASSWORD:
+    description: "The password of the payPal test account."
+    required: true
+  NGROK:
+    description: "The token of the ngrok."
+    required: true
+  NODE:
+    description: "The Node Version that is used for the E2E Tests."
+    required: true
+  PRESTASHOP_TEST_REPO:
+    description: "The repository housing the shopware5 e2e tests"
+    required: true
+  COMMON_TEST_REPO:
+    description: "The repository housing the common part of the e2e tests"
+    required: true
+  _ZIP_FILE:
+    description: 'This is the defined filename of the ZIP file that we use for the installation of the plugin'
+    default: '~/.build/adyenofficial.zip'
+    required: false
+runs:
+  using: "composite"
+  steps:
+
+    - name: Download Docker
+      shell: bash
+      run: docker pull -q prestashop/prestashop:${{ inputs.PRESTASHOP }}
+    
+    - name: Download MySql
+      shell: bash
+      run: docker pull -q mysql:${{inputs.MYSQL}}
+   
+    - name: Create network 
+      shell: bash
+      run:  docker network create -d bridge prestashop-network
+    
+    - name: Run Db
+      shell: bash
+      run: docker run --name db --network=prestashop-network --env MYSQL_ROOT_PASSWORD=prestashop --env MYSQL_DATABASE=prestashop -d mysql:${{inputs.MYSQL}}
+      
+    - name: Start Shop
+      shell: bash
+      run: |
+        docker run -p ${{ inputs.PORT }}:80 -v ./error:/var/log/apache2/ --name prestashop --network=prestashop-network \
+        --env PHP_VERSION=${{ inputs.PHP }} --env DB_NAME=prestashop --env DB_SERVER=db --env DB_PASSWD=prestashop --env PS_FOLDER_INSTALL=install --env PS_ENABLE_SSL=1 \
+        --env PS_INSTALL_AUTO=1 --env PS_DOMAIN=localhost --env PS_FOLDER_ADMIN=admin1 \
+        -d prestashop/prestashop:${{ inputs.PRESTASHOP }}
+        sleep 80
+   
+    - name: Extend memory
+      shell: bash
+      run: |
+        docker exec prestashop bash -c "cd /usr/local/etc/php/conf.d/ && echo 'memory_limit = 4096M' >> /usr/local/etc/php/conf.d/docker-php-memlimit.ini"
+        docker exec prestashop bash -c "echo 'max_execution_time = 120' >> /usr/local/etc/php/conf.d/docker-php-maxexectime.ini"
+
+    - name: Upload ZIP File to Docker
+      shell: bash
+      run: |
+        docker cp ${{ inputs._ZIP_FILE }} prestashop:/var/www/html/modules/adyenofficial.zip
+        docker exec prestashop bash -c 'cd /var/www/html/modules && unzip -qq -o adyenofficial.zip'
+
+
+    - name: Install Plugin
+      shell: bash
+      run: |
+        docker exec prestashop bash -c 'php bin/console prestashop:module install adyenofficial'
+        docker exec prestashop bash -c 'php bin/console prestashop:module enable adyenofficial'
+        docker exec -d prestashop bash -c 'php bin/console prestashop:module disable welcome'
+       
+       
+
+    - name: Docker logs after chmod
+      shell: bash
+      run: docker logs prestashop
+    - name: Clone Code
+      uses: actions/checkout@v3
+      with:
+        repository: ${{inputs.PRESTASHOP_TEST_REPO}}
+        path: tests
+        token: ${{ inputs.GH_PAT }}
+        ref: master
+
+    - name: Setup Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ inputs.NODE }}
+
+    - name: Install Node dependencies
+      working-directory: ./tests
+      run:
+        npm install
+      shell: bash
+
+    - name: Install common
+      shell: bash
+      run: npm install https://${{inputs.GH_PAT}}@github.com/${{inputs.COMMON_TEST_REPO}}#master
+
+    - name: Install Playwright Browsers
+      working-directory: ./tests
+      shell: bash
+      run: npx playwright install --with-deps > /dev/null
+    - name: Change permissions
+      shell: bash
+      run: docker exec prestashop bash -c 'chmod -R 777 /var/www/html'
+    - name: Run Playwright tests
+      shell: bash
+      working-directory: ./tests
+      run: npm run test
+      env:
+        API_KEY_TEST: ${{ inputs.API_KEY_TEST }}
+        API_KEY_LIVE: ${{ inputs.API_KEY_LIVE }}
+        MERCHANT_ACCOUNT_TEST: ${{ inputs.MERCHANT_ACCOUNT_TEST }}
+        MERCHANT_ACCOUNT_LIVE: ${{ inputs.MERCHANT_ACCOUNT_LIVE }}
+        PORT: ${{ inputs.PORT }}
+        NGROK: ${{ inputs.NGROK }}
+        ADMIN_USERNAME: ${{ inputs.ADMIN_USERNAME }}
+        ADMIN_PASSWORD: ${{ inputs.ADMIN_PASSWORD }}
+        BACKEND_SHOP_URL: "localhost"
+        TEST_PATH: "/module/adyenofficial/test"
+        WEBHOOK_PATH: "/module/adyenofficial/webhook?storeId=1"
+        ADMIN_PATH: "/admin1"
+        PAY_PAL_EMAIL: ${{ inputs.PAY_PAL_EMAIL }}
+        PAY_PAL_PASSWORD: ${{ inputs.PAY_PAL_PASSWORD }}
+        BROWSER: ${{ inputs.BROWSER }}
+        DEVICE: ${{ inputs.DEVICE }}
+    - uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: playwright-report-Prestashop-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}-Browser-${{inputs.BROWSER}}
+        path: ./tests/playwright-report/
+        retention-days: 30
+    - name: Add docker logs to file
+      shell: bash
+      run: docker logs prestashop >& ./dockerLogs.log
+      if: always()
+    - name: Add PrestaShop logs to file
+      shell: bash
+      run: docker exec db bash -c "mysql -h 127.0.0.1 -u root -pprestashop prestashop -e \"SELECT ps_log.message, ps_log.date_add, ps_log.date_upd FROM ps_log;\"" >& ./integrationLogs.log
+      if: always()
+    - uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: php-error-log-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}-Browser-${{inputs.BROWSER}}
+        path: ./error/
+        retention-days: 30
+    - uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: docker-error-log-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}-Browser-${{inputs.BROWSER}}
+        path: ./dockerLogs.log
+        retention-days: 30
+    - uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: integration-error-log-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}-Browser-${{inputs.BROWSER}}
+        path: ./integrationLogs.log
+        retention-days: 30
+    - name: Remove Ayden plugin
+      if: always()
+      shell: bash
+      run: |
+        docker exec prestashop bash -c 'php bin/console prestashop:module uninstall adyenofficial'
+        docker exec prestashop bash -c 'rm -rf /var/www/html/modules/adyenofficial'

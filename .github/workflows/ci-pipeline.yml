@@ -1,0 +1,87 @@
+﻿name: CI Pipeline Prestashop
+on:
+  push:
+    branches:
+      - feature/e2e_tests
+jobs:
+  build:
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    name: Build environment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone Code
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 7.4
+      - name: Create Cache Directories
+        run: |
+          mkdir -p ~/.build
+      - name: Mount Build Cache
+        uses: actions/cache@v3
+        with:
+          key: cache-plugin-${{ github.run_id }}
+          path: ~/.build
+      - name: Build Plugin
+        uses: ./.github/actions/build_plugin
+
+  run:
+    name: E2E | Prestashop ${{ matrix.prestashop }}, PHP ${{ matrix.php }}, Browser ${{matrix.browser }}
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - prestashop: '1.7.8.5-apache'
+            php: '7.4'
+            port: 80
+            mysql: 5.7
+            browser: 'chromium'
+            device: 'Desktop Chrome'
+          - prestashop: '8.1.2-apache'
+            php: '7.4'
+            port: 80
+            mysql: 5.7
+            browser: 'firefox'
+            device: 'Desktop Firefox'
+    steps:
+      - name: Clone Code
+        uses: actions/checkout@v3
+        with:
+          path: main
+
+      - name: Mount Build Cache
+        uses: actions/cache@v3
+        with:
+          key: cache-plugin-${{ github.run_id }}
+          path: ~/.build
+
+## comment
+      - name: E2E Tests, Prestashop ${{ matrix.shopware }}
+        uses: ./main/.github/actions/run_e2e
+        with:
+          PRESTASHOP: ${{ matrix.prestashop }}
+          PHP: ${{ matrix.php }}
+          NODE: 20
+          PORT: ${{ matrix.port }}
+          NGROK: ${{ secrets.NGROK }}
+          GH_PAT: ${{ secrets.GH_PAT }}
+          API_KEY_TEST: ${{ secrets.API_KEY_TEST }}
+          API_KEY_LIVE: ${{ secrets.API_KEY_LIVE }}
+          MERCHANT_ACCOUNT_TEST: ${{ secrets.MERCHANT_ACCOUNT_TEST }}
+          MERCHANT_ACCOUNT_LIVE: ${{ secrets.MERCHANT_ACCOUNT_LIVE }}
+          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          PRESTASHOP_TEST_REPO: ${{secrets.PRESTASHOP_TEST_REPO}}
+          COMMON_TEST_REPO: ${{secrets.COMMON_TEST_REPO}}
+          MYSQL: ${{matrix.mysql}}
+          PAY_PAL_EMAIL: ${{secrets.PAY_PAL_EMAIL}}
+          PAY_PAL_PASSWORD: ${{secrets.PAY_PAL_PASSWORD}}
+          BROWSER: ${{ matrix.browser }}
+          DEVICE: ${{ matrix.device }}
