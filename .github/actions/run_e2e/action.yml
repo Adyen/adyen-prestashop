@@ -123,7 +123,7 @@ runs:
         repository: ${{inputs.PRESTASHOP_TEST_REPO}}
         path: tests
         token: ${{ inputs.GH_PAT }}
-        ref: master
+        ref: main
 
     - name: Setup Node
       uses: actions/setup-node@v3
@@ -138,7 +138,7 @@ runs:
 
     - name: Install common
       shell: bash
-      run: npm install https://${{inputs.GH_PAT}}@github.com/${{inputs.COMMON_TEST_REPO}}#master
+      run: npm install https://${{inputs.GH_PAT}}@github.com/${{inputs.COMMON_TEST_REPO}}#main
 
     - name: Install Playwright Browsers
       working-directory: ./tests
