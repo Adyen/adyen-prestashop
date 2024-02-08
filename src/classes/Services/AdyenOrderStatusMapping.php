@@ -87,24 +87,24 @@ class AdyenOrderStatusMapping
     {
         return [
             PaymentStates::STATE_IN_PROGRESS => static::getPrestaShopOrderStatusId(self::PRESTA_PROCESSING_IN_PROGRESS)
-                ?? array_values(self::getStatusMap())[0],
+                ?? self::getFirstValidStatus(),
             PaymentStates::STATE_PENDING => static::getPrestaShopOrderStatusId(self::PRESTA_PENDING)
-                ?? array_values(self::getStatusMap())[0],
+                ?? self::getFirstValidStatus(),
             PaymentStates::STATE_PAID => static::getPrestaShopOrderStatusId(self::PRESTA_PAYMENT_ACCEPTED)
-                ?? array_values(self::getStatusMap())[0],
+                ?? self::getFirstValidStatus(),
             PaymentStates::STATE_FAILED => static::getPrestaShopOrderStatusId(self::PRESTA_PAYMENT_ERROR)
-                ?? array_values(self::getStatusMap())[0],
+                ?? self::getFirstValidStatus(),
             PaymentStates::STATE_REFUNDED => static::getPrestaShopOrderStatusId(self::PRESTA_REFUNDED)
-                ?? array_values(self::getStatusMap())[0],
+                ?? self::getFirstValidStatus(),
             PaymentStates::STATE_PARTIALLY_REFUNDED => static::getPrestaShopOrderStatusId(
                     self::PRESTA_PARTIALLY_REFUNDED
-                ) ?? array_values(self::getStatusMap())[0],
+                ) ?? self::getFirstValidStatus(),
             PaymentStates::STATE_CANCELLED => static::getPrestaShopOrderStatusId(self::PRESTA_CANCELED)
-                ?? array_values(self::getStatusMap())[0],
+                ?? self::getFirstValidStatus(),
             PaymentStates::STATE_NEW => static::getPrestaShopOrderStatusId(self::PRESTA_ON_BACKORDER)
-                ?? array_values(self::getStatusMap())[0],
+                ?? self::getFirstValidStatus(),
             PaymentStates::CHARGE_BACK => static::getPrestaShopOrderStatusId(self::PRESTA_CHARGEBACK)
-                ?? array_values(self::getStatusMap())[0]
+                ?? self::getFirstValidStatus()
         ];
     }
 
@@ -122,5 +122,21 @@ class AdyenOrderStatusMapping
         }
 
         return static::$statusMap;
+    }
+
+    /**
+     * @return string|null
+     */
+    private static function getFirstValidStatus(): ?string
+    {
+        $statuses = self::getStatusMap();
+
+        foreach ($statuses as $status) {
+            if ($status) {
+                return $status;
+            }
+        }
+
+        return null;
     }
 }
