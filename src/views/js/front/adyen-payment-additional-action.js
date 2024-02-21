@@ -36,13 +36,13 @@ $(document).ready(function () {
             url: additionalDataUrl.value,
             data: additionalData,
             success: function (response) {
-                adyenLoader.style.display = "none";
                 window.location.href = response.nextStepUrl;
             },
             error: function () {
-                adyenLoader.style.display = "none";
                 window.location.href = checkoutUrl.value;
             }
+        }).complete(() => {
+            adyenLoader.style.display = "none";
         });
     }
 })
