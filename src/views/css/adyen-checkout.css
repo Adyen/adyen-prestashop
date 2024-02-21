@@ -17,7 +17,33 @@ body#checkout section.checkout-step .payment-options label {
     margin-top: 15px;
 }
 
+.adl-loader {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.adl-loader .adlp-spinner {
+    border: 3px solid rgba(0, 102, 255, 0.1);
+    border-top-color: #0066ff;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: loader-spin 0.8s linear infinite;
+}
+
 #adyen-express-checkout-applepay > button,
 div[data-adyen-submit-button="true"] > button {
     -webkit-appearance: -apple-pay-button;
+}
+
+@keyframes loader-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
