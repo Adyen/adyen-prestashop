@@ -11,13 +11,13 @@ use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenOfficial;
 use AdyenPayment\Classes\Bootstrap;
-use AdyenPayment\Classes\Services\AdyenOrderStatusMapping;
 use AdyenPayment\Classes\Services\ImageHandler;
 use AdyenPayment\Classes\Services\Integration\StoreService;
 use AdyenPayment\Classes\Version\Contract\VersionHandler;
 use Configuration;
 use Exception;
 use PrestaShop\PrestaShop\Adapter\Entity\OrderState;
+use PrestaShopDatabaseException;
 use PrestaShopException;
 use Tab;
 
@@ -36,6 +36,16 @@ class Installer
     private const ADYEN_TRANSACTION_LOG = 'adyen_transaction_log';
     /** @var string */
     private const ADYEN_QUEUE = 'adyen_queue';
+    /** @var string */
+    private const PENDING_STATE = 'Pending';
+    /** @var string */
+    private const PARTIALLY_REFUNDED_STATE = 'Partially refunded';
+    /** @var string */
+    private const CHARGEBACK_STATE = 'Chargeback';
+    /** @var string */
+    private const WAITING_FOR_PAYMENT_STATE = 'Waiting for payment';
+    /** @var string */
+    private const PAYMENT_NEEDS_ATTENTION_STATE = 'Payment needs attention';
 
     /** @var string[] */
     private static $controllers = [
@@ -83,6 +93,9 @@ class Installer
         'paymentReturn'
     ];
 
+    /** @var array */
+    private static $allPrestaShopStatuses = [];
+
     /**
      * @var AdyenOfficial
      */
@@ -116,7 +129,7 @@ class Installer
             $this->createTables() &&
             $this->addControllers() &&
             $this->addHooks() &&
-            $this->addCustomOrderStates()
+            $this->activateCustomOrderStates()
         );
     }
 
@@ -139,7 +152,8 @@ class Installer
         return (
             $this->dropTables() &&
             $this->removeControllers() &&
-            $this->removeHooks()
+            $this->removeHooks() &&
+            $this->deactivateCustomOrderStates()
         );
     }
 
@@ -184,6 +198,44 @@ class Installer
     public function addControllersAndHooks(): bool
     {
         return $this->addHooks() && $this->addControllers();
+    }
+
+    /**
+     * @return bool
+     *
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    public function deactivateCustomOrderStates(): bool
+    {
+        return $this->deactivateCustomOrderState(self::PENDING_STATE)
+            && $this->deactivateCustomOrderState(self::PARTIALLY_REFUNDED_STATE)
+            && $this->deactivateCustomOrderState(self::CHARGEBACK_STATE);
+    }
+
+    /**
+     * @return bool
+     *
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    public function deactivateOldCustomOrderStates(): bool
+    {
+        return $this->deactivateCustomOrderState(self::WAITING_FOR_PAYMENT_STATE)
+            && $this->deactivateCustomOrderState(self::PAYMENT_NEEDS_ATTENTION_STATE);
+    }
+
+    /**
+     * @return bool
+     *
+     * @throws PrestaShopException
+     * @throws PrestaShopDatabaseException
+     */
+    public function activateCustomOrderStates(): bool
+    {
+        return $this->addCustomOrderState(self::PENDING_STATE, '#4169E1')
+            && $this->addCustomOrderState(self::PARTIALLY_REFUNDED_STATE, '#6F8C9F')
+            && $this->addCustomOrderState(self::CHARGEBACK_STATE, '#E74C3C');
     }
 
     /**
@@ -333,44 +385,70 @@ class Installer
     }
 
     /**
-     * @return bool
+     * Adds/updates Adyen custom order states.
      *
-     * @throws PrestaShopException
-     * @throws \PrestaShopDatabaseException
-     */
-    private function addCustomOrderStates(): bool
-    {
-        return $this->addCustomOrderState('Pending', '#4169E1')
-            && $this->addCustomOrderState('Partially refunded', '#6F8C9F')
-            && $this->addCustomOrderState('Chargeback', '#E74C3C');
-    }
-
-    /**
      * @param string $name
      * @param string $color
      *
      * @return bool
      *
      * @throws PrestaShopException
-     * @throws \PrestaShopDatabaseException
+     * @throws PrestaShopDatabaseException
      */
     private function addCustomOrderState(string $name, string $color): bool
     {
-        if (!AdyenOrderStatusMapping::getPrestaShopOrderStatusId($name)) {
-            $orderState = new OrderState();
-            $orderState->name = [
-                1 => $name,
-                2 => $name
-            ];
+        $statusId = $this->getAllPrestaShopStatuses()[$name] ?? null;
 
-            $orderState->color = $color;
-            $orderState->hidden = false;
-            $orderState->delivery = false;
-            $orderState->logable = false;
-            $orderState->invoice = false;
-            $orderState->module_name = $this->module->name;
+        if ($statusId) {
+            $orderState = new OrderState($statusId);
+            $orderState->deleted = false;
 
-            return $orderState->add();
+            return $orderState->update();
+        }
+
+        $orderState = new OrderState();
+        $orderState->name = [
+            1 => $name,
+            2 => $name
+        ];
+
+        $orderState->color = $color;
+        $orderState->hidden = false;
+        $orderState->delivery = false;
+        $orderState->logable = false;
+        $orderState->invoice = false;
+        $orderState->module_name = $this->module->name;
+
+        $success = $orderState->add();
+        if ($success) {
+            self::$allPrestaShopStatuses[$name] = (string)$orderState->id;
+        }
+
+        return $success;
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return bool
+     *
+     * @throws PrestaShopException
+     * @throws PrestaShopDatabaseException
+     */
+    private function deactivateCustomOrderState(string $name): bool
+    {
+        $statusId = $this->getAllPrestaShopStatuses()[$name] ?? null;
+
+        if (!$statusId) {
+            return true;
+        }
+
+        $orderState = new OrderState($statusId);
+
+        if ($orderState->module_name === $this->module->name) {
+            $orderState->deleted = true;
+
+            return $orderState->update();
         }
 
         return true;
@@ -443,5 +521,23 @@ class Installer
         $content = \Tools::file_get_contents($overridePath);
 
         return $content === false || preg_match('/function __construct/', $content) === 0;
+    }
+
+    /**
+     * Returns all presta shop statuses: active and deleted ones.
+     *
+     * @return array
+     */
+    private function getAllPrestaShopStatuses(): array
+    {
+        if (!static::$allPrestaShopStatuses) {
+            static::$allPrestaShopStatuses = array_column(
+                OrderState::getOrderStates(1, false),
+                'id_order_state',
+                'name'
+            );
+        }
+
+        return static::$allPrestaShopStatuses;
     }
 }

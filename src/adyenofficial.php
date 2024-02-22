@@ -110,24 +110,30 @@ class AdyenOfficial extends PaymentModule
      * @param $force_all
      *
      * @return bool
+     *
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     public function enable($force_all = false): bool
     {
         $this->installOverrides();
 
-        return parent::enable($force_all);
+        return parent::enable($force_all) && $this->getInstaller()->activateCustomOrderStates();
     }
 
     /**
      * @param $force_all
      *
      * @return bool
+     *
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     public function disable($force_all = false): bool
     {
         $this->uninstallOverrides();
 
-        return parent::disable($force_all);
+        return parent::disable($force_all) && $this->getInstaller()->deactivateCustomOrderStates();
     }
 
     /**
