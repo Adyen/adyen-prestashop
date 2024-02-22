@@ -51,6 +51,7 @@ class LineItemsProcessor implements LineItemsProcessorInterface, PaymentLinkLine
             $amountExcludingTax = $item['price_with_reduction_without_tax'];
             $amountIncludingTax = $item['price_with_reduction'];
             $taxAmount = $amountIncludingTax - $amountExcludingTax;
+            $description = strip_tags($item['description_short']) ?? '';
 
             $lineItems[] = new LineItem(
                 $item['id_product'] ?? '',
@@ -58,7 +59,7 @@ class LineItemsProcessor implements LineItemsProcessorInterface, PaymentLinkLine
                 $amountIncludingTax * 100,
                 $taxAmount * 100,
                 $item['rate'] * 100,
-                strip_tags($item['description_short']) ?? '',
+                $description ?: strip_tags($item['name']),
                 _PS_IMG_DIR_ . $image->getImgPath() . '.' . $image->image_format ?? '',
                 $category->getName($cart->id_lang) ?? '',
                 $item['quantity'] ?? 0

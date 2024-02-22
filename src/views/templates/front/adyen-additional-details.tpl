@@ -5,6 +5,10 @@
         <div class="page-content page-order-confirmation card">
             <div class="card-block">
                 <div class="row">
+                    <div id="adyen-loader" class="adl-loader" style="display: none">
+                        <span class="adlp-spinner">
+                        </span>
+                    </div>
                     {if !empty($action)}
                         <div
                                 data-adyen-payment-action-container
