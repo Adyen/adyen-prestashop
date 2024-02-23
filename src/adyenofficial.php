@@ -568,24 +568,25 @@ class AdyenOfficial extends PaymentModule
      */
     public function hookActionFrontControllerSetMedia(): void
     {
-        $this->getContext()->controller->addCSS($this->getPathUri() . 'views/css/adyen-checkout.css');
-        $this->getContext()->controller->addCSS($this->getPathUri() . 'views/css/credit-cards.css');
-        $this->getContext()->controller->addJS($this->getPathUri() . 'views/js/front/adyen-checkout-controller.js');
-        $this->getContext()->controller->addJS($this->getPathUri() . 'views/js/front/adyen-donations-controller.js');
-        $this->getContext()->controller->addJS($this->getPathUri() . 'views/js/front/adyen-donations-selection.js');
-        $this->getContext()->controller->addJS($this->getPathUri() . 'views/js/front/adyen-payment-selection.js');
-        $this->getContext()->controller->addJS($this->getPathUri() . 'views/js/front/adyen-delete-stored-method.js');
-        $this->getContext()->controller->addJS(
-            $this->getPathUri() . 'views/js/front/adyen-payment-additional-action.js'
-        );
+        if ($this->context->controller->page_name === 'module-adyenofficial-storedmethods') {
+            $this->getContext()->controller->addCSS($this->getPathUri() . 'views/css/credit-cards.css');
+            $this->getContext()->controller->addJS(
+                $this->getPathUri() . 'views/js/front/adyen-delete-stored-method.js'
+            );
+        }
 
         if ($this->context->controller->php_self === 'order-confirmation') {
+            $this->getContext()->controller->addJS(
+                $this->getPathUri() . 'views/js/front/adyen-donations-controller.js'
+            );
+            $this->getContext()->controller->addJS($this->getPathUri() . 'views/js/front/adyen-donations-selection.js');
             $this->getContext()->controller->addJS(
                 $this->getPathUri() . 'views/js/front/adyen-order-confirmation.js'
             );
         }
 
         if ($this->context->controller->php_self === 'order') {
+            $this->getContext()->controller->addJS($this->getPathUri() . 'views/js/front/adyen-payment-selection.js');
             $this->getContext()->controller->addJS($this->getPathUri() . 'views/js/front/adyen-wallets.js');
 
             if ($message = $this->l(\AdyenPayment\Classes\Utility\SessionService::get('errorMessage'))) {
@@ -619,30 +620,40 @@ class AdyenOfficial extends PaymentModule
             }
         }
 
-        $this->getContext()->controller->registerJavascript(
-            'adyen-component-js',
-            'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/5.31.1/adyen.js',
-            [
-                'server' => 'remote',
-                'position' => 'head',
-                'attributes' => [
-                    'integrity' => 'sha384-d6l5Qqod+Ks601U/jqsLz7QkW0LL6T5pfEsSHypuTSnDUYVGRLNV1ZdITbEwb1yL',
-                    'crossorigin' => 'anonymous'
+        if ($this->context->controller->php_self === 'product' ||
+            $this->context->controller->php_self === 'cart' ||
+            $this->context->controller->php_self === 'order-confirmation' ||
+            $this->context->controller->php_self === 'order') {
+            $this->getContext()->controller->addCSS($this->getPathUri() . 'views/css/adyen-checkout.css');
+            $this->getContext()->controller->addJS($this->getPathUri() . 'views/js/front/adyen-checkout-controller.js');
+            $this->getContext()->controller->addJS(
+                $this->getPathUri() . 'views/js/front/adyen-payment-additional-action.js'
+            );
+            $this->getContext()->controller->registerJavascript(
+                'adyen-component-js',
+                'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/5.31.1/adyen.js',
+                [
+                    'server' => 'remote',
+                    'position' => 'head',
+                    'attributes' => [
+                        'integrity' => 'sha384-d6l5Qqod+Ks601U/jqsLz7QkW0LL6T5pfEsSHypuTSnDUYVGRLNV1ZdITbEwb1yL',
+                        'crossorigin' => 'anonymous'
+                    ]
                 ]
-            ]
-        );
-        $this->getContext()->controller->registerStylesheet(
-            'adyen-component-css',
-            'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/5.31.1/adyen.css',
-            [
-                'server' => 'remote',
-                'position' => 'head',
-                'attributes' => [
-                    'integrity' => 'sha384-d6l5Qqod+Ks601U/jqsLz7QkW0LL6T5pfEsSHypuTSnDUYVGRLNV1ZdITbEwb1yL',
-                    'crossorigin' => 'anonymous'
+            );
+            $this->getContext()->controller->registerStylesheet(
+                'adyen-component-css',
+                'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/5.31.1/adyen.css',
+                [
+                    'server' => 'remote',
+                    'position' => 'head',
+                    'attributes' => [
+                        'integrity' => 'sha384-d6l5Qqod+Ks601U/jqsLz7QkW0LL6T5pfEsSHypuTSnDUYVGRLNV1ZdITbEwb1yL',
+                        'crossorigin' => 'anonymous'
+                    ]
                 ]
-            ]
-        );
+            );
+        }
     }
 
     /**
