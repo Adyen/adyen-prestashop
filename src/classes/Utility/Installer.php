@@ -15,6 +15,7 @@ use AdyenPayment\Classes\Services\ImageHandler;
 use AdyenPayment\Classes\Services\Integration\StoreService;
 use AdyenPayment\Classes\Version\Contract\VersionHandler;
 use Configuration;
+use Db;
 use Exception;
 use PrestaShop\PrestaShop\Adapter\Entity\OrderState;
 use PrestaShopDatabaseException;
@@ -527,17 +528,37 @@ class Installer
      * Returns all presta shop statuses: active and deleted ones.
      *
      * @return array
+     *
+     * @throws PrestaShopDatabaseException
      */
     private function getAllPrestaShopStatuses(): array
     {
         if (!static::$allPrestaShopStatuses) {
             static::$allPrestaShopStatuses = array_column(
-                OrderState::getOrderStates(1, false),
+                $this->getPrestaStatusesFromDatabase(),
                 'id_order_state',
                 'name'
             );
         }
 
         return static::$allPrestaShopStatuses;
+    }
+
+    /**
+     * This function must be used for fetching OrderStates since function OrderStates::getOrderStates does not fetch already deleted order states.
+     *
+     * @return array
+     *
+     * @throws PrestaShopDatabaseException
+     */
+    private function getPrestaStatusesFromDatabase(): array
+    {
+        return Db::getInstance()->executeS(
+            '
+            SELECT *
+            FROM `' . _DB_PREFIX_ . 'order_state` os
+            LEFT JOIN `' . _DB_PREFIX_ . 'order_state_lang` osl ON (os.`id_order_state` = osl.`id_order_state` AND osl.`id_lang` = ' . 1 . ')' .
+            ' ORDER BY `name` ASC'
+        );
     }
 }
