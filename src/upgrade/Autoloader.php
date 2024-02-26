@@ -43,6 +43,12 @@ class Autoloader
 
             include_once static::$pathTop . '/vendor/adyen/integration-core/src/' . str_replace('\\', '/', $path) . static::$fileExt;
         }
+
+        if (strpos($className, 'Adyen\Webhook') !== false) {
+            $path = str_replace('Adyen\Webhook\\', '', $className);
+
+            include_once static::$pathTop . '/vendor/adyen/php-webhook-module/src/' . str_replace('\\', '/', $path) . static::$fileExt;
+        }
     }
 
     /**
