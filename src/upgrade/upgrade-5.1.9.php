@@ -1,5 +1,6 @@
 <?php
 
+use Adyen\Core\Infrastructure\Logger\Logger;
 use AdyenPayment\Classes\Bootstrap;
 
 if (!defined('_PS_VERSION_')) {
@@ -27,6 +28,16 @@ function upgrade_module_5_1_9(AdyenOfficial $module): bool
     $installer = new \AdyenPayment\Classes\Utility\Installer($module);
 
     Bootstrap::init();
+    try {
+        $installer->deactivateOldCustomOrderStates();
+    } catch (Throwable $exception) {
+        Logger::logError(
+            'Adyen plugin migration to 5.1.9 failed. Reason: ' .
+            $exception->getMessage() . ' .Trace: ' . $exception->getTraceAsString()
+        );
 
-    return $installer->deactivateOldCustomOrderStates();
+        return false;
+    }
+
+    return true;
 }

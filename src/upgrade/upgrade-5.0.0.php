@@ -55,18 +55,21 @@ function upgrade_module_5_0_0(AdyenOfficial $module): bool
     $installer = new \AdyenPayment\Classes\Utility\Installer($module);
 
     Bootstrap::init();
+    try {
+        $installer->install();
 
-    if (!$installer->install()) {
-        return false;
-    }
+        Logger::logDebug('Upgrade to plugin v5.0.0 has started.');
+        $installer->removeControllers();
+        removeHooks($module);
+        removeObsoleteFiles($module);
 
-    Logger::logDebug('Upgrade to plugin v5.0.0 has started.');
+        $installer->addControllersAndHooks();
+    } catch (Throwable $exception) {
+        Logger::logError(
+            'Adyen plugin migration to 5.0.0 failed. Reason: ' .
+            $exception->getMessage() . ' .Trace: ' . $exception->getTraceAsString()
+        );
 
-    $installer->removeControllers();
-    removeHooks($module);
-    removeObsoleteFiles($module);
-
-    if (!$installer->addControllersAndHooks()) {
         return false;
     }
 
@@ -194,10 +197,12 @@ function migratePaymentMethodConfigs(array $migratedShops)
                         continue;
                     }
 
-                    $paymentMethod->setAdditionalData(new GooglePay(
-                        $googleMerchantId,
-                        $settings->getActiveConnectionData()->getMerchantId()
-                    ));
+                    $paymentMethod->setAdditionalData(
+                        new GooglePay(
+                            $googleMerchantId,
+                            $settings->getActiveConnectionData()->getMerchantId()
+                        )
+                    );
                 }
 
                 $paymentService->saveMethodConfiguration($paymentMethod);
@@ -283,8 +288,10 @@ function initializeConnection(string $storeId, ConnectionSettings $connectionSet
         getConnectionSettingsRepository()->setConnectionSettings($connectionSettings);
         getConnectionService()->saveConnectionData($connectionSettings);
     } catch (Exception $e) {
-        Logger::logWarning('Migration of connection settings failed for store ' . $storeId
-            . ' because ' . $e->getMessage());
+        Logger::logWarning(
+            'Migration of connection settings failed for store ' . $storeId
+            . ' because ' . $e->getMessage()
+        );
 
         if ($connectionSettings->getMode() === Mode::MODE_LIVE) {
             $settings = new ConnectionSettings(
@@ -332,12 +339,14 @@ function getTestData(string $storeId, string $merchantAccount, $testApiKey): ?Co
         return null;
     }
 
-    $testApiCredentials = getApiCredentialsFor(new ConnectionSettings(
-        $storeId,
-        Mode::MODE_TEST,
-        new ConnectionData($testApiKey, $merchantAccount),
-        null
-    ));
+    $testApiCredentials = getApiCredentialsFor(
+        new ConnectionSettings(
+            $storeId,
+            Mode::MODE_TEST,
+            new ConnectionData($testApiKey, $merchantAccount),
+            null
+        )
+    );
 
     if (!$testApiCredentials) {
         return null;
@@ -370,8 +379,7 @@ function getLiveData(
     string $merchantAccount,
     string $liveApiKey,
     string $liveUrlPrefix
-): ?ConnectionData
-{
+): ?ConnectionData {
     if (empty($liveApiKey) || empty($liveUrlPrefix)) {
         return null;
     }

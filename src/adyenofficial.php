@@ -78,13 +78,15 @@ class AdyenOfficial extends PaymentModule
     public function install(): bool
     {
         try {
-            return (
-                parent::install() &&
-                $this->getInstaller()->install()
-            );
-        } catch (Exception $e) {
-            \Adyen\Core\Infrastructure\Logger\Logger::logError(
-                'error ' . $e->getMessage() . ' trace ' . $e->getTraceAsString()
+            $success = parent::install();
+            $success && $this->getInstaller()->install();
+
+            return $success;
+        } catch (Throwable $e) {
+            $this->_errors[] = $e->getMessage();
+            \PrestaShopLogger::addLog(
+                'Adyen plugin installation failed. Error: ' . $e->getMessage() . ' . Trace: ' . $e->getTraceAsString(),
+                \PrestaShopLogger::LOG_SEVERITY_LEVEL_ERROR
             );
 
             return false;
@@ -95,15 +97,24 @@ class AdyenOfficial extends PaymentModule
      * Handle plugin uninstallation.
      *
      * @return bool
-     *
-     * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      */
     public function uninstall(): bool
     {
-        return (
-            parent::uninstall() &&
-            $this->getInstaller()->uninstall()
-        );
+        try {
+            $success = parent::uninstall();
+            $success && $this->getInstaller()->uninstall();
+
+            return $success;
+        } catch (Throwable $e) {
+            $this->_errors[] = $e->getMessage();
+            \PrestaShopLogger::addLog(
+                'Adyen plugin uninstallation failed. Error: ' . $e->getMessage() . ' . Trace: ' . $e->getTraceAsString(
+                ),
+                \PrestaShopLogger::LOG_SEVERITY_LEVEL_ERROR
+            );
+
+            return false;
+        }
     }
 
     /**
@@ -117,8 +128,10 @@ class AdyenOfficial extends PaymentModule
     public function enable($force_all = false): bool
     {
         $this->installOverrides();
+        $success = parent::enable($force_all);
+        $success && $this->getInstaller()->activateCustomOrderStates();
 
-        return parent::enable($force_all) && $this->getInstaller()->activateCustomOrderStates();
+        return $success;
     }
 
     /**
@@ -132,8 +145,10 @@ class AdyenOfficial extends PaymentModule
     public function disable($force_all = false): bool
     {
         $this->uninstallOverrides();
+        $success = parent::disable($force_all);
+        $success && $this->getInstaller()->deactivateCustomOrderStates();
 
-        return parent::disable($force_all) && $this->getInstaller()->deactivateCustomOrderStates();
+        return $success;
     }
 
     /**
