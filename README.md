@@ -12,6 +12,11 @@ Read our [**contribution guidelines**](CONTRIBUTING.md) to find out how.
 ## Requirements
 This plugin supports PrestaShop versions 1.7.5.0 to 8.1.3. 
 
+### Current Checkout API version
+##### v69
+### Current Checkout Component version:
+#####  5.31.1
+
 ## Documentation
 Please find the relevant documentation for
 - [How to start with Adyen](https://www.adyen.com/get-started)
@@ -35,7 +40,9 @@ Please make sure before you raise an issue that you revisit it on a newly instal
 # For developers
 
 ## Integration
-The plugin integrates card component (Secured Fields) using Adyen Checkout for all card payments.
+The plugin integrates card component (Secured Fields) using Adyen Checkout for all card payments. Currently, the following versions of Web components and Checkout API are utilized in the code:
+* **Checkout API version:** v69
+* **Checkout Web Component version:** 5.31.1
 
 ## License
 MIT license. For more information, see the LICENSE file.
