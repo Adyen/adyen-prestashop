@@ -150,7 +150,6 @@ class Installer
         $this->disconnect();
         $this->dropTables();
         $this->removeControllers();
-        $this->removeHooks();
         $this->deactivateCustomOrderStates();
     }
 
@@ -395,9 +394,11 @@ class Installer
     private function addHooks(): void
     {
         foreach (self::$deprecated_hooks as $hook) {
-            $result = $this->module->unregisterHook($hook);
-            if (!$result) {
-                throw new Exception('Adyen plugin failed to unregister hook: ' . $hook);
+            if ($this->module->isRegisteredInHook($hook)) {
+                $result = $this->module->unregisterHook($hook);
+                if (!$result) {
+                    throw new Exception('Adyen plugin failed to unregister hook: ' . $hook);
+                }
             }
         }
 
@@ -518,23 +519,6 @@ class Installer
 
         if (!$createdTable) {
             throw new Exception('Adyen plugin failed to drop table: ' . $tableName);
-        }
-    }
-
-    /**
-     * Unregisters module hooks.
-     *
-     * @return void
-     *
-     * @throws Exception
-     */
-    private function removeHooks(): void
-    {
-        foreach (array_merge(self::$hooks, $this->getVersionHandler()->hooks()) as $hook) {
-            $result = $this->module->unregisterHook($hook);
-            if (!$result) {
-                throw new Exception('Adyen plugin failed to unregister hook: ' . $hook);
-            }
         }
     }
 
