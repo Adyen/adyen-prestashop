@@ -12,11 +12,6 @@ Read our [**contribution guidelines**](CONTRIBUTING.md) to find out how.
 ## Requirements
 This plugin supports PrestaShop versions 1.7.5.0 to 8.1.3. 
 
-### Current Checkout API version
-##### v69
-### Current Checkout Component version:
-#####  5.31.1
-
 ## Documentation
 Please find the relevant documentation for
 - [How to start with Adyen](https://www.adyen.com/get-started)

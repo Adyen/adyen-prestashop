@@ -116,46 +116,41 @@ class Installer
      * Initializes plugin.
      * Creates database tables, adds admin controllers, hooks, order states and initializes configuration values.
      *
-     * @return bool Installation status
+     * @return void
      *
      * @throws RepositoryClassException
      * @throws PrestaShopException
-     * @throws \PrestaShopDatabaseException
+     * @throws PrestaShopDatabaseException
+     * @throws Exception
      */
-    public function install(): bool
+    public function install(): void
     {
         Bootstrap::init();
 
-        return (
-            $this->createTables() &&
-            $this->addControllers() &&
-            $this->addHooks() &&
-            $this->activateCustomOrderStates()
-        );
+        $this->createTables();
+        $this->addControllers();
+        $this->addHooks();
+        $this->activateCustomOrderStates();
     }
 
     /**
      * Drop database tables, remove hooks, controller, order states and configuration values
      *
-     * @return bool Uninstallation status
+     * @return void
      *
      * @throws RepositoryClassException
      *
      * @throws Exception
      */
-    public function uninstall(): bool
+    public function uninstall(): void
     {
         Bootstrap::init();
         $this->removeImages();
         ImageHandler::removeAdyenDirectory();
         $this->disconnect();
-
-        return (
-            $this->dropTables() &&
-            $this->removeControllers() &&
-            $this->removeHooks() &&
-            $this->deactivateCustomOrderStates()
-        );
+        $this->dropTables();
+        $this->removeControllers();
+        $this->deactivateCustomOrderStates();
     }
 
     /**
@@ -171,34 +166,37 @@ class Installer
     /**
      * Removes Admin controllers.
      *
-     * @return bool Controller deletion status
+     * @return void Controller deletion status
+     *
+     * @throws PrestaShopException
+     * @throws Exception
      */
-    public function removeControllers(): bool
+    public function removeControllers(): void
     {
-        try {
-            $tabs = Tab::getCollectionFromModule($this->module->name);
-            if ($tabs && count($tabs)) {
-                foreach ($tabs as $tab) {
-                    $tab->delete();
+        /** @var Tab[] $tabs */
+        $tabs = Tab::getCollectionFromModule($this->module->name);
+        if ($tabs && count($tabs)) {
+            foreach ($tabs as $tab) {
+                $success = $tab->delete();
+
+                if (!$success) {
+                    throw new Exception('Adyen plugin failed to remove controller: ' . $tab->name);
                 }
             }
-
-            return true;
-        } catch (PrestaShopException $exception) {
-            Logger::logError('Error removing controller! Error: ' . $exception->getMessage());
-
-            return false;
         }
     }
 
     /**
      * Adds controllers and hooks.
      *
-     * @return bool
+     * @return void
+     *
+     * @throws Exception
      */
-    public function addControllersAndHooks(): bool
+    public function addControllersAndHooks(): void
     {
-        return $this->addHooks() && $this->addControllers();
+        $this->addHooks();
+        $this->addControllers();
     }
 
     /**
@@ -207,36 +205,36 @@ class Installer
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      */
-    public function deactivateCustomOrderStates(): bool
+    public function deactivateCustomOrderStates(): void
     {
-        return $this->deactivateCustomOrderState(self::PENDING_STATE)
-            && $this->deactivateCustomOrderState(self::PARTIALLY_REFUNDED_STATE)
-            && $this->deactivateCustomOrderState(self::CHARGEBACK_STATE);
+        $this->deactivateCustomOrderState(self::PENDING_STATE);
+        $this->deactivateCustomOrderState(self::PARTIALLY_REFUNDED_STATE);
+        $this->deactivateCustomOrderState(self::CHARGEBACK_STATE);
     }
 
     /**
-     * @return bool
+     * @return void
      *
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      */
-    public function deactivateOldCustomOrderStates(): bool
+    public function deactivateOldCustomOrderStates(): void
     {
-        return $this->deactivateCustomOrderState(self::WAITING_FOR_PAYMENT_STATE)
-            && $this->deactivateCustomOrderState(self::PAYMENT_NEEDS_ATTENTION_STATE);
+        $this->deactivateCustomOrderState(self::WAITING_FOR_PAYMENT_STATE);
+        $this->deactivateCustomOrderState(self::PAYMENT_NEEDS_ATTENTION_STATE);
     }
 
     /**
-     * @return bool
+     * @return void
      *
-     * @throws PrestaShopException
      * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
-    public function activateCustomOrderStates(): bool
+    public function activateCustomOrderStates(): void
     {
-        return $this->addCustomOrderState(self::PENDING_STATE, '#4169E1')
-            && $this->addCustomOrderState(self::PARTIALLY_REFUNDED_STATE, '#6F8C9F')
-            && $this->addCustomOrderState(self::CHARGEBACK_STATE, '#E74C3C');
+        $this->addCustomOrderState(self::PENDING_STATE, '#4169E1');
+        $this->addCustomOrderState(self::PARTIALLY_REFUNDED_STATE, '#6F8C9F');
+        $this->addCustomOrderState(self::CHARGEBACK_STATE, '#E74C3C');
     }
 
     /**
@@ -302,32 +300,49 @@ class Installer
 
     /**
      * Create database tables for Adyen.
+     * If creation fails Exception is thrown.
      *
-     * @return bool Table creation status
+     * @return void
+     *
+     * @throws Exception
      */
-    private function createTables(): bool
+    private function createTables(): void
     {
-        return (
-            DatabaseHandler::createTable(self::ADYEN_ENTITY, 9) &&
-            DatabaseHandler::createTable(self::ADYEN_NOTIFICATIONS, 5) &&
-            DatabaseHandler::createTable(self::ADYEN_TRANSACTION_LOG, 4) &&
-            DatabaseHandler::createTable(self::ADYEN_QUEUE, 9)
-        );
+        $this->createTable(self::ADYEN_ENTITY, 9);
+        $this->createTable(self::ADYEN_NOTIFICATIONS, 5);
+        $this->createTable(self::ADYEN_TRANSACTION_LOG, 4);
+        $this->createTable(self::ADYEN_QUEUE, 9);
+    }
+
+    /**
+     * @param string $tableName
+     * @param int $indexNumber
+     *
+     * @return void
+     *
+     * @throws Exception
+     */
+    private function createTable(string $tableName, int $indexNumber): void
+    {
+        $createdTable = DatabaseHandler::createTable($tableName, $indexNumber);
+
+        if (!$createdTable) {
+            throw new Exception('Adyen plugin failed to create table: ' . $tableName);
+        }
     }
 
     /**
      * Registers module Admin controllers.
      *
-     * @return bool Controller addition status
+     * @return void
+     *
+     * @throws Exception
      */
-    private function addControllers(): bool
+    private function addControllers(): void
     {
-        $result = true;
         foreach (self::$controllers as $controller) {
-            $result = $result && $this->addController($controller);
+            $this->addController($controller);
         }
-
-        return $result;
     }
 
     /**
@@ -336,9 +351,11 @@ class Installer
      * @param string $name Controller name
      * @param int $parentId ID of parent controller
      *
-     * @return bool Controller addition status
+     * @return void
+     *
+     * @throws Exception
      */
-    private function addController(string $name, int $parentId = -1): bool
+    private function addController(string $name, int $parentId = -1): void
     {
         $tab = new Tab();
 
@@ -347,9 +364,11 @@ class Installer
         $tab->class_name = $name;
         $tab->module = $this->module->name;
         $tab->id_parent = $parentId;
-        $tab->add();
+        $success = $tab->add();
 
-        return true;
+        if (!$success) {
+            throw new Exception('Adyen plugin failed to register controller: ' . $name);
+        }
     }
 
     /**
@@ -368,21 +387,27 @@ class Installer
     /**
      * Registers module hooks.
      *
-     * @return bool Hook addition status
+     * @return void
+     *
+     * @throws Exception
      */
-    private function addHooks(): bool
+    private function addHooks(): void
     {
-        $result = true;
-
         foreach (self::$deprecated_hooks as $hook) {
-            $result = $result && $this->module->unregisterHook($hook);
+            if ($this->module->isRegisteredInHook($hook)) {
+                $result = $this->module->unregisterHook($hook);
+                if (!$result) {
+                    throw new Exception('Adyen plugin failed to unregister hook: ' . $hook);
+                }
+            }
         }
 
         foreach (array_merge(self::$hooks, $this->getVersionHandler()->hooks()) as $hook) {
-            $result = $result && $this->module->registerHook($hook);
+            $result = $this->module->registerHook($hook);
+            if (!$result) {
+                throw new Exception('Adyen plugin failed to register hook: ' . $hook);
+            }
         }
-
-        return $result;
     }
 
     /**
@@ -395,8 +420,9 @@ class Installer
      *
      * @throws PrestaShopException
      * @throws PrestaShopDatabaseException
+     * @throws Exception
      */
-    private function addCustomOrderState(string $name, string $color): bool
+    private function addCustomOrderState(string $name, string $color): void
     {
         $statusId = $this->getAllPrestaShopStatuses()[$name] ?? null;
 
@@ -404,7 +430,12 @@ class Installer
             $orderState = new OrderState($statusId);
             $orderState->deleted = false;
 
-            return $orderState->update();
+            $success = $orderState->update();
+            if (!$success) {
+                throw new Exception('Adyen plugin failed to delete order state: ' . $name);
+            }
+
+            return;
         }
 
         $orderState = new OrderState();
@@ -425,7 +456,9 @@ class Installer
             self::$allPrestaShopStatuses[$name] = (string)$orderState->id;
         }
 
-        return $success;
+        if (!$success) {
+            throw new Exception('Adyen plugin failed to add order state: ' . $name);
+        }
     }
 
     /**
@@ -435,13 +468,14 @@ class Installer
      *
      * @throws PrestaShopException
      * @throws PrestaShopDatabaseException
+     * @throws Exception
      */
-    private function deactivateCustomOrderState(string $name): bool
+    private function deactivateCustomOrderState(string $name): void
     {
         $statusId = $this->getAllPrestaShopStatuses()[$name] ?? null;
 
         if (!$statusId) {
-            return true;
+            return;
         }
 
         $orderState = new OrderState($statusId);
@@ -449,40 +483,43 @@ class Installer
         if ($orderState->module_name === $this->module->name) {
             $orderState->deleted = true;
 
-            return $orderState->update();
-        }
+            $success = $orderState->update();
 
-        return true;
+            if (!$success) {
+                throw new Exception('Adyen plugin failed to delete order state: ' . $name);
+            }
+        }
     }
 
     /**
      * Drop database tables for Adyen.
      *
-     * @return bool Table deletion status
+     * @return void
+     *
+     * @throws Exception
      */
-    private function dropTables(): bool
+    private function dropTables(): void
     {
-        return (
-            DatabaseHandler::dropTable(self::ADYEN_ENTITY) &&
-            DatabaseHandler::dropTable(self::ADYEN_NOTIFICATIONS) &&
-            DatabaseHandler::dropTable(self::ADYEN_TRANSACTION_LOG) &&
-            DatabaseHandler::dropTable(self::ADYEN_QUEUE)
-        );
+        $this->dropTable(self::ADYEN_ENTITY);
+        $this->dropTable(self::ADYEN_NOTIFICATIONS);
+        $this->dropTable(self::ADYEN_TRANSACTION_LOG);
+        $this->dropTable(self::ADYEN_QUEUE);
     }
 
     /**
-     * Unregisters module hooks.
+     * @param string $tableName
      *
-     * @return bool Hook deletion status
+     * @return void
+     *
+     * @throws Exception
      */
-    private function removeHooks(): bool
+    private function dropTable(string $tableName): void
     {
-        $result = true;
-        foreach (array_merge(self::$hooks, $this->getVersionHandler()->hooks()) as $hook) {
-            $result = $result && $this->module->unregisterHook($hook);
-        }
+        $createdTable = DatabaseHandler::dropTable($tableName);
 
-        return $result;
+        if (!$createdTable) {
+            throw new Exception('Adyen plugin failed to drop table: ' . $tableName);
+        }
     }
 
     /**
