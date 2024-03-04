@@ -46,7 +46,7 @@ class AdyenOfficial extends PaymentModule
     {
         $this->name = 'adyenofficial';
         $this->tab = 'payments_gateways';
-        $this->version = '5.1.10';
+        $this->version = '5.1.11';
 
         $this->author = $this->l('Adyen');
         $this->need_instance = 0;
@@ -638,7 +638,8 @@ class AdyenOfficial extends PaymentModule
         if ($this->context->controller->php_self === 'product' ||
             $this->context->controller->php_self === 'cart' ||
             $this->context->controller->php_self === 'order-confirmation' ||
-            $this->context->controller->php_self === 'order') {
+            $this->context->controller->php_self === 'order' ||
+            $this->context->controller->page_name === 'module-adyenofficial-payment') {
             $this->getContext()->controller->addCSS($this->getPathUri() . 'views/css/adyen-checkout.css');
             $this->getContext()->controller->addJS($this->getPathUri() . 'views/js/front/adyen-checkout-controller.js');
             $this->getContext()->controller->addJS(
