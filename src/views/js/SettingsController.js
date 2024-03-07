@@ -18,13 +18,11 @@ if (!window.AdyenFE) {
     /**
      * @typedef OrderStatusMappingSettings
      * @property {string | null} inProgress
-     * @property {string | null} pending
      * @property {string | null} paid
      * @property {string | null} failed
      * @property {string | null} refunded
      * @property {string | null} cancelled
      * @property {string | null} partiallyRefunded
-     * @property {string | null} new
      * @property {string | null} chargeBack
      */
 
@@ -309,13 +307,11 @@ if (!window.AdyenFE) {
                 /** @type {OrderStatusMappingSettings} */
                 mappings = {
                     inProgress: null,
-                    pending: null,
                     paid: null,
                     failed: null,
                     refunded: null,
                     partiallyRefunded: null,
                     cancelled: null,
-                    new: null,
                     chargeBack: null
                 };
             }
@@ -340,7 +336,6 @@ if (!window.AdyenFE) {
                             true,
                             generator.createFormFields([
                                 getDropdownField('inProgress', mappings, 'orderStatusMapping', orderStatuses),
-                                getDropdownField('pending', mappings, 'orderStatusMapping', orderStatuses),
                                 getDropdownField('paid', mappings, 'orderStatusMapping', orderStatuses),
                                 getDropdownField('failed', mappings, 'orderStatusMapping', orderStatuses),
                                 getDropdownField('refunded', mappings, 'orderStatusMapping', orderStatuses),
@@ -352,7 +347,6 @@ if (!window.AdyenFE) {
                                     orderStatuses,
                                     'adlm--turned'
                                 ),
-                                getDropdownField('new', mappings, 'orderStatusMapping', orderStatuses, 'adlm--turned'),
                                 getDropdownField(
                                     'chargeBack',
                                     mappings,
