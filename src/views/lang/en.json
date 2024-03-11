@@ -472,17 +472,12 @@
       "fields": {
         "inProgress": {
           "label": "In progress",
-          "description": "The Adyen payment status <strong>In progress</strong> should represent the following shop status:",
-          "placeholder": "Select status"
-        },
-        "pending": {
-          "label": "Pending",
-          "description": "The Adyen payment status <strong>Pending</strong> should represent the following shop status:",
+          "description": "The Adyen payment status <strong>In progress</strong>. This status is assigned when an order is initially created during the checkout process. Should represent the following shop status:",
           "placeholder": "Select status"
         },
         "paid": {
           "label": "Paid",
-          "description": "The Adyen payment status <strong>Paid</strong> should represent the following shop status:",
+          "description": "The Adyen payment status <strong>Paid</strong>. This status is assigned when an order is authorised on Adyen. Should represent the following shop status:",
           "placeholder": "Select status"
         },
         "failed": {
@@ -503,11 +498,6 @@
         "partiallyRefunded": {
           "label": "Partially refunded",
           "description": "The Adyen payment status <strong>Partially refunded</strong> should represent the following shop status:",
-          "placeholder": "Select status"
-        },
-        "new": {
-          "label": "New",
-          "description": "The Adyen payment status <strong>New</strong> should represent the following shop status:",
           "placeholder": "Select status"
         },
         "chargeBack": {

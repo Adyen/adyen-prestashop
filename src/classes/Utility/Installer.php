@@ -38,8 +38,6 @@ class Installer
     /** @var string */
     private const ADYEN_QUEUE = 'adyen_queue';
     /** @var string */
-    private const PENDING_STATE = 'Pending';
-    /** @var string */
     private const PARTIALLY_REFUNDED_STATE = 'Partially refunded';
     /** @var string */
     private const CHARGEBACK_STATE = 'Chargeback';
@@ -207,7 +205,6 @@ class Installer
      */
     public function deactivateCustomOrderStates(): void
     {
-        $this->deactivateCustomOrderState(self::PENDING_STATE);
         $this->deactivateCustomOrderState(self::PARTIALLY_REFUNDED_STATE);
         $this->deactivateCustomOrderState(self::CHARGEBACK_STATE);
     }
@@ -232,9 +229,38 @@ class Installer
      */
     public function activateCustomOrderStates(): void
     {
-        $this->addCustomOrderState(self::PENDING_STATE, '#4169E1');
         $this->addCustomOrderState(self::PARTIALLY_REFUNDED_STATE, '#6F8C9F');
         $this->addCustomOrderState(self::CHARGEBACK_STATE, '#E74C3C');
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return bool
+     *
+     * @throws PrestaShopException
+     * @throws PrestaShopDatabaseException
+     * @throws Exception
+     */
+    public function deactivateCustomOrderState(string $name): void
+    {
+        $statusId = $this->getAllPrestaShopStatuses()[$name] ?? null;
+
+        if (!$statusId) {
+            return;
+        }
+
+        $orderState = new OrderState($statusId);
+
+        if ($orderState->module_name === $this->module->name) {
+            $orderState->deleted = true;
+
+            $success = $orderState->update();
+
+            if (!$success) {
+                throw new Exception('Adyen plugin failed to delete order state: ' . $name);
+            }
+        }
     }
 
     /**
@@ -458,36 +484,6 @@ class Installer
 
         if (!$success) {
             throw new Exception('Adyen plugin failed to add order state: ' . $name);
-        }
-    }
-
-    /**
-     * @param string $name
-     *
-     * @return bool
-     *
-     * @throws PrestaShopException
-     * @throws PrestaShopDatabaseException
-     * @throws Exception
-     */
-    private function deactivateCustomOrderState(string $name): void
-    {
-        $statusId = $this->getAllPrestaShopStatuses()[$name] ?? null;
-
-        if (!$statusId) {
-            return;
-        }
-
-        $orderState = new OrderState($statusId);
-
-        if ($orderState->module_name === $this->module->name) {
-            $orderState->deleted = true;
-
-            $success = $orderState->update();
-
-            if (!$success) {
-                throw new Exception('Adyen plugin failed to delete order state: ' . $name);
-            }
         }
     }
 
