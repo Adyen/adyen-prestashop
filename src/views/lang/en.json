@@ -286,6 +286,13 @@
           "errorSize": "The selected file exceeds the limit of 10MB.",
           "placeholder": "Drop image or click here to upload"
         },
+        "authorizationType": {
+          "label": "Authorization type",
+          "description": "You can set payment requests to be handled as either a pre-authorization or a final authorization. In case of final authorization the amount is final and can not be modified. Pre-authorization allows you to adjust amount or extend expiry period and capture type is always manual.",
+          "placeholder": "Select Authorization type",
+          "preAuthorization": "Pre-authorization",
+          "finalAuthorization": "Final authorization"
+        },
         "creditCardFields": {
           "showLogos": {
             "label": "Show credit card logos",
