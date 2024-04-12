@@ -67,7 +67,8 @@ class Installer
         'AdyenWebhookNotifications',
         'AdyenWebhookValidation',
         'AdyenCapture',
-        'AdyenPaymentLink'
+        'AdyenPaymentLink',
+        'AdyenAuthorizationAdjustment'
     ];
 
     /** @var string[] */

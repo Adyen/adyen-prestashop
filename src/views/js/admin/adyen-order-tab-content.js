@@ -34,6 +34,17 @@ $(document).ready(function () {
         enableCaptureButton()
     });
 
+    $('#adyen-extend-authorization-button').click(function () {
+        const endpointURL = $('input[name="adyen-extend-authorization-url"]').val();
+        const orderId = $('input[name="adyen-orderId"]').val();
+
+        Adyen.adyenAjaxService().post(endpointURL, {
+            'orderId': orderId
+        }, (response, status) => {
+            location.reload();
+        });
+    });
+
     function disableCaptureButton() {
         let button = $('#adyen-capture-button');
         button.prop('disabled', true);

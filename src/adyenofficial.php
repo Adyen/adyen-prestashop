@@ -1460,7 +1460,7 @@ class AdyenOfficial extends PaymentModule
             'statusDate' => $lastDetail['date'] ?? '',
             'merchantID' => $authorisationDetail['merchantAccountCode'] ?? '',
             'riskScore' => $authorisationDetail['riskScore'] ?? '',
-            'captureAvailable' => $authorisationDetail['captureSupported'] ?? '',
+            'captureAvailable' => $lastDetail['captureSupported'] ?? '',
             'capturableAmount' => $authorisationDetail['capturableAmount'] ?? '',
             'currency' => $currency->symbol ?? ($currency->sign ?? ''),
             'currencyISO' => $currency->iso_code,
@@ -1473,7 +1473,10 @@ class AdyenOfficial extends PaymentModule
             'adyenGeneratePaymentLink' => $this->getAction('AdyenPaymentLink', 'generatePaymentLink', ['ajax' => true]),
             'shouldDisplayPaymentLink' => $authorisationDetail['displayPaymentLink'] ?? false,
             'isAdyenOrder' => $order->module === $this->name,
-            'shouldDisplayPaymentLinkForNonAdyenOrder' => $authorisationDetail['displayPaymentLink'] ?? $paymentLinkEnabled
+            'shouldDisplayPaymentLinkForNonAdyenOrder' => $authorisationDetail['displayPaymentLink'] ?? $paymentLinkEnabled,
+            'extendAuthorizationURL' => $this->getAction('AdyenAuthorizationAdjustment', 'extendAuthorization', ['ajax' => true]),
+            'authorizationAdjustmentDate' => $lastDetail['authorizationAdjustmentDate'] ?? '',
+            'displayAdjustmentButton' => $lastDetail['authorizationAdjustmentAvailable'] ?? '',
         ]);
 
         return $this->display(__FILE__, $this->getVersionHandler()->tabContent());
