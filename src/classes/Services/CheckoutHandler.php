@@ -21,6 +21,7 @@ use Configuration;
 use Context;
 use Country as PrestaCountry;
 use Currency as PrestaCurrency;
+use Customer as PrestaCustomer;
 use Module;
 use PrestaShopDatabaseException;
 use PrestaShopException;
@@ -47,6 +48,7 @@ class CheckoutHandler
         $currency = new PrestaCurrency($cart->id_currency);
         $addressInvoice = new PrestaAddress($cart->id_address_invoice);
         $country = new PrestaCountry($addressInvoice->id_country);
+        $customer = new PrestaCustomer($cart->id_customer);
         $shop = \Shop::getShop(\Context::getContext()->shop->id);
 
         return CheckoutAPI::get()->checkoutConfig($cart->id_shop)->getPaymentCheckoutConfig(
@@ -59,7 +61,8 @@ class CheckoutHandler
                 ),
                 $country->iso_code ? Country::fromIsoCode($country->iso_code) : null,
                 Context::getContext()->getTranslator()->getLocale(),
-                $shop['domain'] . '_' . \Context::getContext()->shop->id . '_' . $cart->id_customer
+                $shop['domain'] . '_' . \Context::getContext()->shop->id . '_' . $cart->id_customer,
+                $customer->email
             )
         );
     }
