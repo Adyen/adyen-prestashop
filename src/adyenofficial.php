@@ -647,7 +647,7 @@ class AdyenOfficial extends PaymentModule
             );
             $this->getContext()->controller->registerJavascript(
                 'adyen-component-js',
-                'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/5.31.1/adyen.js',
+                'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/5.61.0/adyen.js',
                 [
                     'server' => 'remote',
                     'position' => 'head',
@@ -659,7 +659,7 @@ class AdyenOfficial extends PaymentModule
             );
             $this->getContext()->controller->registerStylesheet(
                 'adyen-component-css',
-                'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/5.31.1/adyen.css',
+                'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/5.61.0/adyen.css',
                 [
                     'server' => 'remote',
                     'position' => 'head',
