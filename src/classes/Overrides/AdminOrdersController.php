@@ -70,8 +70,12 @@ class AdminOrdersController
     {
         $order = new Order($orderId);
         $transactionDetails = $this->getTransactionDetails($order);
-        $lastItem = end($transactionDetails);
-        $pspReference = $order->module === 'adyenofficial' && !empty($transactionDetails) ? $lastItem['pspReference'] : '--';
+        $authorisationDetail = $transactionDetails[array_search(
+            \Adyen\Webhook\EventCodes::AUTHORISATION,
+            array_column($transactionDetails, 'eventCode'),
+            true
+        )];
+        $pspReference = $order->module === 'adyenofficial' && !empty($transactionDetails) ? $authorisationDetail['pspReference'] : '--';
 
         $context->smarty->assign(
             [

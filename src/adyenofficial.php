@@ -1055,6 +1055,35 @@ class AdyenOfficial extends PaymentModule
     }
 
     /**
+     * @param array $params
+     *
+     * @return void
+     *
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     * @throws \Adyen\Core\BusinessLogic\Domain\AuthorizationAdjustment\Exceptions\AdjustmentRequestAlreadySentException
+     * @throws \Adyen\Core\BusinessLogic\Domain\AuthorizationAdjustment\Exceptions\AmountNotChangedException
+     * @throws \Adyen\Core\BusinessLogic\Domain\AuthorizationAdjustment\Exceptions\InvalidAmountException
+     * @throws \Adyen\Core\BusinessLogic\Domain\AuthorizationAdjustment\Exceptions\InvalidAuthorizationTypeException
+     * @throws \Adyen\Core\BusinessLogic\Domain\AuthorizationAdjustment\Exceptions\InvalidPaymentStateException
+     * @throws \Adyen\Core\BusinessLogic\Domain\AuthorizationAdjustment\Exceptions\OrderFullyCapturedException
+     * @throws \Adyen\Core\BusinessLogic\Domain\AuthorizationAdjustment\Exceptions\PaymentLinkExistsException
+     * @throws \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\CurrencyMismatchException
+     * @throws \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode
+     * @throws \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Exceptions\InvalidMerchantReferenceException
+     */
+    public function hookActionObjectOrderUpdateAfter(array $params): void
+    {
+        $order = new Order($params['object']->id);
+
+        if ($order->module !== $this->name || \Tools::getValue('controller') === 'asyncprocess') {
+            return;
+        }
+
+        \AdyenPayment\Classes\Services\OrderModificationHandler::handleOrderModification($order);
+    }
+
+    /**
      * Creates Adyen Installer.
      *
      * @return AdyenPayment\Classes\Utility\Installer
