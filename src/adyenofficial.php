@@ -432,7 +432,7 @@ class AdyenOfficial extends PaymentModule
                     }
                 }
                 $this->getContext()->smarty->assign([
-                    'paymentMethodId' => $method->getMetaData()['RecurringDetail']['recurringDetailReference'],
+                    'paymentMethodId' => $method->getMetaData()['id'],
                     'paymentMethodType' => $method->getType(),
                     'configURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl(
                         'paymentconfig',
@@ -456,9 +456,8 @@ class AdyenOfficial extends PaymentModule
                 $paymentOption->setModuleName($this->name);
                 $paymentOption->setCallToActionText(
                     (sprintf(
-                            $this->l('Pay by saved %s created on: %s'),
-                            $name,
-                            (new \DateTime($method->getMetaData()['RecurringDetail']['creationDate']))->format('Y-m-d')
+                            $this->l('Pay by saved %s'),
+                            $name
                         ) . ($surchargeLimit ? " (+$surchargeLimit" . $currency->sign . ')' : ''))
                 );
                 $paymentOption->setForm(

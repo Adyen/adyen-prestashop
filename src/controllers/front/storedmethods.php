@@ -142,18 +142,15 @@ class AdyenOfficialStoredMethodsModuleFrontController extends ModuleFrontControl
         }
 
         foreach ($storedPayments as $method) {
-            $methodCode = $method->getMetadata()['RecurringDetail']['variant'];
+            $methodCode = $method->getType();
             $configuredPaymentMethod = $this->paymentService->getPaymentMethodByCode($methodCode);
             if (!$configuredPaymentMethod || !$configuredPaymentMethod->getEnableTokenization()) {
                 continue;
             }
 
             $storedPayment = [
-                'id' => $method->getMetadata()['RecurringDetail']['recurringDetailReference'],
+                'id' => $method->getMetadata()['id'],
                 'name' => $configuredPaymentMethod->getName(),
-                'createdAt' => (new DateTime($method->getMetaData()['RecurringDetail']['creationDate']))->format(
-                    'Y-m-d'
-                ),
                 'isCreditCard' => false,
                 'logo' => $configuredPaymentMethod->getLogo()
             ];
