@@ -7,10 +7,17 @@ $(document).ready(function () {
     let checkoutController = null;
     let paymentId = 0;
     let paymentOptions = $('input[name="payment-option"]');
+    let adyenPaymentMethods = document.getElementsByClassName('adyen-payment-method');
 
     $('.payment-option').filter(function () {
         return $(this).find('input[data-module-name="adyenofficial"]').length > 0;
     }).addClass('adyen-image')
+
+    for (let adyenPaymentMethod of adyenPaymentMethods) {
+        adyenPaymentMethod.addEventListener('click', (event) => {
+            event.stopPropagation();
+        })
+    }
 
     checkBox.change(function (event) {
         if (checkBox.is(":checked") && checkoutController) {
