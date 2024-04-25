@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3362d9a21e938e540b0641f8261c6062",
+    "content-hash": "370ed19a7bcc63c93b776613b897740c",
     "packages": [
         {
             "name": "adyen/integration-core",
-            "version": "dev-cr-12",
+            "version": "dev-cr-12-14-release",
             "source": {
                 "type": "git",
                 "url": "git@github.com:Adyen/adyen-php-plugin-core.git",
-                "reference": "128057cd60eb1ea387defc70b6b1b2d7ad48c230"
+                "reference": "6358ee8929712b2d3f31f6890484b89bf606ab39"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Adyen/adyen-php-plugin-core/zipball/128057cd60eb1ea387defc70b6b1b2d7ad48c230",
-                "reference": "128057cd60eb1ea387defc70b6b1b2d7ad48c230",
+                "url": "https://api.github.com/repos/Adyen/adyen-php-plugin-core/zipball/6358ee8929712b2d3f31f6890484b89bf606ab39",
+                "reference": "6358ee8929712b2d3f31f6890484b89bf606ab39",
                 "shasum": ""
             },
             "require": {
@@ -48,7 +48,7 @@
                 "proprietary"
             ],
             "description": "Core Adyen integration library",
-            "time": "2024-04-19T15:25:22+00:00"
+            "time": "2024-04-25T15:42:39+00:00"
         },
         {
             "name": "adyen/php-webhook-module",
