@@ -62,7 +62,8 @@ class CheckoutHandler
                 $country->iso_code ? Country::fromIsoCode($country->iso_code) : null,
                 Context::getContext()->getTranslator()->getLocale(),
                 $shop['domain'] . '_' . \Context::getContext()->shop->id . '_' . $cart->id_customer,
-                $customer->email
+                $customer->email,
+                $shop['name']
             )
         );
     }
