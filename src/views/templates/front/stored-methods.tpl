@@ -21,7 +21,6 @@
                                                                                 width="40" height="30"></label><br>
                                         <label>{l s='Expires' mod='adyenofficial'} {$storedPaymentMethod.expiryDate}</label>
                                     </div>
-
                                     {block name='stored_card_block_item_actions'}
                                         <div class="text-sm-center stored-credit-card-button">
                                             <button class="btn btn-primary center-block adyen-delete-btn"
@@ -45,9 +44,7 @@
                                         <h4>{l s='Recurring payment method' mod='adyenofficial'}</h4>
                                         <label>{$storedPaymentMethod.name} <img src="{$storedPaymentMethod.logo}"
                                                                                 alt="" width="40" height="30">
-                                        </label><br>
-                                        <label>{l s='Created on: ' mod='adyenofficial'} {$storedPaymentMethod.createdAt}</label>
-                                        <br>
+                                        </label>
                                     </div>
                                     {block name='stored_card_block_item_actions'}
                                         <div class="text-sm-center stored-credit-card-button">

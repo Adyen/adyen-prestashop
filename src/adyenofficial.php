@@ -432,7 +432,7 @@ class AdyenOfficial extends PaymentModule
                     }
                 }
                 $this->getContext()->smarty->assign([
-                    'paymentMethodId' => $method->getMetaData()['RecurringDetail']['recurringDetailReference'],
+                    'paymentMethodId' => $method->getMetaData()['id'],
                     'paymentMethodType' => $method->getType(),
                     'configURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl(
                         'paymentconfig',
@@ -456,9 +456,8 @@ class AdyenOfficial extends PaymentModule
                 $paymentOption->setModuleName($this->name);
                 $paymentOption->setCallToActionText(
                     (sprintf(
-                            $this->l('Pay by saved %s created on: %s'),
-                            $name,
-                            (new \DateTime($method->getMetaData()['RecurringDetail']['creationDate']))->format('Y-m-d')
+                            $this->l('Pay by saved %s'),
+                            $name
                         ) . ($surchargeLimit ? " (+$surchargeLimit" . $currency->sign . ')' : ''))
                 );
                 $paymentOption->setForm(
@@ -647,7 +646,7 @@ class AdyenOfficial extends PaymentModule
             );
             $this->getContext()->controller->registerJavascript(
                 'adyen-component-js',
-                'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/5.31.1/adyen.js',
+                'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/5.61.0/adyen.js',
                 [
                     'server' => 'remote',
                     'position' => 'head',
@@ -659,7 +658,7 @@ class AdyenOfficial extends PaymentModule
             );
             $this->getContext()->controller->registerStylesheet(
                 'adyen-component-css',
-                'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/5.31.1/adyen.css',
+                'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/5.61.0/adyen.css',
                 [
                     'server' => 'remote',
                     'position' => 'head',
@@ -1476,6 +1475,11 @@ class AdyenOfficial extends PaymentModule
         $lastDetail = end($transactionDetails);
         $generalSettings = \Adyen\Core\BusinessLogic\AdminAPI\AdminAPI::get()->generalSettings((string)\Context::getContext()->shop->id)->getGeneralSettings();
         $paymentLinkEnabled = $generalSettings->isSuccessful() && $generalSettings->toArray()['enablePayByLink'];
+
+        if ($authorisationDetail['paymentMethod'] && strpos($authorisationDetail['paymentMethod'], 'clicktopay')) {
+            $authorisationDetail['paymentMethod'] = str_replace('visa_clicktopay', 'card', $authorisationDetail['paymentMethod']);
+            $authorisationDetail['paymentMethod'] = str_replace('mc_clicktopay', 'card', $authorisationDetail['paymentMethod']);
+        }
 
         \AdyenPayment\Classes\Bootstrap::init();
         $this->getContext()->smarty->assign([

@@ -302,6 +302,10 @@
             "label": "Enable single click payments",
             "description": "Do you want shoppers to have the option to save their card details for future payments?"
           },
+          "clickToPay": {
+            "label": "Enable Click to Pay",
+            "description": "Do you want shoppers to have the option to use Click to Pay? <a href=\"https://www.adyen.com/knowledge-hub/click-to-pay\" target=\"_blank\"><span>Learn more</span></a>"
+          },
           "sendBasket": {
             "label": "Enable L2/L3 data",
             "description": "Do you want to send additional data to shopper's card statements? This is useful for companies to track corporate card usage when a single card can have multiple users. <a href=\"https://docs.adyen.com/payment-methods/cards/enhanced-scheme-data/l2-l3\" target=\"_blank\"><span>Learn more</span></a>"
