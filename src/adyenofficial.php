@@ -1476,11 +1476,6 @@ class AdyenOfficial extends PaymentModule
         $generalSettings = \Adyen\Core\BusinessLogic\AdminAPI\AdminAPI::get()->generalSettings((string)\Context::getContext()->shop->id)->getGeneralSettings();
         $paymentLinkEnabled = $generalSettings->isSuccessful() && $generalSettings->toArray()['enablePayByLink'];
 
-        if ($authorisationDetail['paymentMethod'] && strpos($authorisationDetail['paymentMethod'], 'clicktopay')) {
-            $authorisationDetail['paymentMethod'] = str_replace('visa_clicktopay', 'card', $authorisationDetail['paymentMethod']);
-            $authorisationDetail['paymentMethod'] = str_replace('mc_clicktopay', 'card', $authorisationDetail['paymentMethod']);
-        }
-
         \AdyenPayment\Classes\Bootstrap::init();
         $this->getContext()->smarty->assign([
             'transactionDate' => $authorisationDetail['date'] ?? '',
