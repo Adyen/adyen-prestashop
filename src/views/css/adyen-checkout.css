@@ -39,6 +39,10 @@ div[data-adyen-submit-button="true"] > button {
     -webkit-appearance: -apple-pay-button;
 }
 
+.adyen-click-to-pay-label {
+    display: none;
+}
+
 @keyframes loader-spin {
     0% {
         transform: rotate(0deg);

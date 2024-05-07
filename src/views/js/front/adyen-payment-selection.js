@@ -56,10 +56,7 @@ $(document).ready(function () {
         let stored = paymentForm.find('[name=adyen-stored-value]').val();
         let paymentMethodId = paymentForm.find('[name=adyen-payment-method-id]').val();
 
-        checkoutController = new AdyenComponents.CheckoutController({
-            "checkoutConfigUrl": configUrl,
-            "onStateChange": handleStateChange
-        });
+        checkoutController = getCheckoutController(configUrl);
 
         if (stored) {
             checkoutController.mount(type, form, paymentMethodId);
@@ -98,6 +95,26 @@ $(document).ready(function () {
         placeOrder.removeAttr('disabled')
         if (prestaVersion >= '1.7.7.2') {
             placeOrder.removeClass('disabled')
+        }
+    }
+
+    function getCheckoutController(checkoutConfigUrl) {
+        if(checkoutController){
+            return checkoutController;
+        }
+
+        return new AdyenComponents.CheckoutController({
+            "checkoutConfigUrl": checkoutConfigUrl,
+            "onStateChange": handleStateChange,
+            "onClickToPay": handleClickOnPay
+        });
+    }
+
+    function handleClickOnPay() {
+        let clickToPayLabel =   $("#pay-with-" + paymentId + "-form").find("#adyen-click-to-pay-label");
+
+        if(clickToPayLabel){
+            clickToPayLabel.removeClass('adyen-click-to-pay-label');
         }
     }
 })

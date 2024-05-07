@@ -378,7 +378,8 @@ class AdyenOfficial extends PaymentModule
                         'stored' => true,
                         'description' => $description,
                         'prestaVersion' => _PS_VERSION_,
-                        'checkoutUrl' => $this->context->link->getPageLink('order', true, null)
+                        'checkoutUrl' => $this->context->link->getPageLink('order', true, null),
+                        'clickToPayLabel' => $this->l('Finish payment by saved Credit Card')
                     ]);
 
                     $paymentOption->setForm(
@@ -446,7 +447,8 @@ class AdyenOfficial extends PaymentModule
                     'stored' => true,
                     'description' => $description,
                     'prestaVersion' => _PS_VERSION_,
-                    'checkoutUrl' => $this->context->link->getPageLink('order', true, null)
+                    'checkoutUrl' => $this->context->link->getPageLink('order', true, null),
+                    'clickToPayLabel' => $this->l('Finish payment by saved Credit Card')
                 ]);
 
                 $paymentOption->setForm(
@@ -486,7 +488,8 @@ class AdyenOfficial extends PaymentModule
                     'stored' => false,
                     'description' => $method->getDescription(),
                     'prestaVersion' => _PS_VERSION_,
-                    'checkoutUrl' => $this->context->link->getPageLink('order', true, null)
+                    'checkoutUrl' => $this->context->link->getPageLink('order', true, null),
+                    'clickToPayLabel' => $this->l('Finish payment by saved Credit Card')
                 ]);
 
                 $currency = new Currency($cart->id_currency);
