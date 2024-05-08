@@ -3,8 +3,9 @@
 namespace AdyenPayment\Classes\Services\Integration;
 
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode;
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount;
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency as AdyenCurrency;
 use Adyen\Core\BusinessLogic\Domain\Integration\Order\OrderService as OrderServiceInterface;
-use Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use Adyen\Core\BusinessLogic\Domain\TransactionHistory\Repositories\TransactionHistoryRepository;
 use Adyen\Core\BusinessLogic\Domain\Webhook\Models\Webhook;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
@@ -179,7 +180,26 @@ class OrderService implements OrderServiceInterface
     }
 
     /**
-     * This function must be used for fetching order id from cart because PrestaShop function: Order::getByCartId won't work for multistore.
+     * @param string $merchantReference
+     *
+     * @return Amount
+     *
+     * @throws InvalidCurrencyCode
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    public function getOrderAmount(string $merchantReference): Amount
+    {
+        $idOrder = (int)$this->getIdByCartId((int)$merchantReference);
+        $order = new Order($idOrder);
+        $currency = new Currency($order->id_currency);
+        return Amount::fromFloat((float)$order->getOrdersTotalPaid(),
+            AdyenCurrency::fromIsoCode($currency->iso_code));
+    }
+
+    /**
+     * This function must be used for fetching order id from cart because PrestaShop function: Order::getByCartId won't
+     * work for multistore.
      *
      * @param int $cartId
      *

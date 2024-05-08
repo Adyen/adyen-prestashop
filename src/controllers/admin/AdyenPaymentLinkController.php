@@ -2,6 +2,7 @@
 
 use Adyen\Core\BusinessLogic\AdminAPI\AdminAPI;
 use Adyen\Core\BusinessLogic\AdminAPI\PaymentLink\Request\CreatePaymentLinkRequest;
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode;
 use Adyen\Core\BusinessLogic\Domain\TransactionHistory\Exceptions\InvalidMerchantReferenceException;
 use AdyenPayment\Classes\Utility\AdyenPrestaShopUtility;
 use AdyenPayment\Classes\Utility\SessionService;
@@ -22,6 +23,7 @@ class AdyenPaymentLinkController extends AdyenBaseController
      * @throws InvalidMerchantReferenceException
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
+     * @throws InvalidCurrencyCode
      */
     public function displayAjaxGeneratePaymentLink(): void
     {
