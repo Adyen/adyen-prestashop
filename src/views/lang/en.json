@@ -645,7 +645,15 @@
         "successfulRefundEventMessage": "Payment has been refunded successfully on Adyen.",
         "successfulRefundEventDetails": "Payment has been refunded successfully on Adyen.",
         "successfulRefundRequestEventMessage": "Refund request has been sent to Adyen.",
-        "successfulRefundRequestEventDetails": "Refund request has been sent to Adyen."
+        "successfulRefundRequestEventDetails": "Refund request has been sent to Adyen.",
+        "successfulAuthorizationAdjustmentEventMessage": "Payment has been successfully adjusted on Adyen.",
+        "successfulAuthorizationAdjustmentEventDetails": "Payment has been successfully adjusted on Adyen.",
+        "successfulAuthorizationAdjustmentRequestEventMessage": "Authorization adjustment request has been sent successfully to Adyen.",
+        "successfulAuthorizationAdjustmentRequestEventDetails": "Authorization adjustment request has been sent successfully to Adyen.",
+        "failedAuthorizationAdjustmentEventMessage": "Authorization adjustment failed on Adyen.",
+        "failedAuthorizationAdjustmentEventDetails": "Authorization adjustment failed on Adyen.",
+        "failedAuthorizationAdjustmentRequestMessage": "Authorization adjustment request failed.",
+        "failedAuthorizationAdjustmentRequestDetails": "Authorization adjustment request failed."
       }
     },
     "webhook": {
