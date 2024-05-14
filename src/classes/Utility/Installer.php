@@ -266,6 +266,47 @@ class Installer
     }
 
     /**
+     * @param string $hook
+     *
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function addHook(string $hook): void
+    {
+        $result = $this->module->registerHook($hook);
+        if (!$result) {
+            throw new Exception('Adyen plugin failed to register hook: ' . $hook);
+        }
+    }
+
+    /**
+     * Registers Admin controller.
+     *
+     * @param string $name Controller name
+     * @param int $parentId ID of parent controller
+     *
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function addController(string $name, int $parentId = -1): void
+    {
+        $tab = new Tab();
+
+        $tab->active = 1;
+        $tab->name[(int)Configuration::get('PS_LANG_DEFAULT')] = $this->module->name;
+        $tab->class_name = $name;
+        $tab->module = $this->module->name;
+        $tab->id_parent = $parentId;
+        $success = $tab->add();
+
+        if (!$success) {
+            throw new Exception('Adyen plugin failed to register controller: ' . $name);
+        }
+    }
+
+    /**
      * @return void
      *
      * @throws Exception
@@ -374,32 +415,6 @@ class Installer
     }
 
     /**
-     * Registers Admin controller.
-     *
-     * @param string $name Controller name
-     * @param int $parentId ID of parent controller
-     *
-     * @return void
-     *
-     * @throws Exception
-     */
-    private function addController(string $name, int $parentId = -1): void
-    {
-        $tab = new Tab();
-
-        $tab->active = 1;
-        $tab->name[(int)Configuration::get('PS_LANG_DEFAULT')] = $this->module->name;
-        $tab->class_name = $name;
-        $tab->module = $this->module->name;
-        $tab->id_parent = $parentId;
-        $success = $tab->add();
-
-        if (!$success) {
-            throw new Exception('Adyen plugin failed to register controller: ' . $name);
-        }
-    }
-
-    /**
      * Call functions with arguments given as second parameter
      *
      * @param callable $handler Callback of function
@@ -419,7 +434,7 @@ class Installer
      *
      * @throws Exception
      */
-    private function addHooks(): void
+    public function addHooks(): void
     {
         foreach (self::$deprecated_hooks as $hook) {
             if ($this->module->isRegisteredInHook($hook)) {
@@ -431,10 +446,7 @@ class Installer
         }
 
         foreach (array_merge(self::$hooks, $this->getVersionHandler()->hooks()) as $hook) {
-            $result = $this->module->registerHook($hook);
-            if (!$result) {
-                throw new Exception('Adyen plugin failed to register hook: ' . $hook);
-            }
+            $this->addHook($hook);
         }
     }
 
@@ -580,7 +592,8 @@ class Installer
     }
 
     /**
-     * This function must be used for fetching OrderStates since function OrderStates::getOrderStates does not fetch already deleted order states.
+     * This function must be used for fetching OrderStates since function OrderStates::getOrderStates does not fetch
+     * already deleted order states.
      *
      * @return array
      *
