@@ -15,6 +15,7 @@
                     <th>{l s='Status' mod='adyenofficial'}</th>
                     <th>{l s='Order amount' mod='adyenofficial'}</th>
                     <th>{l s='Refunded amount' mod='adyenofficial'}</th>
+                    <th>{l s='Authorization adjusted amount' mod='adyenofficial'}</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -30,6 +31,7 @@
                     <td>{html_entity_decode($status|escape:'html':'UTF-8')} </td>
                     <td>{html_entity_decode($orderAmount|escape:'html':'UTF-8')} {html_entity_decode($currencyISO|escape:'html':'UTF-8')}  </td>
                     <td>{html_entity_decode($refundedAmount|escape:'html':'UTF-8')} {html_entity_decode($currencyISO|escape:'html':'UTF-8')} </td>
+                    <td>{html_entity_decode($authorizationAdjustmentAmount|escape:'html':'UTF-8')} {html_entity_decode($currencyISO|escape:'html':'UTF-8')} </td>
                 </tr>
                 </tbody>
             </table>

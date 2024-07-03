@@ -1507,6 +1507,7 @@ class AdyenOfficial extends PaymentModule
             'shouldDisplayPaymentLinkForNonAdyenOrder' => $authorisationDetail['displayPaymentLink'] ?? $paymentLinkEnabled,
             'extendAuthorizationURL' => $this->getAction('AdyenAuthorizationAdjustment', 'extendAuthorization', ['ajax' => true]),
             'authorizationAdjustmentDate' => $lastDetail['authorizationAdjustmentDate'] ?? '',
+            'authorizationAdjustmentAmount' => $lastDetail['authorizationAdjustmentAmount'] ?? '0',
             'displayAdjustmentButton' => $lastDetail['authorizationAdjustmentAvailable'] ?? '',
         ]);
 
