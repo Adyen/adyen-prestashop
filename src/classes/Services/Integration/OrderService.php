@@ -81,6 +81,10 @@ class OrderService implements OrderServiceInterface
             );
         }
 
+        if ($order->module !== 'adyenofficial') {
+            return false;
+        }
+
         return true;
     }
 
