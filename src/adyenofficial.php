@@ -1582,20 +1582,6 @@ class AdyenOfficial extends PaymentModule
             return false;
         }
 
-        $langId = (int)$this->context->language->id;
-        $customerId = (int)$this->context->customer->id;
-        $customer = new Customer($customerId);
-
-        if ($customerId === 0 || $customer->isGuest()) {
-            return false;
-        }
-
-        $addresses = $customer->getAddresses($langId);
-
-        if (count($addresses) === 0) {
-            return false;
-        }
-
         if (!$this->verifyIfCarrierNotRestricted() ||
             !$this->verifyIfCurrencyNotRestricted() ||
             !$this->verifyIfCountryNotRestricted()) {
