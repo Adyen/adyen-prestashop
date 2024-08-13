@@ -46,6 +46,8 @@ var AdyenWallets = window.AdyenWallets || {};
                             submitOrder(type);
                         }
                     })(type),
+                    "onAuthorized": onAuthorized,
+                    "onPaymentAuthorized": onPaymentAuthorized,
                     "onAdditionalDetails": onAdditionalDetails,
                 });
 
@@ -155,7 +157,10 @@ var AdyenWallets = window.AdyenWallets || {};
                 data = {
                     "adyen-additional-data": checkoutController[type].getPaymentMethodStateData(),
                     "product": (type === 'amazonpay' && sessionStorage.amazonPayProductData !== undefined)
-                        ? sessionStorage.amazonPayProductData : productData
+                        ? sessionStorage.amazonPayProductData : productData,
+                    'adyenShippingAddress': $('[name=adyenShippingAddress]').val(),
+                    'adyenBillingAddress': $('[name=adyenBillingAddress]').val(),
+                    'adyenEmail': $('[name=adyenEmail]').val()
                 };
             } else {
                 data = {
@@ -214,6 +219,35 @@ var AdyenWallets = window.AdyenWallets || {};
                 error: function () {
                     window.location.reload();
                 }
+            });
+        }
+
+        function onAuthorized (paymentData) {
+        }
+
+        function onPaymentAuthorized(paymentData) {
+            let me = this;
+
+            return new Promise(function (resolve, reject) {
+                let shippingAddressInput = $('[name=adyenShippingAddress]'),
+                    billingAddressInput = $('[name=adyenBillingAddress]'),
+                    emailInput = $('[name=adyenEmail]');
+
+                let shippingAddress = {
+                    firstName: paymentData.shippingAddress.name,
+                    lastName: '',
+                    street: paymentData.shippingAddress.address1,
+                    zipCode: paymentData.shippingAddress.postalCode,
+                    city: paymentData.shippingAddress.locality,
+                    country: paymentData.shippingAddress.countryCode,
+                    phone: paymentData.shippingAddress.phoneNumber
+                };
+
+                shippingAddressInput.val(JSON.stringify(shippingAddress));
+                billingAddressInput.val(JSON.stringify(shippingAddress));
+                emailInput.val(JSON.stringify(paymentData.email));
+
+                resolve({transactionState: 'SUCCESS'});
             });
         }
 

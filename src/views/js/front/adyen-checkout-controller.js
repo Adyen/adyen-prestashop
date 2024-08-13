@@ -59,6 +59,8 @@
      * sessionStorage: sessionStorage,
      * onStateChange: function|undefined,
      * onAdditionalDetails: function|undefined,
+     * onAuthorized: function|undefined,
+     * onPaymentAuthorized: function|undefined,
      * onPayButtonClick: function|undefined,
      * onClickToPay: function|undefined
      * }} config
@@ -74,6 +76,12 @@
         };
         config.onAdditionalDetails = config.onAdditionalDetails || function () {
         };
+        config.onPaymentDataChanged = config.onPaymentDataChanged || function () {
+        };
+        config.onAuthorized = config.onAuthorized || function () {
+        };
+        config.onPaymentAuthorized = config.onPaymentAuthorized || function () {
+        };
         config.onPayButtonClick = config.onPayButtonClick || function (resolve, reject) {
             resolve();
         };
@@ -83,6 +91,19 @@
         const handleOnClick = (resolve, reject) => {
             return config.onPayButtonClick(resolve, reject);
         };
+
+        /* GooglePay callbacks */
+        const handleAuthorized = (paymentData) => {
+            return config.onAuthorized(paymentData);
+        }
+
+        const handlePaymentDataChanged = (intermediatePaymentData) => {
+            return config.onPaymentDataChanged(intermediatePaymentData);
+        };
+
+        const handlePaymentAuthorized = (paymentData) => {
+            return config.onPaymentAuthorized(paymentData);
+        }
 
         let checkout,
             activeComponent,
@@ -98,8 +119,40 @@
                     "returnUrl": url.href,
                     "cancelUrl": url.href
                 },
-                "paywithgoogle": {"onClick": handleOnClick, "buttonSizeMode": "fill"},
-                "googlepay": {"onClick": handleOnClick, "buttonSizeMode": "fill"},
+                "paywithgoogle": {
+                    onClick: handleOnClick,
+                    callbackIntents: ['SHIPPING_ADDRESS', 'PAYMENT_AUTHORIZATION'],
+                    shippingAddressRequired: true,
+                    emailRequired: true,
+                    shippingAddressParameters: {
+                        allowedCountryCodes: [],
+                        phoneNumberRequired: true
+                    },
+                    shippingOptionRequired: false,
+                    buttonSizeMode: "fill",
+                    onAuthorized: handleAuthorized,
+                    paymentDataCallbacks: {
+                        onPaymentDataChanged: handlePaymentDataChanged,
+                        onPaymentAuthorized: handlePaymentAuthorized,
+                    }
+                },
+                "googlepay": {
+                    onClick: handleOnClick,
+                    callbackIntents: ['SHIPPING_ADDRESS', 'PAYMENT_AUTHORIZATION'],
+                    shippingAddressRequired: true,
+                    emailRequired: true,
+                    shippingAddressParameters: {
+                        allowedCountryCodes: [],
+                        phoneNumberRequired: true
+                    },
+                    shippingOptionRequired: false,
+                    buttonSizeMode: "fill",
+                    onAuthorized: handleAuthorized,
+                    paymentDataCallbacks: {
+                        onPaymentDataChanged: handlePaymentDataChanged,
+                        onPaymentAuthorized: handlePaymentAuthorized,
+                    }
+                },
                 "paypal": {
                     "blockPayPalCreditButton": true,
                     "blockPayPalPayLaterButton": true,
@@ -132,6 +185,9 @@
                 checkoutConfig.onChange = handleOnChange;
                 checkoutConfig.onSubmit = handleOnChange;
                 checkoutConfig.onAdditionalDetails = handleAdditionalDetails;
+                checkoutConfig.onAuthorized = handleAuthorized;
+                checkoutConfig.onPaymentDataChanged = handlePaymentDataChanged;
+                checkoutConfig.onPaymentAuthorized = handlePaymentAuthorized;
                 if (config.showPayButton) {
                     checkoutConfig.showPayButton = true;
                 } else {

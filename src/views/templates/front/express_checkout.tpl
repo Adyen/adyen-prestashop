@@ -14,5 +14,8 @@
                 <input type="hidden" class="adyen-presta-version" value="{$version|escape:'html':'UTF-8'}">
             </div>
         {/foreach}
+        <input type="hidden" name="adyenShippingAddress">
+        <input type="hidden" name="adyenBillingAddress">
+        <input type="hidden" name="adyenEmail">
     </div>
 {/if}
