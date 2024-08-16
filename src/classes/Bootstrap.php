@@ -72,6 +72,7 @@ use AdyenPayment\Classes\Repositories\QueueItemRepository;
 use AdyenPayment\Classes\Repositories\TransactionLogRepository;
 use AdyenPayment\Classes\Services\Domain\WebhookSynchronizationService;
 use AdyenPayment\Classes\Services\Integration\ConfigService;
+use AdyenPayment\Classes\Services\Integration\CustomerService;
 use AdyenPayment\Classes\Services\Integration\Logger\LoggerService;
 use AdyenPayment\Classes\Services\Integration\OrderService;
 use AdyenPayment\Classes\Services\Integration\PaymentProcessors\AddressProcessor;
@@ -266,6 +267,13 @@ class Bootstrap extends BootstrapComponent
                 }
 
                 return new Version177();
+            }
+        );
+
+        ServiceRegister::registerService(
+            CustomerService::class,
+            static function () {
+                return new CustomerService();
             }
         );
     }

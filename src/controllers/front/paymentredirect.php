@@ -4,6 +4,7 @@ use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
 use Adyen\Core\Infrastructure\Logger\Logger;
 use AdyenPayment\Classes\Bootstrap;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
+use AdyenPayment\Classes\Services\Integration\CustomerService;
 use AdyenPayment\Controllers\PaymentController;
 
 /**
@@ -44,6 +45,12 @@ class AdyenOfficialPaymentRedirectModuleFrontController extends PaymentControlle
 
         if (!\Validate::isLoadedObject($cart)) {
             Tools::redirect($this->context->link->getPageLink('order', $this->ssl));
+        }
+
+        if (empty($this->context->customer->id) && !empty($requestData['adyenEmail'])) {
+            $customerService = new CustomerService();
+
+            $customerService->createAndLoginCustomer($requestData['adyenEmail'], $requestData);
         }
 
         $response = CheckoutAPI::get()

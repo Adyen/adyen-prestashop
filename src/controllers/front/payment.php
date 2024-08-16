@@ -6,7 +6,10 @@ use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\ShopperRefere
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency;
+use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\Bootstrap;
+use AdyenPayment\Classes\Services\Integration\CustomerService;
+use AdyenPayment\Classes\Services\PayPalGuestExpressCheckoutService;
 use AdyenPayment\Classes\Utility\Url;
 use AdyenPayment\Controllers\PaymentController;
 use Adyen\Core\Infrastructure\Logger\Logger;
@@ -47,9 +50,6 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
     public function postProcess()
     {
         $cart = $this->getCurrentCart();
-        if (count($cart->getAddressCollection()) === 0) {
-            $this->handleNotSuccessfulPayment(self::FILE_NAME);
-        }
 
         $data = Tools::getAllValues();
         $additionalData = !empty($data['adyen-additional-data']) ? json_decode(
@@ -61,6 +61,31 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
 
         if ($this->isAjaxRequest()) {
             $type = $additionalData['paymentMethod']['type'];
+        }
+
+        $customerEmail = str_replace(['"', "'"], '', $data['adyenEmail']);
+
+        if ($cart->id_customer) {
+            $customer = new Customer($cart->id_customer);
+        } elseif ($customerEmail) {
+            /** @var CustomerService $customerService */
+            $customerService = ServiceRegister::getService(CustomerService::class);
+
+            $customer = $customerService->createAndLoginCustomer($customerEmail, $data);
+        } else {
+            $cart->secure_key = md5(uniqid(rand(), true));
+            $this->context->cart->secure_key = $cart->secure_key;
+            $cart->update();
+            $this->context->cart->update();
+
+            $payPalGuestExpressCheckoutService = new PayPalGuestExpressCheckoutService();
+
+            $payPalGuestExpressCheckoutService->startGuestPayPalPaymentTransaction($cart, $this->getOrderTotal($cart, $type));
+        }
+
+        $cart->id_customer = $customer->id;
+        if (count($cart->getAddressCollection()) === 0) {
+            $this->handleNotSuccessfulPayment(self::FILE_NAME);
         }
 
         try {

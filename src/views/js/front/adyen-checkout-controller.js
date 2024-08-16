@@ -61,6 +61,7 @@
      * onAdditionalDetails: function|undefined,
      * onAuthorized: function|undefined,
      * onPaymentAuthorized: function|undefined,
+     * onShopperDetails: function|undefined
      * onPayButtonClick: function|undefined,
      * onClickToPay: function|undefined
      * }} config
@@ -81,6 +82,9 @@
         config.onAuthorized = config.onAuthorized || function () {
         };
         config.onPaymentAuthorized = config.onPaymentAuthorized || function () {
+        };
+        config.onShopperDetails = config.onShopperDetails || function (shopperDetails, rawData, actions) {
+            actions.resolve();
         };
         config.onPayButtonClick = config.onPayButtonClick || function (resolve, reject) {
             resolve();
@@ -103,6 +107,10 @@
 
         const handlePaymentAuthorized = (paymentData) => {
             return config.onPaymentAuthorized(paymentData);
+        }
+
+        const handleShopperDetails = (shopperDetails, rawData, actions) => {
+            return config.onShopperDetails(shopperDetails, rawData, actions);
         }
 
         let checkout,
@@ -154,9 +162,11 @@
                     }
                 },
                 "paypal": {
-                    "blockPayPalCreditButton": true,
-                    "blockPayPalPayLaterButton": true,
-                    "onClick": (source, event, self) => {
+                    isExpress: true,
+                    onShopperDetails: handleShopperDetails,
+                    blockPayPalCreditButton: true,
+                    blockPayPalPayLaterButton: true,
+                    onClick: (source, event, self) => {
                         return handleOnClick(event.resolve, event.reject);
                     }
                 }

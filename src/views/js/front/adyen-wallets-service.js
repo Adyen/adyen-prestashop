@@ -49,6 +49,7 @@ var AdyenWallets = window.AdyenWallets || {};
                     "onAuthorized": onAuthorized,
                     "onPaymentAuthorized": onPaymentAuthorized,
                     "onAdditionalDetails": onAdditionalDetails,
+                    "onShopperDetails": onShopperDetails
                 });
 
                 if (type === 'amazonpay' && getData !== undefined) {
@@ -203,6 +204,16 @@ var AdyenWallets = window.AdyenWallets || {};
         function onAdditionalDetails(additionalData) {
             if (paymentData) {
                 additionalData.paymentData = paymentData
+
+                if (additionalData.details.paymentSource === 'paypal') {
+                    let shippingAddressInput = $('[name=adyenShippingAddress]'),
+                        billingAddressInput = $('[name=adyenBillingAddress]'),
+                        emailInput = $('[name=adyenEmail]');
+
+                    additionalData.adyenShippingAddress = shippingAddressInput.val();
+                    additionalData.adyenBillingAddress = billingAddressInput.val();
+                    additionalData.adyenEmail = emailInput.val();
+                }
             }
 
             type = type !== '' ? type : additionalData.details.paymentSource;
@@ -249,6 +260,36 @@ var AdyenWallets = window.AdyenWallets || {};
 
                 resolve({transactionState: 'SUCCESS'});
             });
+        }
+
+        function onShopperDetails (shopperDetails, rawData, actions) {
+            let shippingAddressInput = $('[name=adyenShippingAddress]'),
+                billingAddressInput = $('[name=adyenBillingAddress]'),
+                emailInput = $('[name=adyenEmail]'),
+                shippingAddress = {
+                    firstName: shopperDetails.shopperName.firstName,
+                    lastName: shopperDetails.shopperName.lastName,
+                    street: shopperDetails.shippingAddress.street,
+                    zipCode: shopperDetails.shippingAddress.postalCode,
+                    city: shopperDetails.shippingAddress.city,
+                    country: shopperDetails.shippingAddress.country,
+                    phone: shopperDetails.telephoneNumber
+                },
+                billingAddress = {
+                    firstName: shopperDetails.shopperName.firstName,
+                    lastName: shopperDetails.shopperName.lastName,
+                    street: shopperDetails.billingAddress.street,
+                    zipCode: shopperDetails.billingAddress.postalCode,
+                    city: shopperDetails.billingAddress.city,
+                    country: shopperDetails.billingAddress.country,
+                    phone: shopperDetails.telephoneNumber
+                };
+
+            shippingAddressInput.val(JSON.stringify(shippingAddress));
+            billingAddressInput.val(JSON.stringify(billingAddress));
+            emailInput.val(JSON.stringify(shopperDetails.shopperEmail));
+
+            actions.resolve();
         }
 
         this.mountElements = mountElements;

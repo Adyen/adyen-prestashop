@@ -7,15 +7,15 @@ use Adyen\Core\Infrastructure\Logger\Logger;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency;
+use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\Bootstrap;
 use AdyenPayment\Classes\Services\CheckoutHandler;
+use AdyenPayment\Classes\Services\Integration\CustomerService;
+use AdyenPayment\Classes\Services\PayPalGuestExpressCheckoutService;
 use AdyenPayment\Classes\Utility\SessionService;
 use AdyenPayment\Classes\Utility\Url;
 use AdyenPayment\Controllers\PaymentController;
 use Currency as PrestaCurrency;
-use PrestaShop\Module\PrestashopCheckout\Exception\PsCheckoutException;
-use PrestaShop\Module\PrestashopCheckout\Updater\CustomerUpdater;
-use PrestaShop\PrestaShop\Core\Domain\Country\Exception\CountryNotFoundException;
 
 /**
  * Class AdyenOfficialPaymentProductModuleFrontController
@@ -57,10 +57,31 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
         $customerId = (int)$this->context->customer->id;
         $data = Tools::getAllValues();
         $customerEmail = str_replace(['"', "'"], '', $data['adyenEmail']);
+
+        $product = json_decode($data['product'], true);
+        $this->addProductToCart($cart, $product);
+        $additionalData = !empty($data['adyen-additional-data']) ? json_decode(
+            $data['adyen-additional-data'],
+            true
+        ) : [];
+        $type = !empty($additionalData['paymentMethod']['type']) ? $additionalData['paymentMethod']['type'] : '';
+
         if ($customerId) {
             $customer = new Customer($customerId);
         } elseif ($customerEmail) {
-            $customer = $this->createAndLoginCustomer($customerEmail, $data);
+            /** @var CustomerService $customerService */
+            $customerService = ServiceRegister::getService(CustomerService::class);
+
+            $customer = $customerService->createAndLoginCustomer($customerEmail, $data);
+        } else {
+            $cart->secure_key = md5(uniqid(rand(), true));
+            $this->context->cart->secure_key = $cart->secure_key;
+            $cart->update();
+            $this->context->cart->update();
+
+            $payPalGuestExpressCheckoutService = new PayPalGuestExpressCheckoutService();
+
+            $payPalGuestExpressCheckoutService->startGuestPayPalPaymentTransaction($cart, $this->getOrderTotal($cart, $type));
         }
 
         $addresses = $customer->getAddresses($langId);
@@ -70,14 +91,6 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
             $cart = $this->updateCart($customer, $addresses[0]['id_address'], $addresses[0]['id_address'], $cart);
         }
 
-        $product = json_decode($data['product'], true);
-        $this->addProductToCart($cart, $product);
-
-        $additionalData = !empty($data['adyen-additional-data']) ? json_decode(
-            $data['adyen-additional-data'],
-            true
-        ) : [];
-        $type = !empty($additionalData['paymentMethod']['type']) ? $additionalData['paymentMethod']['type'] : '';
         $currency = new PrestaCurrency($currencyId);
         try {
             $response = CheckoutApi::get()->paymentRequest((string)$cart->id_shop)->startTransaction(
@@ -222,140 +235,5 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
         $shop = Shop::getShop(Context::getContext()->shop->id);
 
         return ShopperReference::parse($shop['domain'] . '_' . Context::getContext()->shop->id . '_' . $customer->id);
-    }
-
-    /**
-     * Handle creation and customer login
-     *
-     * @param string $email
-     * @param string $firstName
-     * @param string $lastName
-     *
-     * @return Customer
-     *
-     * @throws PsCheckoutException|CountryNotFoundException
-     */
-    private function createAndLoginCustomer(string $email, $data): Customer
-    {
-        /** @var int $customerId */
-        $customerId = Customer::customerExists($email, true);
-
-        if ($customerId === 0) {
-            $billingAddress = json_decode($data['adyenBillingAddress']);
-            $shippingAddress = json_decode($data['adyenShippingAddress']);
-
-            if (empty($billingAddress->lastname)) {
-
-                $fullName = explode(' ', $billingAddress->firstName);
-                $firstName = $fullName[0];
-                $lastName = $fullName[1];
-            } else {
-                $firstName = $billingAddress->firstName;
-                $lastName = $billingAddress->lastName;
-            }
-
-            $customer = $this->createGuestCustomer(
-                $email,
-                $firstName,
-                $lastName
-            );
-
-            $shippingAddress = $this->createAddress($shippingAddress);
-            $shippingAddress->id_customer = $customer->id;
-            $shippingAddress->add();
-
-            $billingAddress = $this->createAddress($billingAddress);
-            $billingAddress->id_customer = $customer->id;
-            $billingAddress->add();
-        } else {
-            $customer = new Customer($customerId);
-        }
-
-        if (method_exists($this->context, 'updateCustomer')) {
-            $this->context->updateCustomer($customer);
-        } else {
-            CustomerUpdater::updateContextCustomer($this->context, $customer);
-        }
-
-        return $customer;
-    }
-
-    /**
-     * Create a guest customer.
-     *
-     * @param string $email
-     * @param string $firstName
-     * @param string $lastName
-     *
-     * @return Customer
-     *
-     * @throws PsCheckoutException
-     */
-    private function createGuestCustomer(string $email, string $firstName, string $lastName): Customer
-    {
-        $customer = new Customer();
-        $customer->email = $email;
-        $customer->firstname = $firstName;
-        $customer->lastname = $lastName;
-        $customer->is_guest = true;
-        $customer->id_default_group = (int) Configuration::get('PS_GUEST_GROUP');
-
-        if (class_exists('PrestaShop\PrestaShop\Core\Crypto\Hashing')) {
-            $crypto = new PrestaShop\PrestaShop\Core\Crypto\Hashing();
-            $customer->passwd = $crypto->hash(
-                time() . _COOKIE_KEY_,
-                _COOKIE_KEY_
-            );
-        } else {
-            $customer->passwd = md5(time() . _COOKIE_KEY_);
-        }
-
-        try {
-            $customer->save();
-        } catch (Exception $exception) {
-            throw new PsCheckoutException($exception->getMessage(), PsCheckoutException::PSCHECKOUT_EXPRESS_CHECKOUT_CANNOT_SAVE_CUSTOMER, $exception);
-        }
-
-        return $customer;
-    }
-
-    /**
-     * Creates a PrestaShop address entity based on the source address.
-     *
-     * @param stdClass $sourceAddress
-     *
-     * @return Address
-     *
-     * @throws CountryNotFoundException
-     */
-    private function createAddress(stdClass $sourceAddress): Address
-    {
-        $address = new Address();
-        $countryId = Country::getByIso($sourceAddress->country);
-
-        if (!$countryId) {
-            throw new CountryNotFoundException('Country not supported');
-        }
-
-        if (empty($sourceAddress->lastname)) {
-            $fullName = explode(' ', $sourceAddress->firstName);
-            $firstName = $fullName[0];
-            $lastName = $fullName[1];
-        } else {
-            $firstName = $sourceAddress->firstName;
-            $lastName = $sourceAddress->lastName;
-        }
-
-        $address->lastname = $lastName;
-        $address->firstname = $firstName;
-        $address->address1 = $sourceAddress->street;
-        $address->id_country = $countryId;
-        $address->city = $sourceAddress->city;
-        $address->alias = 'Home';
-        $address->postcode = $sourceAddress->zipCode;
-        $address->phone = $sourceAddress->phone;
-        $address->phone_mobile = $sourceAddress->phone;
-
-        return $address;
     }
 }
