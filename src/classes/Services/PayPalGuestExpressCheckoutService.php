@@ -2,13 +2,10 @@
 
 namespace AdyenPayment\Classes\Services;
 
+use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
+use Adyen\Core\BusinessLogic\CheckoutAPI\PaymentRequest\Request\StartTransactionRequest;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency;
-use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\PaymentRequest;
-use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Proxies\PaymentsProxy;
-use Adyen\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
-use Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext;
-use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\Utility\Url;
 use Context;
 use Currency as PrestaCurrency;
@@ -29,48 +26,36 @@ class PayPalGuestExpressCheckoutService
      *
      * @throws \Exception
      */
-    public function startGuestPayPalPaymentTransaction(Cart $cart, float $orderTotal)
+    public function startGuestPayPalPaymentTransaction(Cart $cart, float $orderTotal, array $data = [])
     {
-        StoreContext::doWithStore(
-            (string)\Context::getContext()->shop->id,
-            function () use ($cart, $orderTotal) {
-                /** @var ConnectionService $connectionService */
-                $connectionService = ServiceRegister::getService(ConnectionService::class);
-                /** @var PaymentsProxy $paymentsProxy */
-                $paymentsProxy = ServiceRegister::getService(PaymentsProxy::class);
+        $currency = new PrestaCurrency((int)Context::getContext()->currency->id);
 
-                $currency = new PrestaCurrency((int)Context::getContext()->currency->id);
-                $amount =  Amount::fromFloat(
-                    $orderTotal,
-                    Currency::fromIsoCode($currency->iso_code ?? 'EUR')
-                );
-                $connectionSettings = $connectionService->getConnectionData();
-                $returnUrl = Url::getFrontUrl(
-                    'paymentredirect',
-                    ['adyenMerchantReference' => $cart->id, 'adyenPaymentType' => 'paypal']
-                );
-                $paymentMethod = [
-                    'type' => 'paypal',
-                    'subtype' => 'express',
-                ];
-
-                $request = new PaymentRequest(
-                    $amount,
-                    $connectionSettings->getActiveConnectionData()->getMerchantId(),
+        $response = CheckoutAPI::get()
+            ->paymentRequest((string)$cart->id_shop)
+            ->startTransaction(
+                new StartTransactionRequest(
+                    'paypal',
+                    Amount::fromFloat(
+                        $orderTotal,
+                        Currency::fromIsoCode($currency->iso_code ?? 'EUR')
+                    ),
                     (string)$cart->id,
-                    $returnUrl,
-                    $paymentMethod
-                );
+                    Url::getFrontUrl(
+                        'paymentredirect',
+                        ['adyenMerchantReference' => $cart->id, 'adyenPaymentType' => 'paypal']
+                    ),
+                    !empty($data['adyen-additional-data']) ? json_decode(
+                        $data['adyen-additional-data'],
+                        true
+                    ) : []
+                )
+            );
 
-                $response = $paymentsProxy->startPaymentTransaction($request);
-
-                die(json_encode(
-                    [
-                        'action' => $response->getAction(),
-                        'reference' => $cart->id
-                    ]
-                ));
-            }
-        );
+        die(json_encode(
+            [
+                'action' => $response->getAction(),
+                'reference' => $cart->id
+            ]
+        ));
     }
 }

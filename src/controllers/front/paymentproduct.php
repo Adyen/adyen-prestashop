@@ -2,6 +2,7 @@
 
 use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
 use Adyen\Core\BusinessLogic\CheckoutAPI\PaymentRequest\Request\StartTransactionRequest;
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\PaymentMethodCode;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\ShopperReference;
 use Adyen\Core\Infrastructure\Logger\Logger;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
@@ -73,15 +74,10 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
             $customerService = ServiceRegister::getService(CustomerService::class);
 
             $customer = $customerService->createAndLoginCustomer($customerEmail, $data);
-        } else {
-            $cart->secure_key = md5(uniqid(rand(), true));
-            $this->context->cart->secure_key = $cart->secure_key;
-            $cart->update();
-            $this->context->cart->update();
-
+        } elseif (PaymentMethodCode::payPal()->equals($additionalData['paymentMethod']['type'])) {
             $payPalGuestExpressCheckoutService = new PayPalGuestExpressCheckoutService();
 
-            $payPalGuestExpressCheckoutService->startGuestPayPalPaymentTransaction($cart, $this->getOrderTotal($cart, $type));
+            $payPalGuestExpressCheckoutService->startGuestPayPalPaymentTransaction($cart, $this->getOrderTotal($cart, $type), $data);
         }
 
         $addresses = $customer->getAddresses($langId);
