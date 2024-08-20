@@ -66,13 +66,12 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
             true
         ) : [];
         $type = !empty($additionalData['paymentMethod']['type']) ? $additionalData['paymentMethod']['type'] : '';
+        /** @var CustomerService $customerService */
+        $customerService = ServiceRegister::getService(CustomerService::class);
 
         if ($customerId) {
             $customer = new Customer($customerId);
         } elseif ($customerEmail) {
-            /** @var CustomerService $customerService */
-            $customerService = ServiceRegister::getService(CustomerService::class);
-
             $customer = $customerService->createAndLoginCustomer($customerEmail, $data);
         } elseif (PaymentMethodCode::payPal()->equals($additionalData['paymentMethod']['type'])) {
             $payPalGuestExpressCheckoutService = new PayPalGuestExpressCheckoutService();
@@ -80,11 +79,17 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
             $payPalGuestExpressCheckoutService->startGuestPayPalPaymentTransaction($cart, $this->getOrderTotal($cart, $type), $data);
         }
 
+        if (!empty($data['adyenBillingAddress'])) {
+            $customerService->setCustomerAddresses($customer, $data);
+        }
+
         $addresses = $customer->getAddresses($langId);
         if (count($addresses) === 0) {
             $this->handleNotSuccessfulPayment(self::FILE_NAME);
         } else {
-            $cart = $this->updateCart($customer, $addresses[0]['id_address'], $addresses[0]['id_address'], $cart);
+            $lastAddress = end($addresses);
+
+            $cart = $this->updateCart($customer, $lastAddress['id_address'], $lastAddress['id_address'], $cart);
         }
 
         $currency = new PrestaCurrency($currencyId);

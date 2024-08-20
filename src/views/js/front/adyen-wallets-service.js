@@ -32,7 +32,8 @@ var AdyenWallets = window.AdyenWallets || {};
                 return;
             }
 
-            let checkoutConfigUrl = document.getElementsByClassName('adyen-config-url')[0];
+            let checkoutConfigUrl = document.getElementsByClassName('adyen-config-url')[0],
+                userLoggedIn = $('[name=adyenLoggedIn]').length;
 
             for (let i = 0; i < checkoutElements.length; i++) {
                 let type = checkoutElements[i].getElementsByClassName('adyen-type')[0].value;
@@ -40,6 +41,8 @@ var AdyenWallets = window.AdyenWallets || {};
                 checkoutController[type] = new AdyenComponents.CheckoutController({
                     "checkoutConfigUrl": checkoutConfigUrl.value + getConfigParams(),
                     "showPayButton": true,
+                    "requireAddress": !userLoggedIn,
+                    "requireEmail": !userLoggedIn,
                     "sessionStorage": sessionStorage,
                     "onStateChange": (function (type) {
                         return function () {
@@ -249,6 +252,7 @@ var AdyenWallets = window.AdyenWallets || {};
                     lastName: '',
                     street: paymentData.shippingAddress.address1,
                     zipCode: paymentData.shippingAddress.postalCode,
+                    state: paymentData.shippingAddress.administrativeArea,
                     city: paymentData.shippingAddress.locality,
                     country: paymentData.shippingAddress.countryCode,
                     phone: paymentData.shippingAddress.phoneNumber

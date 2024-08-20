@@ -17,5 +17,8 @@
         <input type="hidden" name="adyenShippingAddress">
         <input type="hidden" name="adyenBillingAddress">
         <input type="hidden" name="adyenEmail">
+        {if $customer.is_logged}
+            <input type="hidden" name="adyenLoggedIn">
+        {/if}
     </div>
 {/if}

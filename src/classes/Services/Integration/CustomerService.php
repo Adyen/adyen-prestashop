@@ -9,6 +9,7 @@ use Customer;
 use PrestaShop\Module\PrestashopCheckout\Exception\PsCheckoutException;
 use PrestaShop\Module\PrestashopCheckout\Updater\CustomerUpdater;
 use PrestaShop\PrestaShop\Core\Domain\Country\Exception\CountryNotFoundException;
+use State;
 use stdClass;
 
 /**
@@ -38,7 +39,6 @@ class CustomerService
 
         if (empty($customers)) {
             $billingAddress = json_decode($data['adyenBillingAddress']);
-            $shippingAddress = json_decode($data['adyenShippingAddress']);
 
             if ($billingAddress->lastname === '') {
                 $fullName = explode(' ', $billingAddress->firstName);
@@ -54,14 +54,6 @@ class CustomerService
                 $firstName,
                 $lastName
             );
-
-            $shippingAddress = $this->createAddress($shippingAddress);
-            $shippingAddress->id_customer = $customer->id;
-            $shippingAddress->add();
-
-            $billingAddress = $this->createAddress($billingAddress);
-            $billingAddress->id_customer = $customer->id;
-            $billingAddress->add();
         } else {
             $lastCustomer = end($customers);
             $customer = new Customer($lastCustomer['id_customer']);
@@ -75,6 +67,42 @@ class CustomerService
         }
 
         return $customer;
+    }
+
+    /**
+     * Sets customer's billing and shipping address.
+     *
+     * @param Customer $customer
+     * @param array $data
+     *
+     * @return void
+     *
+     * @throws CountryNotFoundException
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
+     */
+    public function setCustomerAddresses($customer, $data)
+    {
+        $billingAddress = json_decode($data['adyenBillingAddress']);
+        $shippingAddress = json_decode($data['adyenShippingAddress']);
+
+        $shippingAddress = $this->createAddress($shippingAddress);
+        $shippingAddress->id_customer = $customer->id;
+        $shippingAddress->add();
+
+        $billingAddress = $this->createAddress($billingAddress);
+        $billingAddress->id_customer = $customer->id;
+        $billingAddress->add();
+
+        if (method_exists(\Context::getContext(), 'updateCustomer')) {
+            \Context::getContext()->updateCustomer($customer);
+            \Context::getContext()->cart->id_customer = $customer->id;
+            \Context::getContext()->cart->id_address_invoice = $billingAddress->id;
+            \Context::getContext()->cart->id_address_delivery = $shippingAddress->id;
+            \Context::getContext()->cart->update();
+        } else {
+            CustomerUpdater::updateContextCustomer(\Context::getContext(), $customer);
+        }
     }
 
     /**
@@ -129,12 +157,13 @@ class CustomerService
     {
         $address = new Address();
         $countryId = Country::getByIso($sourceAddress->country);
+        $stateId = State::getIdByIso($sourceAddress->state);
 
         if (!$countryId) {
             throw new CountryNotFoundException('Country not supported');
         }
 
-        if (empty($sourceAddress->lastname)) {
+        if (empty($sourceAddress->lastName)) {
             $fullName = explode(' ', $sourceAddress->firstName);
             $firstName = $fullName[0];
             $lastName = $fullName[1];
@@ -147,6 +176,7 @@ class CustomerService
         $address->firstname = $firstName;
         $address->address1 = $sourceAddress->street;
         $address->id_country = $countryId;
+        $address->id_state = $stateId;
         $address->city = $sourceAddress->city;
         $address->alias = 'Home';
         $address->postcode = $sourceAddress->zipCode;

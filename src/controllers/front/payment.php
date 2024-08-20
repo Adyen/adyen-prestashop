@@ -1,3 +1,4 @@
+
 <?php
 
 use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
@@ -65,18 +66,21 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
         }
 
         $customerEmail = str_replace(['"', "'"], '', $data['adyenEmail']);
+        /** @var CustomerService $customerService */
+        $customerService = ServiceRegister::getService(CustomerService::class);
 
         if ($cart->id_customer) {
             $customer = new Customer($cart->id_customer);
         } elseif ($customerEmail) {
-            /** @var CustomerService $customerService */
-            $customerService = ServiceRegister::getService(CustomerService::class);
-
             $customer = $customerService->createAndLoginCustomer($customerEmail, $data);
         } elseif (PaymentMethodCode::payPal()->equals($additionalData['paymentMethod']['type']))  {
             $payPalGuestExpressCheckoutService = new PayPalGuestExpressCheckoutService();
 
             $payPalGuestExpressCheckoutService->startGuestPayPalPaymentTransaction($cart, $this->getOrderTotal($cart, $type), $data);
+        }
+
+        if (!empty($data['adyenBillingAddress'])) {
+            $customerService->setCustomerAddresses($customer, $data);
         }
 
         $cart->id_customer = $customer->id;
