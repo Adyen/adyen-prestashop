@@ -55,7 +55,8 @@ if (!window.AdyenFE) {
         trustly: 'trustly',
         twint: 'twint',
         vipps: 'vipps',
-        alma: 'alma'
+        alma: 'alma',
+        bizum: 'bizum'
     };
 
     const methodTypes = [
