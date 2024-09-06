@@ -40,10 +40,10 @@ class CustomerService
         if (empty($customers)) {
             $billingAddress = json_decode($data['adyenBillingAddress']);
 
-            if ($billingAddress->lastname === '') {
+            if ($billingAddress->lastName === '') {
                 $fullName = explode(' ', $billingAddress->firstName);
                 $firstName = $fullName[0];
-                $lastName = $fullName[1];
+                $lastName = $fullName[1] ?? $fullName[0];
             } else {
                 $firstName = $billingAddress->firstName;
                 $lastName = $billingAddress->lastName;
@@ -106,6 +106,48 @@ class CustomerService
     }
 
     /**
+     * Creates a PrestaShop address entity based on the source address.
+     *
+     * @param stdClass $sourceAddress
+     *
+     * @return Address
+     *
+     * @throws CountryNotFoundException
+     */
+    public function createAddress(stdClass $sourceAddress): Address
+    {
+        $address = new Address();
+        $countryId = Country::getByIso($sourceAddress->country);
+        $stateId = State::getIdByIso($sourceAddress->state);
+
+        if (!$countryId) {
+            throw new CountryNotFoundException('Country not supported');
+        }
+
+        if (empty($sourceAddress->lastName)) {
+            $fullName = explode(' ', $sourceAddress->firstName);
+            $firstName = $fullName[0];
+            $lastName = $fullName[1] ?? $fullName[0];
+        } else {
+            $firstName = $sourceAddress->firstName;
+            $lastName = $sourceAddress->lastName;
+        }
+
+        $address->lastname = $lastName;
+        $address->firstname = $firstName;
+        $address->address1 = $sourceAddress->street;
+        $address->id_country = $countryId;
+        $address->id_state = $stateId;
+        $address->city = $sourceAddress->city;
+        $address->alias = 'Home';
+        $address->postcode = $sourceAddress->zipCode;
+        $address->phone = $sourceAddress->phone;
+        $address->phone_mobile = $sourceAddress->phone;
+
+        return $address;
+    }
+
+    /**
      * Create a guest customer.
      *
      * @param string $email
@@ -142,47 +184,5 @@ class CustomerService
         }
 
         return $customer;
-    }
-
-    /**
-     * Creates a PrestaShop address entity based on the source address.
-     *
-     * @param stdClass $sourceAddress
-     *
-     * @return Address
-     *
-     * @throws CountryNotFoundException
-     */
-    private function createAddress(stdClass $sourceAddress): Address
-    {
-        $address = new Address();
-        $countryId = Country::getByIso($sourceAddress->country);
-        $stateId = State::getIdByIso($sourceAddress->state);
-
-        if (!$countryId) {
-            throw new CountryNotFoundException('Country not supported');
-        }
-
-        if (empty($sourceAddress->lastName)) {
-            $fullName = explode(' ', $sourceAddress->firstName);
-            $firstName = $fullName[0];
-            $lastName = $fullName[1];
-        } else {
-            $firstName = $sourceAddress->firstName;
-            $lastName = $sourceAddress->lastName;
-        }
-
-        $address->lastname = $lastName;
-        $address->firstname = $firstName;
-        $address->address1 = $sourceAddress->street;
-        $address->id_country = $countryId;
-        $address->id_state = $stateId;
-        $address->city = $sourceAddress->city;
-        $address->alias = 'Home';
-        $address->postcode = $sourceAddress->zipCode;
-        $address->phone = $sourceAddress->phone;
-        $address->phone_mobile = $sourceAddress->phone;
-
-        return $address;
     }
 }

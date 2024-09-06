@@ -1,4 +1,3 @@
-
 <?php
 
 use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
@@ -10,6 +9,7 @@ use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency;
 use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\Bootstrap;
+use AdyenPayment\Classes\Services\CheckoutHandler;
 use AdyenPayment\Classes\Services\Integration\CustomerService;
 use AdyenPayment\Classes\Services\PayPalGuestExpressCheckoutService;
 use AdyenPayment\Classes\Utility\Url;
@@ -65,22 +65,39 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
             $type = $additionalData['paymentMethod']['type'];
         }
 
-        $customerEmail = str_replace(['"', "'"], '', $data['adyenEmail']);
+        $customerEmail = array_key_exists('adyenEmail', $data) ?
+            str_replace(['"', "'"], '', $data['adyenEmail']) : '';
         /** @var CustomerService $customerService */
         $customerService = ServiceRegister::getService(CustomerService::class);
 
-        if ($cart->id_customer) {
-            $customer = new Customer($cart->id_customer);
-        } elseif ($customerEmail) {
+        if ($customerEmail) {
             $customer = $customerService->createAndLoginCustomer($customerEmail, $data);
-        } elseif (PaymentMethodCode::payPal()->equals($additionalData['paymentMethod']['type']))  {
+        } elseif ($cart->id_customer) {
+            $customer = new Customer($cart->id_customer);
+        } elseif (PaymentMethodCode::payPal()->equals($additionalData['paymentMethod']['type'])) {
             $payPalGuestExpressCheckoutService = new PayPalGuestExpressCheckoutService();
 
             $payPalGuestExpressCheckoutService->startGuestPayPalPaymentTransaction($cart, $this->getOrderTotal($cart, $type), $data);
         }
 
         if (!empty($data['adyenBillingAddress'])) {
+            $langId = (int)$this->context->language->id;
             $customerService->setCustomerAddresses($customer, $data);
+            $addresses = $customer->getAddresses($langId);
+            if (count($addresses) === 0) {
+                $this->handleNotSuccessfulPayment(self::FILE_NAME);
+            } else {
+                $lastAddress = end($addresses);
+
+                $cart->secure_key = $customer->secure_key;
+                $cart->id_address_delivery = $lastAddress['id_address'];
+                $cart->id_address_invoice = $lastAddress['id_address'];
+                $cart->id_currency = (int)$this->context->currency->id;
+                $cart->id_lang = $langId;
+                $cart->id_shop = (int)$this->context->shop->id;
+                $cart->id_carrier = CheckoutHandler::getCarrierId($cart);
+                $cart->update();
+            }
         }
 
         $cart->id_customer = $customer->id;

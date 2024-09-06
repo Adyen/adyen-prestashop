@@ -13,6 +13,7 @@ use AdyenPayment\Classes\Bootstrap;
 use AdyenPayment\Classes\Services\CheckoutHandler;
 use AdyenPayment\Classes\Services\Integration\CustomerService;
 use AdyenPayment\Classes\Services\PayPalGuestExpressCheckoutService;
+use AdyenPayment\Classes\Utility\AdyenPrestaShopUtility;
 use AdyenPayment\Classes\Utility\SessionService;
 use AdyenPayment\Classes\Utility\Url;
 use AdyenPayment\Controllers\PaymentController;
@@ -57,9 +58,10 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
         $cart = $this->createEmptyCart($currencyId, $langId);
         $customerId = (int)$this->context->customer->id;
         $data = Tools::getAllValues();
-        $customerEmail = str_replace(['"', "'"], '', $data['adyenEmail']);
+        $customerEmail = array_key_exists('adyenEmail', $data) ?
+            str_replace(['"', "'"], '', $data['adyenEmail']) : '';
 
-        $product = json_decode($data['product'], true);
+        $product = array_key_exists('product' , $data) ? json_decode($data['product'], true) : [];
         $this->addProductToCart($cart, $product);
         $additionalData = !empty($data['adyen-additional-data']) ? json_decode(
             $data['adyen-additional-data'],
@@ -69,14 +71,18 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
         /** @var CustomerService $customerService */
         $customerService = ServiceRegister::getService(CustomerService::class);
 
-        if ($customerId) {
-            $customer = new Customer($customerId);
-        } elseif ($customerEmail) {
+        if ($customerEmail) {
             $customer = $customerService->createAndLoginCustomer($customerEmail, $data);
+        } elseif ($customerId) {
+            $customer = new Customer($customerId);
         } elseif (PaymentMethodCode::payPal()->equals($additionalData['paymentMethod']['type'])) {
             $payPalGuestExpressCheckoutService = new PayPalGuestExpressCheckoutService();
 
             $payPalGuestExpressCheckoutService->startGuestPayPalPaymentTransaction($cart, $this->getOrderTotal($cart, $type), $data);
+        }
+
+        if (!$customer) {
+            AdyenPrestaShopUtility::die400(['message' => 'Customer is undefined.']);
         }
 
         if (!empty($data['adyenBillingAddress'])) {
@@ -170,10 +176,10 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
      */
     private function addProductToCart(Cart $cart, $product)
     {
-        $productId = (int)$product['id_product'];
-        $idProductAttribute = (int)$product['id_product_attribute'];
-        $quantityWanted = (int)$product['quantity_wanted'];
-        $customizationId = (int)$product['id_customization'];
+        $productId = array_key_exists('id_product', $product) ? (int)$product['id_product'] : 0;
+        $idProductAttribute = array_key_exists('id_product', $product) ? (int)$product['id_product_attribute'] : 0;
+        $quantityWanted = array_key_exists('id_product', $product) ? (int)$product['quantity_wanted'] : 0;
+        $customizationId = array_key_exists('id_product', $product) ? (int)$product['id_customization'] : 0;
 
         $cart->updateQty($quantityWanted, $productId, $idProductAttribute, $customizationId);
     }

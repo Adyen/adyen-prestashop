@@ -63,6 +63,8 @@
      * onAdditionalDetails: function|undefined,
      * onAuthorized: function|undefined,
      * onPaymentAuthorized: function|undefined,
+     * onApplePayPaymentAuthorized: function|undefined,
+     * onShippingContactSelected: function|undefined,
      * onShopperDetails: function|undefined
      * onPayButtonClick: function|undefined,
      * onClickToPay: function|undefined
@@ -88,6 +90,10 @@
         config.onAuthorized = config.onAuthorized || function () {
         };
         config.onPaymentAuthorized = config.onPaymentAuthorized || function () {
+        };
+        config.onApplePayPaymentAuthorized = config.onApplePayPaymentAuthorized || function () {
+        };
+        config.onShippingContactSelected = config.onShippingContactSelected || function () {
         };
         config.onShopperDetails = config.onShopperDetails || function (shopperDetails, rawData, actions) {
             actions.resolve();
@@ -115,6 +121,14 @@
             return config.onPaymentAuthorized(paymentData);
         }
 
+        const handleApplePayPaymentAuthorized = (resolve, reject, event) => {
+            return config.onApplePayPaymentAuthorized(resolve, reject, event);
+        }
+
+        const handleOnShippingContactSelected = (resolve, reject, event) => {
+            return config.onShippingContactSelected(resolve, reject, event);
+        }
+
         const handleShopperDetails = (shopperDetails, rawData, actions) => {
             return config.onShopperDetails(shopperDetails, rawData, actions);
         }
@@ -123,7 +137,8 @@
             activeComponent,
             isStateValid = true,
             sessionStorage = config.sessionStorage || window.sessionStorage,
-            amazonCheckoutSessionId = url.searchParams.get('amazonCheckoutSessionId');
+            amazonCheckoutSessionId = url.searchParams.get('amazonCheckoutSessionId'),
+            countryCode = 'US';
 
         let googlePaymentDataCallbacks = {};
         if (config.requireAddress) {
@@ -178,6 +193,14 @@
                 onClick: (source, event, self) => {
                     return handleOnClick(event.resolve, event.reject);
                 }
+            },
+            "applepay": {
+                countryCode: countryCode,
+                isExpress: true,
+                requiredBillingContactFields: ['postalAddress'],
+                requiredShippingContactFields: ['postalAddress', 'name', 'phoneticName', 'phone', 'email'],
+                onAuthorized: handleApplePayPaymentAuthorized,
+                onShippingContactSelected: handleOnShippingContactSelected
             }
         };
 
@@ -201,12 +224,15 @@
             if (!checkout) {
                 let checkoutConfig = await AdyenComponents.CheckoutConfigProvider.getConfiguration(config.checkoutConfigUrl);
 
+                countryCode = checkoutConfig.countryCode;
                 checkoutConfig.onChange = handleOnChange;
                 checkoutConfig.onSubmit = handleOnChange;
                 checkoutConfig.onAdditionalDetails = handleAdditionalDetails;
                 checkoutConfig.onAuthorized = handleAuthorized;
                 checkoutConfig.onPaymentDataChanged = handlePaymentDataChanged;
                 checkoutConfig.onPaymentAuthorized = handlePaymentAuthorized;
+                checkoutConfig.onApplePayPaymentAuthorized = handleApplePayPaymentAuthorized;
+                checkoutConfig.onShippingContactSelected = handleOnShippingContactSelected;
                 if (config.showPayButton) {
                     checkoutConfig.showPayButton = true;
                 } else {
