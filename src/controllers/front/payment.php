@@ -92,15 +92,12 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
                 $cart->secure_key = $customer->secure_key;
                 $cart->id_address_delivery = $lastAddress['id_address'];
                 $cart->id_address_invoice = $lastAddress['id_address'];
-                $cart->id_currency = (int)$this->context->currency->id;
-                $cart->id_lang = $langId;
-                $cart->id_shop = (int)$this->context->shop->id;
                 $cart->id_carrier = CheckoutHandler::getCarrierId($cart);
+                $cart->id_customer = $customer->id;
                 $cart->update();
             }
         }
 
-        $cart->id_customer = $customer->id;
         if (count($cart->getAddressCollection()) === 0) {
             $this->handleNotSuccessfulPayment(self::FILE_NAME);
         }
