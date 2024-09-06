@@ -77,7 +77,6 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
         $customerId = (int)$this->context->customer->id;
 
         if ($cartId !== 0) {
-            Logger::logError('TEST - cart exists');
             $cart = new Cart($cartId);
             if (!$cart->id) {
                 AdyenPrestaShopUtility::die400(['message' => 'Invalid parameters.']);
@@ -91,8 +90,6 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
 
             return $config;
         }
-
-        Logger::logError('TEST - cart doesnt exist');
 
         $cart = $this->addProductsToCart();
         $cart = $this->updateCartWithCustomerAndAddresses($data, $cart);
@@ -128,12 +125,8 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
         $customerService = ServiceRegister::getService(CustomerService::class);
 
         if ($customerId === 0) {
-            Logger::logError('TEST - customer id not set');
-
             $customer = $customerService->createAndLoginCustomer('guest@test.com', $data);
         } else {
-            Logger::logError('TEST - customer id set');
-
             $customer = new Customer($customerId);
         }
 

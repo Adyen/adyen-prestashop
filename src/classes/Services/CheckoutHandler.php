@@ -94,7 +94,8 @@ class CheckoutHandler
                         $currency->iso_code
                     )
                 ),
-                $country->iso_code ? Country::fromIsoCode($country->iso_code) : null,
+                $country->iso_code ?
+                    Country::fromIsoCode($country->iso_code) : Country::fromIsoCode(Context::getContext()->country->iso_code) ,
                 Context::getContext()->getTranslator()->getLocale(),
                 $shop['domain'] . '_' . \Context::getContext()->shop->id . '_' . $cart->id_customer
             )

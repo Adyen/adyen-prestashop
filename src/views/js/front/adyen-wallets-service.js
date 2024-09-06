@@ -385,7 +385,7 @@ var AdyenWallets = window.AdyenWallets || {};
 
                     resolve(applePayShippingMethodUpdate);
                 },
-                error: function () {
+                error: function (response) {
                     let update = {
                         newTotal: {
                             type: 'final',
@@ -395,7 +395,7 @@ var AdyenWallets = window.AdyenWallets || {};
                         errors: [new ApplePayError(
                             'shippingContactInvalid',
                             'countryCode',
-                            'Cannot ship to the selected address')
+                            response.message)
                         ]
                     };
                     resolve(update);
