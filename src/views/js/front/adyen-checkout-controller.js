@@ -72,6 +72,8 @@
      */
     function CheckoutController(config) {
         const url = new URL(location.href);
+        let clickToPayHandled = false;
+
         if (url.hostname === devOnlyConfig.localShopDomain && devOnlyConfig.globalReplacementDomain) {
             url.hostname = devOnlyConfig.globalReplacementDomain;
             url.protocol = 'https:';
@@ -159,7 +161,7 @@
             },
             "paywithgoogle": {
                 onClick: handleOnClick,
-                callbackIntents: config.requireAddress ? ['SHIPPING_ADDRESS', 'PAYMENT_AUTHORIZATION'] : [],
+                callbackIntents: config.requireAddress ? ['SHIPPING_ADDRESS', 'PAYMENT_AUTHORIZATION']  : [],
                 shippingAddressRequired: config.requireAddress,
                 emailRequired: config.requireEmail,
                 shippingAddressParameters: {
@@ -173,7 +175,7 @@
             },
             "googlepay": {
                 onClick: handleOnClick,
-                callbackIntents: config.requireAddress ? ['SHIPPING_ADDRESS', 'PAYMENT_AUTHORIZATION'] : [],
+                callbackIntents: config.requireAddress ? ['SHIPPING_ADDRESS', 'PAYMENT_AUTHORIZATION']  : [],
                 shippingAddressRequired: config.requireAddress,
                 emailRequired: config.requireEmail,
                 shippingAddressParameters: {
@@ -193,11 +195,8 @@
                 onClick: (source, event, self) => {
                     return handleOnClick(event.resolve, event.reject);
                 }
-            }
-        };
-
-        if (config.requireAddress) {
-            paymentMethodSpecificConfig.applepay = {
+            },
+            "applepay": {
                 countryCode: countryCode,
                 isExpress: true,
                 requiredBillingContactFields: ['postalAddress'],
@@ -205,7 +204,7 @@
                 onAuthorized: handleApplePayPaymentAuthorized,
                 onShippingContactSelected: handleOnShippingContactSelected
             }
-        }
+        };
 
         if (config.amount) {
             paymentMethodSpecificConfig['amazonpay']['amount'] = config.amount;
@@ -251,14 +250,13 @@
         const handleOnChange = (state) => {
             isStateValid = state.isValid;
 
-            if (isStateValid && isClickToPayPaymentMethod(state.data.paymentMethod)) {
-                checkout.remove(activeComponent);
-                activeComponent = null;
-                config.onClickToPay();
-            }
-
             if (isStateValid) {
                 sessionStorage.setItem('adyen-payment-method-state-data', JSON.stringify(state.data));
+            }
+
+            if (isStateValid && !clickToPayHandled && isClickToPayPaymentMethod(state.data.paymentMethod)) {
+                clickToPayHandled = true;
+                config.onClickToPay();
             }
 
             config.onStateChange();

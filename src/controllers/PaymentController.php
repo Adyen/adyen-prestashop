@@ -18,6 +18,7 @@ use AdyenPayment\Classes\Repositories\ProductRepository;
 use AdyenPayment\Classes\Services\CheckoutHandler;
 use AdyenPayment\Classes\SurchargeCalculator;
 use AdyenPayment\Classes\Utility\SessionService;
+use AdyenPayment\Classes\Utility\Url;
 use Carrier;
 use Cart;
 use Context;
@@ -165,6 +166,20 @@ class PaymentController extends \ModuleFrontController
      */
     protected function handleSuccessfulPaymentWithAdditionalData(Response $response, string $type, Cart $cart)
     {
+        if ($this->isAjaxRequest() && $type = 'scheme') {
+            SessionService::set('cartId', $cart->id);
+            SessionService::set('adyenAction', json_encode($response->getAction()));
+            SessionService::set('adyenPaymentMethodType', $type);
+
+            die(
+                json_encode(
+                    [
+                        'nextStepUrl' => Url::getFrontUrl('clicktopay')
+                    ]
+                )
+            );
+        }
+
         if ($this->isAjaxRequest()) {
             die(
             json_encode(
