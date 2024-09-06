@@ -72,6 +72,8 @@
      */
     function CheckoutController(config) {
         const url = new URL(location.href);
+        let clickToPayHandled = false;
+
         if (url.hostname === devOnlyConfig.localShopDomain && devOnlyConfig.globalReplacementDomain) {
             url.hostname = devOnlyConfig.globalReplacementDomain;
             url.protocol = 'https:';
@@ -248,14 +250,13 @@
         const handleOnChange = (state) => {
             isStateValid = state.isValid;
 
-            if(isStateValid && isClickToPayPaymentMethod(state.data.paymentMethod)) {
-                checkout.remove(activeComponent);
-                activeComponent = null;
-                config.onClickToPay();
-            }
-
             if (isStateValid) {
                 sessionStorage.setItem('adyen-payment-method-state-data', JSON.stringify(state.data));
+            }
+
+            if (isStateValid && !clickToPayHandled && isClickToPayPaymentMethod(state.data.paymentMethod)) {
+                clickToPayHandled = true;
+                config.onClickToPay();
             }
 
             config.onStateChange();

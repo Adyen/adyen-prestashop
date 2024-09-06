@@ -8,6 +8,10 @@ $(document).ready(function () {
     let paymentId = 0;
     let paymentOptions = $('input[name="payment-option"]');
     let adyenPaymentMethods = document.getElementsByClassName('adyen-payment-method');
+    let reference = '';
+    let paymentData = null;
+    let paymentUrl = document.getElementsByClassName('adyen-action-url')[0];
+    let checkoutUrl = document.getElementsByClassName('adyen-checkout-url')[0];
 
     $('.payment-option').filter(function () {
         return $(this).find('input[data-module-name="adyenofficial"]').length > 0;
@@ -111,10 +115,35 @@ $(document).ready(function () {
     }
 
     function handleClickOnPay() {
-        let clickToPayLabel =   $("#pay-with-" + paymentId + "-form").find("#adyen-click-to-pay-label");
+        $.ajax({
+            method: 'POST',
+            dataType: 'json',
+            url: paymentUrl.value + '?isXHR=1',
+            data: {
+                "adyen-additional-data": checkoutController.getPaymentMethodStateData()
+            },
+            success: function (response) {
+                if (response.nextStepUrl) {
+                    window.location.href = response.nextStepUrl;
+                    return;
+                }
 
-        if(clickToPayLabel){
-            clickToPayLabel.removeClass('adyen-click-to-pay-label');
-        }
+                if (!response.action) {
+                    window.location.href = checkoutUrl.value;
+                    return;
+                }
+
+                reference = response.reference;
+                paymentData = null;
+                if (response.action.paymentData) {
+                    paymentData = response.action.paymentData;
+                }
+
+                checkoutController.handleAction(response.action);
+            },
+            error: function () {
+                window.location.href = checkoutUrl.value;
+            }
+        });
     }
 })
