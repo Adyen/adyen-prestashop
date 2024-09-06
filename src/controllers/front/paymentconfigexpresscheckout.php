@@ -88,10 +88,6 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
 
             $address = new Address($cart->id_address_delivery);
             $address->delete();
-            if ($customerId === 0) {
-                $customer = new Customer($address->id_customer);
-                $customer->delete();
-            }
 
             return $config;
         }
