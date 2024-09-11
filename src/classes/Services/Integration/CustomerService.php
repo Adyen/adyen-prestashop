@@ -3,12 +3,15 @@
 namespace AdyenPayment\Classes\Services\Integration;
 
 use Address;
+use AdyenPayment\Classes\Repositories\CountryRepository;
 use Configuration;
 use Country;
 use Customer;
+use Exception;
 use PrestaShop\Module\PrestashopCheckout\Exception\PsCheckoutException;
 use PrestaShop\Module\PrestashopCheckout\Updater\CustomerUpdater;
 use PrestaShop\PrestaShop\Core\Domain\Country\Exception\CountryNotFoundException;
+use PrestaShopDatabaseException;
 use State;
 use stdClass;
 
@@ -148,6 +151,27 @@ class CustomerService
     }
 
     /**
+     * @param $countryIso
+     * @param $langId
+     * @return bool
+     * @throws PrestaShopDatabaseException
+     */
+    public function verifyIfCountryNotRestricted($countryIso, $langId): bool
+    {
+        $activeCountries = Country::getCountries($langId, true);
+        $activeCountryCodes = array_column($activeCountries, 'iso_code');
+
+        $moduleActiveCountries =  $this->getCountryRepository()->getModuleCountries(
+            (int)\Module::getInstanceByName('adyenofficial')->id,
+            (int)\Context::getContext()->shop->id
+        );
+        $moduleActiveCountryCodes = array_column($moduleActiveCountries, 'iso_code');
+
+        return in_array($countryIso, $activeCountryCodes, true) &&
+            in_array($countryIso, $moduleActiveCountryCodes, true);
+    }
+
+    /**
      * Create a guest customer.
      *
      * @param string $email
@@ -184,5 +208,13 @@ class CustomerService
         }
 
         return $customer;
+    }
+
+    /**
+     * @return CountryRepository
+     */
+    private function getCountryRepository(): CountryRepository
+    {
+        return new CountryRepository();
     }
 }

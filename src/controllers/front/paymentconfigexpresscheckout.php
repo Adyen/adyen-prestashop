@@ -76,8 +76,15 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
         $cartId = (int)Tools::getValue('cartId');
         $customerId = (int)$this->context->customer->id;
 
+        $billingAddress = json_decode($data['adyenBillingAddress'], false);
+        $countryCode = $billingAddress->country;
+        /** @var CustomerService $customerService */
+        $customerService = ServiceRegister::getService(CustomerService::class);
+        if(!$customerService->verifyIfCountryNotRestricted($countryCode, (int)$this->context->language->id)){
+            AdyenPrestaShopUtility::die400(["message" => "Invalid country code"]);
+        }
+
         if ($cartId !== 0) {
-            Logger::logError('TEST - cart exists');
             $cart = new Cart($cartId);
             if (!$cart->id) {
                 AdyenPrestaShopUtility::die400(['message' => 'Invalid parameters.']);
@@ -91,8 +98,6 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
 
             return $config;
         }
-
-        Logger::logError('TEST - cart doesnt exist');
 
         $cart = $this->addProductsToCart();
         $cart = $this->updateCartWithCustomerAndAddresses($data, $cart);
@@ -128,12 +133,8 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
         $customerService = ServiceRegister::getService(CustomerService::class);
 
         if ($customerId === 0) {
-            Logger::logError('TEST - customer id not set');
-
             $customer = $customerService->createAndLoginCustomer('guest@test.com', $data);
         } else {
-            Logger::logError('TEST - customer id set');
-
             $customer = new Customer($customerId);
         }
 
