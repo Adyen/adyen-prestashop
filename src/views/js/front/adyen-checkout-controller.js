@@ -65,6 +65,7 @@
      * onPaymentAuthorized: function|undefined,
      * onApplePayPaymentAuthorized: function|undefined,
      * onShippingContactSelected: function|undefined,
+     * onPaymentDataChanged: function|undefined,
      * onShopperDetails: function|undefined
      * onPayButtonClick: function|undefined,
      * onClickToPay: function|undefined

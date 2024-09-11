@@ -76,6 +76,14 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
         $cartId = (int)Tools::getValue('cartId');
         $customerId = (int)$this->context->customer->id;
 
+        $billingAddress = json_decode($data['adyenBillingAddress'], false);
+        $countryCode = $billingAddress->country;
+        /** @var CustomerService $customerService */
+        $customerService = ServiceRegister::getService(CustomerService::class);
+        if(!$customerService->verifyIfCountryNotRestricted($countryCode, (int)$this->context->language->id)){
+            AdyenPrestaShopUtility::die400(["message" => "Invalid country code"]);
+        }
+
         if ($cartId !== 0) {
             $cart = new Cart($cartId);
             if (!$cart->id) {
