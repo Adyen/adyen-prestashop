@@ -128,18 +128,7 @@ $(document).ready(function () {
                     return;
                 }
 
-                if (!response.action) {
-                    window.location.href = checkoutUrl.value;
-                    return;
-                }
-
-                reference = response.reference;
-                paymentData = null;
-                if (response.action.paymentData) {
-                    paymentData = response.action.paymentData;
-                }
-
-                checkoutController.handleAction(response.action);
+                window.location.href = checkoutUrl.value;
             },
             error: function () {
                 window.location.href = checkoutUrl.value;
