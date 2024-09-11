@@ -162,7 +162,7 @@
             },
             "paywithgoogle": {
                 onClick: handleOnClick,
-                callbackIntents: config.requireAddress ? ['SHIPPING_ADDRESS', 'PAYMENT_AUTHORIZATION']  : [],
+                callbackIntents: config.requireAddress ? ['SHIPPING_ADDRESS', 'PAYMENT_AUTHORIZATION'] : [],
                 shippingAddressRequired: config.requireAddress,
                 emailRequired: config.requireEmail,
                 shippingAddressParameters: {
@@ -176,7 +176,7 @@
             },
             "googlepay": {
                 onClick: handleOnClick,
-                callbackIntents: config.requireAddress ? ['SHIPPING_ADDRESS', 'PAYMENT_AUTHORIZATION']  : [],
+                callbackIntents: config.requireAddress ? ['SHIPPING_ADDRESS', 'PAYMENT_AUTHORIZATION'] : [],
                 shippingAddressRequired: config.requireAddress,
                 emailRequired: config.requireEmail,
                 shippingAddressParameters: {
@@ -196,8 +196,11 @@
                 onClick: (source, event, self) => {
                     return handleOnClick(event.resolve, event.reject);
                 }
-            },
-            "applepay": {
+            }
+        };
+
+        if (config.requireAddress) {
+            paymentMethodSpecificConfig.applepay = {
                 countryCode: countryCode,
                 isExpress: true,
                 requiredBillingContactFields: ['postalAddress'],
@@ -205,7 +208,7 @@
                 onAuthorized: handleApplePayPaymentAuthorized,
                 onShippingContactSelected: handleOnShippingContactSelected
             }
-        };
+        }
 
         if (config.amount) {
             paymentMethodSpecificConfig['amazonpay']['amount'] = config.amount;
