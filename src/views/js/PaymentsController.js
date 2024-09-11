@@ -242,7 +242,8 @@ if (!window.AdyenFE) {
         'twint',
         'paysafecard',
         'bcmc_mobile',
-        'alma'
+        'alma',
+        'bizum'
     ];
 
     const supportsRecurringPayments = ['ach', 'applepay', 'directdebit_GB',  'gcash',  'paywithgoogle', 'ideal', 'klarna', 'klarna_account', 'klarna_paynow', 'sepadirectdebit', 'directEbanking'];
