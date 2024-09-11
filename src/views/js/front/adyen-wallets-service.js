@@ -285,7 +285,7 @@ var AdyenWallets = window.AdyenWallets || {};
             let shippingAddress = {
                 firstName: shippingContact.givenName,
                 lastName: shippingContact.familyName,
-                street: 'Street 123',
+                street: shippingContact.addressLines[0],
                 city: shippingContact.locality,
                 state: shippingContact.administrativeArea,
                 country: shippingContact.countryCode,

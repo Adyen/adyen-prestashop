@@ -72,6 +72,7 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
 
         if ($customerEmail) {
             $customer = $customerService->createAndLoginCustomer($customerEmail, $data);
+            $customerService->removeTemporaryGuestCustomer($cart);
         } elseif ($cart->id_customer) {
             $customer = new Customer($cart->id_customer);
         } elseif (PaymentMethodCode::payPal()->equals($additionalData['paymentMethod']['type'])) {

@@ -7,6 +7,7 @@ use AdyenPayment\Classes\Repositories\CountryRepository;
 use Configuration;
 use Country;
 use Customer;
+use Cart;
 use Exception;
 use PrestaShop\Module\PrestashopCheckout\Exception\PsCheckoutException;
 use PrestaShop\Module\PrestashopCheckout\Updater\CustomerUpdater;
@@ -30,8 +31,6 @@ class CustomerService
      *
      * @return Customer
      *
-     * @throws PsCheckoutException|CountryNotFoundException
-     * @throws \PrestaShopException
      */
     public function createAndLoginCustomer(string $email, $data): Customer
     {
@@ -161,7 +160,7 @@ class CustomerService
         $activeCountries = Country::getCountries($langId, true);
         $activeCountryCodes = array_column($activeCountries, 'iso_code');
 
-        $moduleActiveCountries =  $this->getCountryRepository()->getModuleCountries(
+        $moduleActiveCountries = $this->getCountryRepository()->getModuleCountries(
             (int)\Module::getInstanceByName('adyenofficial')->id,
             (int)\Context::getContext()->shop->id
         );
@@ -169,6 +168,25 @@ class CustomerService
 
         return in_array($countryIso, $activeCountryCodes, true) &&
             in_array($countryIso, $moduleActiveCountryCodes, true);
+    }
+
+    /**
+     * Removes temporary guest
+     *
+     * @param Cart $cart
+     *
+     * @return void
+     */
+    public function removeTemporaryGuestCustomer($cart): void
+    {
+        $temporaryGuestEmail = 'adyen.guest.' . $cart->id . '@example.com';
+        $customersGuestByEmail = Customer::getCustomersByEmail($temporaryGuestEmail);
+
+        if (!empty($customersGuestByEmail)) {
+            $lastCustomerData = end($customersGuestByEmail);
+            $lastCustomer = new Customer($lastCustomerData['id_customer']);
+            $lastCustomer->delete();
+        }
     }
 
     /**
@@ -189,7 +207,7 @@ class CustomerService
         $customer->firstname = $firstName;
         $customer->lastname = $lastName;
         $customer->is_guest = true;
-        $customer->id_default_group = (int) Configuration::get('PS_GUEST_GROUP');
+        $customer->id_default_group = (int)Configuration::get('PS_GUEST_GROUP');
 
         if (class_exists('PrestaShop\PrestaShop\Core\Crypto\Hashing')) {
             $crypto = new \PrestaShop\PrestaShop\Core\Crypto\Hashing();

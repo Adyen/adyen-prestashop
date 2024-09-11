@@ -2,7 +2,6 @@
 
 use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutConfig\Response\PaymentCheckoutConfigResponse;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode;
-use Adyen\Core\Infrastructure\Logger\Logger;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\Bootstrap;
@@ -73,17 +72,16 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
      */
     private function getConfigForNewAddress($data)
     {
-        $cartId = (int)Tools::getValue('cartId');
-        $customerId = (int)$this->context->customer->id;
-
         $billingAddress = json_decode($data['adyenBillingAddress'], false);
         $countryCode = $billingAddress->country;
         /** @var CustomerService $customerService */
         $customerService = ServiceRegister::getService(CustomerService::class);
-        if(!$customerService->verifyIfCountryNotRestricted($countryCode, (int)$this->context->language->id)){
+        if (!$customerService->verifyIfCountryNotRestricted($countryCode, (int)$this->context->language->id)) {
             AdyenPrestaShopUtility::die400(["message" => "Invalid country code"]);
         }
 
+        $cartId = (int)Tools::getValue('cartId');
+        $customerId = (int)$this->context->customer->id;
         if ($cartId !== 0) {
             $cart = new Cart($cartId);
             if (!$cart->id) {
@@ -133,7 +131,8 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
         $customerService = ServiceRegister::getService(CustomerService::class);
 
         if ($customerId === 0) {
-            $customer = $customerService->createAndLoginCustomer('guest@test.com', $data);
+            $temporaryGuestEmail = 'adyen.guest.' . $cart->id . '@example.com';
+            $customer = $customerService->createAndLoginCustomer($temporaryGuestEmail, $data);
         } else {
             $customer = new Customer($customerId);
         }
@@ -171,21 +170,12 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
      */
     private function getCartForProduct(): Cart
     {
-        $currencyId = (int)$this->context->currency->id;
-        $langId = (int)$this->context->language->id;
-        $cart = $this->createEmptyCart($currencyId, $langId);
-        $productId = (int)Tools::getValue('id_product');
-        $productAttributeId = (int)Tools::getValue('id_product_attribute');
-        $quantityWanted = (int)Tools::getValue('quantity_wanted');
-        $customizationId = (int)Tools::getValue('id_customization');
-        $customerId = (int)$this->context->customer->id;
-        $customer = new Customer($customerId);
-        $addresses = $customer->getAddresses($langId);
+        $cart = $this->addProductsToCart();
+        $customer = new Customer((int)$this->context->customer->id);
+        $addresses = $customer->getAddresses((int)$this->context->language->id);
         if (count($addresses) > 0) {
             $cart = $this->updateCart($customer, $addresses[0]['id_address'], $addresses[0]['id_address'], $cart);
         }
-
-        $cart->updateQty($quantityWanted, $productId, $productAttributeId, $customizationId);
 
         return $cart;
     }
