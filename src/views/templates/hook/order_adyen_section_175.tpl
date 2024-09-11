@@ -15,7 +15,7 @@
                     <th>{l s='Status' mod='adyenofficial'}</th>
                     <th>{l s='Order amount' mod='adyenofficial'}</th>
                     <th>{l s='Refunded amount' mod='adyenofficial'}</th>
-                    <th>{l s='Authorization adjusted amount' mod='adyenofficial'}</th>
+                    <th>{l s='Initial authorization amount' mod='adyenofficial'}</th>
                 </tr>
                 </thead>
                 <tbody>
