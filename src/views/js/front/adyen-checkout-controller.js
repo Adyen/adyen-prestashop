@@ -89,14 +89,22 @@
         config.onAdditionalDetails = config.onAdditionalDetails || function () {
         };
         config.onPaymentDataChanged = config.onPaymentDataChanged || function () {
+            return new Promise(async resolve => {
+                resolve({});
+            });
         };
         config.onAuthorized = config.onAuthorized || function () {
         };
         config.onPaymentAuthorized = config.onPaymentAuthorized || function () {
+            return new Promise(function (resolve, reject) {
+                resolve({transactionState: 'SUCCESS'});
+            });
         };
-        config.onApplePayPaymentAuthorized = config.onApplePayPaymentAuthorized || function () {
+        config.onApplePayPaymentAuthorized = config.onApplePayPaymentAuthorized || function (resolve, reject, event) {
+            resolve(window.ApplePaySession.STATUS_SUCCESS);
         };
-        config.onShippingContactSelected = config.onShippingContactSelected || function () {
+        config.onShippingContactSelected = config.onShippingContactSelected || function (resolve, reject, event) {
+            resolve({});
         };
         config.onShopperDetails = config.onShopperDetails || function (shopperDetails, rawData, actions) {
             actions.resolve();
