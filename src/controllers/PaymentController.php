@@ -8,6 +8,7 @@ use Adyen\Core\BusinessLogic\DataAccess\Payment\Exceptions\PaymentMethodNotConfi
 use Adyen\Core\BusinessLogic\AdminAPI\Response\Response;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency;
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\PaymentMethodCode;
 use Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use Adyen\Core\BusinessLogic\Domain\Payment\Models\MethodAdditionalData\Oney;
 use Adyen\Core\BusinessLogic\Domain\Payment\Models\PaymentMethod;
@@ -166,7 +167,7 @@ class PaymentController extends \ModuleFrontController
      */
     protected function handleSuccessfulPaymentWithAdditionalData(Response $response, string $type, Cart $cart)
     {
-        if ($this->isAjaxRequest() && $type = 'scheme') {
+        if ($this->isAjaxRequest() && PaymentMethodCode::scheme()->equals($type)) {
             SessionService::set('cartId', $cart->id);
             SessionService::set('adyenAction', json_encode($response->getAction()));
             SessionService::set('adyenPaymentMethodType', $type);
