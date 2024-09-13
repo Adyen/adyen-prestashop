@@ -47,10 +47,16 @@ class AdyenOfficialPaymentRedirectModuleFrontController extends PaymentControlle
             Tools::redirect($this->context->link->getPageLink('order', $this->ssl));
         }
 
-        if (empty($this->context->customer->id) && !empty($requestData['adyenEmail'])) {
-            $customerService = new CustomerService();
+        $customerService = new CustomerService();
 
+        if (empty($this->context->customer->id) && !empty($requestData['adyenEmail'])) {
             $customerService->createAndLoginCustomer($requestData['adyenEmail'], $requestData);
+        }
+
+        $customer = new Customer($this->context->customer->id);
+        if (!empty($requestData['adyenBillingAddress']) && !empty($requestData['adyenShippingAddress'])) {
+            list($shippingAddressId, $billingAddressId) = $customerService->saveAddresses($customer, $requestData);
+            $cart = $this->updateCart($customer, $billingAddressId, $shippingAddressId, $cart);
         }
 
         $response = CheckoutAPI::get()
@@ -99,5 +105,27 @@ class AdyenOfficialPaymentRedirectModuleFrontController extends PaymentControlle
     protected function getCurrentCart(): Cart
     {
         return new Cart(Tools::getValue('adyenMerchantReference'));
+    }
+
+    /**
+     * @param Customer $customer
+     * @param int $deliveryAddressId
+     * @param int $invoiceAddressId
+     * @param Cart $cart
+     *
+     * @return Cart
+     *
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    private function updateCart(Customer $customer, int $deliveryAddressId, int $invoiceAddressId, Cart $cart): Cart
+    {
+        $cart->secure_key = $customer->secure_key;
+        $cart->id_address_delivery = $deliveryAddressId;
+        $cart->id_address_invoice = $invoiceAddressId;
+        $cart->id_customer = $customer->id;
+        $cart->update();
+
+        return $cart;
     }
 }

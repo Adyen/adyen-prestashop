@@ -85,6 +85,21 @@ class CustomerService
      */
     public function setCustomerAddresses($customer, $data)
     {
+        list($shippingAddressId, $billingAddressId) = $this->saveAddresses($customer, $data);
+
+        if (method_exists(\Context::getContext(), 'updateCustomer')) {
+            \Context::getContext()->updateCustomer($customer);
+            \Context::getContext()->cart->id_customer = $customer->id;
+            \Context::getContext()->cart->id_address_invoice = $billingAddressId;
+            \Context::getContext()->cart->id_address_delivery = $shippingAddressId;
+            \Context::getContext()->cart->update();
+        } else {
+            CustomerUpdater::updateContextCustomer(\Context::getContext(), $customer);
+        }
+    }
+
+    public function saveAddresses($customer, $data)
+    {
         $billingAddress = json_decode($data['adyenBillingAddress']);
         $shippingAddress = json_decode($data['adyenShippingAddress']);
 
@@ -96,15 +111,10 @@ class CustomerService
         $billingAddress->id_customer = $customer->id;
         $billingAddress->add();
 
-        if (method_exists(\Context::getContext(), 'updateCustomer')) {
-            \Context::getContext()->updateCustomer($customer);
-            \Context::getContext()->cart->id_customer = $customer->id;
-            \Context::getContext()->cart->id_address_invoice = $billingAddress->id;
-            \Context::getContext()->cart->id_address_delivery = $shippingAddress->id;
-            \Context::getContext()->cart->update();
-        } else {
-            CustomerUpdater::updateContextCustomer(\Context::getContext(), $customer);
-        }
+        return [
+            $shippingAddress->id,
+            $billingAddress->id,
+        ];
     }
 
     /**

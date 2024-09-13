@@ -114,7 +114,7 @@ class CheckoutHandler
             $carrierId = (int)Configuration::get('PS_CARRIER_DEFAULT', null, null, $cart->id_shop);
             $carrier = new Carrier($carrierId);
 
-            if (self::isCarrierAvailable($cart, $carrier->id_reference)) {
+            if (self::isCarrierAvailable($cart, $carrier->id_reference) && $carrier->active) {
                 return $carrierId;
             }
 
