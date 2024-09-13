@@ -73,6 +73,7 @@ class AdyenOfficialPaymentRedirectModuleFrontController extends PaymentControlle
             $customer = new Customer($this->context->customer->id);
 
             $cart->secure_key = $customer->secure_key;
+            $cart->id_customer = $customer->id;
             $cart->update();
 
             $this->saveOrder(Tools::getValue('adyenPaymentType'), $cart);
