@@ -285,7 +285,7 @@ var AdyenWallets = window.AdyenWallets || {};
             let shippingAddress = {
                 firstName: shippingContact.givenName,
                 lastName: shippingContact.familyName,
-                street: shippingContact.addressLines[0],
+                street: shippingContact.addressLines.length > 0 ? shippingContact.addressLines[0] : '',
                 city: shippingContact.locality,
                 state: shippingContact.administrativeArea,
                 country: shippingContact.countryCode,
@@ -379,7 +379,7 @@ var AdyenWallets = window.AdyenWallets || {};
 
                     applePayShippingMethodUpdate.newTotal = {
                         type: 'final',
-                        label: 'LogeecomEcom',
+                        label: 'Total amount',
                         amount: (amount).toString()
                     };
 
@@ -389,7 +389,7 @@ var AdyenWallets = window.AdyenWallets || {};
                     let update = {
                         newTotal: {
                             type: 'final',
-                            label: 'LogeecomEcom',
+                            label: 'Total amount',
                             amount: (amount).toString()
                         },
                         errors: [new ApplePayError(

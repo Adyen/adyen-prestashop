@@ -103,9 +103,6 @@
         config.onApplePayPaymentAuthorized = config.onApplePayPaymentAuthorized || function (resolve, reject, event) {
             resolve(window.ApplePaySession.STATUS_SUCCESS);
         };
-        config.onShippingContactSelected = config.onShippingContactSelected || function (resolve, reject, event) {
-            resolve({});
-        };
         config.onShopperDetails = config.onShopperDetails || function (shopperDetails, rawData, actions) {
             actions.resolve();
         };
@@ -148,8 +145,7 @@
             activeComponent,
             isStateValid = true,
             sessionStorage = config.sessionStorage || window.sessionStorage,
-            amazonCheckoutSessionId = url.searchParams.get('amazonCheckoutSessionId'),
-            countryCode = 'US';
+            amazonCheckoutSessionId = url.searchParams.get('amazonCheckoutSessionId');
 
         let googlePaymentDataCallbacks = {};
         if (config.requireAddress) {
@@ -209,12 +205,14 @@
 
         if (config.requireAddress) {
             paymentMethodSpecificConfig.applepay = {
-                countryCode: countryCode,
                 isExpress: true,
                 requiredBillingContactFields: ['postalAddress'],
                 requiredShippingContactFields: ['postalAddress', 'name', 'phoneticName', 'phone', 'email'],
                 onAuthorized: handleApplePayPaymentAuthorized,
-                onShippingContactSelected: handleOnShippingContactSelected
+            }
+
+            if(config.onShippingContactSelected){
+                paymentMethodSpecificConfig.applepay.onShippingContactSelected = handleOnShippingContactSelected
             }
         }
 
@@ -238,7 +236,6 @@
             if (!checkout) {
                 let checkoutConfig = await AdyenComponents.CheckoutConfigProvider.getConfiguration(config.checkoutConfigUrl);
 
-                countryCode = checkoutConfig.countryCode;
                 checkoutConfig.onChange = handleOnChange;
                 checkoutConfig.onSubmit = handleOnChange;
                 checkoutConfig.onAdditionalDetails = handleAdditionalDetails;
@@ -246,7 +243,10 @@
                 checkoutConfig.onPaymentDataChanged = handlePaymentDataChanged;
                 checkoutConfig.onPaymentAuthorized = handlePaymentAuthorized;
                 checkoutConfig.onApplePayPaymentAuthorized = handleApplePayPaymentAuthorized;
-                checkoutConfig.onShippingContactSelected = handleOnShippingContactSelected;
+                if(config.onShippingContactSelected){
+                    checkoutConfig.onShippingContactSelected = handleOnShippingContactSelected;
+                }
+
                 if (config.showPayButton) {
                     checkoutConfig.showPayButton = true;
                 } else {
@@ -330,6 +330,13 @@
                 // Configuration on the checkout instance level does not work for amazonpay, copy it on component level
                 if ('amazonpay' === paymentType && checkoutInstance.options.paymentMethodsConfiguration[paymentType]) {
                     paymentMethodConfig['configuration'] = checkoutInstance.options.paymentMethodsConfiguration[paymentType].configuration;
+                }
+
+                // If there is applepay specific configuration then set country code to configuration
+                if ('applepay' === paymentType &&
+                    paymentMethodConfig)
+                {
+                    paymentMethodConfig.countryCode = checkoutInstance.options.countryCode;
                 }
 
                 activeComponent = checkoutInstance.create(
