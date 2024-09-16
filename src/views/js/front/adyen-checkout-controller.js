@@ -166,6 +166,7 @@
             },
             "paywithgoogle": {
                 onClick: handleOnClick,
+                isExpress: true,
                 callbackIntents: config.requireAddress ? ['SHIPPING_ADDRESS', 'PAYMENT_AUTHORIZATION'] : [],
                 shippingAddressRequired: config.requireAddress,
                 emailRequired: config.requireEmail,
@@ -180,6 +181,7 @@
             },
             "googlepay": {
                 onClick: handleOnClick,
+                isExpress: true,
                 callbackIntents: config.requireAddress ? ['SHIPPING_ADDRESS', 'PAYMENT_AUTHORIZATION'] : [],
                 shippingAddressRequired: config.requireAddress,
                 emailRequired: config.requireEmail,

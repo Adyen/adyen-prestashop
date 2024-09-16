@@ -40,7 +40,13 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
             $config = $this->getConfigForNewAddress($newAddress);
 
             header('Content-Type: application/json');
-            die(json_encode(['amount' => $config->toArray()['amount']['value']]));
+            die(json_encode(
+                [
+                    'amount' => $config->toArray()['amount']['value'],
+                    'currency' => $config->toArray()['amount']['currency'],
+                    'country' => Context::getContext()->country->iso_code
+                ])
+            );
         }
 
         $cartId = (int)Tools::getValue('cartId');

@@ -9,7 +9,8 @@ var AdyenWallets = window.AdyenWallets || {};
             reference = '',
             paymentData = null,
             type = '',
-            productData = null;
+            productData = null,
+            countryCode = '';
 
         function mountElements(getData) {
             if (!document.getElementById('adyen-express-checkout')) {
@@ -51,6 +52,7 @@ var AdyenWallets = window.AdyenWallets || {};
                     })(type),
                     "onAuthorized": onAuthorized,
                     "onPaymentAuthorized": onPaymentAuthorized,
+                    "onPaymentDataChanged": onPaymentDataChanged,
                     "onApplePayPaymentAuthorized": onApplePayPaymentAuthorized,
                     "onShippingContactSelected": onShippingContactSelected,
                     "onAdditionalDetails": onAdditionalDetails,
@@ -254,8 +256,6 @@ var AdyenWallets = window.AdyenWallets || {};
         }
 
         function onPaymentAuthorized(paymentData) {
-            let me = this;
-
             return new Promise(function (resolve, reject) {
                 let shippingAddressInput = $('[name=adyenShippingAddress]'),
                     billingAddressInput = $('[name=adyenBillingAddress]'),
@@ -277,6 +277,65 @@ var AdyenWallets = window.AdyenWallets || {};
                 emailInput.val(JSON.stringify(paymentData.email));
 
                 resolve({transactionState: 'SUCCESS'});
+            });
+        }
+
+        function onPaymentDataChanged(intermediatePaymentData) {
+            return new Promise(async resolve => {
+                const {shippingAddress} = intermediatePaymentData;
+                const paymentDataRequestUpdate = {};
+                let amount = 0,
+                    data = {};
+
+                let shippingAddressData = {
+                    zipCode: shippingAddress.postalCode,
+                    city: shippingAddress.locality,
+                    country: shippingAddress.countryCode,
+                    firstName: 'Temp',
+                    lastName: 'Temp',
+                    street: 'Street 123'
+                };
+
+                data = {
+                    'newAddress': {
+                        'adyenShippingAddress': JSON.stringify(shippingAddressData),
+                        'adyenBillingAddress': JSON.stringify(shippingAddressData),
+                    }
+                }
+
+                let configUrlInput = document.getElementsByClassName('adyen-config-url')[0],
+                    checkoutConfigUrl = configUrlInput.value + getConfigParams();
+
+
+                $.ajax({
+                    type: "POST",
+                    url: checkoutConfigUrl + '/isXHR/1',
+                    data: data,
+                    success: function (response) {
+                        amount = parseInt(response.amount) / 100;
+
+                        if (countryCode === '') {
+                            countryCode = response.country;
+                        }
+
+                        paymentDataRequestUpdate.newTransactionInfo = {
+                            currencyCode: response.currency,
+                            totalPriceStatus: "FINAL",
+                            totalPrice: (amount).toString(),
+                            totalPriceLabel: "Total",
+                            countryCode: countryCode,
+                        };
+                        resolve(paymentDataRequestUpdate);
+                    },
+                    error: function (response) {
+                        paymentDataRequestUpdate.error = {
+                            reason: "SHIPPING_ADDRESS_UNSERVICEABLE",
+                            message: response.message ?? "Cannot ship to the selected address",
+                            intent: "SHIPPING_ADDRESS"
+                        };
+                        resolve(paymentDataRequestUpdate);
+                    }
+                });
             });
         }
 
@@ -345,7 +404,7 @@ var AdyenWallets = window.AdyenWallets || {};
         function onShippingContactSelected(resolve, reject, event) {
             let address = event.shippingContact;
             let data = {};
-            let amount = 0 ;
+            let amount = 0;
 
             let shippingAddress = {
                 firstName: 'Temp',
@@ -359,7 +418,7 @@ var AdyenWallets = window.AdyenWallets || {};
             };
 
             data = {
-                'newAddress' : {
+                'newAddress': {
                     'adyenShippingAddress': JSON.stringify(shippingAddress),
                     'adyenBillingAddress': JSON.stringify(shippingAddress),
                 }
@@ -374,7 +433,7 @@ var AdyenWallets = window.AdyenWallets || {};
                 url: checkoutConfigUrl + '&isXHR=1',
                 data: data,
                 success: function (response) {
-                    amount = parseInt(response.amount)/100;
+                    amount = parseInt(response.amount) / 100;
                     let applePayShippingMethodUpdate = {};
 
                     applePayShippingMethodUpdate.newTotal = {
