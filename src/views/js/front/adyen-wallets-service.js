@@ -6,6 +6,7 @@ var AdyenWallets = window.AdyenWallets || {};
     function AdyenWalletsService() {
         let checkoutController = {},
             paymentStarted = false,
+            pspReference = '',
             reference = '',
             paymentData = null,
             type = '',
@@ -56,7 +57,8 @@ var AdyenWallets = window.AdyenWallets || {};
                     "onApplePayPaymentAuthorized": onApplePayPaymentAuthorized,
                     "onShippingContactSelected": onShippingContactSelected,
                     "onAdditionalDetails": onAdditionalDetails,
-                    "onShopperDetails": onShopperDetails
+                    "onShopperDetails": onShopperDetails,
+                    "onShippingAddressChanged": onShippingAddressChanged
                 });
 
                 if (type === 'amazonpay' && getData !== undefined) {
@@ -204,6 +206,10 @@ var AdyenWallets = window.AdyenWallets || {};
                     if (!response.action) {
                         window.location.reload();
                         return;
+                    }
+
+                    if (response.pspReference) {
+                        pspReference = response.pspReference;
                     }
 
                     reference = response.reference;
@@ -490,6 +496,27 @@ var AdyenWallets = window.AdyenWallets || {};
             emailInput.val(JSON.stringify(shopperDetails.shopperEmail));
 
             actions.resolve();
+        }
+
+        function onShippingAddressChanged(data, actions, component) {
+            let updateUrl = document.getElementsByClassName('adyen-paypal-update-order-url')[0];
+
+            $.ajax({
+                type: "POST",
+                url: updateUrl.value + getConfigParams() + '&isXHR=1',
+                data: {
+                    shippingAddress: data.shippingAddress,
+                    paymentData: component.paymentData,
+                    pspReference: pspReference
+                },
+                success: function (response) {
+                    component.updatePaymentData(response.paymentData);
+                    actions.resolve();
+                },
+                error: function (response) {
+                    actions.reject(new Error('fail'));
+                }
+            });
         }
 
         this.mountElements = mountElements;
