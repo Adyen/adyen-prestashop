@@ -12,6 +12,7 @@
                 <input type="hidden" class="adyen-redirect-action-url"
                        value="{$paymentRedirectActionURL|escape:'html':'UTF-8'}">
                 <input type="hidden" class="adyen-presta-version" value="{$version|escape:'html':'UTF-8'}">
+                <input type="hidden" class="adyen-paypal-update-order-url" value="{$paypalUpdateOrderUrl|escape:'html':'UTF-8'}">
             </div>
         {/foreach}
         <input type="hidden" name="adyenShippingAddress">

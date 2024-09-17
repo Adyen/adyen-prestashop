@@ -68,7 +68,8 @@
      * onPaymentDataChanged: function|undefined,
      * onShopperDetails: function|undefined
      * onPayButtonClick: function|undefined,
-     * onClickToPay: function|undefined
+     * onClickToPay: function|undefined,
+     * onShippingAddressChanged: function|undefined
      * }} config
      */
     function CheckoutController(config) {
@@ -141,6 +142,10 @@
             return config.onShopperDetails(shopperDetails, rawData, actions);
         }
 
+        const shippingAddressChanged = (data, actions, component) => {
+            return config.onShippingAddressChanged(data, actions, component);
+        }
+
         let checkout,
             activeComponent,
             isStateValid = true,
@@ -204,6 +209,10 @@
                 }
             }
         };
+
+        if (config.onShippingAddressChanged) {
+            paymentMethodSpecificConfig.paypal.onShippingAddressChange = shippingAddressChanged
+        }
 
         if (config.requireAddress) {
             paymentMethodSpecificConfig.applepay = {

@@ -54,7 +54,8 @@ class PayPalGuestExpressCheckoutService
         die(json_encode(
             [
                 'action' => $response->getAction(),
-                'reference' => $cart->id
+                'reference' => $cart->id,
+                'pspReference' => $response->getPspReference(),
             ]
         ));
     }

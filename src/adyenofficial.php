@@ -1562,6 +1562,7 @@ class AdyenOfficial extends PaymentModule
             'configURL' => $configUrl,
             'paymentActionURL' => $paymentUrl,
             'paymentRedirectActionURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl('paymentredirect'),
+            'paypalUpdateOrderUrl' => AdyenPayment\Classes\Utility\Url::getFrontUrl('paypalupdateorder'),
             'version' => _PS_VERSION_
         ]);
 
