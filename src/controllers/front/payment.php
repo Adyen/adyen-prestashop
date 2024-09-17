@@ -72,7 +72,6 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
 
         if ($customerEmail) {
             $customer = $customerService->createAndLoginCustomer($customerEmail, $data);
-            $customerService->removeTemporaryGuestCustomer($cart);
         } elseif ($cart->id_customer) {
             $customer = new Customer($cart->id_customer);
         } elseif (PaymentMethodCode::payPal()->equals($additionalData['paymentMethod']['type'])) {
@@ -82,21 +81,7 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
         }
 
         if (!empty($data['adyenBillingAddress'])) {
-            $langId = (int)$this->context->language->id;
-            $customerService->setCustomerAddresses($customer, $data);
-            $addresses = $customer->getAddresses($langId);
-            if (count($addresses) === 0) {
-                $this->handleNotSuccessfulPayment(self::FILE_NAME);
-            } else {
-                $lastAddress = end($addresses);
-
-                $cart->secure_key = $customer->secure_key;
-                $cart->id_address_delivery = $lastAddress['id_address'];
-                $cart->id_address_invoice = $lastAddress['id_address'];
-                $cart->id_carrier = CheckoutHandler::getCarrierId($cart);
-                $cart->id_customer = $customer->id;
-                $cart->update();
-            }
+            $cart = $customerService->setCustomerAddresses($customer, $data, $cart);
         }
 
         if (count($cart->getAddressCollection()) === 0) {

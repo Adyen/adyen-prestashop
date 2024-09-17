@@ -78,6 +78,10 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
      */
     private function getConfigForNewAddress($data)
     {
+        Tools::clearAllCache();
+        \ProductCore::resetStaticCache();
+        Cache::clear();
+
         $billingAddress = json_decode($data['adyenBillingAddress'], false);
         $countryCode = $billingAddress->country;
         /** @var CustomerService $customerService */
@@ -87,14 +91,13 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
         }
 
         $cartId = (int)Tools::getValue('cartId');
-        $customerId = (int)$this->context->customer->id;
         if ($cartId !== 0) {
             $cart = new Cart($cartId);
             if (!$cart->id) {
                 AdyenPrestaShopUtility::die400(['message' => 'Invalid parameters.']);
             }
 
-            $cart = $this->updateCartWithCustomerAndAddresses($data, $cart);
+            $cart = $this->updateCartWithAddresses($data, $cart);
             $config = CheckoutHandler::getExpressCheckoutConfig($cart);
 
             $address = new Address($cart->id_address_delivery);
@@ -104,16 +107,12 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
         }
 
         $cart = $this->addProductsToCart();
-        $cart = $this->updateCartWithCustomerAndAddresses($data, $cart);
+        $cart = $this->updateCartWithAddresses($data, $cart);
+
         $config = CheckoutHandler::getExpressCheckoutConfig($cart);
 
         $address = new Address($cart->id_address_delivery);
         $address->delete();
-        if ($customerId === 0) {
-            $customer = new Customer($address->id_customer);
-            $customer->delete();
-        }
-
         $cart->delete();
 
         return $config;
@@ -129,25 +128,24 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      */
-    private function updateCartWithCustomerAndAddresses($data, $cart): Cart
+    private function updateCartWithAddresses($data, $cart): Cart
     {
-        $customerId = (int)$this->context->customer->id;
-        $langId = (int)$this->context->language->id;
         /** @var CustomerService $customerService */
         $customerService = ServiceRegister::getService(CustomerService::class);
 
-        if ($customerId === 0) {
-            $temporaryGuestEmail = 'adyen.guest.' . $cart->id . '@example.com';
-            $customer = $customerService->createAndLoginCustomer($temporaryGuestEmail, $data);
-        } else {
-            $customer = new Customer($customerId);
-        }
+        $address = json_decode($data['adyenBillingAddress']);
+        $address = $customerService->createAddress($address);
+        $address->add();
 
-        $customerService->setCustomerAddresses($customer, $data);
-        $addresses = $customer->getAddresses($langId);
-        $lastAddress = end($addresses);
+        \Context::getContext()->cart->id_address_invoice = $address->id;
+        \Context::getContext()->cart->id_address_delivery = $address->id;
+        \Context::getContext()->cart->update();
 
-        return $this->updateCart($customer, $lastAddress['id_address'], $lastAddress['id_address'], $cart);
+        $cart->id_address_delivery = $address->id;
+        $cart->id_address_invoice = $address->id;
+        $cart->update();
+
+        return $cart;
     }
 
     /**

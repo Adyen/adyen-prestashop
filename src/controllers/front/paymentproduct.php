@@ -73,7 +73,6 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
 
         if ($customerEmail) {
             $customer = $customerService->createAndLoginCustomer($customerEmail, $data);
-            $customerService->removeTemporaryGuestCustomer($cart);
         } elseif ($customerId) {
             $customer = new Customer($customerId);
         } elseif (PaymentMethodCode::payPal()->equals($additionalData['paymentMethod']['type'])) {
@@ -87,16 +86,15 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
         }
 
         if (!empty($data['adyenBillingAddress'])) {
-            $customerService->setCustomerAddresses($customer, $data);
-        }
-
-        $addresses = $customer->getAddresses($langId);
-        if (count($addresses) === 0) {
-            $this->handleNotSuccessfulPayment(self::FILE_NAME);
+            $cart = $customerService->setCustomerAddresses($customer, $data, $cart);
         } else {
-            $lastAddress = end($addresses);
-
-            $cart = $this->updateCart($customer, $lastAddress['id_address'], $lastAddress['id_address'], $cart);
+            $addresses = $customer->getAddresses($langId);
+            if (count($addresses) === 0) {
+                $this->handleNotSuccessfulPayment(self::FILE_NAME);
+            } else {
+                $lastAddress = end($addresses);
+                $cart = $this->updateCart($customer, $lastAddress['id_address'], $lastAddress['id_address'], $cart);
+            }
         }
 
         $currency = new PrestaCurrency($currencyId);

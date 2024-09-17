@@ -4,6 +4,7 @@ namespace AdyenPayment\Classes\Services\Integration;
 
 use Address;
 use AdyenPayment\Classes\Repositories\CountryRepository;
+use AdyenPayment\Classes\Services\CheckoutHandler;
 use Configuration;
 use Country;
 use Customer;
@@ -76,16 +77,24 @@ class CustomerService
      *
      * @param Customer $customer
      * @param array $data
+     * @param Cart $cart
      *
-     * @return void
+     * @return Cart
      *
      * @throws CountryNotFoundException
      * @throws \PrestaShopDatabaseException
      * @throws \PrestaShopException
      */
-    public function setCustomerAddresses($customer, $data)
+    public function setCustomerAddresses($customer, $data, $cart)
     {
         list($shippingAddressId, $billingAddressId) = $this->saveAddresses($customer, $data);
+
+        $cart->secure_key = $customer->secure_key;
+        $cart->id_address_delivery = $shippingAddressId;
+        $cart->id_address_invoice = $billingAddressId;
+        $cart->id_carrier = CheckoutHandler::getCarrierId($cart);
+        $cart->id_customer = $customer->id;
+        $cart->update();
 
         if (method_exists(\Context::getContext(), 'updateCustomer')) {
             \Context::getContext()->updateCustomer($customer);
@@ -96,6 +105,8 @@ class CustomerService
         } else {
             CustomerUpdater::updateContextCustomer(\Context::getContext(), $customer);
         }
+
+        return $cart;
     }
 
     public function saveAddresses($customer, $data)
@@ -178,25 +189,6 @@ class CustomerService
 
         return in_array($countryIso, $activeCountryCodes, true) &&
             in_array($countryIso, $moduleActiveCountryCodes, true);
-    }
-
-    /**
-     * Removes temporary guest
-     *
-     * @param Cart $cart
-     *
-     * @return void
-     */
-    public function removeTemporaryGuestCustomer($cart): void
-    {
-        $temporaryGuestEmail = 'adyen.guest.' . $cart->id . '@example.com';
-        $customersGuestByEmail = Customer::getCustomersByEmail($temporaryGuestEmail);
-
-        if (!empty($customersGuestByEmail)) {
-            $lastCustomerData = end($customersGuestByEmail);
-            $lastCustomer = new Customer($lastCustomerData['id_customer']);
-            $lastCustomer->delete();
-        }
     }
 
     /**
