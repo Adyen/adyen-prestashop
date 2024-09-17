@@ -291,6 +291,7 @@ var AdyenWallets = window.AdyenWallets || {};
                     zipCode: shippingAddress.postalCode,
                     city: shippingAddress.locality,
                     country: shippingAddress.countryCode,
+                    state: shippingAddress.administrativeArea,
                     firstName: 'Temp',
                     lastName: 'Temp',
                     street: 'Street 123'

@@ -178,9 +178,11 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
     {
         $cart = $this->addProductsToCart();
         $customer = new Customer((int)$this->context->customer->id);
-        $addresses = $customer->getAddresses((int)$this->context->language->id);
-        if (count($addresses) > 0) {
-            $cart = $this->updateCart($customer, $addresses[0]['id_address'], $addresses[0]['id_address'], $cart);
+        if($customer->id){
+            $addresses = $customer->getAddresses((int)$this->context->language->id);
+            if (count($addresses) > 0) {
+                $cart = $this->updateCart($customer, $addresses[0]['id_address'], $addresses[0]['id_address'], $cart);
+            }
         }
 
         return $cart;
