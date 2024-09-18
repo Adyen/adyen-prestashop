@@ -9,9 +9,9 @@ use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency;
 use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\Bootstrap;
-use AdyenPayment\Classes\Services\CheckoutHandler;
 use AdyenPayment\Classes\Services\Integration\CustomerService;
 use AdyenPayment\Classes\Services\PayPalGuestExpressCheckoutService;
+use AdyenPayment\Classes\Utility\AdyenPrestaShopUtility;
 use AdyenPayment\Classes\Utility\Url;
 use AdyenPayment\Controllers\PaymentController;
 use Adyen\Core\Infrastructure\Logger\Logger;
@@ -51,30 +51,32 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
      */
     public function postProcess()
     {
-        $cart = $this->context->cart;
         $data = Tools::getAllValues();
         $additionalData = !empty($data['adyen-additional-data']) ? json_decode(
             $data['adyen-additional-data'],
             true
         ) : [];
-        $currency = new PrestaCurrency($cart->id_currency);
         $type = array_key_exists('adyen-type', $data) ? $data['adyen-type'] : '';
-
         if ($this->isAjaxRequest()) {
             $type = $additionalData['paymentMethod']['type'];
         }
+
+        $cart = $this->context->cart;
+        $customer = $this->context->customer;
 
         $customerEmail = array_key_exists('adyenEmail', $data) ?
             str_replace(['"', "'"], '', $data['adyenEmail']) : '';
         /** @var CustomerService $customerService */
         $customerService = ServiceRegister::getService(CustomerService::class);
-        $customer = new Customer($cart->id_customer);
-
-        if ($customerEmail) {
+        if ($customerEmail !== '') {
             $customer = $customerService->createAndLoginCustomer($customerEmail, $data);
         } elseif (PaymentMethodCode::payPal()->equals($additionalData['paymentMethod']['type'])) {
             $payPalGuestExpressCheckoutService = new PayPalGuestExpressCheckoutService();
             $payPalGuestExpressCheckoutService->startGuestPayPalPaymentTransaction($cart, $this->getOrderTotal($cart, $type), $data);
+        }
+
+        if (!$customer->id) {
+            AdyenPrestaShopUtility::die400(['message' => 'Customer is undefined.']);
         }
 
         if (!empty($data['adyenBillingAddress'])) {
@@ -85,6 +87,7 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
             $this->handleNotSuccessfulPayment(self::FILE_NAME);
         }
 
+        $currency = new PrestaCurrency($cart->id_currency);
         try {
             $response = CheckoutApi::get()->paymentRequest((string)$cart->id_shop)->startTransaction(
                 new StartTransactionRequest(

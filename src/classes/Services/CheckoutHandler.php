@@ -91,7 +91,6 @@ class CheckoutHandler
         Tools::clearAllCache();
         \ProductCore::resetStaticCache();
         Cache::clear();
-        \Customer::resetStaticCache();
 
         return CheckoutAPI::get()->checkoutConfig($cart->id_shop)->getExpressPaymentCheckoutConfig(
             new PaymentCheckoutConfigRequest(
@@ -114,9 +113,10 @@ class CheckoutHandler
      */
     public static function getCarrierId(PrestaCart $cart): int
     {
-        if (Tools::getValue('controller') === 'paymentconfigexpresscheckout' || Tools::getValue(
-                'controller'
-            ) === 'paymentproduct') {
+        if (Tools::getValue('controller') === 'paymentconfigexpresscheckout' ||
+            Tools::getValue('controller') === 'paymentproduct' ||
+            Tools::getValue('controller') === 'payment'
+        ) {
             //Get default carrier for current shop
             $carrierId = (int)Configuration::get('PS_CARRIER_DEFAULT', null, null, $cart->id_shop);
             $carrier = new Carrier($carrierId);

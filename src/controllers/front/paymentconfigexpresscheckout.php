@@ -143,6 +143,10 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
         $address = $customerService->createAddress($address);
         $address->add();
 
+        \Context::getContext()->cart->id_address_invoice = $address->id;
+        \Context::getContext()->cart->id_address_delivery = $address->id;
+        \Context::getContext()->cart->update();
+
         $cart->id_address_delivery = $address->id;
         $cart->id_address_invoice = $address->id;
         $cart->update();

@@ -156,8 +156,6 @@ class CustomerService
         $address->city = $sourceAddress->city;
         $address->alias = 'Home';
         $address->postcode = $sourceAddress->zipCode;
-        $address->phone = $sourceAddress->phone;
-        $address->phone_mobile = $sourceAddress->phone;
 
         return $address;
     }

@@ -64,16 +64,17 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
         $langId = (int)$this->context->language->id;
 
         $cart = $this->context->cart;
+        $cart->save();
         $customer = $this->context->customer;
 
         /** @var CustomerService $customerService */
         $customerService = ServiceRegister::getService(CustomerService::class);
         $customerEmail = array_key_exists('adyenEmail', $data) ?
             str_replace(['"', "'"], '', $data['adyenEmail']) : '';
-        if ($customerEmail) {
-            $customer = $customerService->createAndLoginCustomer($customerEmail, $data); // created customer and cart
+        if ($customerEmail !== '') {
+            $customer = $customerService->createAndLoginCustomer($customerEmail, $data);
         } else {
-            $this->context->updateCustomer($customer);  // customer already exists and created cart
+            $this->context->updateCustomer($customer);
         }
 
         if (!$customer->id) {
@@ -180,26 +181,6 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
         $customizationId = array_key_exists('id_product', $product) ? (int)$product['id_customization'] : 0;
 
         $cart->updateQty($quantityWanted, $productId, $idProductAttribute, $customizationId);
-    }
-
-    /**
-     * @param int $currencyId
-     * @param int $langId
-     *
-     * @return Cart
-     *
-     * @throws PrestaShopException
-     */
-    private function createEmptyCart(int $currencyId, int $langId): Cart
-    {
-        $cart = $this->context->cart;
-        $cart->id_currency = $currencyId;
-        $cart->id_lang = $langId;
-        $cart->id_shop = $this->context->shop->id;
-        $cart->id_carrier = CheckoutHandler::getCarrierId($cart);
-        $cart->save();
-
-        return $cart;
     }
 
     /**
