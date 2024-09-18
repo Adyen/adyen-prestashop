@@ -51,8 +51,7 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
      */
     public function postProcess()
     {
-        $cart = $this->getCurrentCart();
-
+        $cart = $this->context->cart;
         $data = Tools::getAllValues();
         $additionalData = !empty($data['adyen-additional-data']) ? json_decode(
             $data['adyen-additional-data'],
@@ -69,14 +68,12 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
             str_replace(['"', "'"], '', $data['adyenEmail']) : '';
         /** @var CustomerService $customerService */
         $customerService = ServiceRegister::getService(CustomerService::class);
+        $customer = new Customer($cart->id_customer);
 
         if ($customerEmail) {
             $customer = $customerService->createAndLoginCustomer($customerEmail, $data);
-        } elseif ($cart->id_customer) {
-            $customer = new Customer($cart->id_customer);
         } elseif (PaymentMethodCode::payPal()->equals($additionalData['paymentMethod']['type'])) {
             $payPalGuestExpressCheckoutService = new PayPalGuestExpressCheckoutService();
-
             $payPalGuestExpressCheckoutService->startGuestPayPalPaymentTransaction($cart, $this->getOrderTotal($cart, $type), $data);
         }
 
@@ -149,14 +146,6 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
         }
 
         return '';
-    }
-
-    /**
-     * @return Cart
-     */
-    protected function getCurrentCart(): Cart
-    {
-        return new Cart($this->context->cart->id);
     }
 
     /**

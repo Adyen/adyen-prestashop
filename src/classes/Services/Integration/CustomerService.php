@@ -3,6 +3,7 @@
 namespace AdyenPayment\Classes\Services\Integration;
 
 use Address;
+use AdyenPayment\Classes\Repositories\CartProductRepository;
 use AdyenPayment\Classes\Repositories\CountryRepository;
 use AdyenPayment\Classes\Services\CheckoutHandler;
 use Configuration;
@@ -64,9 +65,6 @@ class CustomerService
 
         if (method_exists(\Context::getContext(), 'updateCustomer')) {
             \Context::getContext()->updateCustomer($customer);
-            \Context::getContext()->cart->id_customer = $customer->id;
-        } else {
-            CustomerUpdater::updateContextCustomer(\Context::getContext(), $customer);
         }
 
         return $customer;
@@ -89,22 +87,16 @@ class CustomerService
     {
         list($shippingAddressId, $billingAddressId) = $this->saveAddresses($customer, $data);
 
-        $cart->secure_key = $customer->secure_key;
-        $cart->id_address_delivery = $shippingAddressId;
-        $cart->id_address_invoice = $billingAddressId;
-        $cart->id_carrier = CheckoutHandler::getCarrierId($cart);
-        $cart->id_customer = $customer->id;
-        $cart->update();
-
         if (method_exists(\Context::getContext(), 'updateCustomer')) {
             \Context::getContext()->updateCustomer($customer);
-            \Context::getContext()->cart->id_customer = $customer->id;
-            \Context::getContext()->cart->id_address_invoice = $billingAddressId;
-            \Context::getContext()->cart->id_address_delivery = $shippingAddressId;
-            \Context::getContext()->cart->update();
-        } else {
-            CustomerUpdater::updateContextCustomer(\Context::getContext(), $customer);
         }
+
+        \Context::getContext()->cart->id_address_invoice = $billingAddressId;
+        \Context::getContext()->cart->id_address_delivery = $shippingAddressId;
+        \Context::getContext()->cart->update();
+        \Context::getContext()->cart->id_carrier = CheckoutHandler::getCarrierId($cart);
+        $this->updateDeliveryAddress($cart->id, $shippingAddressId);
+        \Context::getContext()->cart->update();
 
         return $cart;
     }
@@ -231,10 +223,29 @@ class CustomerService
     }
 
     /**
+     * @param int $cartId
+     * @param int $addressId
+     *
+     * @return void
+     */
+    public function updateDeliveryAddress(int $cartId, int $addressId): void
+    {
+        $this->getCartProductRepository()->updateDeliveryAddress($cartId, $addressId);
+    }
+
+    /**
      * @return CountryRepository
      */
     private function getCountryRepository(): CountryRepository
     {
         return new CountryRepository();
+    }
+
+    /**
+     * @return CartProductRepository
+     */
+    private function getCartProductRepository(): CartProductRepository
+    {
+        return new CartProductRepository();
     }
 }

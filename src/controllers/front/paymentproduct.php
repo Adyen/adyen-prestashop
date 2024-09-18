@@ -53,35 +53,30 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
      */
     public function postProcess()
     {
-        $currencyId = (int)$this->context->currency->id;
-        $langId = (int)$this->context->language->id;
-        $cart = $this->createEmptyCart($currencyId, $langId);
-        $customerId = (int)$this->context->customer->id;
         $data = Tools::getAllValues();
-        $customerEmail = array_key_exists('adyenEmail', $data) ?
-            str_replace(['"', "'"], '', $data['adyenEmail']) : '';
-
-        $product = array_key_exists('product' , $data) ? json_decode($data['product'], true) : [];
-        $this->addProductToCart($cart, $product);
         $additionalData = !empty($data['adyen-additional-data']) ? json_decode(
             $data['adyen-additional-data'],
             true
         ) : [];
+        $product = array_key_exists('product', $data) ? json_decode($data['product'], true) : [];
         $type = !empty($additionalData['paymentMethod']['type']) ? $additionalData['paymentMethod']['type'] : '';
+        $currencyId = (int)$this->context->currency->id;
+        $langId = (int)$this->context->language->id;
+
+        $cart = $this->context->cart;
+        $customer = $this->context->customer;
+
         /** @var CustomerService $customerService */
         $customerService = ServiceRegister::getService(CustomerService::class);
-
+        $customerEmail = array_key_exists('adyenEmail', $data) ?
+            str_replace(['"', "'"], '', $data['adyenEmail']) : '';
         if ($customerEmail) {
-            $customer = $customerService->createAndLoginCustomer($customerEmail, $data);
-        } elseif ($customerId) {
-            $customer = new Customer($customerId);
-        } elseif (PaymentMethodCode::payPal()->equals($additionalData['paymentMethod']['type'])) {
-            $payPalGuestExpressCheckoutService = new PayPalGuestExpressCheckoutService();
-
-            $payPalGuestExpressCheckoutService->startGuestPayPalPaymentTransaction($cart, $this->getOrderTotal($cart, $type), $data);
+            $customer = $customerService->createAndLoginCustomer($customerEmail, $data); // created customer and cart
+        } else {
+            $this->context->updateCustomer($customer);  // customer already exists and created cart
         }
 
-        if (!$customer) {
+        if (!$customer->id) {
             AdyenPrestaShopUtility::die400(['message' => 'Customer is undefined.']);
         }
 
@@ -89,12 +84,16 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
             $cart = $customerService->setCustomerAddresses($customer, $data, $cart);
         } else {
             $addresses = $customer->getAddresses($langId);
-            if (count($addresses) === 0) {
-                $this->handleNotSuccessfulPayment(self::FILE_NAME);
-            } else {
-                $lastAddress = end($addresses);
-                $cart = $this->updateCart($customer, $lastAddress['id_address'], $lastAddress['id_address'], $cart);
+            if (count($addresses) > 0) {
+                $cart = $this->updateCart($customer, $addresses[0]['id_address'], $addresses[0]['id_address'], $cart);
             }
+        }
+
+        $this->addProductToCart($cart, $product);
+
+        if (PaymentMethodCode::payPal()->equals($type)) {
+            $payPalGuestExpressCheckoutService = new PayPalGuestExpressCheckoutService();
+            $payPalGuestExpressCheckoutService->startGuestPayPalPaymentTransaction($cart, $this->getOrderTotal($cart, $type), $data);
         }
 
         $currency = new PrestaCurrency($currencyId);
@@ -193,10 +192,10 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
      */
     private function createEmptyCart(int $currencyId, int $langId): Cart
     {
-        $cart = new Cart();
+        $cart = $this->context->cart;
         $cart->id_currency = $currencyId;
         $cart->id_lang = $langId;
-        $cart->id_shop = Context::getContext()->shop->id;
+        $cart->id_shop = $this->context->shop->id;
         $cart->id_carrier = CheckoutHandler::getCarrierId($cart);
         $cart->save();
 
@@ -220,6 +219,7 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
         $cart->id_address_delivery = $deliveryAddressId;
         $cart->id_address_invoice = $invoiceAddressId;
         $cart->id_customer = $customer->id;
+        $cart->id_carrier = CheckoutHandler::getCarrierId($cart);
         $cart->update();
 
         return $cart;
