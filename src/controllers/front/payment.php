@@ -70,7 +70,7 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
         $customerService = ServiceRegister::getService(CustomerService::class);
         if ($customerEmail !== '') {
             $customer = $customerService->createAndLoginCustomer($customerEmail, $data);
-        } elseif (PaymentMethodCode::payPal()->equals($additionalData['paymentMethod']['type'])) {
+        } elseif (PaymentMethodCode::payPal()->equals($type)) {
             $payPalGuestExpressCheckoutService = new PayPalGuestExpressCheckoutService();
             $payPalGuestExpressCheckoutService->startGuestPayPalPaymentTransaction($cart, $this->getOrderTotal($cart, $type), $data);
         }
