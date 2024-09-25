@@ -201,10 +201,6 @@
             }
         };
 
-        if (config.onShippingAddressChanged) {
-            paymentMethodSpecificConfig.paypal.onShippingAddressChange = shippingAddressChanged
-        }
-
         if (config.requireAddress) {
             paymentMethodSpecificConfig.applepay = {
                 isExpress: true,

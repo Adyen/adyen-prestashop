@@ -108,7 +108,7 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
             $customerService->updateDeliveryAddress((int)$cart->id, (int)$cart->id_address_delivery);
             $cart->update();
 
-            $config = CheckoutHandler::getExpressCheckoutConfig($cart);
+            $config = CheckoutHandler::getExpressCheckoutConfig($cart, true);
 
             $address = new Address($cart->id_address_delivery);
             $address->delete();
@@ -122,7 +122,7 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
         $customerService->updateDeliveryAddress((int)$cart->id, (int)$cart->id_address_delivery);
         $cart->update();
 
-        $config = CheckoutHandler::getExpressCheckoutConfig($cart);
+        $config = CheckoutHandler::getExpressCheckoutConfig($cart, true);
 
         $address = new Address($cart->id_address_delivery);
         $address->delete();
