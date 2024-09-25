@@ -104,9 +104,6 @@
         config.onApplePayPaymentAuthorized = config.onApplePayPaymentAuthorized || function (resolve, reject, event) {
             resolve(window.ApplePaySession.STATUS_SUCCESS);
         };
-        config.onShopperDetails = config.onShopperDetails || function (shopperDetails, rawData, actions) {
-            actions.resolve();
-        };
         config.onPayButtonClick = config.onPayButtonClick || function (resolve, reject) {
             resolve();
         };
@@ -136,10 +133,6 @@
 
         const handleOnShippingContactSelected = (resolve, reject, event) => {
             return config.onShippingContactSelected(resolve, reject, event);
-        }
-
-        const handleShopperDetails = (shopperDetails, rawData, actions) => {
-            return config.onShopperDetails(shopperDetails, rawData, actions);
         }
 
         const shippingAddressChanged = (data, actions, component) => {
@@ -200,8 +193,6 @@
                 paymentDataCallbacks: googlePaymentDataCallbacks
             },
             "paypal": {
-                isExpress: true,
-                onShopperDetails: handleShopperDetails,
                 blockPayPalCreditButton: true,
                 blockPayPalPayLaterButton: true,
                 onClick: (source, event, self) => {

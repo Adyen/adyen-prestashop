@@ -8,6 +8,8 @@ use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
 use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutConfig\Request\PaymentCheckoutConfigRequest;
 use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutConfig\Response\PaymentCheckoutConfigResponse;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode;
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\MissingActiveApiConnectionData;
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\MissingClientKeyConfiguration;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Country;
@@ -71,14 +73,17 @@ class CheckoutHandler
 
     /**
      * @param PrestaCart $cart
+     * @param bool $isGuest
      *
      * @return PaymentCheckoutConfigResponse
      *
      * @throws InvalidCurrencyCode
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
+     * @throws MissingActiveApiConnectionData
+     * @throws MissingClientKeyConfiguration
      */
-    public static function getExpressCheckoutConfig(PrestaCart $cart): PaymentCheckoutConfigResponse
+    public static function getExpressCheckoutConfig(PrestaCart $cart, bool $isGuest): PaymentCheckoutConfigResponse
     {
         $currency = new PrestaCurrency($cart->id_currency);
         $addressInvoice = new PrestaAddress($cart->id_address_invoice);
@@ -103,7 +108,10 @@ class CheckoutHandler
                 $country->iso_code ?
                     Country::fromIsoCode($country->iso_code) : Country::fromIsoCode(Context::getContext()->country->iso_code) ,
                 Context::getContext()->getTranslator()->getLocale(),
-                $shop['domain'] . '_' . \Context::getContext()->shop->id . '_' . $cart->id_customer
+                $shop['domain'] . '_' . \Context::getContext()->shop->id . '_' . $cart->id_customer,
+                null,
+                null,
+                $isGuest
             )
         );
     }
