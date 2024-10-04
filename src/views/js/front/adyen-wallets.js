@@ -140,7 +140,8 @@ $(document).ready(function () {
                 window.location.href = response.nextStepUrl;
             },
             error: function () {
-                window.location.href = checkoutUrl.value;
+                const checkoutUrlValue = checkoutUrl.value + "";
+                window.location.href = checkoutUrlValue;
             }
         });
     }
