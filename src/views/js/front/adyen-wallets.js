@@ -19,15 +19,6 @@ $(document).ready(function () {
         event.preventDefault(); // Prevents the form from being submitted for ApplePay button
     }
 
-    function isValidURL(url) {
-        try {
-            const parsedUrl = new URL(url);
-            return true;
-        } catch (err) {
-            return false;
-        }
-    }
-
     if (amazonCheckoutSessionId) {
         if (checkBox && !checkBox.is(':checked')) {
             // If not checked, set it to checked
@@ -149,12 +140,12 @@ $(document).ready(function () {
                 window.location.href = response.nextStepUrl;
             },
             error: function () {
-                const checkoutUrlValue = checkoutUrl.value;
-                if (!isValidURL(checkoutUrlValue)) {
-                    console.error('Invalid URL, redirection aborted.');
-                    return;
+                try {
+                    const checkoutUrlObject = new URL(checkoutUrl.value);
+                    window.location.href = checkoutUrlObject.href;
+                } catch (err) {
+                    console.error('Invalid URL, redirection aborted.', err);
                 }
-                window.location.href = checkoutUrlValue;
             }
         });
     }
