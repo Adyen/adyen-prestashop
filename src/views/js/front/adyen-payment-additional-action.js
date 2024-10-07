@@ -39,7 +39,12 @@ $(document).ready(function () {
                 window.location.href = response.nextStepUrl;
             },
             error: function () {
-                window.location.href = checkoutUrl.value;
+                try {
+                    const checkoutUrlObject = new URL(checkoutUrl.value);
+                    window.location.href = checkoutUrlObject.href;
+                } catch (err) {
+                    console.error('Invalid URL, redirection aborted.', err);
+                }
             }
         }).complete(() => {
             adyenLoader.style.display = "none";

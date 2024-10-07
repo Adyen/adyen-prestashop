@@ -128,10 +128,20 @@ $(document).ready(function () {
                     return;
                 }
 
-                window.location.href = checkoutUrl.value;
+                try {
+                    const checkoutUrlObject = new URL(checkoutUrl.value);
+                    window.location.href = checkoutUrlObject.href;
+                } catch (err) {
+                    console.error('Invalid URL, redirection aborted.', err);
+                }
             },
             error: function () {
-                window.location.href = checkoutUrl.value;
+                try {
+                    const checkoutUrlObject = new URL(checkoutUrl.value);
+                    window.location.href = checkoutUrlObject.href;
+                } catch (err) {
+                    console.error('Invalid URL, redirection aborted.', err);
+                }
             }
         });
     }

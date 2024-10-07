@@ -171,7 +171,12 @@ $(document).ready(function () {
                 }
 
                 if (!response.action) {
-                    window.location.href = checkoutUrl.value;
+                    try {
+                        const checkoutUrlObject = new URL(checkoutUrl.value);
+                        window.location.href = checkoutUrlObject.href;
+                    } catch (err) {
+                        console.error('Invalid URL, redirection aborted.', err);
+                    }
                     return;
                 }
 
@@ -184,7 +189,12 @@ $(document).ready(function () {
                 checkoutController.handleAction(response.action);
             },
             error: function () {
-                window.location.href = checkoutUrl.value;
+                try {
+                    const checkoutUrlObject = new URL(checkoutUrl.value);
+                    window.location.href = checkoutUrlObject.href;
+                } catch (err) {
+                    console.error('Invalid URL, redirection aborted.', err);
+                }
             }
         });
     }
