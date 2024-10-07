@@ -196,6 +196,7 @@ if (!window.AdyenFE) {
         const handleOnOptionChange = (listItem, storeId) => {
             hiddenInput.value = storeId;
             updateTextOnChange && (switchButton.firstElementChild.textContent = listItem.innerText);
+
             list.classList.remove('adls--show');
 
             listItems.forEach((li) => li.classList.remove('adls--selected'));
