@@ -20,7 +20,11 @@ if (!window.AdyenFE) {
 
             name += 'Controller';
 
-            return AdyenFE[name] ? new AdyenFE[name](configuration) : null;
+            if(!(AdyenFE.hasOwnProperty(name) && typeof AdyenFE[name] === 'function')) {
+                return null;
+            }
+
+            return new AdyenFE[name](configuration);
         };
     }
 
