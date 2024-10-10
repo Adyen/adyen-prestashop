@@ -19,7 +19,7 @@ if (!window.AdyenFE) {
             }
 
             name += 'Controller';
-
+            // comment
             if(!(AdyenFE.hasOwnProperty(name) && typeof AdyenFE[name] === 'function')) {
                 return null;
             }
