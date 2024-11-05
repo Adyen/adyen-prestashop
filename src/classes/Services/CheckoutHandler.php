@@ -123,7 +123,7 @@ class CheckoutHandler
     {
         if (Tools::getValue('controller') === 'paymentconfigexpresscheckout' ||
             Tools::getValue('controller') === 'paymentproduct' ||
-            Tools::getValue('controller') === 'payment'
+            (Tools::getValue('controller') === 'payment' && !$cart->id_carrier)
         ) {
             //Get default carrier for current shop
             $carrierId = (int)Configuration::get('PS_CARRIER_DEFAULT', null, null, $cart->id_shop);
