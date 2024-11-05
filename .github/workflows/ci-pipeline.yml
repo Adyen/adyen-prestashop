@@ -2,7 +2,7 @@
 on:
   push:
     branches:
-      - feature/CR-SET-14
+      [ "main", "develop" ]
 jobs:
   build:
     permissions:
