@@ -11,6 +11,7 @@ use Adyen\Core\BusinessLogic\Domain\Webhook\Models\Webhook;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Adyen\Core\Infrastructure\Utility\TimeProvider;
 use Adyen\Webhook\EventCodes;
+use AdyenPayment\Classes\Services\AdyenOrderStatusMapping;
 use AdyenPayment\Classes\Services\RefundHandler;
 use AdyenPayment\Classes\Version\Contract\VersionHandler;
 use Cart;
@@ -110,6 +111,11 @@ class OrderService implements OrderServiceInterface
         }
         $order = new Order($idOrder);
         $this->setTimezone($order->id_shop);
+
+        if ($order->current_state === AdyenOrderStatusMapping::getPrestaShopOrderStatusId(AdyenOrderStatusMapping::PRESTA_PAYMENT_ERROR)
+            && !in_array($webhook->getEventCode(), [EventCodes::REFUND, EventCodes::CANCELLATION])) {
+            return;
+        }
 
         if ((int)$statusId && (int)$statusId !== (int)$order->current_state) {
             $history = new OrderHistory();

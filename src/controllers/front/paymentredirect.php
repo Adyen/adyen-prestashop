@@ -82,7 +82,7 @@ class AdyenOfficialPaymentRedirectModuleFrontController extends PaymentControlle
             $cart->id_customer = $customer->id;
             $cart->update();
 
-            $this->saveOrder(Tools::getValue('adyenPaymentType'), $cart);
+            $this->saveOrder(Tools::getValue('adyenPaymentType'), $cart, $response->getAmount());
 
             if (isset($requestData['details'])) {
                 die(json_encode(['nextStepUrl' => $this->generateSuccessURL($cart)]));

@@ -98,14 +98,15 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
         }
 
         $currency = new PrestaCurrency($currencyId);
+        $amount = Amount::fromFloat(
+            $this->getOrderTotal($cart, $type),
+            Currency::fromIsoCode($currency->iso_code ?? 'EUR')
+        );
         try {
             $response = CheckoutApi::get()->paymentRequest((string)$cart->id_shop)->startTransaction(
                 new StartTransactionRequest(
                     $type,
-                    Amount::fromFloat(
-                        $this->getOrderTotal($cart, $type),
-                        Currency::fromIsoCode($currency->iso_code ?? 'EUR')
-                    ),
+                    $amount,
                     (string)$cart->id,
                     Url::getFrontUrl('paymentredirect', ['adyenMerchantReference' => $cart->id, 'adyenPaymentType' => $type]
                     ),
@@ -121,10 +122,10 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
             }
 
             if (!$response->isAdditionalActionRequired()) {
-                $this->handleSuccessfulPaymentWithoutAdditionalData($type, $cart);
+                $this->handleSuccessfulPaymentWithoutAdditionalData($type, $cart, $amount);
             }
 
-            $this->handleSuccessfulPaymentWithAdditionalData($response, $type, $cart);
+            $this->handleSuccessfulPaymentWithAdditionalData($response, $type, $cart, $amount);
         } catch (Throwable $e) {
             Logger::logError(
                 'Adyen failed to create order from Cart with ID: ' . $cart->id . ' Reason: ' . $e->getMessage()

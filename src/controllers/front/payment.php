@@ -88,14 +88,15 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
         }
 
         $currency = new PrestaCurrency($cart->id_currency);
+        $amount = Amount::fromFloat(
+            $this->getOrderTotal($cart, $type),
+            Currency::fromIsoCode($currency->iso_code ?? 'EUR')
+        );
         try {
             $response = CheckoutApi::get()->paymentRequest((string)$cart->id_shop)->startTransaction(
                 new StartTransactionRequest(
                     $type,
-                    Amount::fromFloat(
-                        $this->getOrderTotal($cart, $type),
-                        Currency::fromIsoCode($currency->iso_code ?? 'EUR')
-                    ),
+                    $amount,
                     (string)$cart->id,
                     Url::getFrontUrl(
                         'paymentredirect',
@@ -112,10 +113,10 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
             }
 
             if (!$response->isAdditionalActionRequired()) {
-                $this->handleSuccessfulPaymentWithoutAdditionalData($type, $cart);
+                $this->handleSuccessfulPaymentWithoutAdditionalData($type, $cart, $amount);
             }
 
-            $this->handleSuccessfulPaymentWithAdditionalData($response, $type, $cart);
+            $this->handleSuccessfulPaymentWithAdditionalData($response, $type, $cart, $amount);
 
             $this->context->smarty->assign(
                 [

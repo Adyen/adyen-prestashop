@@ -39,18 +39,18 @@ class PaymentController extends \ModuleFrontController
     /**
      * @param string $paymentMethodCode
      * @param Cart $cart
+     * @param Amount $amount
      *
      * @return void
      *
-     * @throws PrestaShopException
      * @throws Exception
      */
-    protected function saveOrder(string $paymentMethodCode, Cart $cart): void
+    protected function saveOrder(string $paymentMethodCode, Cart $cart, Amount $amount): void
     {
         StoreContext::doWithStore(
             (string)$cart->id_shop,
-            function () use ($paymentMethodCode, $cart) {
-                $this->doSaveOrder($paymentMethodCode, $cart);
+            function () use ($paymentMethodCode, $cart, $amount) {
+                $this->doSaveOrder($paymentMethodCode, $cart, $amount);
             }
         );
     }
@@ -135,14 +135,15 @@ class PaymentController extends \ModuleFrontController
     /**
      * @param string $type
      * @param Cart $cart
+     * @param Amount $amount
      *
      * @return void
      *
      * @throws PrestaShopException
      */
-    protected function handleSuccessfulPaymentWithoutAdditionalData(string $type, Cart $cart)
+    protected function handleSuccessfulPaymentWithoutAdditionalData(string $type, Cart $cart, Amount $amount)
     {
-        $this->saveOrder($type, $cart);
+        $this->saveOrder($type, $cart, $amount);
 
         if ($this->isAjaxRequest()) {
             die(
@@ -160,12 +161,13 @@ class PaymentController extends \ModuleFrontController
      * @param Response $response
      * @param string $type
      * @param Cart $cart
+     * @param Amount $amount
      *
      * @return void
      *
      * @throws PrestaShopException
      */
-    protected function handleSuccessfulPaymentWithAdditionalData(Response $response, string $type, Cart $cart)
+    protected function handleSuccessfulPaymentWithAdditionalData(Response $response, string $type, Cart $cart, Amount $amount)
     {
         if ($this->isAjaxRequest() && PaymentMethodCode::scheme()->equals($type)) {
             SessionService::set('cartId', $cart->id);
@@ -193,7 +195,7 @@ class PaymentController extends \ModuleFrontController
         }
 
         if ($response->shouldPresentToShopper() || $response->isRecieved() || $response->isPending()) {
-            $this->saveOrder($type, $cart);
+            $this->saveOrder($type, $cart, $amount);
 
             SessionService::set('cartId', $cart->id);
             SessionService::set('adyenAction', json_encode($response->getAction()));
@@ -235,14 +237,15 @@ class PaymentController extends \ModuleFrontController
     /**
      * @param string $paymentMethodCode
      * @param Cart $cart
+     * @param Amount $amount
      *
      * @return void
      *
+     * @throws PaymentMethodNotConfiguredException
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
-     * @throws Exception
      */
-    private function doSaveOrder(string $paymentMethodCode, Cart $cart)
+    private function doSaveOrder(string $paymentMethodCode, Cart $cart, Amount $amount)
     {
         $method = $this->getPaymentMethod($paymentMethodCode);
 
@@ -263,7 +266,6 @@ class PaymentController extends \ModuleFrontController
             $productId = $product->id;
             StockAvailable::setQuantity($productId, null, 1);
             $cart->updateQty(1, $productId);
-            $total = (float)$cart->getOrderTotal();
             $cart->getPackageList(true);
             $cart->clearCache(true);
             $cart->update();
@@ -274,7 +276,7 @@ class PaymentController extends \ModuleFrontController
         $this->module->validateOrder(
             $cart->id,
             (int)$inProgressPaymentId,
-            $total,
+            $amount->getPriceInCurrencyUnits(),
             $this->module->displayName,
             null,
             [],
