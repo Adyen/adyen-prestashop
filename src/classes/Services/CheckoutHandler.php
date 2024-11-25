@@ -93,9 +93,6 @@ class CheckoutHandler
         $cart->update();
         \Context::getContext()->cart->id_carrier =$cart->id_carrier;
         \Context::getContext()->cart->update();
-        Tools::clearAllCache();
-        \ProductCore::resetStaticCache();
-        Cache::clear();
 
         return CheckoutAPI::get()->checkoutConfig($cart->id_shop)->getExpressPaymentCheckoutConfig(
             new PaymentCheckoutConfigRequest(
