@@ -22,6 +22,8 @@ rm -rf ./adyenofficial/config.xml
 rm -rf ./adyenofficial/vendor/adyen/integration-core/.gitignore
 rm -rf ./adyenofficial/vendor/adyen/integration-core/tests
 rm -rf ./adyenofficial/vendor/adyen/integration-core/README.md
+rm -rf ./adyenofficial/vendor/adyen/integration-core/.github
+rm -rf ./adyenofficial/vendor/adyen/php-webhook-module/.github
 rm -rf ./adyenofficial/controllers/front/test.php
 rm -rf ./adyenofficial/classes/E2ETest
 rm -rf ./adyenofficial/vendor/adyen/integration-core/src/BusinessLogic/E2ETest
