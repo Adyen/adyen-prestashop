@@ -113,7 +113,9 @@ class OrderService implements OrderServiceInterface
         $this->setTimezone($order->id_shop);
 
         if ($order->current_state === AdyenOrderStatusMapping::getPrestaShopOrderStatusId(AdyenOrderStatusMapping::PRESTA_PAYMENT_ERROR)
-            && !in_array($webhook->getEventCode(), [EventCodes::REFUND, EventCodes::CANCELLATION])) {
+            && !in_array($webhook->getEventCode(), [EventCodes::REFUND, EventCodes::CANCELLATION])
+            && $this->getOrderAmount($webhook->getMerchantReference())->getValue() !== $webhook->getAmount()->getValue()
+        ) {
             return;
         }
 
