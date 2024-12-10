@@ -1,5 +1,7 @@
 <?php
 
+namespace AdyenPayment;
+
 class Autoloader
 {
     /**

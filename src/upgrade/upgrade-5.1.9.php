@@ -22,8 +22,8 @@ require_once 'Autoloader.php';
  */
 function upgrade_module_5_1_9(AdyenOfficial $module): bool
 {
-    Autoloader::setFileExt('.php');
-    spl_autoload_register('Autoloader::loader');
+    \AdyenPayment\Autoloader::setFileExt('.php');
+    spl_autoload_register('\AdyenPayment\Autoloader::loader');
     Shop::setContext(ShopCore::CONTEXT_ALL);
     $installer = new \AdyenPayment\Classes\Utility\Installer($module);
 
