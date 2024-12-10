@@ -46,8 +46,8 @@ require_once 'Autoloader.php';
  */
 function upgrade_module_5_0_0(AdyenOfficial $module): bool
 {
-    Autoloader::setFileExt('.php');
-    spl_autoload_register('Autoloader::loader');
+    \AdyenPayment\Autoloader::setFileExt('.php');
+    spl_autoload_register('\AdyenPayment\Autoloader::loader');
 
     $previousShopContext = Shop::getContext();
     Shop::setContext(ShopCore::CONTEXT_ALL);
@@ -81,7 +81,7 @@ function upgrade_module_5_0_0(AdyenOfficial $module): bool
     getQueueService()->enqueue('general-migration', new MigrateTransactionHistoryTask());
     removeObsoleteData();
 
-    spl_autoload_unregister('Autoloader::loader');
+    spl_autoload_unregister('\AdyenPayment\Autoloader::loader');
 
     $module->enable();
     Shop::setContext(ShopCore::CONTEXT_SHOP, $previousShopContext);
