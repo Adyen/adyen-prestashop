@@ -653,7 +653,9 @@
         "failedAuthorizationAdjustmentEventMessage": "Authorization adjustment failed on Adyen.",
         "failedAuthorizationAdjustmentEventDetails": "Authorization adjustment failed on Adyen.",
         "failedAuthorizationAdjustmentRequestMessage": "Authorization adjustment request failed.",
-        "failedAuthorizationAdjustmentRequestDetails": "Authorization adjustment request failed."
+        "failedAuthorizationAdjustmentRequestDetails": "Authorization adjustment request failed.",
+        "successfulChargebackMessage": "Payment has been successfully charged back on Adyen.",
+        "successfulChargebackDetails": "Payment has been successfully charged back on Adyen."
       }
     },
     "webhook": {
