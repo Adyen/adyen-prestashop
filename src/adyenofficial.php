@@ -281,12 +281,7 @@ class AdyenOfficial extends PaymentModule
 
                 continue;
             }
-
-            $authorisationDetail = $transactionDetails[array_search(
-                \Adyen\Webhook\EventCodes::AUTHORISATION,
-                array_column($transactionDetails, 'eventCode'),
-                true
-            )];
+            $authorisationDetail = $this->getAuthorisationDetail($transactionDetails);
 
             $record['pspReference'] = $authorisationDetail['pspReference'] ?? '';
             $record['paymentMethod'] = $authorisationDetail['paymentMethodType'] ?? '';
@@ -1047,13 +1042,7 @@ class AdyenOfficial extends PaymentModule
 
             return;
         }
-
-        $reversedDetails = array_reverse($transactionDetails);
-        $authorisationDetail = $reversedDetails[array_search(
-            \Adyen\Webhook\EventCodes::AUTHORISATION,
-            array_column($reversedDetails, 'eventCode'),
-            true
-        )];
+        $authorisationDetail = $this->getAuthorisationDetail($transactionDetails);
 
         $params['template_vars']['{adyen_payment_link}'] = $authorisationDetail['paymentLink'];
     }
@@ -1085,6 +1074,26 @@ class AdyenOfficial extends PaymentModule
         }
 
         \AdyenPayment\Classes\Services\OrderModificationHandler::handleOrderModification($order);
+    }
+
+    /**
+     * @param array $transactionDetails
+     *
+     * @return array
+     */
+    private function getAuthorisationDetail(array $transactionDetails): array
+    {
+        $filteredDetails = array_filter($transactionDetails, function ($detail) {
+            return $detail['status'] === true;
+        });
+
+        $reversedDetails = array_reverse($filteredDetails);
+
+        return !empty($reversedDetails) ? $reversedDetails[array_search(
+            \Adyen\Webhook\EventCodes::AUTHORISATION,
+            array_column($reversedDetails, 'eventCode'),
+            true
+        )] : [];
     }
 
     /**
@@ -1469,13 +1478,7 @@ class AdyenOfficial extends PaymentModule
 
         $currency = new \Currency($order->id_currency);
         $transactionDetails = \AdyenPayment\Classes\Services\TransactionDetailsHandler::getTransactionDetails($order);
-
-        $reversedDetails = array_reverse($transactionDetails);
-        $authorisationDetail = !empty($reversedDetails) ? $reversedDetails[array_search(
-            \Adyen\Webhook\EventCodes::AUTHORISATION,
-            array_column($reversedDetails, 'eventCode'),
-            true
-        )] : [];
+        $authorisationDetail = $this->getAuthorisationDetail($transactionDetails);
 
         $lastDetail = end($transactionDetails);
         $generalSettings = \Adyen\Core\BusinessLogic\AdminAPI\AdminAPI::get()->generalSettings((string)\Context::getContext()->shop->id)->getGeneralSettings();
@@ -1507,7 +1510,8 @@ class AdyenOfficial extends PaymentModule
             'shouldDisplayPaymentLink' => $authorisationDetail['displayPaymentLink'] ?? false,
             'isAdyenOrder' => $order->module === $this->name,
             'shouldDisplayPaymentLinkForNonAdyenOrder' => $authorisationDetail['displayPaymentLink'] ?? $paymentLinkEnabled,
-            'extendAuthorizationURL' => $this->getAction('AdyenAuthorizationAdjustment', 'extendAuthorization', ['ajax' => true]),
+            'extendAuthorizationURL' => $this->getAction('AdyenAuthorizationAdjustment', 'extendAuthorization',
+                ['ajax' => true]),
             'authorizationAdjustmentDate' => $lastDetail['authorizationAdjustmentDate'] ?? '',
             'authorizationAdjustmentAmount' => $lastDetail['authorizationAdjustmentAmount'] ?? '0',
             'displayAdjustmentButton' => $lastDetail['authorizationAdjustmentAvailable'] ?? '',
@@ -1551,6 +1555,7 @@ class AdyenOfficial extends PaymentModule
     /**
      * @param $configUrl
      * @param $paymentUrl
+     *
      * @return string
      * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      * @throws PrestaShopDatabaseException
@@ -1624,6 +1629,7 @@ class AdyenOfficial extends PaymentModule
      *
      * @param int $moduleId
      * @param int $shopId
+     *
      * @return array|bool|mysqli_result|PDOStatement|resource|null
      * @throws PrestaShopDatabaseException
      */
@@ -1665,6 +1671,7 @@ class AdyenOfficial extends PaymentModule
      *
      * @param int $moduleId
      * @param int $shopId
+     *
      * @return array|bool|mysqli_result|PDOStatement|resource|null
      * @throws PrestaShopDatabaseException
      */
