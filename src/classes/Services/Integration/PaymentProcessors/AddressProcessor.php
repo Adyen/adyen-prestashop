@@ -135,12 +135,12 @@ class AddressProcessor implements AddressProcessorInterface, PaymentLinkAddressP
             $deliveryStateIsoCode = $this->getStateIsoCode($deliveryCountry, $deliveryAddress);
 
             return new DeliveryAddress(
-                $address->city ?? '',
-                $country->iso_code ?: '',
-                $address->address2 ?? '',
-                $address->postcode ?? '',
+                $deliveryAddress->city ?? '',
+                $deliveryCountry->iso_code ?: '',
+                $deliveryAddress->address2 ?? '',
+                $deliveryAddress->postcode ?? '',
                 $deliveryStateIsoCode,
-                $address->address1 ?? ''
+                $deliveryAddress->address1 ?? ''
             );
         }
 
