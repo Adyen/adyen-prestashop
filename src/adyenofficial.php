@@ -522,40 +522,6 @@ class AdyenOfficial extends PaymentModule
     /**
      * @param array $params
      *
-     * @return false|string|null
-     */
-    public function hookDisplayPaymentReturn(array $params)
-    {
-        if (!$this->active) {
-            return null;
-        }
-
-        $cartId = \AdyenPayment\Classes\Utility\SessionService::get('cartId');
-
-        $this->context->smarty->assign(
-            [
-                'adyenAction' => \AdyenPayment\Classes\Utility\SessionService::get('adyenAction'),
-                'checkoutConfigUrl' => AdyenPayment\Classes\Utility\Url::getFrontUrl(
-                    'paymentconfig',
-                    ['cartId' => $cartId]
-                ),
-                'additionalDataUrl' => AdyenPayment\Classes\Utility\Url::getFrontUrl(
-                    'paymentredirect',
-                    [
-                        'adyenMerchantReference' => $cartId,
-                        'adyenPaymentType' => \AdyenPayment\Classes\Utility\SessionService::get('adyenPaymentMethodType'),
-                        'adyenPage' => 'thankYou'
-                    ]
-                ),
-            ]
-        );
-
-        return $this->display(__FILE__, '/views/templates/front/adyen-order-confirmation.tpl');
-    }
-
-    /**
-     * @param array $params
-     *
      * @return false|string
      *
      * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
@@ -887,35 +853,57 @@ class AdyenOfficial extends PaymentModule
             return null;
         }
 
+        $cartId = \AdyenPayment\Classes\Utility\SessionService::get('cartId');
+        $adyenAction = \AdyenPayment\Classes\Utility\SessionService::get('adyenAction');
+        $adyenPaymentType = \AdyenPayment\Classes\Utility\SessionService::get('adyenPaymentMethodType');
+
+        $additionalActionConfig = [
+            'adyenAction' => $adyenAction,
+            'checkoutConfigUrl' => \AdyenPayment\Classes\Utility\Url::getFrontUrl(
+                'paymentconfig',
+                ['cartId' => $cartId]
+            ),
+            'additionalDataUrl' => \AdyenPayment\Classes\Utility\Url::getFrontUrl(
+                'paymentredirect',
+                [
+                    'adyenMerchantReference' => $cartId,
+                    'adyenPaymentType' => $adyenPaymentType,
+                    'adyenPage' => 'thankYou'
+                ]
+            ),
+        ];
+
         $storeId = $params['order']->id_shop;
         $adyenGivingInformation = \Adyen\Core\BusinessLogic\AdminAPI\AdminAPI::get()->adyenGivingSettings(
             $storeId
         )->getAdyenGivingSettings()->toArray();
 
         $cart = new \Cart($params['order']->id_cart);
+        $donationConfig = [
+            'enabled' => $adyenGivingInformation['enableAdyenGiving'],
+            'donationsConfigUrl' => \AdyenPayment\Classes\Utility\Url::getFrontUrl(
+                'adyendonationsconfig',
+                [
+                    'merchantReference' => $cart->id,
+                    'key' => $cart->secure_key,
+                    'module' => $params['order']->module
+                ]
+            ),
+            'makeDonationsUrl' => \AdyenPayment\Classes\Utility\Url::getFrontUrl(
+                'adyenmakedonation',
+                [
+                    'merchantReference' => $cart->id,
+                    'key' => $cart->secure_key,
+                    'module' => $params['order']->module
+                ]
+            )
+        ];
+
         $this->context->smarty->assign(
-            [
-                'enabled' => $adyenGivingInformation['enableAdyenGiving'],
-                'donationsConfigUrl' => \AdyenPayment\Classes\Utility\Url::getFrontUrl(
-                    'adyendonationsconfig',
-                    [
-                        'merchantReference' => $cart->id,
-                        'key' => $cart->secure_key,
-                        'module' => $params['order']->module
-                    ]
-                ),
-                'makeDonationsUrl' => \AdyenPayment\Classes\Utility\Url::getFrontUrl(
-                    'adyenmakedonation',
-                    [
-                        'merchantReference' => $cart->id,
-                        'key' => $cart->secure_key,
-                        'module' => $params['order']->module
-                    ]
-                )
-            ]
+            array_merge($additionalActionConfig, $donationConfig)
         );
 
-        return $this->display(__FILE__, '/views/templates/front/adyen-donations.tpl');
+        return $this->display(__FILE__, '/views/templates/front/adyen-combined-order-confirmation.tpl');
     }
 
     /**
