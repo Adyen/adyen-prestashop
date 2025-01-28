@@ -85,7 +85,6 @@ class Installer
         'actionValidateOrder',
         'sendMailAlterTemplateVars',
         'displayOrderConfirmation',
-        'displayPaymentReturn',
         'actionObjectOrderUpdateAfter'
     ];
 
