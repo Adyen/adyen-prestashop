@@ -51,17 +51,23 @@ class AdyenOfficialPaymentRedirectModuleFrontController extends PaymentControlle
 
         if (empty($this->context->customer->id) && !empty($requestData['adyenEmail'])) {
             $customerService->createAndLoginCustomer($requestData['adyenEmail'], $requestData);
+            $customer = new Customer($this->context->customer->id);
+            $cart->secure_key = $customer->secure_key;
+            $cart->id_customer = $customer->id;
+            $cart->update();
         }
 
-        $customer = new Customer($this->context->customer->id);
+        $customer = new Customer($cart->id_customer);
         if (!empty($requestData['adyenBillingAddress']) && !empty($requestData['adyenShippingAddress'])) {
             list($shippingAddressId, $billingAddressId) = $customerService->saveAddresses($customer, $requestData);
-            $cart = $this->updateCart($customer, $billingAddressId, $shippingAddressId, $cart);
+            $cart = $this->updateCart($billingAddressId, $shippingAddressId, $cart);
         }
 
         $response = CheckoutAPI::get()
             ->paymentRequest((string)$cart->id_shop)
-            ->updatePaymentDetails(array_key_exists('details', $requestData) ? $requestData : ['details' => $requestData]);
+            ->updatePaymentDetails(
+
+                array_key_exists('details', $requestData) ? $requestData : ['details' => $requestData]);
 
         if (!$response->isSuccessful() && $page !== 'thankYou') {
             $message = $this->module->l('Your payment could not be processed, please resubmit order.', self::FILE_NAME);
@@ -76,12 +82,6 @@ class AdyenOfficialPaymentRedirectModuleFrontController extends PaymentControlle
         }
 
         try {
-            $customer = new Customer($this->context->customer->id);
-
-            $cart->secure_key = $customer->secure_key;
-            $cart->id_customer = $customer->id;
-            $cart->update();
-
             $this->saveOrder(Tools::getValue('adyenPaymentType'), $cart, $response->getAmount());
 
             if (isset($requestData['details'])) {
@@ -118,12 +118,10 @@ class AdyenOfficialPaymentRedirectModuleFrontController extends PaymentControlle
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      */
-    private function updateCart(Customer $customer, int $deliveryAddressId, int $invoiceAddressId, Cart $cart): Cart
+    private function updateCart(int $deliveryAddressId, int $invoiceAddressId, Cart $cart): Cart
     {
-        $cart->secure_key = $customer->secure_key;
         $cart->id_address_delivery = $deliveryAddressId;
         $cart->id_address_invoice = $invoiceAddressId;
-        $cart->id_customer = $customer->id;
         $cart->update();
 
         return $cart;
