@@ -48,16 +48,19 @@ class AdyenOfficialPaymentRedirectModuleFrontController extends PaymentControlle
         }
 
         $customerService = new CustomerService();
+        $customer = new Customer($this->context->customer->id);
 
+        $isGuestCheckout = false;
         if (empty($this->context->customer->id) && !empty($requestData['adyenEmail'])) {
             $customerService->createAndLoginCustomer($requestData['adyenEmail'], $requestData);
             $customer = new Customer($this->context->customer->id);
-            $cart->secure_key = $customer->secure_key;
-            $cart->id_customer = $customer->id;
-            $cart->update();
+            $isGuestCheckout = true;
         }
 
-        $customer = new Customer($cart->id_customer);
+        if(!$isGuestCheckout) {
+            $customer = new Customer($cart->id_customer);
+        }
+
         if (!empty($requestData['adyenBillingAddress']) && !empty($requestData['adyenShippingAddress'])) {
             list($shippingAddressId, $billingAddressId) = $customerService->saveAddresses($customer, $requestData);
             $cart = $this->updateCart($billingAddressId, $shippingAddressId, $cart);
@@ -82,6 +85,12 @@ class AdyenOfficialPaymentRedirectModuleFrontController extends PaymentControlle
         }
 
         try {
+            if($isGuestCheckout) {
+                $cart->secure_key = $customer->secure_key;
+                $cart->id_customer = $customer->id;
+                $cart->update();
+            }
+
             $this->saveOrder(Tools::getValue('adyenPaymentType'), $cart, $response->getAmount());
 
             if (isset($requestData['details'])) {
