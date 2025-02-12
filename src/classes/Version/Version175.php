@@ -28,7 +28,6 @@ class Version175 implements VersionHandler
         return [
             'displayAdminOrderTabShip',
             'displayAdminOrderContentShip',
-            'paymentReturn',
             'displayProductAdditionalInfo',
         ];
     }
