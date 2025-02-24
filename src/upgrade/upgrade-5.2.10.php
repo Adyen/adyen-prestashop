@@ -10,13 +10,13 @@ if (!defined('_PS_VERSION_')) {
 require_once 'Autoloader.php';
 
 /**
- * Upgrades module to version 5.2.8.
+ * Upgrades module to version 5.2.10.
  *
  * @param AdyenOfficial $module
  *
  * @return bool
  */
-function upgrade_module_5_2_8(AdyenOfficial $module): bool
+function upgrade_module_5_2_10(AdyenOfficial $module): bool
 {
     Autoloader::setFileExt('.php');
     spl_autoload_register('Autoloader::loader');
@@ -31,7 +31,7 @@ function upgrade_module_5_2_8(AdyenOfficial $module): bool
         }
     } catch (Throwable $exception) {
         Logger::logError(
-            'Adyen plugin migration to 5.2.8 failed. Reason: ' .
+            'Adyen plugin migration to 5.2.10 failed. Reason: ' .
             $exception->getMessage() . ' .Trace: ' . $exception->getTraceAsString()
         );
 
