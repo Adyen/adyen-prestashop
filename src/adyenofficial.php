@@ -612,24 +612,24 @@ class AdyenOfficial extends PaymentModule
             );
             $this->getContext()->controller->registerJavascript(
                 'adyen-component-js',
-                'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/5.61.0/adyen.js',
+                'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/5.65.0/adyen.js',
                 [
                     'server' => 'remote',
                     'position' => 'head',
                     'attributes' => [
-                        'integrity' => 'sha384-d6l5Qqod+Ks601U/jqsLz7QkW0LL6T5pfEsSHypuTSnDUYVGRLNV1ZdITbEwb1yL',
+                        'integrity' => 'sha384-6qEAHFy5klBO9QE1zhxuGAKiAe7fVK7SAW7KnLSaYxj2UedBLGHsnNi7NrNcKIQR',
                         'crossorigin' => 'anonymous'
                     ]
                 ]
             );
             $this->getContext()->controller->registerStylesheet(
                 'adyen-component-css',
-                'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/5.61.0/adyen.css',
+                'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/5.65.0/adyen.css',
                 [
                     'server' => 'remote',
                     'position' => 'head',
                     'attributes' => [
-                        'integrity' => 'sha384-d6l5Qqod+Ks601U/jqsLz7QkW0LL6T5pfEsSHypuTSnDUYVGRLNV1ZdITbEwb1yL',
+                        'integrity' => 'sha384-Dk62669n9Ic7V6K8X7MBAOEZ5IQ9Qq29nW/zPkfwg1ghqyZLiuSc5QYQJ6M72iNR',
                         'crossorigin' => 'anonymous'
                     ]
                 ]
