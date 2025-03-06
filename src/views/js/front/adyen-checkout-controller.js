@@ -69,7 +69,8 @@
      * onShopperDetails: function|undefined
      * onPayButtonClick: function|undefined,
      * onClickToPay: function|undefined,
-     * onShippingAddressChanged: function|undefined
+     * onShippingAddressChanged: function|undefined,
+     * balanceCheck: function|undefined
      * }} config
      */
     function CheckoutController(config) {
@@ -108,6 +109,8 @@
             resolve();
         };
         config.onClickToPay = config.onClickToPay || function () {
+        };
+        config.balanceCheck = config.balanceCheck || function (resolve, reject, data) {
         };
 
         const handleOnClick = (resolve, reject) => {
@@ -198,6 +201,13 @@
                 onClick: (source, event, self) => {
                     return handleOnClick(event.resolve, event.reject);
                 }
+            },
+            "giftcard": {
+                type: 'giftcard',
+                showPayButton: true,
+                onBalanceCheck: function (resolve, reject, data) {
+                    config.balanceCheck(resolve, reject, data);
+                }
             }
         };
 
@@ -209,7 +219,7 @@
                 onAuthorized: handleApplePayPaymentAuthorized,
             }
 
-            if(config.onShippingContactSelected){
+            if (config.onShippingContactSelected) {
                 paymentMethodSpecificConfig.applepay.onShippingContactSelected = handleOnShippingContactSelected
             }
         }
@@ -241,7 +251,7 @@
                 checkoutConfig.onPaymentDataChanged = handlePaymentDataChanged;
                 checkoutConfig.onPaymentAuthorized = handlePaymentAuthorized;
                 checkoutConfig.onApplePayPaymentAuthorized = handleApplePayPaymentAuthorized;
-                if(config.onShippingContactSelected){
+                if (config.onShippingContactSelected) {
                     checkoutConfig.onShippingContactSelected = handleOnShippingContactSelected;
                 }
 
@@ -332,8 +342,7 @@
 
                 // If there is applepay specific configuration then set country code to configuration
                 if ('applepay' === paymentType &&
-                    paymentMethodConfig)
-                {
+                    paymentMethodConfig) {
                     paymentMethodConfig.countryCode = checkoutInstance.options.countryCode;
                 }
 
@@ -424,10 +433,10 @@
 
         const findSpecificPaymentMethodConfig = (paymentType) => {
             if (giftCards.includes(paymentType)) {
-                return {
-                    type: 'giftcard',
-                    brand: paymentType
-                };
+                let result = paymentMethodSpecificConfig['giftcard'];
+                result['brand'] = paymentType;
+
+                return result;
             }
 
             return paymentMethodSpecificConfig[paymentType] || null;

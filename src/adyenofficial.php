@@ -370,6 +370,7 @@ class AdyenOfficial extends PaymentModule
                             'paymentredirect',
                             ['adyenPaymentType' => $method->getType()]
                         ),
+                        'balanceCheckUrl' => AdyenPayment\Classes\Utility\Url::getFrontUrl('partialpaymentbalance'),
                         'stored' => true,
                         'description' => $description,
                         'prestaVersion' => _PS_VERSION_,
@@ -439,6 +440,7 @@ class AdyenOfficial extends PaymentModule
                         'paymentredirect',
                         ['adyenPaymentType' => $method->getType()]
                     ),
+                    'balanceCheckUrl' => AdyenPayment\Classes\Utility\Url::getFrontUrl('partialpaymentbalance'),
                     'stored' => true,
                     'description' => $description,
                     'prestaVersion' => _PS_VERSION_,
@@ -480,6 +482,7 @@ class AdyenOfficial extends PaymentModule
                         'paymentredirect',
                         ['adyenPaymentType' => $method->getCode()]
                     ),
+                    'balanceCheckUrl' => AdyenPayment\Classes\Utility\Url::getFrontUrl('partialpaymentbalance'),
                     'stored' => false,
                     'description' => $method->getDescription(),
                     'prestaVersion' => _PS_VERSION_,

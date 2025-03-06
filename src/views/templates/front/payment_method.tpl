@@ -12,6 +12,7 @@
         <input type="hidden" class="adyen-redirect-action-url"
                value="{$paymentRedirectActionURL|escape:'html':'UTF-8'}">
         <input type="hidden" class="adyen-checkout-url" value="{$checkoutUrl|escape:'html':'UTF-8'}">
+        <input type="hidden" class="adyen-balance-check-url" value="{$balanceCheckUrl|escape:'html':'UTF-8'}">
         <input type="hidden" name="adyen-presta-version" value="{$prestaVersion|escape:'html':'UTF-8'}">
         <p id="adyen-click-to-pay-label" class="adyen-click-to-pay-label"> {$clickToPayLabel|escape:'html':'UTF-8'} </p>
     </form>
