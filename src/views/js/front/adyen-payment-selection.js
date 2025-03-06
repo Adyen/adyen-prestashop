@@ -8,11 +8,10 @@ $(document).ready(function () {
     let paymentId = 0;
     let paymentOptions = $('input[name="payment-option"]');
     let adyenPaymentMethods = document.getElementsByClassName('adyen-payment-method');
-    let reference = '';
-    let paymentData = null;
     let paymentUrl = document.getElementsByClassName('adyen-action-url')[0];
     let checkoutUrl = document.getElementsByClassName('adyen-checkout-url')[0];
     let totalDiscount = 0;
+    let minorTotalDiscount = 0;
     let remainingAmount = -1;
 
     $('.payment-option').filter(function () {
@@ -80,14 +79,18 @@ $(document).ready(function () {
 
         if (checkoutController.isPaymentMethodStateValid() && ((checkbox.length && checkbox.is(":checked")) || !checkbox.length)) {
             let addData = paymentForm.find('[name=adyen-additional-data]');
+            let giftcardData = paymentForm.find('[name=adyen-giftcards-data]')
             let cardsData = document.getElementsByClassName('adyen-giftcard-state-data');
             let stateData = '';
 
             for (let element of cardsData) {
-                stateData += ',' + element.value;
+                if (element.value !== '') {
+                    stateData += element.value + ',';
+                }
             }
 
-            addData.val('[' + checkoutController.getPaymentMethodStateData() + stateData + ']');
+            giftcardData.val('[' + stateData.slice(0, -1) + ']');
+            addData.val(checkoutController.getPaymentMethodStateData());
             enablePlaceOrderButton(prestaVersion);
 
             return
@@ -166,16 +169,26 @@ $(document).ready(function () {
         $.ajax({
             method: 'POST',
             dataType: 'json',
-            url: checkBalanceUrl,
+            url: checkBalanceUrl + '?remainingAmount=' + remainingAmount,
             data: data,
             success: function (response) {
                 resolve(response.response);
+
+                let cardValue = response.majorValue;
+
                 if (remainingAmount === -1) {
                     remainingAmount = response.orderTotal;
                 }
 
-                remainingAmount -= response.majorValue;
-                totalDiscount = parseFloat(totalDiscount) + parseFloat(response.majorValue);
+                if (response.response.resultCode === 'Success') {
+                    cardValue = parseFloat(remainingAmount).toFixed(2);
+                    remainingAmount = 0;
+                    totalDiscount = response.orderTotal;
+                } else {
+                    remainingAmount -= response.majorValue;
+                    totalDiscount = parseFloat(totalDiscount) + parseFloat(response.majorValue);
+                    minorTotalDiscount = parseInt(minorTotalDiscount) + parseInt(response.response.balance.value)
+                }
 
                 let cardInfo = document.createElement("div");
                 cardInfo.style.display = 'flex';
@@ -187,21 +200,43 @@ $(document).ready(function () {
                 removeLink.addEventListener('click', removeCard);
                 let stateData = document.createElement('input');
                 stateData.type = 'hidden';
-                stateData.value = checkoutController.getPaymentMethodStateData();
+                let data = JSON.parse(checkoutController.getPaymentMethodStateData());
+                data['cardAmount'] = remainingAmount === 0 ? response.response.balance.value : response.minorOrderTotal - minorTotalDiscount;
+                stateData.value = JSON.stringify(data);
                 stateData.classList.add('adyen-giftcard-state-data');
 
-                cardLabel.innerText = "Deducted amount: " + response.currency + response.majorValue + " " + response.response.balance.currency;
+                cardLabel.innerText = "Deducted amount: " + response.currency + cardValue + " " + response.response.balance.currency;
                 cardInfo.appendChild(cardLabel);
                 cardInfo.appendChild(removeLink);
                 cardInfo.appendChild(stateData);
-                cardInfo.setAttribute('adyen-card-value', response.majorValue);
+                cardInfo.setAttribute('adyen-card-value', cardValue);
                 cardInfo.setAttribute('adyen-card-currency', response.currency);
 
                 paymentMethod.append(cardInfo);
 
                 renderCartSummary(response.currency);
-
                 checkoutController.unmount();
+
+                if (remainingAmount === 0) {
+                    let completelyPaid = document.createElement('article');
+                    completelyPaid.classList.add('alert', 'alert-success', 'adyen-message');
+                    let messageBox = document.createElement('ul');
+                    let message = document.createElement('li');
+
+                    message.innerText = 'You have paid complete order amount. Please confirm by placing the order.';
+                    messageBox.appendChild(message);
+                    completelyPaid.appendChild(messageBox);
+                    paymentMethod.appendChild(completelyPaid);
+
+                    let paymentOptions = $('input[name="payment-option"]');
+
+                    for (let paymentOption of paymentOptions) {
+                        paymentOption.disabled = true;
+                    }
+
+                    return;
+                }
+
                 mountComponent(paymentForm);
             },
             error: function (response) {
@@ -215,7 +250,9 @@ $(document).ready(function () {
         let parentEl = event.target.parentElement;
         let cardValue = parentEl.getAttribute('adyen-card-value');
         let currency = parentEl.getAttribute('adyen-card-currency');
+        let adyenMessage = document.getElementsByClassName('adyen-message')[0];
 
+        adyenMessage.remove();
         totalDiscount = parseFloat(totalDiscount) - parseFloat(cardValue);
         remainingAmount = parseFloat(remainingAmount) + parseFloat(cardValue);
 
@@ -224,6 +261,12 @@ $(document).ready(function () {
         let stateData = parentEl.getElementsByClassName('adyen-giftcard-state-data')[0];
         stateData.value = '';
         parentEl.hidden = true;
+
+        let paymentOptions = $('input[name="payment-option"]');
+
+        for (let paymentOption of paymentOptions) {
+            paymentOption.disabled = false;
+        }
     }
 
     function renderCartSummary(currency) {

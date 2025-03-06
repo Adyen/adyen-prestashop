@@ -33,15 +33,26 @@ class AdyenOfficialPartialPaymentBalanceModuleFrontController extends PaymentCon
         $data = Tools::getAllValues();
         $cart = $this->context->cart;
         $paymentMethod = $data['paymentMethod'] ?? null;
+        $remainingAmount = (int)Tools::getValue('remainingAmount');
         $type = array_key_exists('brand', $paymentMethod) ? $paymentMethod['brand'] : '';
-        $orderTotal = $cart->getOrderTotal($cart, $type);
+        $orderTotal = $this->getOrderTotal($cart, $type);
 
         $response = CheckoutApi::get()->partialPayment((string)$cart->id_shop)
             ->checkBalance(new BalanceCheckRequest(
-                $orderTotal,
+                $remainingAmount !== -1 ?
+                    Amount::fromFloat(
+                        $remainingAmount,
+                        \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency::fromIsoCode(
+                            $currency->iso_code ?? 'EUR'
+                        ))->getPriceInCurrencyUnits() : $orderTotal,
                 $currency->iso_code ?? 'EUR',
                 $paymentMethod
             ));
+
+        $precision = _PS_PRICE_COMPUTE_PRECISION_;
+        if (version_compare(_PS_VERSION_, '1.7.7.0', 'ge')) {
+            $precision = Context::getContext()->getComputingPrecision();
+        }
 
         $result['response'] = $response->toArray();
         $result['majorValue'] = number_format(Amount::fromInt(
@@ -49,10 +60,16 @@ class AdyenOfficialPartialPaymentBalanceModuleFrontController extends PaymentCon
             \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency::fromIsoCode(
                 $currency->iso_code ?? 'EUR'
             )
-        )->getPriceInCurrencyUnits(), 2, '.', ',');
+        )->getPriceInCurrencyUnits(), $precision, '.', ',');
         $currency = Currency::getCurrencyInstance(Currency::getIdByIsoCode($currency->iso_code ?? 'EUR'));
         $result['currency'] = $currency->sign;
         $result['orderTotal'] = $orderTotal;
+        $result['minorOrderTotal'] = Amount::fromFloat(
+            $orderTotal,
+            \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency::fromIsoCode(
+                $currency->iso_code ?? 'EUR'
+            )
+        )->getValue();
 
         AdyenPrestaShopUtility::dieJsonArray($result);
     }

@@ -56,6 +56,9 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
             $data['adyen-additional-data'],
             true
         ) : [];
+        $giftCardsData = !empty($data['adyen-giftcards-data']) ?
+            json_decode($data['adyen-giftcards-data'], true) : [];
+
         $type = array_key_exists('adyen-type', $data) ? $data['adyen-type'] : '';
         if ($this->isAjaxRequest()) {
             $type = $additionalData['paymentMethod']['type'];
@@ -88,29 +91,71 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
         }
 
         $currency = new PrestaCurrency($cart->id_currency);
+
+        $deductedAmount = 0;
+
+        foreach ($giftCardsData as $giftCardData) {
+            $giftCardAmount = Amount::fromInt(
+                $giftCardData['cardAmount'],
+                Currency::fromIsoCode($currency->iso_code ?? 'EUR')
+            );
+            $requests[] = new StartTransactionRequest(
+                $giftCardData['paymentMethod']['brand'],
+                $giftCardAmount,
+                (string)$cart->id,
+                Url::getFrontUrl(
+                    'paymentredirect',
+                    ['adyenMerchantReference' => $cart->id, 'adyenPaymentType' => $type]
+                ),
+                $giftCardData,
+                [],
+                $this->getShopperReferenceFromCart($cart)
+            );
+
+            $deductedAmount += $giftCardAmount->getPriceInCurrencyUnits();
+        }
+
         $amount = Amount::fromFloat(
             $this->getOrderTotal($cart, $type),
             Currency::fromIsoCode($currency->iso_code ?? 'EUR')
         );
+
+        if ($additionalData) {
+            $requests[] =  new StartTransactionRequest(
+                $type,
+                Amount::fromFloat(
+                    $this->getOrderTotal($cart, $type) - $deductedAmount,
+                    Currency::fromIsoCode($currency->iso_code ?? 'EUR')
+                ),
+                (string)$cart->id,
+                Url::getFrontUrl(
+                    'paymentredirect',
+                    ['adyenMerchantReference' => $cart->id, 'adyenPaymentType' => $type]
+                ),
+                $additionalData,
+                [],
+                $this->getShopperReferenceFromCart($cart)
+            );
+        }
+
         try {
-            $response = CheckoutApi::get()->paymentRequest((string)$cart->id_shop)->startTransaction(
-                new StartTransactionRequest(
-                    $type,
-                    $amount,
-                    (string)$cart->id,
-                    Url::getFrontUrl(
-                        'paymentredirect',
-                        ['adyenMerchantReference' => $cart->id, 'adyenPaymentType' => $type]
-                    ),
-                    $additionalData,
-                    [],
-                    $this->getShopperReferenceFromCart($cart)
-                )
+            $responses = CheckoutApi::get()->paymentRequest((string)$cart->id_shop)->startPartialTransaction(
+                $requests,
+                $amount,
+                (string)$cart->id
             );
 
-            if (!$response->isSuccessful()) {
+            $outcome = true;
+
+            foreach ($responses as $response) {
+                $outcome &= $response->isSuccessful();
+            }
+
+            if (!$outcome) {
                 $this->handleNotSuccessfulPayment(self::FILE_NAME, $this->getUnsuccessfulUrl());
             }
+
+            $response = end($responses);
 
             if (!$response->isAdditionalActionRequired()) {
                 $this->handleSuccessfulPaymentWithoutAdditionalData($type, $cart, $amount);

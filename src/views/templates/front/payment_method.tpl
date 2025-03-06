@@ -8,6 +8,7 @@
         <input type="hidden" class="adyen-config-url" value="{$configURL|escape:'html':'UTF-8'}">
         <input type="hidden" class="adyen-action-url" value="{$paymentActionURL|escape:'html':'UTF-8'}">
         <input type="hidden" name="adyen-additional-data">
+        <input type="hidden" name="adyen-giftcards-data">
         <input type="hidden" name="adyen-stored-value" value="{$stored|escape:'html':'UTF-8'}">
         <input type="hidden" class="adyen-redirect-action-url"
                value="{$paymentRedirectActionURL|escape:'html':'UTF-8'}">
