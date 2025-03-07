@@ -195,7 +195,8 @@ $(document).ready(function () {
                 let cardLabel = document.createElement("p");
                 cardLabel.style.flexGrow = 1;
                 let removeLink = document.createElement("a");
-                removeLink.innerText = "Remove";
+                let removeLabel = $('[name="adyen-giftcard-remove"]')[0];
+                removeLink.innerText = removeLabel.value;
                 removeLink.href = "#";
                 removeLink.addEventListener('click', removeCard);
                 let stateData = document.createElement('input');
@@ -205,7 +206,9 @@ $(document).ready(function () {
                 stateData.value = JSON.stringify(data);
                 stateData.classList.add('adyen-giftcard-state-data');
 
-                cardLabel.innerText = "Deducted amount: " + response.currency + cardValue + " " + response.response.balance.currency;
+                let deductedAmount = $('[name="adyen-giftcard-deducted-amount"]')[0];
+                cardLabel.innerText = deductedAmount.value.replace("{currencySymbol}", response.currency)
+                    .replace("{cardValue}", cardValue).replace("{currencyIso}", response.response.balance.currency);
                 cardInfo.appendChild(cardLabel);
                 cardInfo.appendChild(removeLink);
                 cardInfo.appendChild(stateData);
@@ -222,8 +225,8 @@ $(document).ready(function () {
                     completelyPaid.classList.add('alert', 'alert-success', 'adyen-message');
                     let messageBox = document.createElement('ul');
                     let message = document.createElement('li');
-
-                    message.innerText = 'You have paid complete order amount. Please confirm by placing the order.';
+                    let messageValue = $('[name="adyen-giftcard-complete-order"]')[0];
+                    message.innerText = messageValue.value;
                     messageBox.appendChild(message);
                     completelyPaid.appendChild(messageBox);
                     paymentMethod.appendChild(completelyPaid);
@@ -283,11 +286,14 @@ $(document).ready(function () {
 
         let adyenInnerBlock = document.createElement('div');
         adyenInnerBlock.classList.add('card-block', 'cart-summary-subtotals-container');
+        adyenInnerBlock.style.borderTop = "none";
+        adyenInnerBlock.style.paddingTop = "0";
         let redeemed = document.createElement('div');
         redeemed.classList.add('cart-summary-line', 'cart-summary-subtotals')
         let redeemedTitle = document.createElement('span');
+        let redeemedTitleValue = $('[name="adyen-giftcard-discount"]')[0];
         redeemedTitle.classList.add('label');
-        redeemedTitle.innerText = 'Giftcard Discount';
+        redeemedTitle.innerText = redeemedTitleValue.value;
         let redeemedValue = document.createElement('span');
         redeemedValue.classList.add('value');
         redeemedValue.innerText = currency + totalDiscount.toFixed(2);
@@ -297,8 +303,9 @@ $(document).ready(function () {
         let remaining = document.createElement('div');
         remaining.classList.add('cart-summary-line', 'cart-summary-subtotals');
         let remainingTitle = document.createElement('span');
+        let remainingTitleValue = $('[name="adyen-giftcard-remaining-amount"]')[0];
         remainingTitle.classList.add('label');
-        remainingTitle.innerText = 'Remaining Amount';
+        remainingTitle.innerText = remainingTitleValue.value;
         let remainingValue = document.createElement('span');
         remainingValue.classList.add('value');
         remainingValue.innerText = currency + remainingAmount.toFixed(2);

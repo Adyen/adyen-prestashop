@@ -25,6 +25,11 @@ $_MODULE['<{adyenofficial}prestashop>adyenofficial_a7b2273fe3a1293885769855e2f3e
 $_MODULE['<{adyenofficial}prestashop>adyenofficial_2d13df6f8b5e4c5af9f87e0dc39df69d'] = 'Pending';
 $_MODULE['<{adyenofficial}prestashop>adyenofficial_9f004157e4c148dac71da3ae5906351f'] = 'Partially refunded';
 $_MODULE['<{adyenofficial}prestashop>adyenofficial_70a2468998d90207df5ed8727c31e7b2'] = 'Surcharge';
+$_MODULE['<{adyenofficial}prestashop>adyenofficial_1063e38cb53d94d386f21227fcd84717'] = 'Remove';
+$_MODULE['<{adyenofficial}prestashop>adyenofficial_b8f2291a7658bd9ee0b7fb3196a26e91'] = 'Deducted amount: {currencySymbol}{cardValue} {currencyIso}';
+$_MODULE['<{adyenofficial}prestashop>adyenofficial_44e29b05fdc181b00181b572dfe3335b'] = 'You have paid complete order amount. Please confirm by placing the order.';
+$_MODULE['<{adyenofficial}prestashop>adyenofficial_2ac36e485356fb72f464263ac35a69b3'] = 'Giftcard Discount';
+$_MODULE['<{adyenofficial}prestashop>adyenofficial_c46d43b942eaed433c71396a9d3c163e'] = 'Remaining Amount';
 $_MODULE['<{adyenofficial}prestashop>orderstatushandler_eee09b6c13eef735f337870774e57e15'] = 'Capture is not supported on Adyen.';
 $_MODULE['<{adyenofficial}prestashop>orderstatushandler_173d6ee55b0af4a404edea430eb21b75'] = 'Capture request failed. Please check Adyen configuration. Reason:';
 $_MODULE['<{adyenofficial}prestashop>orderstatushandler_16908db06cfc98850ed170742a49eaa1'] = 'Capture request successfully sent to Adyen.';

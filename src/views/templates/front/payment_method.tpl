@@ -16,5 +16,12 @@
         <input type="hidden" class="adyen-balance-check-url" value="{$balanceCheckUrl|escape:'html':'UTF-8'}">
         <input type="hidden" name="adyen-presta-version" value="{$prestaVersion|escape:'html':'UTF-8'}">
         <p id="adyen-click-to-pay-label" class="adyen-click-to-pay-label"> {$clickToPayLabel|escape:'html':'UTF-8'} </p>
+        <input type="hidden" name="adyen-giftcard-remove" value="{l s='Remove' mod='adyenofficial'}">
+        <input type="hidden" name="adyen-giftcard-complete-order"
+               value="{l s='You have paid complete order amount. Please confirm by placing the order.' mod='adyenofficial'}">
+        <input type="hidden" name="adyen-giftcard-discount" value="{l s='Giftcard Discount' mod='adyenofficial'}">
+        <input type="hidden" name="adyen-giftcard-remaining-amount" value="{l s='Remaining Amount' mod='adyenofficial'}">
+        <input type="hidden" name="adyen-giftcard-deducted-amount"
+               value="{l s='Deducted amount: {currencySymbol}{cardValue} {currencyIso}' mod='adyenofficial'}">
     </form>
 </div>
