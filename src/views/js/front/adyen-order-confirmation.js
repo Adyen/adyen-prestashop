@@ -3,6 +3,11 @@ $(document).ready(function () {
     let checkoutConfigUrl = document.getElementById('adyen-checkout-config-url');
     let additionalDataUrl = $('#adyen-additional-data-url');
 
+    sessionStorage.removeItem('remainingAmount');
+    sessionStorage.removeItem('totalDiscount');
+    sessionStorage.removeItem('minorTotalDiscount');
+    sessionStorage.removeItem('giftCardsData');
+
     if (additionalAction.html() === '' || additionalAction.html() === undefined) {
         return;
     }

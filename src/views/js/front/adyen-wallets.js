@@ -83,7 +83,7 @@ $(document).ready(function () {
         }
 
         checkoutController = new AdyenComponents.CheckoutController({
-            "checkoutConfigUrl": checkoutConfigUrl.value,
+            "checkoutConfigUrl": checkoutConfigUrl.value + '&discountAmount=' + sessionStorage.getItem('totalDiscount'),
             "showPayButton": true,
             "sessionStorage": sessionStorage,
             "onStateChange": submitOrder,
@@ -156,13 +156,22 @@ $(document).ready(function () {
         }
 
         paymentStarted = true;
+        let cardsData = document.getElementsByClassName('adyen-giftcard-state-data');
+        let stateData = '';
+
+        for (let element of cardsData) {
+            if (element.value !== '') {
+                stateData += element.value + ',';
+            }
+        }
 
         $.ajax({
             method: 'POST',
             dataType: 'json',
             url: paymentUrl.value + '?isXHR=1',
             data: {
-                "adyen-additional-data": checkoutController.getPaymentMethodStateData()
+                "adyen-additional-data": checkoutController.getPaymentMethodStateData(),
+                "adyen-giftcards-data": '[' + stateData.slice(0, -1) + ']'
             },
             success: function (response) {
                 if (response.nextStepUrl) {

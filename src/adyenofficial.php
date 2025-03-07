@@ -320,7 +320,7 @@ class AdyenOfficial extends PaymentModule
         $paymentOptions = [];
 
         if ($cart->id_address_invoice !== "0" && $storeService->checkStoreConnection($store)) {
-            $config = \AdyenPayment\Classes\Services\CheckoutHandler::getPaymentCheckoutConfig($params['cart']);
+            $config = \AdyenPayment\Classes\Services\CheckoutHandler::getPaymentCheckoutConfig($params['cart'], 0);
 
             if (!$config->isSuccessful()) {
                 return [];

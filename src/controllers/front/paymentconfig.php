@@ -31,6 +31,7 @@ class AdyenOfficialPaymentConfigModuleFrontController extends ModuleFrontControl
     public function postProcess()
     {
         $cartId = (int)Tools::getValue('cartId');
+        $discountAmount = (int)Tools::getValue('discountAmount');
         $cart = new Cart($cartId > 0 ? $cartId : Context::getContext()->cart->id);
         $customer = new Customer(Context::getContext()->customer->id);
 
@@ -42,7 +43,7 @@ class AdyenOfficialPaymentConfigModuleFrontController extends ModuleFrontControl
             AdyenPrestaShopUtility::die400(['message' => 'Invalid parameters.']);
         }
 
-        $config = CheckoutHandler::getPaymentCheckoutConfig($cart);
+        $config = CheckoutHandler::getPaymentCheckoutConfig($cart, $discountAmount);
 
         AdyenPrestaShopUtility::dieJson($config);
     }

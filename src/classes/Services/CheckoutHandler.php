@@ -46,7 +46,7 @@ class CheckoutHandler
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      */
-    public static function getPaymentCheckoutConfig(PrestaCart $cart)
+    public static function getPaymentCheckoutConfig(PrestaCart $cart, float $discountAmount)
     {
         $currency = new PrestaCurrency($cart->id_currency);
         $addressInvoice = new PrestaAddress($cart->id_address_invoice);
@@ -57,7 +57,7 @@ class CheckoutHandler
         return CheckoutAPI::get()->checkoutConfig($cart->id_shop)->getPaymentCheckoutConfig(
             new PaymentCheckoutConfigRequest(
                 Amount::fromFloat(
-                    $cart->getOrderTotal(),
+                    $cart->getOrderTotal() - $discountAmount,
                     Currency::fromIsoCode(
                         $currency->iso_code
                     )

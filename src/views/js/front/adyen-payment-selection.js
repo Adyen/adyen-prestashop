@@ -54,6 +54,21 @@ $(document).ready(function () {
         }
     });
 
+    remainingAmount = sessionStorage.getItem('remainingAmount') ? parseFloat(sessionStorage.getItem('remainingAmount')) : -1;
+    totalDiscount = sessionStorage.getItem('totalDiscount') ? parseFloat(sessionStorage.getItem('totalDiscount')) : 0;
+    minorTotalDiscount = sessionStorage.getItem('minorTotalDiscount') ? parseInt(sessionStorage.getItem('minorTotalDiscount')) : 0;
+    let responses = sessionStorage.getItem('giftCardsData') ? JSON.parse(sessionStorage.getItem('giftCardsData')) : null;
+    let originalPaymentId = paymentId;
+
+    if (responses) {
+        for (let response of responses) {
+            paymentId = response.paymentId;
+            renderGiftCardDetails(response, response.cardValue);
+        }
+    }
+
+    paymentId = originalPaymentId;
+
     function mountComponent(paymentForm) {
         let type = paymentForm.find('[name=adyen-type]').val();
         let configUrl = paymentForm.find(".adyen-config-url").val();
@@ -79,7 +94,7 @@ $(document).ready(function () {
 
         if (checkoutController.isPaymentMethodStateValid() && ((checkbox.length && checkbox.is(":checked")) || !checkbox.length)) {
             let addData = paymentForm.find('[name=adyen-additional-data]');
-            let giftcardData = paymentForm.find('[name=adyen-giftcards-data]')
+            let giftcardData = paymentForm.find('[name=adyen-giftcards-data]');
             let cardsData = document.getElementsByClassName('adyen-giftcard-state-data');
             let stateData = '';
 
@@ -114,12 +129,12 @@ $(document).ready(function () {
     }
 
     function getCheckoutController(checkoutConfigUrl) {
-        if (checkoutController) {
+        if (checkoutController && totalDiscount === 0) {
             return checkoutController;
         }
 
         return new AdyenComponents.CheckoutController({
-            "checkoutConfigUrl": checkoutConfigUrl,
+            "checkoutConfigUrl": checkoutConfigUrl + '&discountAmount=' + totalDiscount,
             "onStateChange": handleStateChange,
             "onClickToPay": handleClickOnPay,
             "balanceCheck": checkBalance
@@ -127,14 +142,23 @@ $(document).ready(function () {
     }
 
     function handleClickOnPay() {
+        let addData = paymentForm.find('[name=adyen-additional-data]');
+        let giftcardData = paymentForm.find('[name=adyen-giftcards-data]');
+
         $.ajax({
             method: 'POST',
             dataType: 'json',
             url: paymentUrl.value + '?isXHR=1',
             data: {
-                "adyen-additional-data": checkoutController.getPaymentMethodStateData()
+                "adyen-giftcards-data": giftcardData.val(),
+                "adyen-additional-data": addData.val(checkoutController.getPaymentMethodStateData())
             },
             success: function (response) {
+                sessionStorage.removeItem('remainingAmount');
+                sessionStorage.removeItem('totalDiscount');
+                sessionStorage.removeItem('minorTotalDiscount');
+                sessionStorage.removeItem('giftCardsData');
+
                 if (response.nextStepUrl) {
                     window.location.href = response.nextStepUrl;
                     return;
@@ -160,11 +184,6 @@ $(document).ready(function () {
 
     function checkBalance(resolve, reject, data) {
         let checkBalanceUrl = document.getElementsByClassName('adyen-balance-check-url')[0].value;
-        let paymentForm = $("#pay-with-" + paymentId + "-form");
-        let paymentMethod = $("#" + paymentId + "-container")[0];
-        let configUrl = paymentForm.find(".adyen-config-url").val();
-
-        checkoutController = getCheckoutController(configUrl);
 
         $.ajax({
             method: 'POST',
@@ -174,7 +193,7 @@ $(document).ready(function () {
             success: function (response) {
                 resolve(response.response);
 
-                let cardValue = response.majorValue;
+                let cardValue = parseFloat(response.majorValue);
 
                 if (remainingAmount === -1) {
                     remainingAmount = response.orderTotal;
@@ -190,57 +209,28 @@ $(document).ready(function () {
                     minorTotalDiscount = parseInt(minorTotalDiscount) + parseInt(response.response.balance.value)
                 }
 
-                let cardInfo = document.createElement("div");
-                cardInfo.style.display = 'flex';
-                let cardLabel = document.createElement("p");
-                cardLabel.style.flexGrow = 1;
-                let removeLink = document.createElement("a");
-                let removeLabel = $('[name="adyen-giftcard-remove"]')[0];
-                removeLink.innerText = removeLabel.value;
-                removeLink.href = "#";
-                removeLink.addEventListener('click', removeCard);
-                let stateData = document.createElement('input');
-                stateData.type = 'hidden';
                 let data = JSON.parse(checkoutController.getPaymentMethodStateData());
-                data['cardAmount'] = remainingAmount === 0 ? response.response.balance.value : response.minorOrderTotal - minorTotalDiscount;
-                stateData.value = JSON.stringify(data);
-                stateData.classList.add('adyen-giftcard-state-data');
+                data['cardAmount'] = remainingAmount === 0 ? response.minorOrderTotal - minorTotalDiscount : response.response.balance.value;
 
-                let deductedAmount = $('[name="adyen-giftcard-deducted-amount"]')[0];
-                cardLabel.innerText = deductedAmount.value.replace("{currencySymbol}", response.currency)
-                    .replace("{cardValue}", cardValue).replace("{currencyIso}", response.response.balance.currency);
-                cardInfo.appendChild(cardLabel);
-                cardInfo.appendChild(removeLink);
-                cardInfo.appendChild(stateData);
-                cardInfo.setAttribute('adyen-card-value', cardValue);
-                cardInfo.setAttribute('adyen-card-currency', response.currency);
+                sessionStorage.setItem('remainingAmount', remainingAmount);
+                sessionStorage.setItem('totalDiscount', totalDiscount);
+                sessionStorage.setItem('minorTotalDiscount', minorTotalDiscount);
+                let giftCardsData = sessionStorage.getItem('giftCardsData');
+                let responses = [];
+                response['cardValue'] = cardValue;
+                response['paymentId'] = paymentId;
+                response['stateData'] = JSON.stringify(data);
 
-                paymentMethod.append(cardInfo);
+                responses.push(response);
 
-                renderCartSummary(response.currency);
-                checkoutController.unmount();
-
-                if (remainingAmount === 0) {
-                    let completelyPaid = document.createElement('article');
-                    completelyPaid.classList.add('alert', 'alert-success', 'adyen-message');
-                    let messageBox = document.createElement('ul');
-                    let message = document.createElement('li');
-                    let messageValue = $('[name="adyen-giftcard-complete-order"]')[0];
-                    message.innerText = messageValue.value;
-                    messageBox.appendChild(message);
-                    completelyPaid.appendChild(messageBox);
-                    paymentMethod.appendChild(completelyPaid);
-
-                    let paymentOptions = $('input[name="payment-option"]');
-
-                    for (let paymentOption of paymentOptions) {
-                        paymentOption.disabled = true;
-                    }
-
-                    return;
+                if (giftCardsData) {
+                    responses = JSON.parse(giftCardsData);
+                    responses.push(response);
                 }
 
-                mountComponent(paymentForm);
+                sessionStorage.setItem('giftCardsData', JSON.stringify(responses));
+
+                renderGiftCardDetails(response, cardValue);
             },
             error: function (response) {
                 reject(response)
@@ -252,16 +242,46 @@ $(document).ready(function () {
         event.preventDefault();
         let parentEl = event.target.parentElement;
         let cardValue = parentEl.getAttribute('adyen-card-value');
+        let minorValue = parentEl.getAttribute('adyen-card-value-minor');
         let currency = parentEl.getAttribute('adyen-card-currency');
         let adyenMessage = document.getElementsByClassName('adyen-message')[0];
+        let stateData = parentEl.getElementsByClassName('adyen-giftcard-state-data')[0];
 
-        adyenMessage.remove();
+        if (typeof adyenMessage !== 'undefined') {
+            adyenMessage.remove();
+        }
+
         totalDiscount = parseFloat(totalDiscount) - parseFloat(cardValue);
         remainingAmount = parseFloat(remainingAmount) + parseFloat(cardValue);
+        minorTotalDiscount = parseInt(minorTotalDiscount) - parseInt(minorValue);
+
+        sessionStorage.setItem('remainingAmount', remainingAmount);
+        sessionStorage.setItem('totalDiscount', totalDiscount);
+        sessionStorage.setItem('minorTotalDiscount', minorTotalDiscount);
+
+        let savedData = JSON.parse(sessionStorage.getItem('giftCardsData'));
+
+        if (savedData) {
+            for (let data of savedData) {
+                if (data.stateData === stateData.value) {
+                    let index = savedData.indexOf(data);
+
+                    if (paymentId === data.paymentId) {
+                        let paymentForm = $("#pay-with-" + paymentId + "-form");
+                        mountComponent(paymentForm);
+                    }
+
+                    if (index !== -1) {
+                        savedData.splice(index, 1);
+                    }
+                }
+            }
+        }
+
+        sessionStorage.setItem('giftCardsData', JSON.stringify(savedData));
 
         renderCartSummary(currency);
 
-        let stateData = parentEl.getElementsByClassName('adyen-giftcard-state-data')[0];
         stateData.value = '';
         parentEl.hidden = true;
 
@@ -317,5 +337,74 @@ $(document).ready(function () {
 
         adyenSummary.appendChild(adyenInnerBlock);
         cartSummary.insertBefore(adyenSummary, totalDiv);
+    }
+
+    function renderGiftCardDetails(response, cardValue) {
+        let paymentForm = $("#pay-with-" + paymentId + "-form");
+        let paymentMethod = $("#" + paymentId + "-container")[0];
+        let configUrl = paymentForm.find(".adyen-config-url").val();
+
+        if (!checkoutController) {
+            checkoutController = getCheckoutController(configUrl);
+        }
+
+        let cardInfo = document.createElement("div");
+        cardInfo.style.display = 'flex';
+        let cardLabel = document.createElement("p");
+        cardLabel.style.flexGrow = 1;
+        let removeLink = document.createElement("a");
+        let removeLabel = $('[name="adyen-giftcard-remove"]')[0];
+        removeLink.innerText = removeLabel.value;
+        removeLink.href = "#";
+        removeLink.addEventListener('click', removeCard);
+        let stateData = document.createElement('input');
+        stateData.type = 'hidden';
+        stateData.value = response.stateData;
+        stateData.classList.add('adyen-giftcard-state-data');
+        cardInfo.appendChild(stateData);
+
+        let deductedAmount = $('[name="adyen-giftcard-deducted-amount"]')[0];
+        cardLabel.innerText = deductedAmount.value.replace("{currencySymbol}", response.currency)
+            .replace("{cardValue}", cardValue).replace("{currencyIso}", response.response.balance.currency);
+        cardInfo.appendChild(cardLabel);
+        cardInfo.appendChild(removeLink);
+        cardInfo.setAttribute('adyen-card-value-minor', response.response.balance.value);
+        cardInfo.setAttribute('adyen-card-value', cardValue);
+        cardInfo.setAttribute('adyen-card-currency', response.currency);
+
+        paymentMethod.append(cardInfo);
+
+        renderCartSummary(response.currency);
+        checkoutController.unmount();
+
+        if (remainingAmount === 0) {
+            let completelyElements = document.getElementsByClassName('adyen-message');
+
+            if (typeof completelyElements !== 'undefined') {
+                for (let element of completelyElements) {
+                    element.remove();
+                }
+            }
+
+            let completelyPaid = document.createElement('article');
+            completelyPaid.classList.add('alert', 'alert-success', 'adyen-message');
+            let messageBox = document.createElement('ul');
+            let message = document.createElement('li');
+            let messageValue = $('[name="adyen-giftcard-complete-order"]')[0];
+            message.innerText = messageValue.value;
+            messageBox.appendChild(message);
+            completelyPaid.appendChild(messageBox);
+            paymentMethod.appendChild(completelyPaid);
+
+            let paymentOptions = $('input[name="payment-option"]');
+
+            for (let paymentOption of paymentOptions) {
+                paymentOption.disabled = true;
+            }
+
+            return;
+        }
+
+        mountComponent(paymentForm);
     }
 })
