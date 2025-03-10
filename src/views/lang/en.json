@@ -435,6 +435,10 @@
           "label": "Send basket data",
           "description": "Sending basket data as additional risk fields makes it easier to detect fraud and can be used for custom risk rules. Do you want to send this data to Adyen?"
         },
+        "cancelledPartialPayment": {
+          "label": "Cancelled partial payment",
+          "description": "Change order status to \"Cancelled\" when at least one transaction is cancelled."
+        },
         "capture": {
           "label": "Capture",
           "description": "Some payment methods support separate authorisation and capture. By default, capture is set to immediately after authorisation, but you can choose to delay the capture for these payment methods. This can be helpful if you want to have the option to cancel a payment in case of issues with shipment, for example.",

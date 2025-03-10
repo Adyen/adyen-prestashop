@@ -13,6 +13,7 @@ if (!window.AdyenFE) {
      * @property {boolean} enablePayByLink
      * @property {string | null} payByLinkTitle
      * @property {string | null} defaultLinkExpirationTime
+     * @property {boolean} cancelledPartialPayment
      */
 
     /**
@@ -176,7 +177,8 @@ if (!window.AdyenFE) {
                     retentionPeriod: 60,
                     capture: null,
                     captureDelay: null,
-                    shipmentStatus: null
+                    shipmentStatus: null,
+                    cancelledPartialPayment: true
                 };
 
                 numberOfChanges = 3;
@@ -198,6 +200,11 @@ if (!window.AdyenFE) {
                                     {
                                         name: 'basketItemSync',
                                         value: settings.basketItemSync,
+                                        type: 'checkbox'
+                                    },
+                                    {
+                                        name: 'cancelledPartialPayment',
+                                        value: settings.cancelledPartialPayment,
                                         type: 'checkbox'
                                     },
                                     {
