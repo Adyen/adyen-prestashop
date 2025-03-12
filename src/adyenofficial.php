@@ -46,7 +46,7 @@ class AdyenOfficial extends PaymentModule
     {
         $this->name = 'adyenofficial';
         $this->tab = 'payments_gateways';
-        $this->version = '5.2.11';
+        $this->version = '6.0.0';
 
         $this->author = $this->l('Adyen');
         $this->need_instance = 0;
