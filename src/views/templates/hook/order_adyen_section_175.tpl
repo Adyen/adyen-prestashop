@@ -1,7 +1,5 @@
 <div class="tab-pane" id="adyenTabContent">
     {if $isAdyenOrder}
-        <input type="hidden" name="adyen-refund-supported"
-               value="{html_entity_decode($refundSupported|escape:'html':'UTF-8')}">
         <input type="hidden" name="adyen-presta-version"
                value="1.7.5">
         <div class="table-container table-responsive" style="border: none">
@@ -16,21 +14,78 @@
                     <th>{l s='Order amount' mod='adyenofficial'}</th>
                     <th>{l s='Refunded amount' mod='adyenofficial'}</th>
                     <th>{l s='Initial authorization amount' mod='adyenofficial'}</th>
+                    <th>{l s='Capture' mod='adyenofficial'}</th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr>
-                    <td>{html_entity_decode($transactionDate|escape:'html':'UTF-8')} </td>
-                    <td>{html_entity_decode($originalReference|escape:'html':'UTF-8')} </td>
-                    <td>{if $methodLogo}<img src="{html_entity_decode($methodLogo|escape:'html':'UTF-8')} " alt="logo"
-                                             style="width: 77px;  height: 55px;"> {html_entity_decode($paymentMethod|escape:'html':'UTF-8')}
-                        {/if}
-                    </td>
-                    <td>{html_entity_decode($status|escape:'html':'UTF-8')} </td>
-                    <td>{html_entity_decode($orderAmount|escape:'html':'UTF-8')} {html_entity_decode($currencyISO|escape:'html':'UTF-8')} </td>
-                    <td>{html_entity_decode($refundedAmount|escape:'html':'UTF-8')} {html_entity_decode($currencyISO|escape:'html':'UTF-8')}  </td>
-                    <td>{html_entity_decode($authorizationAdjustmentAmount|escape:'html':'UTF-8')} {html_entity_decode($currencyISO|escape:'html':'UTF-8')}  </td>
-                </tr>
+                {foreach from=$history item=transactionHistory}
+                    {if $transactionHistory.originalReference}
+                        <tr>
+                            <td>
+                                {html_entity_decode($transactionHistory.transactionDate|escape:'html':'UTF-8')}
+                            </td>
+                            <td>
+                                {html_entity_decode($transactionHistory.originalReference|escape:'html':'UTF-8')}
+                            </td>
+                            <td>
+                                {if $transactionHistory.methodLogo}
+                                    <img src="{html_entity_decode($transactionHistory.methodLogo|escape:'html':'UTF-8')} "
+                                         alt="logo"
+                                         style="width: 77px;  height: 55px;">
+                                    {html_entity_decode($transactionHistory.paymentMethod|escape:'html':'UTF-8')}
+                                {/if}
+                            </td>
+                            <td>{html_entity_decode($transactionHistory.status|escape:'html':'UTF-8')} </td>
+                            <td>
+                                {html_entity_decode($transactionHistory.orderAmount|escape:'html':'UTF-8')}
+                                {html_entity_decode($transactionHistory.currencyISO|escape:'html':'UTF-8')}
+                            </td>
+                            <td>
+                                <input type="hidden" name="adyen-refund-supported"
+                                       value="{html_entity_decode($transactionHistory.refundSupported|escape:'html':'UTF-8')}">
+                                {html_entity_decode($transactionHistory.refundedAmount|escape:'html':'UTF-8')}
+                                {html_entity_decode($transactionHistory.currencyISO|escape:'html':'UTF-8')}
+                            </td>
+                            <td>
+                                {html_entity_decode($transactionHistory.authorizationAdjustmentAmount|escape:'html':'UTF-8')}
+                                {html_entity_decode($transactionHistory.currencyISO|escape:'html':'UTF-8')}
+                            </td>
+                            {if $transactionHistory.captureAvailable}
+                                <td>
+                                    <div class="row" style="display:flex">
+                                        <div class="col-sm-6" style="padding:0">
+                                            {if $transactionHistory.partialCapture}
+                                                <div class="input-group">
+                                                    <input type="text" name="adyen-capture-amount"
+                                                           value="{html_entity_decode($transactionHistory.capturableAmount|escape:'html':'UTF-8')}"
+                                                           class="form-control">
+                                                    <div class="input-group-addon">
+                                                        <span class="input-group-text">{html_entity_decode($transactionHistory.currency|escape:'html':'UTF-8')}</span>
+                                                    </div>
+                                                </div>
+                                            {/if}
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <input type="hidden" name="adyen-psp-reference"
+                                                   value="{html_entity_decode($transactionHistory.originalReference|escape:'html':'UTF-8')}">
+                                            <input type="hidden" name="adyen-capture-url"
+                                                   value="{html_entity_decode($transactionHistory.captureURL|escape:'html':'UTF-8')}">
+                                            <input type="hidden" name="adyen-capturable-amount"
+                                                   value="{html_entity_decode($transactionHistory.capturableAmount|escape:'html':'UTF-8')}">
+                                            <input type="hidden" name="adyen-orderId"
+                                                   value="{html_entity_decode($transactionHistory.orderId|escape:'html':'UTF-8')}">
+                                            <button class="btn btn-default" type="button" id="adyen-capture-button">
+                                                <i class="icon-money"></i>
+                                                {l s='Capture' mod='adyenofficial'}</button>
+                                        </div>
+                                    </div>
+                                </td>
+                            {else}
+                                <td>-</td>
+                            {/if}
+                        </tr>
+                    {/if}
+                {/foreach}
                 </tbody>
             </table>
         </div>
@@ -52,7 +107,6 @@
             <strong>{l s='Risk score' mod='adyenofficial'} </strong>
         </p>
         <p>{html_entity_decode($riskScore|escape:'html':'UTF-8')} </p>
-
         {if $displayAdjustmentButton && $authorizationAdjustmentDate}
             <p class="mb-1">
                 <strong>{l s='Authorization adjustment date' mod='adyenofficial'} </strong>
@@ -66,17 +120,17 @@
         {/if}
 
         {if $displayAdjustmentButton}
-    <div class="row">
-            <div class="form-group input-group">
-                <input type="hidden" name="adyen-orderId"
-                       value="{html_entity_decode($orderId|escape:'html':'UTF-8')}">
-                <input type="hidden" name="adyen-extend-authorization-url"
-                       value="{html_entity_decode($extendAuthorizationURL|escape:'html':'UTF-8')}">
-                <button class="btn btn-default" type="button" id="adyen-extend-authorization-button">
-                    <i class="icon-plus-sign"></i>
-                    {l s='Extend authorization expiry period' mod='adyenofficial'}</button>
+            <div class="row">
+                <div class="form-group input-group">
+                    <input type="hidden" name="adyen-orderId"
+                           value="{html_entity_decode($orderId|escape:'html':'UTF-8')}">
+                    <input type="hidden" name="adyen-extend-authorization-url"
+                           value="{html_entity_decode($extendAuthorizationURL|escape:'html':'UTF-8')}">
+                    <button class="btn btn-default" type="button" id="adyen-extend-authorization-button">
+                        <i class="icon-plus-sign"></i>
+                        {l s='Extend authorization expiry period' mod='adyenofficial'}</button>
+                </div>
             </div>
-    </div>
         {/if}
 
         {if $captureAvailable}
@@ -107,13 +161,6 @@
                         <i class="icon-eye"></i>
                         {l s='View payment on Adyen CA' mod='adyenofficial'}</a>
                 </div>
-            </div>
-        {elseif $methodLogo}
-            <div class="form-group input-group">
-                <a class="btn btn-default" type="button" href="{html_entity_decode($adyenLink|escape:'html':'UTF-8')}"
-                   target="_blank">
-                    <i class="icon-eye"></i>
-                    {l s='View payment on Adyen CA' mod='adyenofficial'}</a>
             </div>
         {/if}
 
@@ -158,12 +205,14 @@
                 </tr>
                 </thead>
                 <tbody>
-                {foreach $transactionHistory as $item}
-                    <tr>
-                        <td>{$item.eventCode}</td>
-                        <td>{$item.date}</td>
-                        <td>{if $item.status} true {else} false {/if}</td>
-                    </tr>
+                {foreach from=$history item=transactionHistories}
+                    {foreach from=$transactionHistories.transactionHistory item=item}
+                        <tr>
+                            <td>{$item.eventCode}</td>
+                            <td>{$item.date}</td>
+                            <td>{if $item.status} true {else} false {/if}</td>
+                        </tr>
+                    {/foreach}
                 {/foreach}
                 </tbody>
             </table>

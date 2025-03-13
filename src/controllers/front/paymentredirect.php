@@ -57,7 +57,7 @@ class AdyenOfficialPaymentRedirectModuleFrontController extends PaymentControlle
             $isGuestCheckout = true;
         }
 
-        if(!$isGuestCheckout) {
+        if (!$isGuestCheckout) {
             $customer = new Customer($cart->id_customer);
         }
 
@@ -69,7 +69,6 @@ class AdyenOfficialPaymentRedirectModuleFrontController extends PaymentControlle
         $response = CheckoutAPI::get()
             ->paymentRequest((string)$cart->id_shop)
             ->updatePaymentDetails(
-
                 array_key_exists('details', $requestData) ? $requestData : ['details' => $requestData]);
 
         if (!$response->isSuccessful() && $page !== 'thankYou') {
@@ -85,7 +84,7 @@ class AdyenOfficialPaymentRedirectModuleFrontController extends PaymentControlle
         }
 
         try {
-            if($isGuestCheckout) {
+            if ($isGuestCheckout) {
                 $cart->secure_key = $customer->secure_key;
                 $cart->id_customer = $customer->id;
                 $cart->update();

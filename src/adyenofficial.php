@@ -1080,11 +1080,35 @@ class AdyenOfficial extends PaymentModule
 
         $reversedDetails = array_reverse($filteredDetails);
 
-        return !empty($reversedDetails) ? $reversedDetails[array_search(
-            \Adyen\Webhook\EventCodes::AUTHORISATION,
-            array_column($reversedDetails, 'eventCode'),
-            true
-        )] : [];
+        if ($reversedDetails) {
+            $authorisationDetail = $reversedDetails[array_search(
+                \Adyen\Webhook\EventCodes::AUTHORISATION,
+                array_column($reversedDetails, 'eventCode'),
+                true
+            )];
+        }
+
+        if (!$reversedDetails) {
+            if (!empty($transactionDetails['eventCode'])) {
+                return $transactionDetails;
+            }
+
+            $authorisationDetail = $transactionDetails[0][0];
+
+            foreach ($transactionDetails as $details) {
+                foreach ($details as $detail) {
+                    if ($detail['status'] === true && $detail['eventCode'] === \Adyen\Webhook\EventCodes::ORDER_OPENED) {
+                        $authorisationDetail = $detail;
+                    }
+
+                    if ($detail['status'] === true && $detail['eventCode'] === \Adyen\Webhook\EventCodes::AUTHORISATION) {
+                        $authorisationDetail['paymentMethodType'] = $detail['paymentMethodType'];
+                    }
+                }
+            }
+        }
+
+        return $authorisationDetail;
     }
 
     /**
@@ -1469,44 +1493,102 @@ class AdyenOfficial extends PaymentModule
 
         $currency = new \Currency($order->id_currency);
         $transactionDetails = \AdyenPayment\Classes\Services\TransactionDetailsHandler::getTransactionDetails($order);
-        $authorisationDetail = $this->getAuthorisationDetail($transactionDetails);
-
-        $lastDetail = end($transactionDetails);
+        $result = [];
         $generalSettings = \Adyen\Core\BusinessLogic\AdminAPI\AdminAPI::get()->generalSettings((string)\Context::getContext()->shop->id)->getGeneralSettings();
         $paymentLinkEnabled = $generalSettings->isSuccessful() && $generalSettings->toArray()['enablePayByLink'];
-
         \AdyenPayment\Classes\Bootstrap::init();
-        $this->getContext()->smarty->assign([
-            'transactionDate' => $authorisationDetail['date'] ?? '',
-            'originalReference' => $authorisationDetail['pspReference'] ?? '',
-            'paymentMethod' => $authorisationDetail['paymentMethodType'] ?? '',
-            'methodLogo' => $authorisationDetail['paymentMethod'] ?? '',
-            'orderAmount' => $authorisationDetail['paidAmount'] ?? '',
-            'refundedAmount' => $authorisationDetail['refundAmount'] ?? '',
-            'status' => ucfirst(strtolower($lastDetail['paymentState'] ?? '')),
-            'statusDate' => $lastDetail['date'] ?? '',
-            'merchantID' => $authorisationDetail['merchantAccountCode'] ?? '',
-            'riskScore' => $authorisationDetail['riskScore'] ?? '',
-            'captureAvailable' => $lastDetail['captureSupported'] ?? '',
-            'capturableAmount' => $authorisationDetail['capturableAmount'] ?? '',
-            'currency' => $currency->symbol ?? ($currency->sign ?? ''),
-            'currencyISO' => $currency->iso_code,
-            'transactionHistory' => $transactionDetails,
-            'captureURL' => $this->getAction('AdyenCapture', 'captureOrder', ['ajax' => true]),
-            'orderId' => $orderId,
-            'adyenLink' => $authorisationDetail['viewOnAdyenUrl'] ?? '',
-            'refundSupported' => $authorisationDetail['refund'] ?? false,
-            'adyenPaymentLink' => $authorisationDetail['paymentLink'] ?? '',
-            'adyenGeneratePaymentLink' => $this->getAction('AdyenPaymentLink', 'generatePaymentLink', ['ajax' => true]),
-            'shouldDisplayPaymentLink' => $authorisationDetail['displayPaymentLink'] ?? false,
-            'isAdyenOrder' => $order->module === $this->name,
-            'shouldDisplayPaymentLinkForNonAdyenOrder' => $authorisationDetail['displayPaymentLink'] ?? $paymentLinkEnabled,
-            'extendAuthorizationURL' => $this->getAction('AdyenAuthorizationAdjustment', 'extendAuthorization',
-                ['ajax' => true]),
-            'authorizationAdjustmentDate' => $lastDetail['authorizationAdjustmentDate'] ?? '',
-            'authorizationAdjustmentAmount' => $lastDetail['authorizationAdjustmentAmount'] ?? '0',
-            'displayAdjustmentButton' => $lastDetail['authorizationAdjustmentAvailable'] ?? '',
-        ]);
+        $paymentLink = '';
+        $shouldDisplayPaymentLink = false;
+        $shouldDisplayPaymentLinkForNonAdyenOrder = false;
+        $statuses = [];
+
+        foreach ($transactionDetails as $transactionDetail) {
+            $authorisationDetail = $this->getAuthorisationDetail($transactionDetail);
+
+            if (!empty($authorisationDetail['eventCode']) && in_array(
+                    $authorisationDetail['eventCode'],
+                    [\Adyen\Webhook\EventCodes::ORDER_CLOSED, \Adyen\Webhook\EventCodes::ORDER_OPENED],
+                    true)
+            ) {
+                $result['history'][] = [
+                    'transactionHistory' => [0 => $authorisationDetail],
+                    'originalReference' => ''
+                ];
+
+                continue;
+            }
+
+            $lastDetail = end($transactionDetail);
+            $statuses[] = $lastDetail['paymentState'];
+
+            $result['history'][] = [
+                'transactionDate' => $authorisationDetail['date'] ?? '',
+                'originalReference' => $authorisationDetail['pspReference'] ?? '',
+                'paymentMethod' => $authorisationDetail['paymentMethodType'] ?? '',
+                'methodLogo' => $authorisationDetail['paymentMethod'] ?? '',
+                'orderAmount' => $authorisationDetail['paidAmount'] ?? '',
+                'refundedAmount' => $authorisationDetail['refundAmount'] ?? '',
+                'status' => ucfirst(strtolower($lastDetail['paymentState'] ?? '')),
+                'statusDate' => $lastDetail['date'] ?? '',
+                'riskScore' => $authorisationDetail['riskScore'] ?? '',
+                'captureAvailable' => $lastDetail['captureSupported'] ?? '',
+                'partialCapture' => $lastDetail['partialCapture'] ?? '',
+                'capturableAmount' => $authorisationDetail['capturableAmount'] ?? '',
+                'currency' => $currency->symbol ?? ($currency->sign ?? ''),
+                'currencyISO' => $currency->iso_code,
+                'transactionHistory' => $transactionDetail,
+                'captureURL' => $this->getAction('AdyenCapture', 'captureOrder', ['ajax' => true]),
+                'orderId' => $orderId,
+                'adyenLink' => $authorisationDetail['viewOnAdyenUrl'] ?? '',
+                'refundSupported' => $authorisationDetail['refund'] ?? false,
+                'extendAuthorizationURL' => $this->getAction('AdyenAuthorizationAdjustment', 'extendAuthorization',
+                    ['ajax' => true]),
+                'authorizationAdjustmentDate' => $lastDetail['authorizationAdjustmentDate'] ?? '',
+                'authorizationAdjustmentAmount' => $lastDetail['authorizationAdjustmentAmount'] ?? '0',
+                'displayAdjustmentButton' => $lastDetail['authorizationAdjustmentAvailable'] ?? '',
+            ];
+
+            if (!$paymentLink) {
+                $paymentLink = $authorisationDetail['paymentLink'] ?? '';
+            }
+
+            if (!$shouldDisplayPaymentLink) {
+                $shouldDisplayPaymentLink = $authorisationDetail['displayPaymentLink'] ?? false;
+            }
+
+            if (!$shouldDisplayPaymentLinkForNonAdyenOrder) {
+                $shouldDisplayPaymentLinkForNonAdyenOrder = $authorisationDetail['displayPaymentLink'] ?? $paymentLinkEnabled;
+            }
+        }
+
+        $status = $lastDetail['paymentState'] ?? '';
+
+        if (in_array('failed', $statuses, true)) {
+            $status = 'failed';
+        }
+
+        if (in_array('cancelled', $statuses, true) && $generalSettings->isCancelledPartialPayment()) {
+            $status = 'cancelled';
+        }
+
+        if (in_array('refunded', $statuses, true)) {
+            if (in_array('paid', $statuses, true) || in_array('new', $statuses, true)) {
+                $status = 'partially refunded';
+            } else {
+                $status = 'refunded';
+            }
+        }
+
+        $result['adyenPaymentLink'] = $paymentLink;
+        $result['adyenGeneratePaymentLink'] = $this->getAction('AdyenPaymentLink', 'generatePaymentLink', ['ajax' => true]);
+        $result['shouldDisplayPaymentLink'] = $shouldDisplayPaymentLink;
+        $result['shouldDisplayPaymentLinkForNonAdyenOrder'] = $shouldDisplayPaymentLinkForNonAdyenOrder;
+        $result['isAdyenOrder']  = $order->module === $this->name;
+        $result['status'] = ucfirst(strtolower($status));
+        $result['statusDate'] = $lastDetail['date'] ?? '';
+        $result['merchantID'] = $authorisationDetail['merchantAccountCode'] ?? '';
+
+        $this->getContext()->smarty->assign($result);
 
         return $this->display(__FILE__, $this->getVersionHandler()->tabContent());
     }

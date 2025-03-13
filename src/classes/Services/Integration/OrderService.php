@@ -26,6 +26,7 @@ use PrestaShop\PrestaShop\Adapter\Entity\Currency;
 use PrestaShopDatabaseException;
 use PrestaShopException;
 use Shop;
+use Validate;
 
 /**
  * Class OrderService.
@@ -52,6 +53,18 @@ class OrderService implements OrderServiceInterface
     {
         $this->transactionHistoryRepository = $transactionLogRepository;
         $this->versionHandler = $versionHandler;
+    }
+
+    /**
+     * @param string $merchantReference
+     *
+     * @return bool
+     */
+    public function cartExists(string $merchantReference): bool
+    {
+        $cart = new Cart($merchantReference);
+
+        return Validate::isLoadedObject($cart) && $cart->id;
     }
 
     /**

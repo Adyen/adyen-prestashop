@@ -4,34 +4,50 @@ $(document).ready(function () {
 
     disableCheckbox();
 
-    if (!$('input[name="adyen-refund-supported"]').val()) {
+    let refundsSupported = $('input[name="adyen-refund-supported"]');
+    let refund = false;
+
+    for (let supported of refundsSupported) {
+        refund = refund || supported;
+    }
+
+    if (!refund) {
         disableRefundButtons()
     }
 
-    $('#adyen-capture-button').click(function () {
-        const endpointURL = $('input[name="adyen-capture-url"]').val();
-        const orderId = $('input[name="adyen-orderId"]').val();
-        const captureAmount = $('input[name="adyen-capture-amount"]').val();
+    $('[name="adyen-capture-button"]').click(function () {
+        const endpointURL = $(this).parent().find('[name="adyen-capture-url"]').val();
+        const orderId = $(this).parent().find('[name="adyen-orderId"]').val();
+        const captureAmount = $(this).parent().find('[name="adyen-capture-amount"]');
+        const pspReference = $(this).parent().find('[name="adyen-psp-reference"]').val();
+        let capturedAmount = $(this).parent().find('[name="adyen-capture-url"]').val();
+
+        if (captureAmount) {
+            capturedAmount = captureAmount.val();
+        }
 
         Adyen.adyenAjaxService().post(endpointURL, {
             'orderId': orderId,
-            'captureAmount': captureAmount
+            'captureAmount': capturedAmount,
+            'pspReference': pspReference
         }, (response, status) => {
             location.reload();
         });
     });
 
+
     $('input[name="adyen-capture-amount"]').on('input', function () {
         let captureAmount = $(this).val();
         const capturableAmount = $('input[name="adyen-capturable-amount"]').val();
+        let button = $(this).parent().find('button[name="adyen-capture-button"]');
 
         if (parseFloat(captureAmount) > parseFloat(capturableAmount)) {
-            disableCaptureButton()
+            button.prop('disabled', true);
 
             return;
         }
 
-        enableCaptureButton()
+        button.prop('disabled', false);
     });
 
     $('#adyen-extend-authorization-button').click(function () {
@@ -44,16 +60,6 @@ $(document).ready(function () {
             location.reload();
         });
     });
-
-    function disableCaptureButton() {
-        let button = $('#adyen-capture-button');
-        button.prop('disabled', true);
-    }
-
-    function enableCaptureButton() {
-        let button = $('#adyen-capture-button');
-        button.prop('disabled', false);
-    }
 
     function disableRefundButtons() {
         let prestaVersion = $('input[name="adyen-presta-version"]').val();

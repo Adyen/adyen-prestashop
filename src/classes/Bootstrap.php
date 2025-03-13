@@ -254,7 +254,8 @@ class Bootstrap extends BootstrapComponent
                 return new WebhookSynchronizationService(
                     ServiceRegister::getService(TransactionHistoryService::class),
                     ServiceRegister::getService(OrderServiceInterface::class),
-                    ServiceRegister::getService(OrderStatusProvider::class)
+                    ServiceRegister::getService(OrderStatusProvider::class),
+                    ServiceRegister::getService(GeneralSettingsService::class)
                 );
             }
         );
