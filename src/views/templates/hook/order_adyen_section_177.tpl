@@ -25,13 +25,15 @@
                                 {html_entity_decode($transactionHistory.transactionDate|escape:'html':'UTF-8')}
                             </td>
                             <td>
-                                <a href="{html_entity_decode($transactionHistory.adyenLink|escape:'html':'UTF-8')}" target="_blank">
+                                <a href="{html_entity_decode($transactionHistory.adyenLink|escape:'html':'UTF-8')}"
+                                   target="_blank">
                                     {html_entity_decode($transactionHistory.originalReference|escape:'html':'UTF-8')}
                                 </a>
                             </td>
                             <td>
                                 {if $transactionHistory.methodLogo}
-                                    <img src="{html_entity_decode($transactionHistory.methodLogo|escape:'html':'UTF-8')} " alt=""
+                                    <img src="{html_entity_decode($transactionHistory.methodLogo|escape:'html':'UTF-8')} "
+                                         alt=""
                                          style="width: 77px;  height: 55px;">
                                     {html_entity_decode($transactionHistory.paymentMethod|escape:'html':'UTF-8')}
                                 {/if}
@@ -51,7 +53,7 @@
                                 {html_entity_decode($transactionHistory.authorizationAdjustmentAmount|escape:'html':'UTF-8')}
                                 {html_entity_decode($transactionHistory.currencyISO|escape:'html':'UTF-8')}
                             </td>
-                            {if $transactionHistory.captureAvailable}
+                            {if $transactionHistory.captureAvailable && $transactionHistory.capturableAmount > 0}
                                 <td>
                                     <div style="display:flex">
                                         {if $transactionHistory.partialCapture}
@@ -99,7 +101,6 @@
             <strong>{l s='Merchant ID' mod='adyenofficial'} </strong>
         </p>
         <p>{html_entity_decode($merchantID|escape:'html':'UTF-8')} </p>
-
         {if $displayAdjustmentButton && $authorizationAdjustmentDate}
             <p class="mb-1">
                 <strong>{l s='Authorization adjustment date' mod='adyenofficial'} </strong>
@@ -174,14 +175,12 @@
                 </tr>
                 </thead>
                 <tbody>
-                {foreach from=$history item=transactionHistories}
-                    {foreach from=$transactionHistories.transactionHistory item=item}
-                        <tr>
-                            <td>{$item.eventCode}</td>
-                            <td>{$item.date}</td>
-                            <td>{if $item.status} true {else} false {/if}</td>
-                        </tr>
-                    {/foreach}
+                {foreach from=$transactionDetailsSorted item=item}
+                    <tr>
+                        <td>{$item.eventCode}</td>
+                        <td>{$item.date}</td>
+                        <td>{if $item.status} true {else} false {/if}</td>
+                    </tr>
                 {/foreach}
                 </tbody>
             </table>

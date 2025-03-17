@@ -54,15 +54,14 @@ class OrderStatusHandler
             return;
         }
 
-        $lastItem = end($transactionDetails);
         $manualCaptureId = self::getManualCaptureStatus((string)$order->id_shop);
 
         if ($newOrderStatus === (int)$orderStatusMapping[PaymentStates::STATE_CANCELLED]) {
-            self::handleCancellation($order, $lastItem['cancelSupported'] ?? false);
+            self::handleCancellation($order);
         }
 
         if (!empty($manualCaptureId) && (int)$manualCaptureId === $newOrderStatus) {
-            self::handleCapture($order, $lastItem['captureSupported'] ?? false, $lastItem['capturableAmount'] ?? 0);
+            self::handleCapture($order);
         }
     }
 
@@ -113,19 +112,14 @@ class OrderStatusHandler
      *
      * @throws InvalidCurrencyCode
      * @throws InvalidMerchantReferenceException
+     * @throws Exception
      */
-    private static function handleCapture(Order $order, bool $captureSupported, float $capturableAmount): void
+    private static function handleCapture(Order $order): void
     {
-        if (!$captureSupported) {
-            self::setErrorMessage(Module::getInstanceByName('adyenofficial')->l('Capture is not supported on Adyen.'));
-
-            Tools::redirect(self::orderService()->getOrderUrl((string)$order->id_cart));
-        }
-
         $currency = new Currency($order->id_currency);
         $response = AdminAPI::get()->capture((string)$order->id_shop)->handle(
             (string)$order->id_cart,
-            $capturableAmount,
+            (new \Cart($order->id_cart))->getOrderTotal(),
             $currency->iso_code
         );
 
@@ -152,14 +146,8 @@ class OrderStatusHandler
      *
      * @throws InvalidMerchantReferenceException
      */
-    private static function handleCancellation(Order $order, bool $cancelSupported): void
+    private static function handleCancellation(Order $order): void
     {
-        if (!$cancelSupported) {
-            self::setErrorMessage(Module::getInstanceByName('adyenofficial')->l('Cancel is not supported on Adyen.'));
-
-            Tools::redirect(self::orderService()->getOrderUrl((string)$order->id_cart));
-        }
-
         $response = AdminAPI::get()->cancel((string)$order->id_shop)->handle((string)$order->id_cart);
 
         if (!$response->isSuccessful()) {

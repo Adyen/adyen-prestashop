@@ -6,6 +6,7 @@ use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCu
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency as AdyenCurrency;
 use Adyen\Core\BusinessLogic\Domain\Integration\Order\OrderService as OrderServiceInterface;
+use Adyen\Core\BusinessLogic\Domain\ShopNotifications\Models\ShopEvents;
 use Adyen\Core\BusinessLogic\Domain\TransactionHistory\Repositories\TransactionHistoryRepository;
 use Adyen\Core\BusinessLogic\Domain\Webhook\Models\Webhook;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
@@ -132,7 +133,13 @@ class OrderService implements OrderServiceInterface
             return;
         }
 
-        if ((int)$statusId && (int)$statusId !== (int)$order->current_state) {
+        $transactionHistory = $this->transactionHistoryRepository->getTransactionHistory($webhook->getMerchantReference());
+        $authorization = $transactionHistory->collection()->filterAllByStatus(EventCodes::AUTHORISATION)->last();
+        $collection = $transactionHistory->collection()->trimFromHistoryItem($authorization);
+
+        if ((int)$statusId && (int)$statusId !== (int)$order->current_state
+            && !($webhook->isSuccess() && $collection->filterAllByStatus(ShopEvents::CANCELLATION_REQUEST)->isEmpty() &&
+                in_array($webhook->getEventCode(), [EventCodes::REFUND, EventCodes::CANCELLATION], true))) {
             $history = new OrderHistory();
             $history->id_order = $idOrder;
             $history->id_employee = "0";

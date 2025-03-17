@@ -50,7 +50,7 @@
                                 {html_entity_decode($transactionHistory.authorizationAdjustmentAmount|escape:'html':'UTF-8')}
                                 {html_entity_decode($transactionHistory.currencyISO|escape:'html':'UTF-8')}
                             </td>
-                            {if $transactionHistory.captureAvailable}
+                            {if $transactionHistory.captureAvailable && $transactionHistory.capturableAmount > 0}
                                 <td>
                                     <div class="row" style="display:flex">
                                         <div class="col-sm-6" style="padding:0">
@@ -205,14 +205,12 @@
                 </tr>
                 </thead>
                 <tbody>
-                {foreach from=$history item=transactionHistories}
-                    {foreach from=$transactionHistories.transactionHistory item=item}
-                        <tr>
-                            <td>{$item.eventCode}</td>
-                            <td>{$item.date}</td>
-                            <td>{if $item.status} true {else} false {/if}</td>
-                        </tr>
-                    {/foreach}
+                {foreach from=$history item=item}
+                    <tr>
+                        <td>{$item.eventCode}</td>
+                        <td>{$item.date}</td>
+                        <td>{if $item.status} true {else} false {/if}</td>
+                    </tr>
                 {/foreach}
                 </tbody>
             </table>

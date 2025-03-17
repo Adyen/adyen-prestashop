@@ -46,7 +46,7 @@ class AdyenOfficial extends PaymentModule
     {
         $this->name = 'adyenofficial';
         $this->tab = 'payments_gateways';
-        $this->version = '5.2.10';
+        $this->version = '6.1.0';
 
         $this->author = $this->l('Adyen');
         $this->need_instance = 0;
@@ -1089,7 +1089,7 @@ class AdyenOfficial extends PaymentModule
         }
 
         if (!$reversedDetails) {
-            if (!empty($transactionDetails['eventCode'])) {
+            if (!empty($transactionDetails[0]['eventCode'])) {
                 return $transactionDetails;
             }
 
@@ -1491,6 +1491,19 @@ class AdyenOfficial extends PaymentModule
             return $this->display(__FILE__, 'adyen-empty-tab.tpl');
         }
 
+        /** @var \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService $service */
+        $service = \Adyen\Core\Infrastructure\ServiceRegister::getService(\Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService::class);
+        /** @var \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Models\TransactionHistory $transactionHistory */
+        $transactionHistory = \Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext::doWithStore(
+            $order->id_shop,
+            static function () use ($order, $service) {
+                return $service->getTransactionHistory($order->id_cart);
+            }
+        );
+
+        $payByLink = $transactionHistory->collection()->filterAllByEventCode(\Adyen\Core\BusinessLogic\Domain\ShopNotifications\Models\ShopEvents::PAYMENT_LINK_CREATED);
+        $lastAuthorization = $transactionHistory->collection()->filterByEventCode(\Adyen\Webhook\EventCodes::AUTHORISATION)->first();
+
         $currency = new \Currency($order->id_currency);
         $transactionDetails = \AdyenPayment\Classes\Services\TransactionDetailsHandler::getTransactionDetails($order);
         $result = [];
@@ -1501,6 +1514,8 @@ class AdyenOfficial extends PaymentModule
         $shouldDisplayPaymentLink = false;
         $shouldDisplayPaymentLinkForNonAdyenOrder = false;
         $statuses = [];
+        $sorted = [];
+        $authorizationAdjustment = true;
 
         foreach ($transactionDetails as $transactionDetail) {
             $authorisationDetail = $this->getAuthorisationDetail($transactionDetail);
@@ -1514,6 +1529,21 @@ class AdyenOfficial extends PaymentModule
                     'transactionHistory' => [0 => $authorisationDetail],
                     'originalReference' => ''
                 ];
+
+                /** @noinspection SlowArrayOperationsInLoopInspection */
+                $sorted = array_merge($sorted, [0 => $authorisationDetail]);
+
+                continue;
+            }
+
+            if (!$payByLink->isEmpty() && $authorisationDetail['authorizationPspReference'] !== $lastAuthorization->getPspReference()) {
+                $result['history'][] = [
+                    'transactionHistory' => [0 => $transactionDetail],
+                    'originalReference' => ''
+                ];
+
+                /** @noinspection SlowArrayOperationsInLoopInspection */
+                $sorted = array_merge($sorted, $transactionDetail);
 
                 continue;
             }
@@ -1541,12 +1571,13 @@ class AdyenOfficial extends PaymentModule
                 'orderId' => $orderId,
                 'adyenLink' => $authorisationDetail['viewOnAdyenUrl'] ?? '',
                 'refundSupported' => $authorisationDetail['refund'] ?? false,
-                'extendAuthorizationURL' => $this->getAction('AdyenAuthorizationAdjustment', 'extendAuthorization',
-                    ['ajax' => true]),
-                'authorizationAdjustmentDate' => $lastDetail['authorizationAdjustmentDate'] ?? '',
-                'authorizationAdjustmentAmount' => $lastDetail['authorizationAdjustmentAmount'] ?? '0',
-                'displayAdjustmentButton' => $lastDetail['authorizationAdjustmentAvailable'] ?? '',
+
             ];
+
+            $authorizationAdjustment &= $lastDetail['authorizationAdjustmentAvailable'];
+
+            /** @noinspection SlowArrayOperationsInLoopInspection */
+            $sorted = array_merge($sorted, $transactionDetail);
 
             if (!$paymentLink) {
                 $paymentLink = $authorisationDetail['paymentLink'] ?? '';
@@ -1567,7 +1598,7 @@ class AdyenOfficial extends PaymentModule
             $status = 'failed';
         }
 
-        if (in_array('cancelled', $statuses, true) && $generalSettings->isCancelledPartialPayment()) {
+        if (in_array('cancelled', $statuses, true) && $generalSettings->toArray()['cancelledPartialPayment']) {
             $status = 'cancelled';
         }
 
@@ -1587,6 +1618,16 @@ class AdyenOfficial extends PaymentModule
         $result['status'] = ucfirst(strtolower($status));
         $result['statusDate'] = $lastDetail['date'] ?? '';
         $result['merchantID'] = $authorisationDetail['merchantAccountCode'] ?? '';
+        $result['authorizationAdjustmentDate'] = $lastDetail['authorizationAdjustmentDate'] ?? '';
+        $result['extendAuthorizationURL'] = $this->getAction('AdyenAuthorizationAdjustment', 'extendAuthorization',
+            ['ajax' => true]);
+        $result['authorizationAdjustmentAmount'] = $lastDetail['authorizationAdjustmentAmount'] ?? '0';
+        $result['displayAdjustmentButton'] = $authorizationAdjustment;
+
+        usort($sorted, static function ($a, $b) {
+            return strtotime($a['date']) - strtotime($b['date']);
+        });
+        $result['transactionDetailsSorted'] = $sorted;
 
         $this->getContext()->smarty->assign($result);
 

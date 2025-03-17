@@ -54,14 +54,6 @@ class RefundHandler
         if (empty($transactionDetails)) {
             return;
         }
-        $lastItem = end($transactionDetails);
-
-        if (!$lastItem['refund']) {
-            self::versionHandler()->rollbackOrderSlipAdd($order, $quantityList);
-            self::setErrorMessage(Module::getInstanceByName('adyenofficial')->l('Refund is not supported on Adyen.'));
-
-            Tools::redirect(self::orderService()->getOrderUrl((string)$order->id_cart));
-        }
 
         $currency = new PrestaCurrency($order->id_currency);
         $amount = self::versionHandler()->getRefundedAmount($order);

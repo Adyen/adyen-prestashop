@@ -1,7 +1,9 @@
 <?php
 
 use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
+use Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService;
 use Adyen\Core\Infrastructure\Logger\Logger;
+use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\Bootstrap;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use AdyenPayment\Classes\Services\Integration\CustomerService;
@@ -90,7 +92,21 @@ class AdyenOfficialPaymentRedirectModuleFrontController extends PaymentControlle
                 $cart->update();
             }
 
-            $this->saveOrder(Tools::getValue('adyenPaymentType'), $cart, $response->getAmount());
+            /** @var TransactionHistoryService $transactionService */
+            $transactionService = ServiceRegister::getService(TransactionHistoryService::class);
+            $transactionHistory = \Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext::doWithStore(
+                $cart->id_shop,
+                static function () use ($cart, $transactionService) {
+                    return $transactionService->getTransactionHistory($cart->id);
+                }
+            );
+            $currency = new Currency($cart->id_currency);
+            $payments = $transactionHistory->collection()->filterAllByEventCode('PAYMENT_REQUESTED')
+                ->getAmount(
+                    \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency::fromIsoCode($currency->iso_code)
+                );
+
+            $this->saveOrder(Tools::getValue('adyenPaymentType'), $cart, $payments);
 
             if (isset($requestData['details'])) {
                 die(json_encode(['nextStepUrl' => $this->generateSuccessURL($cart)]));

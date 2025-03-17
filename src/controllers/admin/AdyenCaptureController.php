@@ -27,11 +27,13 @@ class AdyenCaptureController extends AdyenBaseController
         $captureAmount = \Tools::getValue('captureAmount');
         $order = new \Order($orderId);
         $currency = new Currency($order->id_currency);
+        $pspReference = \Tools::getValue('pspReference');
 
         $response = AdminAPI::get()->capture((string)$order->id_shop)->handle(
             (string)$order->id_cart,
             (float)$captureAmount,
-            $currency->iso_code
+            $currency->iso_code,
+            $pspReference
         );
 
         if ($response->isSuccessful()) {
