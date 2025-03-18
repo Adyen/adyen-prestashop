@@ -25,7 +25,8 @@ class AdyenSystemInfoController extends AdyenBaseController
         'CONNECTION_SETTINGS' => 'connection-settings.json',
         'WEBHOOK_VALIDATION' => 'webhook-validation.json',
         'LOGS' => 'logs.json',
-        'QUEUE' => 'queue.json'
+        'QUEUE' => 'queue.json',
+        'TRANSACTION_LOGS' => 'transaction-logs.json',
     ];
 
     /**

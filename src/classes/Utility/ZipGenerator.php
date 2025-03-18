@@ -50,6 +50,10 @@ class ZipGenerator
             $filesNames['QUEUE'],
             json_encode($info['queueItems'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
         );
+        $zip->addFromString(
+            $filesNames['TRANSACTION_LOGS'],
+            json_encode($info['transactionLogs'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+        );
         $zip->addFromString($filesNames['LOGS'], $logs);
 
         $zip->close();
