@@ -1,7 +1,7 @@
 <?php
 
 use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
-use Adyen\Core\BusinessLogic\CheckoutAPI\PaymentRequest\Request\StartTransactionRequest;
+use Adyen\Core\BusinessLogic\CheckoutAPI\PartialPayment\Request\StartPartialTransactionsRequest;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\PaymentMethodCode;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\ShopperReference;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
@@ -92,80 +92,48 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
 
         $currency = new PrestaCurrency($cart->id_currency);
 
-        $deductedAmount = 0;
-
-        foreach ($giftCardsData as $giftCardData) {
-            $giftCardAmount = Amount::fromInt(
-                $giftCardData['cardAmount'],
-                Currency::fromIsoCode($currency->iso_code ?? 'EUR')
-            );
-            $requests[] = new StartTransactionRequest(
-                $giftCardData['paymentMethod']['brand'],
-                $giftCardAmount,
-                (string)$cart->id,
-                Url::getFrontUrl(
-                    'paymentredirect',
-                    ['adyenMerchantReference' => $cart->id, 'adyenPaymentType' => $type]
-                ),
-                $giftCardData,
-                [],
-                $this->getShopperReferenceFromCart($cart)
-            );
-
-            $deductedAmount += $giftCardAmount->getPriceInCurrencyUnits();
-        }
-
-        $amount = Amount::fromFloat(
-            $this->getOrderTotal($cart, $type),
-            Currency::fromIsoCode($currency->iso_code ?? 'EUR')
-        );
-
-        if ($additionalData) {
-            $requests[] =  new StartTransactionRequest(
-                $type,
-                Amount::fromFloat(
-                    $this->getOrderTotal($cart, $type) - $deductedAmount,
-                    Currency::fromIsoCode($currency->iso_code ?? 'EUR')
-                ),
-                (string)$cart->id,
-                Url::getFrontUrl(
-                    'paymentredirect',
-                    ['adyenMerchantReference' => $cart->id, 'adyenPaymentType' => $type]
-                ),
-                $additionalData,
-                [],
-                $this->getShopperReferenceFromCart($cart)
-            );
-        }
-
         try {
-            $responses = CheckoutApi::get()->paymentRequest((string)$cart->id_shop)->startPartialTransaction(
-                $requests,
-                $amount,
-                (string)$cart->id
-            );
+            $partialTransactionsResponse = CheckoutApi::get()->partialPaymentRequest((string)$cart->id_shop)
+                ->startPartialTransactions(
+                    new StartPartialTransactionsRequest(
+                        (string)$cart->id,
+                        Currency::fromIsoCode($currency->iso_code ?? 'EUR'),
+                        Url::getFrontUrl(
+                            'paymentredirect',
+                            ['adyenMerchantReference' => $cart->id, 'adyenPaymentType' => $type]
+                        ),
+                        $this->getOrderTotal($cart, $type),
+                        $type,
+                        $giftCardsData,
+                        $additionalData,
+                        [],
+                        $this->getShopperReferenceFromCart($cart)
+                    )
+                );
 
-            $outcome = true;
-
-            foreach ($responses as $response) {
-                $outcome &= $response->isSuccessful();
-            }
-
-            if (!$outcome) {
+            if (!$partialTransactionsResponse->isSuccessful()) {
                 $this->handleNotSuccessfulPayment(self::FILE_NAME, $this->getUnsuccessfulUrl());
             }
 
-            $response = end($responses);
+            $amount = Amount::fromFloat(
+                $this->getOrderTotal($cart, $type),
+                Currency::fromIsoCode($currency->iso_code ?? 'EUR')
+            );
 
-            if (!$response->isAdditionalActionRequired()) {
+            if (!$partialTransactionsResponse->isAdditionalActionRequired()) {
                 $this->handleSuccessfulPaymentWithoutAdditionalData($type, $cart, $amount);
             }
 
-            $this->handleSuccessfulPaymentWithAdditionalData($response, $type, $cart, $amount);
+            $this->handleSuccessfulPaymentWithAdditionalData(
+                $partialTransactionsResponse->getLatestTransactionResponse(),
+                $type,
+                $cart,
+                $amount
+            );
 
             $this->context->smarty->assign(
                 [
-                    'action' => json_encode($response->getAction()),
+                    'action' => json_encode($partialTransactionsResponse->getLatestTransactionResponse()->getAction()),
                     'paymentRedirectActionURL' => Url::getFrontUrl(
                         'paymentredirect',
                         ['adyenMerchantReference' => $cart->id, 'adyenPaymentType' => $type]
