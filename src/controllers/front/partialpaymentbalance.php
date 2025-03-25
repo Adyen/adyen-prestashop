@@ -55,6 +55,15 @@ class AdyenOfficialPartialPaymentBalanceModuleFrontController extends PaymentCon
         }
 
         $result['response'] = $response->toArray();
+
+        if (!$result['response']['balance']) {
+            $result['success'] = false;
+            AdyenPrestaShopUtility::dieJsonArray($result);
+
+            return;
+        }
+
+        $result['success'] = true;
         $result['majorValue'] = number_format(Amount::fromInt(
             $result['response']['balance']['value'],
             \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency::fromIsoCode(

@@ -191,6 +191,12 @@ $(document).ready(function () {
             url: checkBalanceUrl + '?remainingAmount=' + remainingAmount,
             data: data,
             success: function (response) {
+                if(!response.success){
+                    reject(response);
+
+                    return;
+                }
+
                 resolve(response.response);
 
                 let cardValue = parseFloat(response.majorValue);
