@@ -1,7 +1,7 @@
 <?php
 
 use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
-use Adyen\Core\BusinessLogic\CheckoutAPI\PaymentRequest\Request\StartTransactionRequest;
+use Adyen\Core\BusinessLogic\CheckoutAPI\PartialPayment\Request\StartPartialTransactionsRequest;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\PaymentMethodCode;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\ShopperReference;
 use Adyen\Core\Infrastructure\Logger\Logger;
@@ -94,38 +94,51 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
 
         if (PaymentMethodCode::payPal()->equals($type)) {
             $payPalGuestExpressCheckoutService = new PayPalGuestExpressCheckoutService();
-            $payPalGuestExpressCheckoutService->startGuestPayPalPaymentTransaction($cart, $this->getOrderTotal($cart, $type), $data);
+            $payPalGuestExpressCheckoutService
+                ->startGuestPayPalPaymentTransaction($cart, $this->getOrderTotal($cart, $type), $data);
         }
 
         $currency = new PrestaCurrency($currencyId);
-        $amount = Amount::fromFloat(
-            $this->getOrderTotal($cart, $type),
-            Currency::fromIsoCode($currency->iso_code ?? 'EUR')
-        );
-        try {
-            $response = CheckoutApi::get()->paymentRequest((string)$cart->id_shop)->startTransaction(
-                new StartTransactionRequest(
-                    $type,
-                    $amount,
-                    (string)$cart->id,
-                    Url::getFrontUrl('paymentredirect', ['adyenMerchantReference' => $cart->id, 'adyenPaymentType' => $type]
-                    ),
-                    $additionalData,
-                    [],
-                    $this->getShopperReferenceFromCart($cart)
-                )
-            );
 
-            if (!$response->isSuccessful()) {
+        try {
+            $partialTransactionsResponse = CheckoutApi::get()->partialPaymentRequest((string)$cart->id_shop)
+                ->startPartialTransactions(
+                    new StartPartialTransactionsRequest(
+                        (string)$cart->id,
+                        Currency::fromIsoCode($currency->iso_code ?? 'EUR'),
+                        Url::getFrontUrl(
+                            'paymentredirect',
+                            ['adyenMerchantReference' => $cart->id, 'adyenPaymentType' => $type]
+                        ),
+                        $this->getOrderTotal($cart, $type),
+                        $type,
+                        [],
+                        $additionalData,
+                        [],
+                        $this->getShopperReferenceFromCart($cart)
+                    )
+                );
+
+            if (!$partialTransactionsResponse->isSuccessful()) {
                 $product = new \Product($product['id_product'] ?? 0);
                 $this->handleNotSuccessfulPayment(self::FILE_NAME, $product->getLink());
             }
 
-            if (!$response->isAdditionalActionRequired()) {
+            $amount = Amount::fromFloat(
+                $this->getOrderTotal($cart, $type),
+                Currency::fromIsoCode($currency->iso_code ?? 'EUR')
+            );
+
+            if (!$partialTransactionsResponse->isAdditionalActionRequired()) {
                 $this->handleSuccessfulPaymentWithoutAdditionalData($type, $cart, $amount);
             }
 
-            $this->handleSuccessfulPaymentWithAdditionalData($response, $type, $cart, $amount);
+            $this->handleSuccessfulPaymentWithAdditionalData(
+                $partialTransactionsResponse->getLatestTransactionResponse(),
+                $type,
+                $cart,
+                $amount
+            );
         } catch (Throwable $e) {
             Logger::logError(
                 'Adyen failed to create order from Cart with ID: ' . $cart->id . ' Reason: ' . $e->getMessage()
