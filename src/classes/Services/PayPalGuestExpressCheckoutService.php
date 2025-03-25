@@ -3,8 +3,9 @@
 namespace AdyenPayment\Classes\Services;
 
 use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
-use Adyen\Core\BusinessLogic\CheckoutAPI\PaymentRequest\Request\StartTransactionRequest;
-use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount;
+use Adyen\Core\BusinessLogic\CheckoutAPI\PartialPayment\Request\StartPartialTransactionsRequest;
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode;
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidPaymentMethodCodeException;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency;
 use AdyenPayment\Classes\Utility\Url;
 use Context;
@@ -23,27 +24,35 @@ class PayPalGuestExpressCheckoutService
      *
      * @param Cart $cart
      * @param float $orderTotal
-     *
+     * @param array $data
+     * @param array $giftCardsData
+     * @return void
+     * @throws InvalidCurrencyCode
+     * @throws InvalidPaymentMethodCodeException
      * @throws \Exception
      */
-    public function startGuestPayPalPaymentTransaction(Cart $cart, float $orderTotal, array $data = [])
+    public function startGuestPayPalPaymentTransaction(
+        Cart $cart,
+        float $orderTotal,
+        array $data = [],
+        array $giftCardsData = []
+    )
     {
         $currency = new PrestaCurrency((int)Context::getContext()->currency->id);
 
         $response = CheckoutAPI::get()
-            ->paymentRequest((string)$cart->id_shop)
-            ->startTransaction(
-                new StartTransactionRequest(
-                    'paypal',
-                    Amount::fromFloat(
-                        $orderTotal,
-                        Currency::fromIsoCode($currency->iso_code ?? 'EUR')
-                    ),
+            ->partialPaymentRequest((string)$cart->id_shop)
+            ->startPartialTransactions(
+                new StartPartialTransactionsRequest(
                     (string)$cart->id,
+                    Currency::fromIsoCode($currency->iso_code ?? 'EUR'),
                     Url::getFrontUrl(
                         'paymentredirect',
                         ['adyenMerchantReference' => $cart->id, 'adyenPaymentType' => 'paypal']
                     ),
+                    $orderTotal,
+                    'paypal',
+                    $giftCardsData,
                     !empty($data['adyen-additional-data']) ? json_decode(
                         $data['adyen-additional-data'],
                         true
@@ -53,9 +62,9 @@ class PayPalGuestExpressCheckoutService
 
         die(json_encode(
             [
-                'action' => $response->getAction(),
+                'action' => $response->getLatestTransactionResponse()->getAction(),
                 'reference' => $cart->id,
-                'pspReference' => $response->getPspReference(),
+                'pspReference' => $response->getLatestTransactionResponse()->getPspReference(),
             ]
         ));
     }
