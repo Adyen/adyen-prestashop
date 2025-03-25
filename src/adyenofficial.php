@@ -303,6 +303,7 @@ class AdyenOfficial extends PaymentModule
      * @throws \PrestaShopException
      * @throws \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode
      * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
+     * @throws Exception
      */
     public function hookPaymentOptions(array $params): array
     {
@@ -375,7 +376,8 @@ class AdyenOfficial extends PaymentModule
                         'description' => $description,
                         'prestaVersion' => _PS_VERSION_,
                         'checkoutUrl' => $this->context->link->getPageLink('order', true, null),
-                        'clickToPayLabel' => $this->l('Finish payment by saved Credit Card')
+                        'clickToPayLabel' => $this->l('Finish payment by saved Credit Card'),
+                        'orderTotalAmount' => $this->context->cart->getOrderTotal(),
                     ]);
 
                     $paymentOption->setForm(

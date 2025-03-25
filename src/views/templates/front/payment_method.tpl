@@ -23,5 +23,6 @@
         <input type="hidden" name="adyen-giftcard-remaining-amount" value="{l s='Remaining Amount' mod='adyenofficial'}">
         <input type="hidden" name="adyen-giftcard-deducted-amount"
                value="{l s='Deducted amount: {currencySymbol}{cardValue} {currencyIso}' mod='adyenofficial'}">
+        <input type="hidden" class="adyen-order-total-amount" value="{$orderTotalAmount|escape:'html':'UTF-8'}">
     </form>
 </div>

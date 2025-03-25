@@ -13,6 +13,7 @@ $(document).ready(function () {
     let totalDiscount = 0;
     let minorTotalDiscount = 0;
     let remainingAmount = -1;
+    let orderTotalAmount = document.getElementsByClassName('adyen-order-total-amount')[0];
 
     $('.payment-option').filter(function () {
         return $(this).find('input[data-module-name="adyenofficial"]').length > 0;
@@ -57,6 +58,12 @@ $(document).ready(function () {
     remainingAmount = sessionStorage.getItem('remainingAmount') ? parseFloat(sessionStorage.getItem('remainingAmount')) : -1;
     totalDiscount = sessionStorage.getItem('totalDiscount') ? parseFloat(sessionStorage.getItem('totalDiscount')) : 0;
     minorTotalDiscount = sessionStorage.getItem('minorTotalDiscount') ? parseInt(sessionStorage.getItem('minorTotalDiscount')) : 0;
+    let orderTotalAmountValue = orderTotalAmount ? parseFloat(orderTotalAmount.value) : -1;
+    if (orderTotalAmountValue !== -1 && remainingAmount !== -1 && orderTotalAmountValue !== remainingAmount + totalDiscount) {
+        remainingAmount = orderTotalAmountValue - totalDiscount;
+        sessionStorage.setItem('remainingAmount', remainingAmount);
+    }
+
     let responses = sessionStorage.getItem('giftCardsData') ? JSON.parse(sessionStorage.getItem('giftCardsData')) : null;
     let originalPaymentId = paymentId;
 
@@ -191,7 +198,7 @@ $(document).ready(function () {
             url: checkBalanceUrl + '?remainingAmount=' + remainingAmount,
             data: data,
             success: function (response) {
-                if(!response.success){
+                if (!response.success) {
                     reject(response);
 
                     return;
