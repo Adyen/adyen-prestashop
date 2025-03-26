@@ -1566,6 +1566,7 @@ class AdyenOfficial extends PaymentModule
                 'captureAvailable' => $lastDetail['captureSupported'] ?? '',
                 'partialCapture' => $lastDetail['partialCapture'] ?? '',
                 'capturableAmount' => $authorisationDetail['capturableAmount'] ?? '',
+                'authorizationAdjustmentAmount' => $authorisationDetail['authorizationAdjustmentAmount'] ?? '0',
                 'currency' => $currency->symbol ?? ($currency->sign ?? ''),
                 'currencyISO' => $currency->iso_code,
                 'transactionHistory' => $transactionDetail,

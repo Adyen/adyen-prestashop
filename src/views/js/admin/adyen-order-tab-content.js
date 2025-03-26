@@ -8,7 +8,7 @@ $(document).ready(function () {
     let refund = false;
 
     for (let supported of refundsSupported) {
-        refund = refund || supported;
+        refund = refund || supported.value;
     }
 
     if (!refund) {
