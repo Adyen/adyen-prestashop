@@ -56,7 +56,7 @@ class AdyenOfficialPartialPaymentBalanceModuleFrontController extends PaymentCon
 
         $result['response'] = $response->toArray();
 
-        if (!$result['response']['balance']) {
+        if (!$response->isSuccessful()) {
             $result['success'] = false;
             AdyenPrestaShopUtility::dieJsonArray($result);
 

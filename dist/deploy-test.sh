@@ -13,7 +13,6 @@ cp -r ./src/* adyenofficial
 cd ./adyenofficial
 echo -e "\e[32mSTEP 2:\e[0m Installing composer dependencies..."
 rm -rf vendor
-rm -rf composer.lock
 composer install --no-dev
 cd ..
 
