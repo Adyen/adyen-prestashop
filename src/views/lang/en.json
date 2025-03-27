@@ -659,7 +659,11 @@
         "failedAuthorizationAdjustmentRequestMessage": "Authorization adjustment request failed.",
         "failedAuthorizationAdjustmentRequestDetails": "Authorization adjustment request failed.",
         "successfulChargebackMessage": "Payment has been successfully charged back on Adyen.",
-        "successfulChargebackDetails": "Payment has been successfully charged back on Adyen."
+        "successfulChargebackDetails": "Payment has been successfully charged back on Adyen.",
+        "successfulOrderClosedEventMessage": "Order has been successfully closed on Adyen.",
+        "successfulOrderClosedEventDetails": "Order has been successfully closed on Adyen.",
+        "failedOrderClosedEventMessage": "Order close failed on Adyen.",
+        "failedOrderClosedEventDetails": "Order close failed on Adyen."
       }
     },
     "webhook": {
