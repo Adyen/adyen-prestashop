@@ -57,11 +57,11 @@ class OrderStatusHandler
         $manualCaptureId = self::getManualCaptureStatus((string)$order->id_shop);
 
         if ($newOrderStatus === (int)$orderStatusMapping[PaymentStates::STATE_CANCELLED]) {
-            self::handleCancellation($order);
+            self::handleCancellation($order, self::isCancellationSupported($transactionDetails));
         }
 
         if (!empty($manualCaptureId) && (int)$manualCaptureId === $newOrderStatus) {
-            self::handleCapture($order);
+            self::handleCapture($order, self::isCaptureSupported($transactionDetails));
         }
     }
 
@@ -104,6 +104,48 @@ class OrderStatusHandler
     }
 
     /**
+     * @param array $transactionDetails
+     * @return bool
+     */
+    private static function isCaptureSupported(array $transactionDetails): bool
+    {
+        return self::isDetailsFlagTrue('captureSupported', $transactionDetails);
+    }
+
+    /**
+     * @param array $transactionDetails
+     * @return bool
+     */
+    private static function isCancellationSupported(array $transactionDetails): bool
+    {
+        return self::isDetailsFlagTrue('cancelSupported', $transactionDetails);
+    }
+
+    /**
+     * @param array $transactionDetails
+     * @return bool
+     */
+    private static function isDetailsFlagTrue(string $flagTocCheck, array $transactionDetails): bool
+    {
+        foreach ($transactionDetails as $details) {
+            foreach ($details as $detail) {
+                if (in_array(
+                    $detail['eventCode'],
+                    [\Adyen\Webhook\EventCodes::ORDER_OPENED, \Adyen\Webhook\EventCodes::ORDER_CLOSED], true
+                )) {
+                    continue;
+                }
+
+                if ($detail[$flagTocCheck]) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * @param Order $order
      * @param bool $captureSupported
      * @param float $capturableAmount
@@ -114,8 +156,14 @@ class OrderStatusHandler
      * @throws InvalidMerchantReferenceException
      * @throws Exception
      */
-    private static function handleCapture(Order $order): void
+    private static function handleCapture(Order $order, bool $captureSupported): void
     {
+        if (!$captureSupported) {
+            self::setErrorMessage(Module::getInstanceByName('adyenofficial')->l('Capture is not supported on Adyen.'));
+
+            Tools::redirect(self::orderService()->getOrderUrl((string)$order->id_cart));
+        }
+
         $currency = new Currency($order->id_currency);
         $response = AdminAPI::get()->capture((string)$order->id_shop)->handle(
             (string)$order->id_cart,
@@ -146,8 +194,14 @@ class OrderStatusHandler
      *
      * @throws InvalidMerchantReferenceException
      */
-    private static function handleCancellation(Order $order): void
+    private static function handleCancellation(Order $order, bool $cancelSupported): void
     {
+        if (!$cancelSupported) {
+            self::setErrorMessage(Module::getInstanceByName('adyenofficial')->l('Cancel is not supported on Adyen.'));
+
+            Tools::redirect(self::orderService()->getOrderUrl((string)$order->id_cart));
+        }
+
         $response = AdminAPI::get()->cancel((string)$order->id_shop)->handle((string)$order->id_cart);
 
         if (!$response->isSuccessful()) {
