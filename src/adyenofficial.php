@@ -1092,7 +1092,7 @@ class AdyenOfficial extends PaymentModule
 
         if (!$reversedDetails) {
             if (!empty($transactionDetails[0]['eventCode'])) {
-                return $transactionDetails;
+                return $transactionDetails[0];
             }
 
             $authorisationDetail = $transactionDetails[0][0];
