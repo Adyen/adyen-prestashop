@@ -48,7 +48,7 @@ class AdyenGeneralSettingsController extends AdyenBaseController
             $requestData['enablePayByLink'] ?? false,
             $requestData['payByLinkTitle'] ?? '',
             $requestData['defaultLinkExpirationTime'] ?? '7',
-            $requestData['cancelledPartialPayment'] ?? false,
+            $requestData['cancelledPartialPayment'] ?? true,
             $requestData['disabledOrderModificationsForFailedRefund'] ?? false
         );
 

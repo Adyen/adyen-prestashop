@@ -1513,8 +1513,9 @@ class AdyenOfficial extends PaymentModule
         $paymentLinkEnabled = $generalSettings->isSuccessful() && $generalSettings->toArray()['enablePayByLink'];
         \AdyenPayment\Classes\Bootstrap::init();
         $paymentLink = '';
+        $capturableAmount = 0;
         $shouldDisplayPaymentLink = false;
-        $shouldDisplayPaymentLinkForNonAdyenOrder = false;
+        $shouldDisplayPaymentLinkForNonAdyenOrder = $paymentLinkEnabled;
         $statuses = [];
         $sorted = [];
         $authorizationAdjustment = true;
@@ -1538,7 +1539,11 @@ class AdyenOfficial extends PaymentModule
                 continue;
             }
 
-            if (!$payByLink->isEmpty() && $authorisationDetail['authorizationPspReference'] !== $lastAuthorization->getPspReference()) {
+            if (
+                $lastAuthorization &&
+                !$payByLink->isEmpty() &&
+                $authorisationDetail['authorizationPspReference'] !== $lastAuthorization->getPspReference()
+            ) {
                 $result['history'][] = [
                     'transactionHistory' => [0 => $transactionDetail],
                     'originalReference' => ''
@@ -1582,6 +1587,7 @@ class AdyenOfficial extends PaymentModule
             /** @noinspection SlowArrayOperationsInLoopInspection */
             $sorted = array_merge($sorted, $transactionDetail);
 
+            $capturableAmount += (int)$authorisationDetail['capturableAmount'];
             if (!$paymentLink) {
                 $paymentLink = $authorisationDetail['paymentLink'] ?? '';
             }
@@ -1616,6 +1622,7 @@ class AdyenOfficial extends PaymentModule
         $result['adyenPaymentLink'] = $paymentLink;
         $result['adyenGeneratePaymentLink'] = $this->getAction('AdyenPaymentLink', 'generatePaymentLink', ['ajax' => true]);
         $result['shouldDisplayPaymentLink'] = $shouldDisplayPaymentLink;
+        $result['capturableAmount'] = $capturableAmount > 0 ? $capturableAmount : '';
         $result['shouldDisplayPaymentLinkForNonAdyenOrder'] = $shouldDisplayPaymentLinkForNonAdyenOrder;
         $result['isAdyenOrder']  = $order->module === $this->name;
         $result['status'] = ucfirst(strtolower($status));
@@ -1626,6 +1633,8 @@ class AdyenOfficial extends PaymentModule
             ['ajax' => true]);
         $result['authorizationAdjustmentAmount'] = $lastDetail['authorizationAdjustmentAmount'] ?? '0';
         $result['displayAdjustmentButton'] = $authorizationAdjustment;
+        $result['orderId'] = $orderId;
+
 
         usort($sorted, static function ($a, $b) {
             return strtotime($a['date']) - strtotime($b['date']);
