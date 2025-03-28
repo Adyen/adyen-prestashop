@@ -14,6 +14,7 @@ if (!window.AdyenFE) {
      * @property {string | null} payByLinkTitle
      * @property {string | null} defaultLinkExpirationTime
      * @property {boolean} cancelledPartialPayment
+     * @property {boolean} disabledOrderModificationsForFailedRefund
      */
 
     /**
@@ -178,7 +179,8 @@ if (!window.AdyenFE) {
                     capture: null,
                     captureDelay: null,
                     shipmentStatus: null,
-                    cancelledPartialPayment: true
+                    cancelledPartialPayment: true,
+                    disabledOrderModificationsForFailedRefund: false
                 };
 
                 numberOfChanges = 3;
@@ -205,6 +207,11 @@ if (!window.AdyenFE) {
                                     {
                                         name: 'cancelledPartialPayment',
                                         value: settings.cancelledPartialPayment,
+                                        type: 'checkbox'
+                                    },
+                                    {
+                                        name: 'disabledOrderModificationsForFailedRefund',
+                                        value: settings.disabledOrderModificationsForFailedRefund,
                                         type: 'checkbox'
                                     },
                                     {

@@ -439,6 +439,10 @@
           "label": "Cancelled partial payment",
           "description": "Change order status to \"Cancelled\" when at least one transaction is cancelled."
         },
+        "disabledOrderModificationsForFailedRefund": {
+          "label": "Failed refund",
+          "description": "Do not update the order in the shop when the Refund webhook fails."
+        },
         "capture": {
           "label": "Capture",
           "description": "Some payment methods support separate authorisation and capture. By default, capture is set to immediately after authorisation, but you can choose to delay the capture for these payment methods. This can be helpful if you want to have the option to cancel a payment in case of issues with shipment, for example.",

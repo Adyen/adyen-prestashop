@@ -47,7 +47,9 @@ class AdyenGeneralSettingsController extends AdyenBaseController
             $requestData['retentionPeriod'] ?? '',
             $requestData['enablePayByLink'] ?? false,
             $requestData['payByLinkTitle'] ?? '',
-            $requestData['defaultLinkExpirationTime'] ?? '7'
+            $requestData['defaultLinkExpirationTime'] ?? '7',
+            $requestData['cancelledPartialPayment'] ?? false,
+            $requestData['disabledOrderModificationsForFailedRefund'] ?? false
         );
 
         $result = AdminAPI::get()->generalSettings($storeId)->saveGeneralSettings($generalSettingsRequest);
