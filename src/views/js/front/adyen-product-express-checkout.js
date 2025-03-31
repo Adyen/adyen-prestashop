@@ -31,15 +31,29 @@ $(document).ready(function () {
         }
 
         function getData() {
-            let productDetails = JSON.parse(document.getElementById('product-details').dataset.product),
-                product =
-                    {
-                        'id_product': productDetails.id_product,
-                        'id_product_attribute': productDetails.id_product_attribute,
-                        'id_customization': productDetails.id_customization,
-                        'quantity_wanted': productDetails.quantity_wanted,
-                        'price_amount': productDetails.price_amount
-                    };
+            let productDetailsElement = document.getElementById('product-details');
+
+            if (!productDetailsElement || !productDetailsElement.dataset.product) {
+                console.error('Error: Product details element or data not found.');
+                return JSON.stringify({});
+            }
+
+            let productDetails;
+
+            try {
+                productDetails = JSON.parse(productDetailsElement.dataset.product);
+            } catch (error) {
+                console.error('Error while parsing product JSON data:', error);
+                return JSON.stringify({});
+            }
+
+            let product = {
+                'id_product': productDetails.id_product,
+                'id_product_attribute': productDetails.id_product_attribute,
+                'id_customization': productDetails.id_customization,
+                'quantity_wanted': productDetails.quantity_wanted,
+                'price_amount': productDetails.price_amount
+            };
 
             return JSON.stringify(product);
         }
