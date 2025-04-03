@@ -41,6 +41,7 @@
     "ext-json": "*",
     "ext-zip": "*",
     "adyen/integration-core": "dev-feature/cr-set-07",
+    "adyen/integration-core": "1.2.7",
     "ext-simplexml": "*",
     "ext-openssl": "*"
   },
