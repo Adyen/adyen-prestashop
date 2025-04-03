@@ -4,24 +4,24 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ad6ac71f8bdc22c63dcb70cab9594ea0",
+    "content-hash": "37f8166ad373a017d90e74d8e75b318b",
     "packages": [
         {
             "name": "adyen/integration-core",
-            "version": "1.2.7",
+            "version": "2.0.0",
             "source": {
                 "type": "git",
                 "url": "git@github.com:Adyen/adyen-php-plugin-core.git",
-                "reference": "dcbb47cc7c052910b02fd1c1cb1425970cd237e3"
+                "reference": "24bf5547e1dbed584ea51f6e5d992b0cc02480c1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Adyen/adyen-php-plugin-core/zipball/dcbb47cc7c052910b02fd1c1cb1425970cd237e3",
-                "reference": "dcbb47cc7c052910b02fd1c1cb1425970cd237e3",
+                "url": "https://api.github.com/repos/Adyen/adyen-php-plugin-core/zipball/24bf5547e1dbed584ea51f6e5d992b0cc02480c1",
+                "reference": "24bf5547e1dbed584ea51f6e5d992b0cc02480c1",
                 "shasum": ""
             },
             "require": {
-                "adyen/php-webhook-module": "0.5.0",
+                "adyen/php-webhook-module": "0.5.1",
                 "ext-ctype": "*",
                 "ext-json": "*",
                 "php": ">=7.2"
@@ -48,20 +48,20 @@
                 "proprietary"
             ],
             "description": "Core Adyen integration library",
-            "time": "2025-04-02T13:59:43+00:00"
+            "time": "2025-04-03T13:34:19+00:00"
         },
         {
             "name": "adyen/php-webhook-module",
-            "version": "0.5.0",
+            "version": "0.5.1",
             "source": {
                 "type": "git",
                 "url": "git@github.com:logeecom/adyen-php-webhook-module.git",
-                "reference": "b81d13eb8babc8681f2b4c8c45f74a33824e40ca"
+                "reference": "50b5913903bab98c7ca40f0678ba37ae02e22ca0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/logeecom/adyen-php-webhook-module/zipball/b81d13eb8babc8681f2b4c8c45f74a33824e40ca",
-                "reference": "b81d13eb8babc8681f2b4c8c45f74a33824e40ca",
+                "url": "https://api.github.com/repos/logeecom/adyen-php-webhook-module/zipball/50b5913903bab98c7ca40f0678ba37ae02e22ca0",
+                "reference": "50b5913903bab98c7ca40f0678ba37ae02e22ca0",
                 "shasum": ""
             },
             "require": {
@@ -91,7 +91,7 @@
                 }
             ],
             "description": "Webhook module for Adyen Payment Integrations",
-            "time": "2025-01-30T09:18:05+00:00"
+            "time": "2025-03-10T13:34:17+00:00"
         }
     ],
     "packages-dev": [
@@ -167,16 +167,16 @@
         },
         {
             "name": "myclabs/deep-copy",
-            "version": "1.12.1",
+            "version": "1.13.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/myclabs/DeepCopy.git",
-                "reference": "123267b2c49fbf30d78a7b2d333f6be754b94845"
+                "reference": "024473a478be9df5fdaca2c793f2232fe788e414"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/123267b2c49fbf30d78a7b2d333f6be754b94845",
-                "reference": "123267b2c49fbf30d78a7b2d333f6be754b94845",
+                "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/024473a478be9df5fdaca2c793f2232fe788e414",
+                "reference": "024473a478be9df5fdaca2c793f2232fe788e414",
                 "shasum": ""
             },
             "require": {
@@ -215,7 +215,7 @@
             ],
             "support": {
                 "issues": "https://github.com/myclabs/DeepCopy/issues",
-                "source": "https://github.com/myclabs/DeepCopy/tree/1.12.1"
+                "source": "https://github.com/myclabs/DeepCopy/tree/1.13.0"
             },
             "funding": [
                 {
@@ -223,7 +223,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-11-08T17:47:46+00:00"
+            "time": "2025-02-12T12:17:51+00:00"
         },
         {
             "name": "phar-io/manifest",
