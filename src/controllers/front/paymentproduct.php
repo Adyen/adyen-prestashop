@@ -60,6 +60,11 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
         ) : [];
         $product = array_key_exists('product', $data) ? json_decode($data['product'], true) : [];
         $type = !empty($additionalData['paymentMethod']['type']) ? $additionalData['paymentMethod']['type'] : '';
+
+        if ($type === 'paywithgoogle') {
+            $type = 'googlepay';
+        }
+
         $currencyId = (int)$this->context->currency->id;
         $langId = (int)$this->context->language->id;
 

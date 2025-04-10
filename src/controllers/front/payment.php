@@ -64,6 +64,10 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
             $type = $additionalData['paymentMethod']['type'];
         }
 
+        if ($type === 'paywithgoogle') {
+            $type = 'googlepay';
+        }
+
         $cart = $this->context->cart;
         $customer = $this->context->customer;
 
