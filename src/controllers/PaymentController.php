@@ -408,7 +408,23 @@ class PaymentController extends \ModuleFrontController
             return $this->getOneyMethod($paymentMethodType);
         }
 
+        if (in_array($paymentMethodType, ['googlepay', 'paywithgoogle'])) {
+            return $this->getGooglePayMethod();
+        }
+
         return $this->getPaymentService()->getPaymentMethodByCode($paymentMethodType);
+    }
+
+    /**
+     * @return PaymentMethod
+     *
+     * @throws Exception
+     */
+    private function getGooglePayMethod(): PaymentMethod
+    {
+        $method = $this->getPaymentService()->getPaymentMethodByCode('googlepay');
+
+        return $method ?: $this->getPaymentService()->getPaymentMethodByCode('paywithgoogle');
     }
 
     /**
