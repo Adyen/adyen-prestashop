@@ -124,6 +124,8 @@ class AdyenPrestaShopUtility
                 break;
             case 404:
                 header('HTTP/1.1 404 Bad request');
+            case 503:
+                header('HTTP/1.1 503 Service unavailable');
         }
     }
 }
