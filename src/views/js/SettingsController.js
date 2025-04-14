@@ -180,7 +180,8 @@ if (!window.AdyenFE) {
                     captureDelay: null,
                     shipmentStatus: null,
                     cancelledPartialPayment: true,
-                    disabledOrderModificationsForFailedRefund: false
+                    disabledOrderModificationsForFailedRefund: false,
+                    executeOrderUpdateSynchronously: false
                 };
 
                 numberOfChanges = 3;
@@ -295,6 +296,12 @@ if (!window.AdyenFE) {
                                         },
                                         error: 'settings.general.fields.defaultLinkExpirationTime.error',
                                         className: !settings.enablePayByLink ? 'adls--hidden' : ''
+                                    },
+                                    {
+                                        name: 'executeOrderUpdateSynchronously',
+                                        value: settings.executeOrderUpdateSynchronously,
+                                        type: 'checkbox',
+                                        onChange: (value) => handleChange('executeOrderUpdateSynchronously', value)
                                     }
                                 ].map(
                                     /** @param {FormField} config */

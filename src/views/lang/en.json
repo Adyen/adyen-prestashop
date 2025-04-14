@@ -481,6 +481,10 @@
           "label": "Default expiration time",
           "description": "Define the default expiration time in days.",
           "error": "Minimum number of default expiration time in days is 1."
+        },
+        "executeOrderUpdateSynchronously": {
+          "label": "Execute order update tasks synchronously",
+          "description": "When enabled, order update tasks will be executed immediately after receiving a webhook. Disable this option to use asynchronous queue-based processing."
         }
       }
     },

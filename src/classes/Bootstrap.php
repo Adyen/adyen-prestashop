@@ -59,6 +59,7 @@ use Adyen\Core\Infrastructure\Serializer\Serializer;
 use Adyen\Core\Infrastructure\ServiceRegister;
 use Adyen\Core\Infrastructure\TaskExecution\Process;
 use Adyen\Core\Infrastructure\TaskExecution\QueueItem;
+use Adyen\Core\Infrastructure\Utility\TimeProvider;
 use AdyenPayment\Classes\Proxies\GithubProxy;
 use AdyenPayment\Classes\Repositories\AdyenGivingRepository;
 use AdyenPayment\Classes\Repositories\BaseRepository;
@@ -255,7 +256,8 @@ class Bootstrap extends BootstrapComponent
                     ServiceRegister::getService(TransactionHistoryService::class),
                     ServiceRegister::getService(OrderServiceInterface::class),
                     ServiceRegister::getService(OrderStatusProvider::class),
-                    ServiceRegister::getService(GeneralSettingsService::class)
+                    ServiceRegister::getService(GeneralSettingsService::class),
+                    ServiceRegister::getService(TimeProvider::class)
                 );
             }
         );
