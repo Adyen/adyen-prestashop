@@ -96,6 +96,12 @@ class CustomerService
         \Context::getContext()->cart->update();
         \Context::getContext()->cart->id_carrier = CheckoutHandler::getCarrierId($cart);
         $this->updateDeliveryAddress($cart->id, $shippingAddressId);
+
+        $idCarrier = CheckoutHandler::getCarrierId($cart);
+        \Context::getContext()->cart->setDeliveryOption([
+            $cart->id_address_delivery => $idCarrier . ','  // force correct carrier
+        ]);
+
         \Context::getContext()->cart->update();
 
         return $cart;
