@@ -1718,7 +1718,8 @@ class AdyenOfficial extends PaymentModule
 
         if (!$this->verifyIfCarrierNotRestricted() ||
             !$this->verifyIfCurrencyNotRestricted() ||
-            !$this->verifyIfCountryNotRestricted()) {
+            !$this->verifyIfCountryNotRestricted() ||
+            !$this->verifyIfUserHasAddress()) {
             return false;
         }
 
@@ -1748,6 +1749,16 @@ class AdyenOfficial extends PaymentModule
         $currentCountry = $this->context->country->iso_code;
 
         return in_array($currentCountry, $countryCodes, true);
+    }
+
+    /**
+     * @return bool
+     * @throws PrestaShopDatabaseException
+     */
+    private function verifyIfUserHasAddress(): bool
+    {
+        $customer = $this->context->customer;
+        return !(!$customer->isGuest() && empty($customer->getAddresses($this->context->language->getId())));
     }
 
     /**
