@@ -50,7 +50,7 @@ class AdyenOfficial extends PaymentModule
 
         $this->author = $this->l('Adyen');
         $this->need_instance = 0;
-        $this->ps_versions_compliancy = ['min' => '1.7.5.0', 'max' => '8.2.0'];
+        $this->ps_versions_compliancy = ['min' => '1.7.5.0', 'max' => '8.2.1'];
         $this->bootstrap = true;
 
         parent::__construct();
