@@ -173,6 +173,11 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
         $productAttributeId = (int)Tools::getValue('id_product_attribute');
         $quantityWanted = (int)Tools::getValue('quantity_wanted');
         $customizationId = (int)Tools::getValue('id_customization');
+
+        if ($quantityWanted === 0) {
+            $quantityWanted = 1;
+        }
+
         $cart->updateQty($quantityWanted, $productId, $productAttributeId, $customizationId);
 
         return $cart;

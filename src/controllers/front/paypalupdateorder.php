@@ -106,6 +106,11 @@ class AdyenOfficialPayPalUpdateOrderModuleFrontController extends PaymentControl
         $productId = (int)Tools::getValue('id_product');
         $productAttributeId = (int)Tools::getValue('id_product_attribute');
         $quantityWanted = (int)Tools::getValue('quantity_wanted');
+
+        if ($quantityWanted === 0) {
+            $quantityWanted = 1;
+        }
+
         $customizationId = (int)Tools::getValue('id_customization');
         $cart->updateQty($quantityWanted, $productId, $productAttributeId, $customizationId);
 

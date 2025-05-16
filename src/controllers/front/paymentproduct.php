@@ -58,13 +58,22 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
             $data['adyen-additional-data'],
             true
         ) : [];
-        $product = array_key_exists('product', $data) ? json_decode($data['product'], true) : [];
+
         $type = !empty($additionalData['paymentMethod']['type']) ? $additionalData['paymentMethod']['type'] : '';
 
         $currencyId = (int)$this->context->currency->id;
         $langId = (int)$this->context->language->id;
 
         $cart = $this->context->cart;
+        $products = $cart->getProducts();
+        foreach ($products as $product) {
+            $cart->deleteProduct(
+                (int) $product['id_product'],
+                (int) $product['id_product_attribute'] ?? 0,
+                0, // id_customization
+                (int) $product['id_address_delivery'] ?? 0
+            );
+        }
         $cart->save();
         $customer = $this->context->customer;
 
@@ -91,6 +100,7 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
             }
         }
 
+        $product = array_key_exists('product', $data) ? json_decode($data['product'], true) : [];
         $this->addProductToCart($cart, $product);
 
         if (PaymentMethodCode::payPal()->equals($type)) {
@@ -195,7 +205,15 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
         $quantityWanted = array_key_exists('id_product', $product) ? (int)$product['quantity_wanted'] : 0;
         $customizationId = array_key_exists('id_product', $product) ? (int)$product['id_customization'] : 0;
 
+        if ($quantityWanted === 0) {
+            $quantityWanted = 1;
+        }
+
         $cart->updateQty($quantityWanted, $productId, $idProductAttribute, $customizationId);
+
+        $cart->getPackageList(true);
+        $cart->clearCache(true);
+        $cart->update();
     }
 
     /**
