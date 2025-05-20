@@ -102,6 +102,7 @@ class CustomerService
             $cart->id_address_delivery => $idCarrier . ','  // force correct carrier
         ]);
 
+        \Context::getContext()->cart->id_carrier = $idCarrier;
         \Context::getContext()->cart->update();
 
         return $cart;
