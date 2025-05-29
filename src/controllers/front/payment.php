@@ -139,7 +139,7 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
                         'paymentredirect',
                         ['adyenMerchantReference' => $cart->id, 'adyenPaymentType' => $type]
                     ),
-                    'checkoutConfigUrl' => Url::getFrontUrl('paymentconfig', ['cartId' => $cart->id]),
+                    'checkoutConfigUrl' => Url::getFrontUrl('paymentconfig'),
                     'checkoutUrl' => $this->context->link->getPageLink('order', $this->ssl, null)
                 ]
             );

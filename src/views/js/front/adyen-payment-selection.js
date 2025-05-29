@@ -141,7 +141,7 @@ $(document).ready(function () {
         }
 
         return new AdyenComponents.CheckoutController({
-            "checkoutConfigUrl": checkoutConfigUrl + '&discountAmount=' + totalDiscount,
+            "checkoutConfigUrl": checkoutConfigUrl + '?discountAmount=' + totalDiscount,
             "onStateChange": handleStateChange,
             "onClickToPay": handleClickOnPay,
             "balanceCheck": checkBalance

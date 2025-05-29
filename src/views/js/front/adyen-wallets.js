@@ -83,7 +83,7 @@ $(document).ready(function () {
         }
 
         checkoutController = new AdyenComponents.CheckoutController({
-            "checkoutConfigUrl": checkoutConfigUrl.value + '&discountAmount=' + sessionStorage.getItem('totalDiscount'),
+            "checkoutConfigUrl": checkoutConfigUrl.value + '?discountAmount=' + sessionStorage.getItem('totalDiscount'),
             "showPayButton": true,
             "sessionStorage": sessionStorage,
             "onStateChange": submitOrder,

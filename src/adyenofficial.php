@@ -363,8 +363,7 @@ class AdyenOfficial extends PaymentModule
                         'paymentMethodId' => $method->getMetadata()['id'],
                         'paymentMethodType' => $method->getType(),
                         'configURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl(
-                            'paymentconfig',
-                            ['cartId' => \Context::getContext()->cart->id]
+                            'paymentconfig'
                         ),
                         'paymentActionURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl('payment'),
                         'paymentRedirectActionURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl(
@@ -433,8 +432,7 @@ class AdyenOfficial extends PaymentModule
                     'paymentMethodId' => $method->getMetaData()['id'],
                     'paymentMethodType' => $method->getType(),
                     'configURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl(
-                        'paymentconfig',
-                        ['cartId' => \Context::getContext()->cart->id]
+                        'paymentconfig'
                     ),
                     'paymentActionURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl('payment'),
                     'paymentRedirectActionURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl(
@@ -475,8 +473,7 @@ class AdyenOfficial extends PaymentModule
                     'paymentMethodId' => $method->getMethodId(),
                     'paymentMethodType' => $method->getCode(),
                     'configURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl(
-                        'paymentconfig',
-                        ['cartId' => \Context::getContext()->cart->id]
+                        'paymentconfig'
                     ),
                     'paymentActionURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl('payment'),
                     'paymentRedirectActionURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl(
@@ -683,8 +680,7 @@ class AdyenOfficial extends PaymentModule
     public function hookDisplayExpressCheckout(): string
     {
         $configUrl = AdyenPayment\Classes\Utility\Url::getFrontUrl(
-            'paymentconfigexpresscheckout',
-            ['cartId' => \Context::getContext()->cart->id]
+            'paymentconfigexpresscheckout'
         );
         $paymentUrl = AdyenPayment\Classes\Utility\Url::getFrontUrl('payment');
 
@@ -865,8 +861,7 @@ class AdyenOfficial extends PaymentModule
         $additionalActionConfig = [
             'adyenAction' => $adyenAction,
             'checkoutConfigUrl' => \AdyenPayment\Classes\Utility\Url::getFrontUrl(
-                'paymentconfig',
-                ['cartId' => $cartId]
+                'paymentconfig'
             ),
             'additionalDataUrl' => \AdyenPayment\Classes\Utility\Url::getFrontUrl(
                 'paymentredirect',
@@ -1758,7 +1753,7 @@ class AdyenOfficial extends PaymentModule
     private function verifyIfUserHasAddress(): bool
     {
         $customer = $this->context->customer;
-        return !(!$customer->isGuest() && empty($customer->getAddresses($this->context->language->getId())));
+        return !(!$customer->isGuest() && empty($customer->getAddresses($this->context->language->id)));
     }
 
     /**

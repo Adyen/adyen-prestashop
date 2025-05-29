@@ -49,15 +49,16 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
             );
         }
 
-        $cartId = (int)Tools::getValue('cartId');
+        $cartId = $this->context->cart->id ?: 0;
         $customerId = Context::getContext()->customer->id;
+        $productId = (int)Tools::getValue('id_product');
         $isGuest = false;
 
         if (!$customerId) {
             $isGuest = true;
         }
 
-        if ($cartId !== 0) {
+        if ($cartId !== 0 && $productId === 0) {
             $cart = new Cart($cartId);
             if (!$cart->id) {
                 AdyenPrestaShopUtility::die400(['message' => 'Invalid parameters.']);
@@ -65,6 +66,10 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
 
             $config = CheckoutHandler::getExpressCheckoutConfig($cart, $isGuest);
         } else {
+            if ($productId === 0) {
+                AdyenPrestaShopUtility::die400(['message' => 'Invalid parameters.']);
+            }
+
             $cart = $this->getCartForProduct();
             $config = CheckoutHandler::getExpressCheckoutConfig($cart, $isGuest);
             $cart->delete();
@@ -97,13 +102,15 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
             AdyenPrestaShopUtility::die400(["message" => "Invalid country code"]);
         }
 
-        $cartId = (int)Tools::getValue('cartId');
+        $cartId = $this->context->cart->id ?: 0;
         if ($cartId !== 0) {
             $cart = new Cart($cartId);
             if (!$cart->id) {
                 AdyenPrestaShopUtility::die400(['message' => 'Invalid parameters.']);
             }
 
+            $deliveryAddressId = $cart->id_address_delivery;
+            $billingAddressId = $cart->id_address_invoice;
             $cart = $this->updateCartWithAddresses($data, $cart);
             $customerService->updateDeliveryAddress((int)$cart->id, (int)$cart->id_address_delivery);
             $cart->update();
@@ -112,8 +119,15 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
 
             $address = new Address($cart->id_address_delivery);
             $address->delete();
+            $cart->id_address_delivery = $deliveryAddressId;
+            $cart->id_address_invoice = $billingAddressId;
+            $cart->update();
 
             return $config;
+        }
+
+        if ((int)Tools::getValue('id_product') === 0) {
+            AdyenPrestaShopUtility::die400(['message' => 'Invalid parameters.']);
         }
 
         $cart = $this->createEmptyCart();

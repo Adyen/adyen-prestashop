@@ -89,21 +89,27 @@ class CheckoutHandler
         $addressInvoice = new PrestaAddress($cart->id_address_invoice);
         $country = new PrestaCountry($addressInvoice->id_country);
         $shop = \Shop::getShop(\Context::getContext()->shop->id);
+        $carrierId = '';
+
+        if ($cart->id_carrier) {
+            $carrierId = $cart->id_carrier;
+        }
+
         $cart->id_carrier = CheckoutHandler::getCarrierId($cart);
         $cart->update();
-        \Context::getContext()->cart->id_carrier =$cart->id_carrier;
+        \Context::getContext()->cart->id_carrier = $cart->id_carrier;
         \Context::getContext()->cart->update();
 
-        return CheckoutAPI::get()->checkoutConfig($cart->id_shop)->getExpressPaymentCheckoutConfig(
+        $expressCheckoutConfig = CheckoutAPI::get()->checkoutConfig($cart->id_shop)->getExpressPaymentCheckoutConfig(
             new PaymentCheckoutConfigRequest(
                 Amount::fromFloat(
-                    $cart->getOrderTotal(true, PrestaCart::BOTH, null, self::getCarrierId($cart)),
+                    $cart->getOrderTotal(true, PrestaCart::BOTH, null, $cart->id_carrier),
                     Currency::fromIsoCode(
                         $currency->iso_code
                     )
                 ),
                 $country->iso_code ?
-                    Country::fromIsoCode($country->iso_code) : Country::fromIsoCode(Context::getContext()->country->iso_code) ,
+                    Country::fromIsoCode($country->iso_code) : Country::fromIsoCode(Context::getContext()->country->iso_code),
                 Context::getContext()->getTranslator()->getLocale(),
                 $shop['domain'] . '_' . \Context::getContext()->shop->id . '_' . $cart->id_customer,
                 null,
@@ -111,6 +117,13 @@ class CheckoutHandler
                 $isGuest
             )
         );
+
+        if ($carrierId) {
+            $cart->id_carrier = $carrierId;
+            $cart->update();
+        }
+
+        return $expressCheckoutConfig;
     }
 
     /**
@@ -118,40 +131,48 @@ class CheckoutHandler
      */
     public static function getCarrierId(PrestaCart $cart): int
     {
-        if (Tools::getValue('controller') === 'paymentconfigexpresscheckout' ||
-            Tools::getValue('controller') === 'paymentproduct' ||
-            (Tools::getValue('controller') === 'payment' && !$cart->id_carrier)
-        ) {
-            //Get default carrier for current shop
-            $carrierId = (int)Configuration::get('PS_CARRIER_DEFAULT', null, null, $cart->id_shop);
-            $carrier = new Carrier($carrierId);
-
-            if (self::isCarrierAvailable($cart, $carrier->id_reference) && $carrier->active) {
-                return $carrierId;
-            }
-
-            $address = new PrestaAddress($cart->id_address_delivery);
-            $country = new PrestaCountry($address->id_country);
-            $carriers = Carrier::getCarriers(
-                Context::getContext()->language->id,
-                true,
-                false,
-                $country->id_zone,
-                null,
-                Carrier::ALL_CARRIERS
-            );
-
-            foreach ($carriers as $carrier) {
-                $carrier = new Carrier((int)$carrier['id_carrier']);
-
-                if (self::isCarrierAvailable($cart, $carrier->id_reference)) {
-                    return $carrier->id;
-                }
-            }
-            return 0;
+        if (Tools::getValue('controller') !== 'paymentconfigexpresscheckout' &&
+            Tools::getValue('controller') !== 'paymentproduct' &&
+            Tools::getValue('controller') !== 'payment') {
+            return $cart->id_carrier;
         }
 
-        return (int)$cart->id_carrier;
+        if ($cart->id_carrier) {
+            $carrier = new Carrier($cart->id_carrier);
+
+            if (self::isCarrierAvailable($cart, $carrier) && $carrier->active) {
+                return $cart->id_carrier;
+            }
+        }
+
+        //Get the default carrier for current shop
+        $carrierId = (int)Configuration::get('PS_CARRIER_DEFAULT', null, null, $cart->id_shop);
+        $carrier = new Carrier($carrierId);
+
+        if (self::isCarrierAvailable($cart, $carrier) && $carrier->active) {
+            return $carrierId;
+        }
+
+        $address = new PrestaAddress($cart->id_address_delivery);
+        $country = new PrestaCountry($address->id_country);
+        $carriers = Carrier::getCarriers(
+            Context::getContext()->language->id,
+            true,
+            false,
+            $country->id_zone,
+            null,
+            Carrier::ALL_CARRIERS
+        );
+
+        foreach ($carriers as $carrier) {
+            $carrier = new Carrier((int)$carrier['id_carrier']);
+
+            if (self::isCarrierAvailable($cart, $carrier)) {
+                return $carrier->id;
+            }
+        }
+
+        return 0;
     }
 
     /**
@@ -230,22 +251,34 @@ class CheckoutHandler
      * Check if carrier is available for Adyen module.
      *
      * @param PrestaCart $cart
-     * @param int $idReference
+     * @param Carrier $carrier
      *
      * @return bool
      * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
-    private static function isCarrierAvailable(PrestaCart $cart, int $idReference): bool
+    private static function isCarrierAvailable(PrestaCart $cart, Carrier $carrier): bool
     {
+        $address = new PrestaAddress($cart->id_address_delivery);
+        $country = new PrestaCountry($address->id_country);
+        $availableCarriers = Carrier::getCarriersForOrder($country->id_zone, [], $cart);
+        $isAvailable = false;
+
+        foreach ($availableCarriers as $availableCarrier) {
+            if ((int)$availableCarrier['id_carrier'] === (int)$carrier->id) {
+                $isAvailable = true;
+            }
+        }
+
         $sql = 'SELECT c.*
 				FROM `' . _DB_PREFIX_ . 'module_carrier` mc
 				LEFT JOIN `' . _DB_PREFIX_ . 'carrier` c ON c.`id_reference` = mc.`id_reference`
 				WHERE mc.`id_module` = ' . (int)Module::getModuleIdByName('adyenofficial') . '
 					AND c.`active` = 1
 					AND mc.id_shop = ' . (int)$cart->id_shop . '
-					AND mc.id_reference = ' . $idReference . '
+					AND mc.id_reference = ' . $carrier->id_reference . '
 				ORDER BY c.`name` ASC';
 
-        return !empty(\Db::getInstance()->executeS($sql));
+        return $isAvailable && !empty(\Db::getInstance()->executeS($sql));
     }
 }
