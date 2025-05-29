@@ -30,7 +30,7 @@ class AdyenOfficialPaymentConfigModuleFrontController extends ModuleFrontControl
      */
     public function postProcess()
     {
-        $cartId = (int)Tools::getValue('cartId');
+        $cartId = $this->context->cart->id;
         $discountAmount = (int)Tools::getValue('discountAmount');
         $cart = new Cart($cartId > 0 ? $cartId : Context::getContext()->cart->id);
         $customer = new Customer(Context::getContext()->customer->id);

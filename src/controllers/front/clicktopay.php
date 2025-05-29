@@ -40,7 +40,7 @@ class AdyenOfficialClickToPayModuleFrontController extends ModuleFrontController
                         'adyenPaymentType' => SessionService::get('adyenPaymentMethodType')
                     ]
                 ),
-                'checkoutConfigUrl' => Url::getFrontUrl('paymentconfig', ['cartId' => $cartId]),
+                'checkoutConfigUrl' => Url::getFrontUrl('paymentconfig'),
                 'checkoutUrl' => $this->context->link->getPageLink('order', $this->ssl, null)
             ]
         );

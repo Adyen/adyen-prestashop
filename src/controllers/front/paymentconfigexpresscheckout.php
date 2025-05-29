@@ -49,7 +49,7 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
             );
         }
 
-        $cartId = (int)Tools::getValue('cartId');
+        $cartId = $this->context->cart->id ?: 0;
         $customerId = Context::getContext()->customer->id;
         $isGuest = false;
 
@@ -97,7 +97,7 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
             AdyenPrestaShopUtility::die400(["message" => "Invalid country code"]);
         }
 
-        $cartId = (int)Tools::getValue('cartId');
+        $cartId = $this->context->cart->id ?: 0;
         if ($cartId !== 0) {
             $cart = new Cart($cartId);
             if (!$cart->id) {
