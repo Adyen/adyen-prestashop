@@ -1753,7 +1753,7 @@ class AdyenOfficial extends PaymentModule
     private function verifyIfUserHasAddress(): bool
     {
         $customer = $this->context->customer;
-        return !(!$customer->isGuest() && empty($customer->getAddresses($this->context->language->getId())));
+        return !(!$customer->isGuest() && empty($customer->getAddresses($this->context->language->id)));
     }
 
     /**
