@@ -89,12 +89,18 @@ class CheckoutHandler
         $addressInvoice = new PrestaAddress($cart->id_address_invoice);
         $country = new PrestaCountry($addressInvoice->id_country);
         $shop = \Shop::getShop(\Context::getContext()->shop->id);
+        $carrierId = '';
+
+        if ($cart->id_carrier) {
+            $carrierId = $cart->id_carrier;
+        }
+
         $cart->id_carrier = CheckoutHandler::getCarrierId($cart);
         $cart->update();
-        \Context::getContext()->cart->id_carrier =$cart->id_carrier;
+        \Context::getContext()->cart->id_carrier = $cart->id_carrier;
         \Context::getContext()->cart->update();
 
-        return CheckoutAPI::get()->checkoutConfig($cart->id_shop)->getExpressPaymentCheckoutConfig(
+        $expressCheckoutConfig = CheckoutAPI::get()->checkoutConfig($cart->id_shop)->getExpressPaymentCheckoutConfig(
             new PaymentCheckoutConfigRequest(
                 Amount::fromFloat(
                     $cart->getOrderTotal(true, PrestaCart::BOTH, null, self::getCarrierId($cart)),
@@ -103,7 +109,7 @@ class CheckoutHandler
                     )
                 ),
                 $country->iso_code ?
-                    Country::fromIsoCode($country->iso_code) : Country::fromIsoCode(Context::getContext()->country->iso_code) ,
+                    Country::fromIsoCode($country->iso_code) : Country::fromIsoCode(Context::getContext()->country->iso_code),
                 Context::getContext()->getTranslator()->getLocale(),
                 $shop['domain'] . '_' . \Context::getContext()->shop->id . '_' . $cart->id_customer,
                 null,
@@ -111,6 +117,13 @@ class CheckoutHandler
                 $isGuest
             )
         );
+
+        if ($carrierId) {
+            $cart->id_carrier = $carrierId;
+            $cart->update();
+        }
+
+        return $expressCheckoutConfig;
     }
 
     /**
@@ -118,9 +131,9 @@ class CheckoutHandler
      */
     public static function getCarrierId(PrestaCart $cart): int
     {
-        if (Tools::getValue('controller') === 'paymentconfigexpresscheckout' ||
-            Tools::getValue('controller') === 'paymentproduct' ||
-            (Tools::getValue('controller') === 'payment' && !$cart->id_carrier)
+        if (!$cart->id_carrier && (Tools::getValue('controller') === 'paymentconfigexpresscheckout' ||
+                Tools::getValue('controller') === 'paymentproduct' ||
+                Tools::getValue('controller') === 'payment')
         ) {
             //Get default carrier for current shop
             $carrierId = (int)Configuration::get('PS_CARRIER_DEFAULT', null, null, $cart->id_shop);

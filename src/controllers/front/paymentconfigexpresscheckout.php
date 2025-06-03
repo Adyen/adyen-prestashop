@@ -104,6 +104,8 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
                 AdyenPrestaShopUtility::die400(['message' => 'Invalid parameters.']);
             }
 
+            $deliveryAddressId = $cart->id_address_delivery;
+            $billingAddressId = $cart->id_address_invoice;
             $cart = $this->updateCartWithAddresses($data, $cart);
             $customerService->updateDeliveryAddress((int)$cart->id, (int)$cart->id_address_delivery);
             $cart->update();
@@ -112,6 +114,9 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
 
             $address = new Address($cart->id_address_delivery);
             $address->delete();
+            $cart->id_address_delivery = $deliveryAddressId;
+            $cart->id_address_invoice = $billingAddressId;
+            $cart->update();
 
             return $config;
         }
