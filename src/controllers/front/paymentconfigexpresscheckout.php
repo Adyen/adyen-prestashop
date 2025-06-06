@@ -51,13 +51,14 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
 
         $cartId = $this->context->cart->id ?: 0;
         $customerId = Context::getContext()->customer->id;
+        $productId = (int)Tools::getValue('id_product');
         $isGuest = false;
 
         if (!$customerId) {
             $isGuest = true;
         }
 
-        if ($cartId !== 0) {
+        if ($cartId !== 0 && $productId === 0) {
             $cart = new Cart($cartId);
             if (!$cart->id) {
                 AdyenPrestaShopUtility::die400(['message' => 'Invalid parameters.']);
@@ -65,6 +66,10 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
 
             $config = CheckoutHandler::getExpressCheckoutConfig($cart, $isGuest);
         } else {
+            if ($productId === 0) {
+                AdyenPrestaShopUtility::die400(['message' => 'Invalid parameters.']);
+            }
+
             $cart = $this->getCartForProduct();
             $config = CheckoutHandler::getExpressCheckoutConfig($cart, $isGuest);
             $cart->delete();
@@ -119,6 +124,10 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
             $cart->update();
 
             return $config;
+        }
+
+        if ((int)Tools::getValue('id_product') === 0) {
+            AdyenPrestaShopUtility::die400(['message' => 'Invalid parameters.']);
         }
 
         $cart = $this->createEmptyCart();
