@@ -773,9 +773,11 @@ class AdyenOfficial extends PaymentModule
         $order = new Order($params['id_order']);
         $newOrderStatus = $params['newOrderStatus'];
 
-        if ($order->module !== $this->name || $newOrderStatus->id == $order->current_state || \Tools::getValue(
-                'controller'
-            ) === 'asyncprocess') {
+        if (
+            $order->module !== $this->name ||
+            $newOrderStatus->id == $order->current_state ||
+            in_array(Tools::getValue('controller'), ['asyncprocess', 'webhook'])
+        ) {
             return;
         }
 
@@ -1057,7 +1059,10 @@ class AdyenOfficial extends PaymentModule
     {
         $order = new Order($params['object']->id);
 
-        if ($order->module !== $this->name || \Tools::getValue('controller') === 'asyncprocess') {
+        if (
+            $order->module !== $this->name ||
+            in_array(Tools::getValue('controller'), ['asyncprocess', 'webhook'])
+        ) {
             return;
         }
 
