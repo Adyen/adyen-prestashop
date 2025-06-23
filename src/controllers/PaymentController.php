@@ -273,6 +273,10 @@ class PaymentController extends \ModuleFrontController
 
         $inProgressPaymentId = AdminAPI::get()->orderMappings($cart->id_shop)
             ->getOrderStatusMap()->toArray()['inProgress'];
+
+        // refresh delivery option list because of guest express checkout
+        $cart->getDeliveryOptionList(new \Country($cart->id_address_delivery), true);
+
         $this->module->validateOrder(
             $cart->id,
             (int)$inProgressPaymentId,
