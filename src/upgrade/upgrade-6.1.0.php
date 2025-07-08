@@ -43,18 +43,22 @@ function upgrade_module_6_1_0(AdyenOfficial $module): bool
         try {
             StoreContext::doWithStore(
                 (string)$shop['id_shop'],
-                static function () {
+                static function () use ($shop) {
                     /** @var ConnectionService $connectionService */
                     $connectionService = ServiceRegister::getService(ConnectionService::class);
                     $connectionSettings = $connectionService->getConnectionData();
+
+                    if (!$connectionSettings) {
+                        Logger::logWarning("No connection settings found for shop {$shop['id_shop']} - " .
+                            "skipping webhook update");
+                        return;
+                    }
+
                     /** @var WebhookRegistrationService $webhookService */
                     $webhookService = ServiceRegister::getService(WebhookRegistrationService::class);
+                    $merchantId = $connectionSettings->getActiveConnectionData()->getMerchantId();
 
-                    if ($connectionSettings) {
-                        $merchantId = $connectionSettings->getActiveConnectionData()->getMerchantId();
-
-                        $webhookService->update($merchantId);
-                    }
+                    $webhookService->update($merchantId);
                 }
             );
         } catch (Exception $e) {
