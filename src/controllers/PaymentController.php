@@ -317,7 +317,7 @@ class PaymentController extends \ModuleFrontController
         $carrier = new Carrier($idCarrier);
         $taxRate = (float)$carrier->getTaxesRate(new Address($order->id_address_delivery));
         $order->id_carrier = $idCarrier;
-        $order->total_paid = $order->total_paid_tax_incl - ($order->total_shipping - $newCost);
+        $order->total_paid = $order->total_paid - ($order->total_shipping - $newCost);
         $order->total_paid_tax_incl = $order->total_paid_tax_incl - ($order->total_shipping - $newCost);
         $order->total_paid_tax_excl = $order->total_paid_tax_excl - ($order->total_shipping - $newCost);
         $order->total_shipping_tax_incl = $newCost;
