@@ -25,6 +25,11 @@ class WebhookSynchronizationService extends CoreWebhookSynchronizationService
      */
     public function isSynchronizationNeeded(Webhook $webhook): bool
     {
+        $cart = new Cart((int)$webhook->getMerchantReference());
+        if ((int)$cart->id_shop !== (int)StoreContext::getInstance()->getStoreId()) {
+            return false;
+        }
+
         $transactionHistory = $this->transactionHistoryService->getTransactionHistory($webhook->getMerchantReference());
         if (
             $webhook->getEventCode() !== EventCodes::AUTHORISATION &&
@@ -33,11 +38,9 @@ class WebhookSynchronizationService extends CoreWebhookSynchronizationService
             return false;
         }
 
-        $cart = new Cart((int)$webhook->getMerchantReference());
-
         return !$this->hasDuplicates(
-                $this->transactionHistoryService->getTransactionHistory($webhook->getMerchantReference()),
-                $webhook
-            ) && (int)$cart->id_shop === (int)StoreContext::getInstance()->getStoreId();
+            $transactionHistory,
+            $webhook
+        );
     }
 }

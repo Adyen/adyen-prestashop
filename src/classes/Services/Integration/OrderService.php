@@ -133,13 +133,7 @@ class OrderService implements OrderServiceInterface
             return;
         }
 
-        $transactionHistory = $this->transactionHistoryRepository->getTransactionHistory($webhook->getMerchantReference());
-        $authorization = $transactionHistory->collection()->filterAllByStatus(EventCodes::AUTHORISATION)->last();
-        $collection = $transactionHistory->collection()->trimFromHistoryItem($authorization);
-
-        if ((int)$statusId && (int)$statusId !== (int)$order->current_state
-            && !($webhook->isSuccess() && $collection->filterAllByStatus(ShopEvents::CANCELLATION_REQUEST)->isEmpty() &&
-                in_array($webhook->getEventCode(), [EventCodes::REFUND, EventCodes::CANCELLATION], true))) {
+        if ((int)$statusId && (int)$statusId !== (int)$order->current_state) {
             $history = new OrderHistory();
             $history->id_order = $idOrder;
             $history->id_employee = "0";
