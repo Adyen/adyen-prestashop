@@ -1034,7 +1034,7 @@ class AdyenOfficial extends PaymentModule
         }
         $authorisationDetail = $this->getAuthorisationDetail($transactionDetails);
 
-        $params['template_vars']['{adyen_payment_link}'] = $authorisationDetail['paymentLink'];
+        $params['template_vars']['{adyen_payment_link}'] = $authorisationDetail['paymentLink'] ?? '';
     }
 
     /**
@@ -1077,7 +1077,7 @@ class AdyenOfficial extends PaymentModule
     private function getAuthorisationDetail(array $transactionDetails): array
     {
         $filteredDetails = array_filter($transactionDetails, function ($detail) {
-            return $detail['status'] === true;
+            return isset($detail['status']) && $detail['status'] === true;
         });
 
         $reversedDetails = array_reverse($filteredDetails);
