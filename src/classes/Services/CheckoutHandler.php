@@ -131,48 +131,49 @@ class CheckoutHandler
      */
     public static function getCarrierId(PrestaCart $cart): int
     {
-        if (Tools::getValue('controller') !== 'paymentconfigexpresscheckout' &&
-            Tools::getValue('controller') !== 'paymentproduct' &&
-            Tools::getValue('controller') !== 'payment') {
-            return $cart->id_carrier;
-        }
+        if (Tools::getValue('controller') === 'paymentconfigexpresscheckout' ||
+            Tools::getValue('controller') === 'paymentproduct' ||
+            (Tools::getValue('controller') === 'payment' && !$cart->id_carrier)
+        ) {
+            if ($cart->id_carrier) {
+                $carrier = new Carrier($cart->id_carrier);
 
-        if ($cart->id_carrier) {
-            $carrier = new Carrier($cart->id_carrier);
+                if (self::isCarrierAvailable($cart, $carrier) && $carrier->active) {
+                    return $cart->id_carrier;
+                }
+            }
+
+            //Get the default carrier for current shop
+            $carrierId = (int)Configuration::get('PS_CARRIER_DEFAULT', null, null, $cart->id_shop);
+            $carrier = new Carrier($carrierId);
 
             if (self::isCarrierAvailable($cart, $carrier) && $carrier->active) {
-                return $cart->id_carrier;
+                return $carrierId;
             }
-        }
 
-        //Get the default carrier for current shop
-        $carrierId = (int)Configuration::get('PS_CARRIER_DEFAULT', null, null, $cart->id_shop);
-        $carrier = new Carrier($carrierId);
+            $address = new PrestaAddress($cart->id_address_delivery);
+            $country = new PrestaCountry($address->id_country);
+            $carriers = Carrier::getCarriers(
+                Context::getContext()->language->id,
+                true,
+                false,
+                $country->id_zone,
+                null,
+                Carrier::ALL_CARRIERS
+            );
 
-        if (self::isCarrierAvailable($cart, $carrier) && $carrier->active) {
-            return $carrierId;
-        }
+            foreach ($carriers as $carrier) {
+                $carrier = new Carrier((int)$carrier['id_carrier']);
 
-        $address = new PrestaAddress($cart->id_address_delivery);
-        $country = new PrestaCountry($address->id_country);
-        $carriers = Carrier::getCarriers(
-            Context::getContext()->language->id,
-            true,
-            false,
-            $country->id_zone,
-            null,
-            Carrier::ALL_CARRIERS
-        );
-
-        foreach ($carriers as $carrier) {
-            $carrier = new Carrier((int)$carrier['id_carrier']);
-
-            if (self::isCarrierAvailable($cart, $carrier)) {
-                return $carrier->id;
+                if (self::isCarrierAvailable($cart, $carrier)) {
+                    return $carrier->id;
+                }
             }
+
+            return 0;
         }
 
-        return 0;
+        return (int)$cart->id_carrier;
     }
 
     /**
