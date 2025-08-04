@@ -64,6 +64,7 @@ if (!window.AdyenFE) {
      *  getSystemInfoUrl: string,
      *  saveSystemInfoUrl: string,
      *  webhookValidationUrl: string,
+     *  webhookReRegistrationUrl: string,
      *  integrationValidationUrl: string,
      *  integrationValidationTaskCheckUrl: string,
      *  downloadWebhookReportUrl: string,
@@ -111,7 +112,8 @@ if (!window.AdyenFE) {
                 'getOrderMappingsUrl',
                 'saveOrderMappingsUrl',
                 'webhookValidationUrl',
-                'downloadWebhookReportUrl'
+                'downloadWebhookReportUrl',
+                'webhookReRegistrationUrl'
             ].forEach((prop) => {
                 configuration[prop] = configuration[prop].replace('{storeId}', storeId);
             });
@@ -502,6 +504,7 @@ if (!window.AdyenFE) {
                         onChange: (value) => handleDebugMode(!!value)
                     },
                     getButtonField('adyenWebhooksValidation', 'adlp-setting-field', 'validate', handleValidateWebhooks),
+                    getButtonField('adyenReRegisterWebhooks', 'adlp-setting-field', 'reRegisterWebhooks', handleReRegisterWebhooks),
                     getButtonField(
                         'integrationConfigurationValidation',
                         'adlp-setting-field',
@@ -833,6 +836,29 @@ if (!window.AdyenFE) {
                             (response?.status ? 'success' : 'failed') +
                             'WebhookValidation',
                             'settings.system.messages.downloadReportText|' + configuration.downloadWebhookReportUrl
+                        ],
+                        response?.status ? 'success' : 'error'
+                    );
+                })
+                .catch(() => false)
+                .finally(() => {
+                    utilities.hideLoader();
+                });
+        };
+
+        /**
+         * Handles re-registration of webhooks.
+         */
+        const handleReRegisterWebhooks = () => {
+            utilities.showLoader();
+
+            api.post(configuration.webhookReRegistrationUrl, null, null, (response) => response)
+                .then((response) => {
+                    showMessage(
+                        [
+                            'settings.system.messages.' +
+                            (response?.status ? 'success' : 'failed') +
+                            'WebhookReRegister',
                         ],
                         response?.status ? 'success' : 'error'
                     );

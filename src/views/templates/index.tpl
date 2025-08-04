@@ -74,7 +74,8 @@
                 downloadSystemInfoFileUrl: '{$urls.settings.downloadSystemInfoFileUrl}',
                 webhookValidationUrl: '{$urls.settings.webhookValidationUrl}',
                 integrationValidationUrl: '{$urls.settings.integrationValidationUrl}',
-                integrationValidationTaskCheckUrl: '{$urls.settings.integrationValidationTaskCheckUrl}'
+                integrationValidationTaskCheckUrl: '{$urls.settings.integrationValidationTaskCheckUrl}',
+                webhookReRegistrationUrl: '{$urls.settings.webhookReRegistrationUrl}',
             },
             notifications: {
                 getShopEventsNotifications: '{$urls.notifications.getShopEventsNotifications}',

@@ -8,6 +8,7 @@ use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency;
 use Adyen\Core\BusinessLogic\Domain\Integration\Order\OrderService;
 use Adyen\Core\BusinessLogic\Domain\TransactionHistory\Exceptions\InvalidMerchantReferenceException;
+use Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\Bootstrap;
@@ -97,12 +98,10 @@ class RefundHandler
     {
         Bootstrap::init();
         $currency = new PrestaCurrency($order->id_currency);
-        $transactionDetails = TransactionDetailsHandler::getTransactionDetails($order);
-        $lastDetail = end($transactionDetails);
-        $refundedOnAdyen = $lastDetail['refundAmount'] ?? 0;
+        $transactionHistory = self::getTransactionHistoryService()->getTransactionHistory($order->id_cart);
+        $refundedOnAdyen = $transactionHistory->getTotalAmountForEventCode('REFUND');
         $refundedOnPresta = self::versionHandler()->getRefundedAmountOnPresta($order);
-        if (Amount::fromFloat($refundedOnAdyen, Currency::fromIsoCode($currency->iso_code))->getPriceInCurrencyUnits(
-            ) > Amount::fromFloat(
+        if ($refundedOnAdyen->getPriceInCurrencyUnits() > Amount::fromFloat(
                 $refundedOnPresta,
                 Currency::fromIsoCode($currency->iso_code)
             )->getPriceInCurrencyUnits()) {
@@ -371,5 +370,13 @@ class RefundHandler
     private static function orderService(): OrderService
     {
         return ServiceRegister::getService(OrderService::class);
+    }
+
+    /**
+     * @return TransactionHistoryService
+     */
+    private static function getTransactionHistoryService(): TransactionHistoryService
+    {
+        return ServiceRegister::getService(TransactionHistoryService::class);
     }
 }

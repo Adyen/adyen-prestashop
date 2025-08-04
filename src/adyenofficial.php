@@ -1350,7 +1350,12 @@ class AdyenOfficial extends PaymentModule
                 'saveSystemInfoUrl' => AdyenPayment\Classes\Utility\Url::getAdminUrl(
                     'AdyenDebug',
                     'setDebugMode'
-                )
+                ),
+                'webhookReRegistrationUrl' =>  AdyenPayment\Classes\Utility\Url::getAdminUrl(
+                    'AdyenAuthorization',
+                    'reRegisterWebhooks',
+                    '{storeId}'
+                ),
             ],
             'notifications' => [
                 'getShopEventsNotifications' => AdyenPayment\Classes\Utility\Url::getAdminUrl(

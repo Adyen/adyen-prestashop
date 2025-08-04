@@ -11,10 +11,10 @@ use Adyen\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidAllowedOriginEx
 use Adyen\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidApiKeyException;
 use Adyen\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidConnectionSettingsException;
 use Adyen\Core\BusinessLogic\Domain\Connection\Exceptions\InvalidModeException;
-use Adyen\Core\BusinessLogic\Domain\Connection\Exceptions\MerchantIdChangedException;
 use Adyen\Core\BusinessLogic\Domain\Connection\Exceptions\ModeChangedException;
 use Adyen\Core\BusinessLogic\Domain\Connection\Exceptions\UserDoesNotHaveNecessaryRolesException;
 use Adyen\Core\BusinessLogic\Domain\Merchant\Exceptions\ClientKeyGenerationFailedException;
+use Adyen\Core\BusinessLogic\Domain\Merchant\Exceptions\ClientPrefixDoesNotExistException;
 use Adyen\Core\BusinessLogic\Domain\Webhook\Exceptions\FailedToGenerateHmacException;
 use Adyen\Core\BusinessLogic\Domain\Webhook\Exceptions\FailedToRegisterWebhookException;
 use Adyen\Core\BusinessLogic\Domain\Webhook\Exceptions\MerchantDoesNotExistException;
@@ -40,13 +40,13 @@ class AdyenAuthorizationController extends AdyenBaseController
      * @throws InvalidApiKeyException
      * @throws InvalidConnectionSettingsException
      * @throws InvalidModeException
-     * @throws MerchantIdChangedException
      * @throws ModeChangedException
      * @throws UserDoesNotHaveNecessaryRolesException
      * @throws ClientKeyGenerationFailedException
      * @throws FailedToGenerateHmacException
      * @throws FailedToRegisterWebhookException
      * @throws MerchantDoesNotExistException
+     * @throws ClientPrefixDoesNotExistException
      */
     public function displayAjaxConnect(): void
     {
@@ -75,6 +75,20 @@ class AdyenAuthorizationController extends AdyenBaseController
         $storeId = Tools::getValue('storeId');
 
         $result = AdminAPI::get()->connection($storeId)->getConnectionSettings();
+
+        AdyenPrestaShopUtility::dieJson($result);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function displayAjaxReRegisterWebhooks(): void
+    {
+        $storeId = Tools::getValue('storeId');
+
+        $result = AdminAPI::get()->connection($storeId)->reRegisterWebhook();
 
         AdyenPrestaShopUtility::dieJson($result);
     }

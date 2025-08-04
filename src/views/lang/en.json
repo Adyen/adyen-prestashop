@@ -593,11 +593,16 @@
         "contactAdyenSupport": {
           "label": "Contact Adyen support",
           "description": "If you need help troubleshooting the issue, please feel free to contact our support."
+        },
+        "adyenReRegisterWebhooks": {
+          "label": "Re-register Adyen Webhooks",
+          "description": "Initiate manual re-registration of webhook events received from Adyen."
         }
       },
       "buttons": {
         "validate": "Validate",
         "downloadReport": "Download report",
+        "reRegisterWebhooks": "Re-register webhooks",
         "contactAdyenSupport": "Contact Adyen support"
       },
       "messages": {
@@ -605,7 +610,9 @@
         "failedWebhookValidation": "Store was not able to receive webhook from Adyen",
         "downloadReportText": "Download the full report <a href=\"%s\" target=\"_blank\" download>here</a>.",
         "successIntegrationValidation": "Auto-test completed successfully",
-        "failedIntegrationValidation": "Auto-test did not complete successfully"
+        "failedIntegrationValidation": "Auto-test did not complete successfully",
+        "successWebhookReRegister": "Webhooks re-registered successfully.",
+        "failedWebhookReRegister": "Webhooks re-registration failed. Check logs for details."
       },
       "debugModeEnabled": "Debug mode enabled.",
       "debugModeDisabled": "Debug mode disabled."
