@@ -2,6 +2,7 @@
 
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode;
 use Adyen\Core\BusinessLogic\Domain\Webhook\Exceptions\WebhookConfigDoesntExistException;
+use Adyen\Core\BusinessLogic\WebhookAPI\Exceptions\WebhookShouldRetryException;
 use Adyen\Core\BusinessLogic\WebhookAPI\WebhookAPI;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Adyen\Webhook\Exception\AuthenticationException;
@@ -47,6 +48,7 @@ class AdyenOfficialWebhookModuleFrontController extends ModuleFrontController
      * @throws HMACKeyValidationException
      * @throws InvalidDataException
      * @throws MerchantAccountCodeException
+     * @throws WebhookShouldRetryException
      */
     public function postProcess()
     {
