@@ -49,6 +49,7 @@ class AdyenOfficialWebhookModuleFrontController extends ModuleFrontController
      * @throws InvalidDataException
      * @throws MerchantAccountCodeException
      * @throws WebhookShouldRetryException
+     * @throws Throwable
      */
     public function postProcess()
     {
