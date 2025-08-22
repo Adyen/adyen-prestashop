@@ -265,26 +265,30 @@ class AdyenOfficial extends PaymentModule
         $records = $params['presented_grid']['data']['records']->all();
 
         foreach ($records as &$record) {
-            if ((new \Order((int)$record['id_order']))->module !== 'adyenofficial') {
+            $order = new \Order((int)$record['id_order']);
+
+            if ($order->module !== 'adyenofficial') {
                 $record['pspReference'] = '--';
                 $record['paymentMethod'] = '--';
 
                 continue;
             }
 
-            $transactionDetails = \AdyenPayment\Classes\Services\TransactionDetailsHandler::getTransactionDetails(
-                new \Order((int)$record['id_order'])
+            /** @var \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService $service */
+            $service = \Adyen\Core\Infrastructure\ServiceRegister::getService(\Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService::class);
+            /** @var \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Models\TransactionHistory $transactionHistory */
+            $transactionHistory = \Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext::doWithStore(
+                $order->id_shop,
+                static function () use ($order, $service) {
+                    return $service->getTransactionHistory($order->id_cart);
+                }
             );
-            if (empty($transactionDetails)) {
-                $record['pspReference'] = '--';
-                $record['paymentMethod'] = '--';
 
-                continue;
-            }
-            $authorisationDetail = $this->getAuthorisationDetail($transactionDetails);
+            /** @var \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Models\HistoryItem */
+            $authItem = $transactionHistory->getFirstItemByEvent('AUTHORISATION');
 
-            $record['pspReference'] = $authorisationDetail['pspReference'] ?? '';
-            $record['paymentMethod'] = $authorisationDetail['paymentMethodType'] ?? '';
+            $record['pspReference'] = $authItem ? $authItem->getPspReference() : '--';
+            $record['paymentMethod'] = $authItem ? $authItem->getPaymentMethod() : '--';
         }
 
         $params['presented_grid']['data']['records'] = new \PrestaShop\PrestaShop\Core\Grid\Record\RecordCollection(
@@ -1025,16 +1029,20 @@ class AdyenOfficial extends PaymentModule
         $order = new \Order($params['template_vars']['{id_order}']);
 
         \AdyenPayment\Classes\Bootstrap::init();
-        $transactionDetails = \AdyenPayment\Classes\Services\TransactionDetailsHandler::getTransactionDetails($order);
 
-        if (empty($transactionDetails)) {
-            $params['template_vars']['{adyen_payment_link}'] = '';
+        /** @var \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService $service */
+        $service = \Adyen\Core\Infrastructure\ServiceRegister::getService(\Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService::class);
+        /** @var \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Models\TransactionHistory $transactionHistory */
+        $transactionHistory = \Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext::doWithStore(
+            $order->id_shop,
+            static function () use ($order, $service) {
+                return $service->getTransactionHistory($order->id_cart);
+            }
+        );
 
-            return;
-        }
-        $authorisationDetail = $this->getAuthorisationDetail($transactionDetails);
+        $link = $transactionHistory->getPaymentLink() ? $transactionHistory->getPaymentLink()->getUrl() : '';
 
-        $params['template_vars']['{adyen_payment_link}'] = $authorisationDetail['paymentLink'] ?? '';
+        $params['template_vars']['{adyen_payment_link}'] = $link;
     }
 
     /**
@@ -1082,35 +1090,11 @@ class AdyenOfficial extends PaymentModule
 
         $reversedDetails = array_reverse($filteredDetails);
 
-        if ($reversedDetails) {
-            $authorisationDetail = $reversedDetails[array_search(
-                \Adyen\Webhook\EventCodes::AUTHORISATION,
-                array_column($reversedDetails, 'eventCode'),
-                true
-            )];
-        }
-
-        if (!$reversedDetails) {
-            if (!empty($transactionDetails[0]['eventCode'])) {
-                return $transactionDetails[0];
-            }
-
-            $authorisationDetail = $transactionDetails[0][0];
-
-            foreach ($transactionDetails as $details) {
-                foreach ($details as $detail) {
-                    if ($detail['status'] === true && $detail['eventCode'] === \Adyen\Webhook\EventCodes::ORDER_OPENED) {
-                        $authorisationDetail = $detail;
-                    }
-
-                    if ($detail['status'] === true && $detail['eventCode'] === \Adyen\Webhook\EventCodes::AUTHORISATION) {
-                        $authorisationDetail['paymentMethodType'] = $detail['paymentMethodType'];
-                    }
-                }
-            }
-        }
-
-        return $authorisationDetail;
+        return $reversedDetails[array_search(
+            \Adyen\Webhook\EventCodes::AUTHORISATION,
+            array_column($reversedDetails, 'eventCode'),
+            true
+        )];
     }
 
     /**
