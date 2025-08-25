@@ -285,7 +285,7 @@ class AdyenOfficial extends PaymentModule
             );
 
             /** @var \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Models\HistoryItem */
-            $authItem = $transactionHistory->getLastSuccessfulItemByEvent(\Adyen\Webhook\EventCodes::AUTHORISATION);
+            $authItem = $transactionHistory->getLastSuccessfulAuthorizationItem();
 
             $record['pspReference'] = $authItem ? $authItem->getPspReference() : '--';
             $record['paymentMethod'] = $authItem ? $authItem->getPaymentMethod() : '--';
