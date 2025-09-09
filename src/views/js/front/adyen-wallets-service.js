@@ -145,7 +145,7 @@ var AdyenWallets = window.AdyenWallets || {};
                     + '&price_amount=' + price_amount;
             }
 
-            return '?send_new_request=1';
+            return '';
         }
 
         function submitOrder(type) {

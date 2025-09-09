@@ -6,7 +6,7 @@
         let configCache = {};
 
         this.getConfiguration = async (configUrl) => {
-            if (configCache[configUrl] && !configUrl.includes("send_new_request")) {
+            if (configCache[configUrl]) {
                 return configCache[configUrl];
             }
 
