@@ -1747,6 +1747,11 @@ class AdyenOfficial extends PaymentModule
     private function verifyIfUserHasAddress(): bool
     {
         $customer = $this->context->customer;
+
+        if(!$customer->id) {
+            return true;
+        }
+
         return !(!$customer->isGuest() && empty($customer->getAddresses($this->context->language->id)));
     }
 
