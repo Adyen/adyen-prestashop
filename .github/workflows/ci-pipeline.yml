@@ -6,9 +6,9 @@ on:
 jobs:
   build:
     permissions:
-      contents: read
-      pages: write
-      id-token: write
+      contents: none
+      pages: none
+      id-token: none
     name: Build environment
     runs-on: ubuntu-latest
     steps:
