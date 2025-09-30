@@ -32,7 +32,7 @@ jobs:
 
   run:
     permissions:
-      contents: read
+      contents: none
     name: E2E | Prestashop ${{ matrix.prestashop }}, PHP ${{ matrix.php }}, Browser ${{matrix.browser }}
     needs: build
     runs-on: ubuntu-latest
