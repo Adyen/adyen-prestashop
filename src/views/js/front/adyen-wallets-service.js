@@ -286,6 +286,9 @@ var AdyenWallets = window.AdyenWallets || {};
             });
         }
 
+        /**
+         * Callback to get updated payment data from GooglePay if the shipping address changes
+         */
         function onPaymentDataChanged(intermediatePaymentData) {
             return new Promise(async resolve => {
                 const {shippingAddress} = intermediatePaymentData;
@@ -316,7 +319,7 @@ var AdyenWallets = window.AdyenWallets || {};
 
                 $.ajax({
                     type: "POST",
-                    url: checkoutConfigUrl + '/isXHR/1',
+                    url: checkoutConfigUrl,
                     data: data,
                     success: function (response) {
                         amount = parseInt(response.amount) / 100;
@@ -346,6 +349,9 @@ var AdyenWallets = window.AdyenWallets || {};
             });
         }
 
+        /**
+         * Configure the callback to get the shopper's information from Apple Pay
+         */
         function onApplePayPaymentAuthorized(resolve, reject, event) {
             let shippingContact = event.payment.shippingContact;
             let shippingAddress = {
@@ -408,6 +414,9 @@ var AdyenWallets = window.AdyenWallets || {};
             });
         }
 
+        /**
+         * Callback to get shipping contact changes from Apple Pay
+         */
         function onShippingContactSelected(resolve, reject, event) {
             let address = event.shippingContact;
             let data = {};
@@ -437,7 +446,7 @@ var AdyenWallets = window.AdyenWallets || {};
             $.ajax({
                 method: 'POST',
                 dataType: 'json',
-                url: checkoutConfigUrl + '&isXHR=1',
+                url: checkoutConfigUrl,
                 data: data,
                 success: function (response) {
                     amount = parseInt(response.amount) / 100;
