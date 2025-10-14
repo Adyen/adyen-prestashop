@@ -11,10 +11,10 @@ use Country;
 use Customer;
 use Cart;
 use Exception;
-use PrestaShop\Module\PrestashopCheckout\Exception\PsCheckoutException;
-use PrestaShop\Module\PrestashopCheckout\Updater\CustomerUpdater;
 use PrestaShop\PrestaShop\Core\Domain\Country\Exception\CountryNotFoundException;
 use PrestaShopDatabaseException;
+use PrestaShopException;
+use PsCheckout\Core\Exception\PsCheckoutException;
 use State;
 use stdClass;
 
@@ -33,34 +33,53 @@ class CustomerService
      *
      * @return Customer
      *
+     * @throws PrestaShopException
+     * @throws PsCheckoutException
      */
     public function createAndLoginCustomer(string $email, $data): Customer
     {
         $email = str_replace(['"', "'"], '', $email);
-
-        /** @var int $customerId */
         $customers = Customer::getCustomersByEmail($email);
 
+        $billingAddress = json_decode($data['adyenBillingAddress']);
+        if ($billingAddress->lastName === '') {
+            $fullName = explode(' ', $billingAddress->firstName);
+            $firstName = $fullName[0];
+            $lastName = $fullName[1] ?? $fullName[0];
+        } else {
+            $firstName = $billingAddress->firstName;
+            $lastName = $billingAddress->lastName;
+        }
+
         if (empty($customers)) {
-            $billingAddress = json_decode($data['adyenBillingAddress']);
-
-            if ($billingAddress->lastName === '') {
-                $fullName = explode(' ', $billingAddress->firstName);
-                $firstName = $fullName[0];
-                $lastName = $fullName[1] ?? $fullName[0];
-            } else {
-                $firstName = $billingAddress->firstName;
-                $lastName = $billingAddress->lastName;
-            }
-
-            $customer = $this->createGuestCustomer(
+            $customer = new Customer();
+            $customer = $this->addGuestCustomerData(
+                $customer,
                 $email,
                 $firstName,
                 $lastName
             );
+
+            try {
+                $customer->save();
+            } catch (Exception $exception) {
+                throw new PsCheckoutException($exception->getMessage(), PsCheckoutException::PSCHECKOUT_EXPRESS_CHECKOUT_CANNOT_SAVE_CUSTOMER, $exception);
+            }
         } else {
             $lastCustomer = end($customers);
             $customer = new Customer($lastCustomer['id_customer']);
+            $customer = $this->addGuestCustomerData(
+                $customer,
+                $email,
+                $firstName,
+                $lastName
+            );
+
+            try {
+                $customer->update();
+            } catch (Exception $exception) {
+                throw new PsCheckoutException($exception->getMessage(), PsCheckoutException::PSCHECKOUT_EXPRESS_CHECKOUT_CANNOT_SAVE_CUSTOMER, $exception);
+            }
         }
 
         if (method_exists(\Context::getContext(), 'updateCustomer')) {
@@ -79,11 +98,10 @@ class CustomerService
      *
      * @return Cart
      *
-     * @throws CountryNotFoundException
-     * @throws \PrestaShopDatabaseException
-     * @throws \PrestaShopException
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException|CountryNotFoundException
      */
-    public function setCustomerAddresses($customer, $data, $cart)
+    public function setCustomerAddresses($customer, $data, $cart): Cart
     {
         list($shippingAddressId, $billingAddressId) = $this->saveAddresses($customer, $data);
 
@@ -108,7 +126,10 @@ class CustomerService
         return $cart;
     }
 
-    public function saveAddresses($customer, $data)
+    /**
+     * @throws CountryNotFoundException
+     */
+    public function saveAddresses($customer, $data): array
     {
         $billingAddress = json_decode($data['adyenBillingAddress']);
         $shippingAddress = json_decode($data['adyenShippingAddress']);
@@ -171,7 +192,6 @@ class CustomerService
      * @param $countryIso
      * @param $langId
      * @return bool
-     * @throws PrestaShopDatabaseException
      */
     public function verifyIfCountryNotRestricted($countryIso, $langId): bool
     {
@@ -191,17 +211,15 @@ class CustomerService
     /**
      * Create a guest customer.
      *
+     * @param Customer $customer
      * @param string $email
      * @param string $firstName
      * @param string $lastName
      *
      * @return Customer
-     *
-     * @throws PsCheckoutException|\PrestaShopException
      */
-    private function createGuestCustomer(string $email, string $firstName, string $lastName): Customer
+    private function addGuestCustomerData(Customer $customer, string $email, string $firstName, string $lastName): Customer
     {
-        $customer = new Customer();
         $customer->email = $email;
         $customer->firstname = $firstName;
         $customer->lastname = $lastName;
@@ -216,12 +234,6 @@ class CustomerService
             );
         } else {
             $customer->passwd = md5(time() . _COOKIE_KEY_);
-        }
-
-        try {
-            $customer->save();
-        } catch (Exception $exception) {
-            throw new PsCheckoutException($exception->getMessage(), PsCheckoutException::PSCHECKOUT_EXPRESS_CHECKOUT_CANNOT_SAVE_CUSTOMER, $exception);
         }
 
         return $customer;
