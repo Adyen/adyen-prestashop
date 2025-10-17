@@ -274,6 +274,12 @@ class AdyenOfficial extends PaymentModule
                 continue;
             }
 
+            if (empty($order->id_shop)) {
+                $record['pspReference'] = '--';
+                $record['paymentMethod'] = '--';
+                continue;
+            }
+
             /** @var \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService $service */
             $service = \Adyen\Core\Infrastructure\ServiceRegister::getService(\Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService::class);
             /** @var \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Models\TransactionHistory $transactionHistory */
@@ -987,6 +993,15 @@ class AdyenOfficial extends PaymentModule
         /** @var \Order $order */
         $order = $params['order'];
         $currency = new  \Currency($order->id_currency);
+
+        if (empty($order->id_shop)) {
+            \AdyenPayment\Classes\Utility\SessionService::set(
+                'errorMessage',
+                $this->l('Payment link generation failed. Reason: missing shop context.')
+            );
+            return;
+        }
+
         $paymentLink = \Adyen\Core\BusinessLogic\AdminAPI\AdminAPI::get()->paymentLink((string)$order->id_shop)
             ->createPaymentLink(
                 new \Adyen\Core\BusinessLogic\AdminAPI\PaymentLink\Request\CreatePaymentLinkRequest
@@ -1027,6 +1042,10 @@ class AdyenOfficial extends PaymentModule
         }
 
         $order = new \Order($params['template_vars']['{id_order}']);
+
+        if (empty($order->id_shop)) {
+            return;
+        }
 
         \AdyenPayment\Classes\Bootstrap::init();
 
