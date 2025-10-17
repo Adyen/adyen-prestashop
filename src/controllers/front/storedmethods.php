@@ -55,7 +55,6 @@ class AdyenOfficialStoredMethodsModuleFrontController extends ModuleFrontControl
     public function initContent(): void
     {
         parent::initContent();
-        Tools::clearAllCache();
         $this->setTemplate('module:adyenofficial/views/templates/front/stored-methods.tpl');
     }
 

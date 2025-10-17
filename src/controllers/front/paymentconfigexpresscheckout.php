@@ -90,10 +90,6 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
      */
     private function getConfigForNewAddress($data)
     {
-        Tools::clearAllCache();
-        \ProductCore::resetStaticCache();
-        Cache::clear();
-
         $billingAddress = json_decode($data['adyenBillingAddress'], false);
         $countryCode = $billingAddress->country;
         /** @var CustomerService $customerService */
