@@ -1099,9 +1099,9 @@ class AdyenOfficial extends PaymentModule
     /**
      * @param array $transactionDetails
      *
-     * @return array
+     * @return array | null
      */
-    private function getAuthorisationDetail(array $transactionDetails): array
+    private function getAuthorisationDetail(array $transactionDetails): ?array
     {
         $filteredDetails = array_filter($transactionDetails, function ($detail) {
             return isset($detail['status']) && $detail['status'] === true;
