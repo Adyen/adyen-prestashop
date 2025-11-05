@@ -10,8 +10,16 @@
                 return configCache[configUrl];
             }
 
-            configCache[configUrl] = new Promise(async (resolve, reject) => {
-                let checkoutConfig = await (await fetch(configUrl, {
+            configCache[configUrl] = new Promise(async (resolve, reject) => {const urlParams = new URLSearchParams(window.location.search);
+                const idCart = urlParams.get('id_cart');
+
+                let fullConfigUrl = configUrl;
+                if (idCart) {
+                    const separator = configUrl.includes('?') ? '&' : '?';
+                    fullConfigUrl = `${configUrl}${separator}id_cart=${encodeURIComponent(idCart)}`;
+                }
+
+                let checkoutConfig = await (await fetch(fullConfigUrl, {
                     method: "GET"
                 })).json();
 
