@@ -30,7 +30,7 @@ class AdyenOfficialPaymentConfigModuleFrontController extends ModuleFrontControl
      */
     public function postProcess()
     {
-        $cartId = (int)Tools::getValue('id_cart');
+        $cartId = $this->getCartId();
         $discountAmount = (int)Tools::getValue('discountAmount');
         $cart = new Cart($cartId > 0 ? $cartId : Context::getContext()->cart->id);
         $customer = new Customer(Context::getContext()->customer->id);
@@ -46,5 +46,35 @@ class AdyenOfficialPaymentConfigModuleFrontController extends ModuleFrontControl
         $config = CheckoutHandler::getPaymentCheckoutConfig($cart, $discountAmount);
 
         AdyenPrestaShopUtility::dieJson($config);
+    }
+
+    private function getCartId(): int
+    {
+        if ($this->context->cart && (int)$this->context->cart->id > 0) {
+            return (int)$this->context->cart->id;
+        }
+
+        $cartId = (int)Tools::getValue('id_cart');
+
+        if ($cartId <= 0) {
+            AdyenPrestaShopUtility::die400(['message' => 'Missing or invalid cart ID.']);
+        }
+
+        $orderId = (int)Tools::getValue('id_order');
+        $key = (string)Tools::getValue('key');
+
+        if ($orderId > 0 && $key) {
+            $order = Order::getByCartId($cartId);
+
+            if ($order->id !== $orderId) {
+                AdyenPrestaShopUtility::die400(['message' => 'Invalid parameters.']);
+            }
+
+            if (!hash_equals($order->secure_key, $key)) {
+                AdyenPrestaShopUtility::die400(['message' => 'Invalid parameters.']);
+            }
+        }
+
+        return $cartId;
     }
 }

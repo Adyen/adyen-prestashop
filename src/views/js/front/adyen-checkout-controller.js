@@ -10,13 +10,26 @@
                 return configCache[configUrl];
             }
 
-            configCache[configUrl] = new Promise(async (resolve, reject) => {const urlParams = new URLSearchParams(window.location.search);
-                const idCart = urlParams.get('id_cart');
-
+            configCache[configUrl] = new Promise(async (resolve, reject) => {
+                const isThankYouPage = window.location.href.includes('order-confirmation');
                 let fullConfigUrl = configUrl;
-                if (idCart) {
-                    const separator = configUrl.includes('?') ? '&' : '?';
-                    fullConfigUrl = `${configUrl}${separator}id_cart=${encodeURIComponent(idCart)}`;
+
+                if (isThankYouPage) {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const idCart = urlParams.get('id_cart');
+                    const idOrder = urlParams.get('id_order');
+                    const key = urlParams.get('key');
+
+                    const paramsToAdd = [];
+
+                    if (idCart) paramsToAdd.push(`id_cart=${encodeURIComponent(idCart)}`);
+                    if (idOrder) paramsToAdd.push(`id_order=${encodeURIComponent(idOrder)}`);
+                    if (key) paramsToAdd.push(`key=${encodeURIComponent(key)}`);
+
+                    if (paramsToAdd.length > 0) {
+                        const separator = configUrl.includes('?') ? '&' : '?';
+                        fullConfigUrl = `${configUrl}${separator}${paramsToAdd.join('&')}`;
+                    }
                 }
 
                 let checkoutConfig = await (await fetch(fullConfigUrl, {
