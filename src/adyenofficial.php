@@ -1107,14 +1107,25 @@ class AdyenOfficial extends PaymentModule
             return isset($detail['status']) && $detail['status'] === true;
         });
 
+        if (empty($filteredDetails)) {
+            return null;
+        }
+
         $reversedDetails = array_reverse($filteredDetails);
 
-        return $reversedDetails[array_search(
+        $index = array_search(
             \Adyen\Webhook\EventCodes::AUTHORISATION,
             array_column($reversedDetails, 'eventCode'),
             true
-        )];
+        );
+
+        if ($index === false || !isset($reversedDetails[$index])) {
+            return null;
+        }
+
+        return $reversedDetails[$index];
     }
+
 
     /**
      * Creates Adyen Installer.
@@ -1516,7 +1527,7 @@ class AdyenOfficial extends PaymentModule
 
         $currency = new \Currency($order->id_currency);
         $transactionDetails = \AdyenPayment\Classes\Services\TransactionDetailsHandler::getTransactionDetails($order);
-        $result = [];
+        $result['history'] = [];
         $generalSettings = \Adyen\Core\BusinessLogic\AdminAPI\AdminAPI::get()->generalSettings((string)\Context::getContext()->shop->id)->getGeneralSettings();
         $paymentLinkEnabled = $generalSettings->isSuccessful() && $generalSettings->toArray()['enablePayByLink'];
         \AdyenPayment\Classes\Bootstrap::init();
@@ -1530,6 +1541,10 @@ class AdyenOfficial extends PaymentModule
 
         foreach ($transactionDetails as $transactionDetail) {
             $authorisationDetail = $this->getAuthorisationDetail($transactionDetail);
+
+            if(!$authorisationDetail) {
+                continue;
+            }
 
             if (!empty($authorisationDetail['eventCode']) && in_array(
                     $authorisationDetail['eventCode'],
