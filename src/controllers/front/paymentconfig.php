@@ -32,14 +32,14 @@ class AdyenOfficialPaymentConfigModuleFrontController extends ModuleFrontControl
     {
         $cartId = $this->getCartId();
         $discountAmount = (int)Tools::getValue('discountAmount');
-        $cart = new Cart($cartId > 0 ? $cartId : Context::getContext()->cart->id);
-        $customer = new Customer(Context::getContext()->customer->id);
+        $cart = new Cart($cartId);
+        $currentCustomerId = (int)Context::getContext()->customer->id;
 
-        if (!$cart->id || !(int)$customer->id) {
+        if (!$cart->id) {
             AdyenPrestaShopUtility::die400(['message' => 'Invalid parameters.']);
         }
 
-        if ((int)$customer->id !== (int)$cart->id_customer) {
+        if ($currentCustomerId && $currentCustomerId !== (int)$cart->id_customer) {
             AdyenPrestaShopUtility::die400(['message' => 'Invalid parameters.']);
         }
 
