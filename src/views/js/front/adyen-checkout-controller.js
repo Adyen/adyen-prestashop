@@ -11,15 +11,14 @@
             }
 
             configCache[configUrl] = new Promise(async (resolve, reject) => {
-                const isThankYouPage = window.location.href.includes('order-confirmation');
+                const urlParams = new URLSearchParams(window.location.search);
+                const idCart = urlParams.get('id_cart');
+                const idOrder = urlParams.get('id_order');
+                const key = urlParams.get('key');
+                const isThankYouPage = Boolean(idCart && idOrder && key);
                 let fullConfigUrl = configUrl;
 
                 if (isThankYouPage) {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const idCart = urlParams.get('id_cart');
-                    const idOrder = urlParams.get('id_order');
-                    const key = urlParams.get('key');
-
                     const paramsToAdd = [];
 
                     if (idCart) paramsToAdd.push(`id_cart=${encodeURIComponent(idCart)}`);
