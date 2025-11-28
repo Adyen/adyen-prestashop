@@ -50,7 +50,7 @@ class AdyenOfficial extends PaymentModule
 
         $this->author = $this->l('Adyen');
         $this->need_instance = 0;
-        $this->ps_versions_compliancy = ['min' => '1.7.5.0', 'max' => '8.2.1'];
+        $this->ps_versions_compliancy = ['min' => '1.7.5.0', 'max' => '8.2.3'];
         $this->bootstrap = true;
 
         parent::__construct();
@@ -1513,10 +1513,11 @@ class AdyenOfficial extends PaymentModule
         }
 
         /** @var \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService $service */
+        /** @var \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService $service */
         $service = \Adyen\Core\Infrastructure\ServiceRegister::getService(\Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService::class);
         /** @var \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Models\TransactionHistory $transactionHistory */
         $transactionHistory = \Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext::doWithStore(
-            $order->id_shop,
+            $order->id_shop ?? '',
             static function () use ($order, $service) {
                 return $service->getTransactionHistory($order->id_cart);
             }
