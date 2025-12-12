@@ -305,11 +305,6 @@
                 return;
             }
 
-            if (isStateValid && !clickToPayHandled && isClickToPayPaymentMethod(state.data.paymentMethod)) {
-                clickToPayHandled = true;
-                config.onClickToPay();
-            }
-
             config.onStateChange();
         };
 
@@ -391,13 +386,6 @@
                 }
 
                 if (storedPaymentMethodId && paymentType !== 'scheme') {
-                    sessionStorage.setItem('adyen-payment-method-state-data', JSON.stringify({
-                        'paymentMethod': {
-                            'type': paymentType,
-                            'storedPaymentMethodId': storedPaymentMethodId
-                        },
-                    }));
-
                     config.onStateChange();
 
                     return;
@@ -449,7 +437,6 @@
          */
         const unmount = () => {
             isStateValid = true;
-            sessionStorage.removeItem('adyen-payment-method-state-data');
             forceFetchingComponentStateData();
 
 

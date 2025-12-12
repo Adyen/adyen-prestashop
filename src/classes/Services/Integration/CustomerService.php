@@ -38,30 +38,22 @@ class CustomerService
     {
         $email = str_replace(['"', "'"], '', $email);
 
-        /** @var int $customerId */
-        $customers = Customer::getCustomersByEmail($email);
+        $billingAddress = json_decode($data['adyenBillingAddress']);
 
-        if (empty($customers)) {
-            $billingAddress = json_decode($data['adyenBillingAddress']);
-
-            if ($billingAddress->lastName === '') {
-                $fullName = explode(' ', $billingAddress->firstName);
-                $firstName = $fullName[0];
-                $lastName = $fullName[1] ?? $fullName[0];
-            } else {
-                $firstName = $billingAddress->firstName;
-                $lastName = $billingAddress->lastName;
-            }
-
-            $customer = $this->createGuestCustomer(
-                $email,
-                $firstName,
-                $lastName
-            );
+        if ($billingAddress->lastName === '') {
+            $fullName = explode(' ', $billingAddress->firstName);
+            $firstName = $fullName[0];
+            $lastName = $fullName[1] ?? $fullName[0];
         } else {
-            $lastCustomer = end($customers);
-            $customer = new Customer($lastCustomer['id_customer']);
+            $firstName = $billingAddress->firstName;
+            $lastName = $billingAddress->lastName;
         }
+
+        $customer = $this->createGuestCustomer(
+            $email,
+            $firstName,
+            $lastName
+        );
 
         if (method_exists(\Context::getContext(), 'updateCustomer')) {
             \Context::getContext()->updateCustomer($customer);
