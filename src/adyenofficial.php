@@ -380,6 +380,9 @@ class AdyenOfficial extends PaymentModule
                             'paymentredirect',
                             ['adyenPaymentType' => $method->getType()]
                         ),
+                        'token' => Tools::getToken(false),
+                        'stateDataURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl('statedata'),
+                        'getStateDataURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl('statedataget'),
                         'balanceCheckUrl' => AdyenPayment\Classes\Utility\Url::getFrontUrl('partialpaymentbalance'),
                         'stored' => true,
                         'description' => $description,
@@ -449,6 +452,9 @@ class AdyenOfficial extends PaymentModule
                         'paymentredirect',
                         ['adyenPaymentType' => $method->getType()]
                     ),
+                    'token' => Tools::getToken(false),
+                    'stateDataURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl('statedata'),
+                    'getStateDataURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl('statedataget'),
                     'balanceCheckUrl' => AdyenPayment\Classes\Utility\Url::getFrontUrl('partialpaymentbalance'),
                     'stored' => true,
                     'description' => $description,
@@ -490,6 +496,9 @@ class AdyenOfficial extends PaymentModule
                         'paymentredirect',
                         ['adyenPaymentType' => $method->getCode()]
                     ),
+                    'token' => Tools::getToken(false),
+                    'stateDataURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl('statedata'),
+                    'getStateDataURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl('statedataget'),
                     'balanceCheckUrl' => AdyenPayment\Classes\Utility\Url::getFrontUrl('partialpaymentbalance'),
                     'stored' => false,
                     'description' => $method->getDescription(),
@@ -1716,6 +1725,9 @@ class AdyenOfficial extends PaymentModule
             'adyenShowExpressCheckout' => $this->verifyIfExpressCheckoutShouldBeDisplayed(),
             'configURL' => $configUrl,
             'paymentActionURL' => $paymentUrl,
+            'token' => Tools::getToken(false),
+            'stateDataURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl('statedata'),
+            'getStateDataURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl('statedataget'),
             'paymentRedirectActionURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl('paymentredirect'),
             'paypalUpdateOrderUrl' => AdyenPayment\Classes\Utility\Url::getFrontUrl('paypalupdateorder'),
             'version' => _PS_VERSION_

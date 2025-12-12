@@ -67,6 +67,13 @@ class AdyenPrestaShopUtility
         die(json_encode($data));
     }
 
+    public static function die403(array $data = []): void
+    {
+        header('HTTP/1.1 403 Forbidden');
+
+        die(json_encode($data));
+    }
+
     /**
      * Sets file specified by $filePath as response.
      *

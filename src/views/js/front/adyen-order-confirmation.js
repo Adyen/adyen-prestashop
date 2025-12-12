@@ -6,7 +6,6 @@ $(document).ready(function () {
     sessionStorage.removeItem('remainingAmount');
     sessionStorage.removeItem('totalDiscount');
     sessionStorage.removeItem('minorTotalDiscount');
-    sessionStorage.removeItem('giftCardsData');
 
     if (additionalAction.html() === '' || additionalAction.html() === undefined) {
         return;

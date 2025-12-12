@@ -14,6 +14,9 @@ $(document).ready(function () {
         checkBox = $(formConditions).find('[name="conditions_to_approve[terms-and-conditions]"]'),
         paymentStarted = false,
         paymentOptions = $('input[name="payment-option"]');
+    let token = document.getElementsByClassName('adyen-token')[0].value;
+    let saveStateDataUrl = document.getElementsByClassName('adyen-state-data-url')[0].value;
+    let getStateDataUrl = document.getElementsByClassName('adyen-get-state-data-url')[0].value;
 
     function preventSubmit(event) {
         event.preventDefault(); // Prevents the form from being submitted for ApplePay button
@@ -31,7 +34,9 @@ $(document).ready(function () {
             "sessionStorage": sessionStorage,
             "onStateChange": submitOrder,
             "onAdditionalDetails": onAdditionalDetails,
-            "onPayButtonClick": onPayButtonClick
+            "onPayButtonClick": onPayButtonClick,
+            "saveStateDataUrl": saveStateDataUrl + '?token=' + token,
+            "getStateDataUrl": getStateDataUrl + '?token=' + token
         });
         replacePlaceOrderButton('amazonpay');
     }
@@ -88,7 +93,9 @@ $(document).ready(function () {
             "sessionStorage": sessionStorage,
             "onStateChange": submitOrder,
             "onAdditionalDetails": onAdditionalDetails,
-            "onPayButtonClick": onPayButtonClick
+            "onPayButtonClick": onPayButtonClick,
+            "saveStateDataUrl": saveStateDataUrl + '?token=' + token,
+            "getStateDataUrl": getStateDataUrl + '?token=' + token
         });
 
         replacePlaceOrderButton(type, event);
@@ -151,60 +158,59 @@ $(document).ready(function () {
     }
 
     function submitOrder() {
-        if (!checkoutController.getPaymentMethodStateData() || paymentStarted) {
-            return;
-        }
-
-        paymentStarted = true;
-        let cardsData = document.getElementsByClassName('adyen-giftcard-state-data');
-        let stateData = '';
-
-        for (let element of cardsData) {
-            if (element.value !== '') {
-                stateData += element.value + ',';
+        checkoutController.getPaymentMethodStateData().then(state => {
+            if (state.length === 0 || state.stateData.length === 0 || paymentStarted) {
+                return;
             }
-        }
 
-        $.ajax({
-            method: 'POST',
-            dataType: 'json',
-            url: paymentUrl.value + '?isXHR=1',
-            data: {
-                "adyen-additional-data": checkoutController.getPaymentMethodStateData(),
-                "adyen-giftcards-data": '[' + stateData.slice(0, -1) + ']'
-            },
-            success: function (response) {
-                if (response.nextStepUrl) {
-                    window.location.href = response.nextStepUrl;
-                    return;
+            paymentStarted = true;
+            let cardsData = document.getElementsByClassName('adyen-giftcard-state-data');
+            let stateData = '';
+
+            for (let element of cardsData) {
+                if (element.value !== '') {
+                    stateData += element.value + ',';
                 }
+            }
 
-                if (!response.action) {
+            $.ajax({
+                method: 'POST',
+                dataType: 'json',
+                url: paymentUrl.value + '?isXHR=1',
+                data: {},
+                success: function (response) {
+                    if (response.nextStepUrl) {
+                        window.location.href = response.nextStepUrl;
+                        return;
+                    }
+
+                    if (!response.action) {
+                        try {
+                            const checkoutUrlObject = new URL(checkoutUrl.value);
+                            window.location.href = checkoutUrlObject.href;
+                        } catch (err) {
+                            console.error('Invalid URL, redirection aborted.', err);
+                        }
+                        return;
+                    }
+
+                    reference = response.reference;
+                    paymentData = null;
+                    if (response.action.paymentData) {
+                        paymentData = response.action.paymentData;
+                    }
+
+                    checkoutController.handleAction(response.action);
+                },
+                error: function () {
                     try {
                         const checkoutUrlObject = new URL(checkoutUrl.value);
                         window.location.href = checkoutUrlObject.href;
                     } catch (err) {
                         console.error('Invalid URL, redirection aborted.', err);
                     }
-                    return;
                 }
-
-                reference = response.reference;
-                paymentData = null;
-                if (response.action.paymentData) {
-                    paymentData = response.action.paymentData;
-                }
-
-                checkoutController.handleAction(response.action);
-            },
-            error: function () {
-                try {
-                    const checkoutUrlObject = new URL(checkoutUrl.value);
-                    window.location.href = checkoutUrlObject.href;
-                } catch (err) {
-                    console.error('Invalid URL, redirection aborted.', err);
-                }
-            }
+            });
         });
     }
 })

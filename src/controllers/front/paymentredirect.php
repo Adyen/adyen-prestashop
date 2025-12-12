@@ -7,6 +7,7 @@ use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\Bootstrap;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use AdyenPayment\Classes\Services\Integration\CustomerService;
+use AdyenPayment\Classes\Utility\SessionService;
 use AdyenPayment\Controllers\PaymentController;
 
 /**
@@ -105,7 +106,7 @@ class AdyenOfficialPaymentRedirectModuleFrontController extends PaymentControlle
                 ->getAmount(
                     \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency::fromIsoCode($currency->iso_code)
                 );
-
+            SessionService::get('giftCardsData');
             $this->saveOrder(Tools::getValue('adyenPaymentType'), $cart, $payments);
 
             if (isset($requestData['details'])) {

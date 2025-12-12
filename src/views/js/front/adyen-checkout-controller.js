@@ -90,7 +90,9 @@
      * onPayButtonClick: function|undefined,
      * onClickToPay: function|undefined,
      * onShippingAddressChanged: function|undefined,
-     * balanceCheck: function|undefined
+     * balanceCheck: function|undefined,
+     * saveStateDataUrl: string|undefined,
+     * getStateDataUrl: string|undefined
      * }} config
      */
     function CheckoutController(config) {
@@ -291,7 +293,16 @@
             isStateValid = state.isValid;
 
             if (isStateValid) {
-                sessionStorage.setItem('adyen-payment-method-state-data', JSON.stringify(state.data));
+                saveStateData(state.data).then(response => {
+                    if (isStateValid && !clickToPayHandled && isClickToPayPaymentMethod(state.data.paymentMethod)) {
+                        clickToPayHandled = true;
+                        config.onClickToPay();
+                    }
+
+                    config.onStateChange();
+                });
+
+                return;
             }
 
             if (isStateValid && !clickToPayHandled && isClickToPayPaymentMethod(state.data.paymentMethod)) {
@@ -300,6 +311,46 @@
             }
 
             config.onStateChange();
+        };
+
+        const saveStateData = (stateData) => {
+            let payload = {
+                stateData: JSON.stringify(stateData)
+            };
+            return fetch(config.saveStateDataUrl, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+        }
+
+        const saveGiftCardStateData = (stateData) => {
+            let payload = {
+                giftCardsData: JSON.stringify(stateData)
+            };
+            return fetch(config.saveStateDataUrl, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+        }
+
+        /**
+         * Returns stringify version of gift card state data
+         *
+         * @returns {string}
+         */
+        const getGiftCardStateData = async () => {
+            const params = new URLSearchParams({
+                key: 'giftCardsData'
+            });
+            const getStateDataUrl = config.getStateDataUrl + '&' + params.toString();
+
+            return await fetch(getStateDataUrl).then(response => response.json());
         };
 
         /**
@@ -318,9 +369,9 @@
         /**
          * Mounts adyen web component for a given type under the mount element.
          *
-         * @param paymentType: string Web component payment method type
-         * @param mountElement: string|HTMLElement Dom elemnt or selector for dom element
-         * @param storedPaymentMethodId: string Optional stored payment method id to render component for
+         * @param paymentType string Web component payment method type
+         * @param mountElement string|HTMLElement Dom elemnt or selector for dom element
+         * @param storedPaymentMethodId string Optional stored payment method id to render component for
          */
         const mount = (paymentType, mountElement, storedPaymentMethodId) => {
             isStateValid = true;
@@ -424,8 +475,13 @@
          *
          * @returns {string}
          */
-        const getPaymentMethodStateData = () => {
-            return sessionStorage.getItem('adyen-payment-method-state-data');
+        const getPaymentMethodStateData = async () => {
+            const params = new URLSearchParams({
+                key: 'stateData'
+            });
+            const getStateDataUrl = config.getStateDataUrl + '&' + params.toString();
+
+            return await fetch(getStateDataUrl).then(response => response.json());
         };
 
         /**
@@ -516,6 +572,8 @@
         this.isPaymentMethodStateValid = isPaymentMethodStateValid;
         this.showValidation = showValidation;
         this.forceFetchingComponentStateData = forceFetchingComponentStateData;
+        this.saveGiftCardStateData = saveGiftCardStateData;
+        this.getGiftCardStateData = getGiftCardStateData;
     }
 
     AdyenComponents.CheckoutController = CheckoutController;

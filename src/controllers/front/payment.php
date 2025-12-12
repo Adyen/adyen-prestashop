@@ -12,6 +12,7 @@ use AdyenPayment\Classes\Bootstrap;
 use AdyenPayment\Classes\Services\Integration\CustomerService;
 use AdyenPayment\Classes\Services\PayPalGuestExpressCheckoutService;
 use AdyenPayment\Classes\Utility\AdyenPrestaShopUtility;
+use AdyenPayment\Classes\Utility\SessionService;
 use AdyenPayment\Classes\Utility\Url;
 use AdyenPayment\Controllers\PaymentController;
 use Adyen\Core\Infrastructure\Logger\Logger;
@@ -52,12 +53,11 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
     public function postProcess()
     {
         $data = Tools::getAllValues();
-        $additionalData = !empty($data['adyen-additional-data']) ? json_decode(
-            $data['adyen-additional-data'],
-            true
-        ) : [];
-        $giftCardsData = !empty($data['adyen-giftcards-data']) ?
-            json_decode($data['adyen-giftcards-data'], true) : [];
+        $additionalData = !empty(SessionService::get('stateData', false)) ?
+            SessionService::get('stateData', true) : [];
+        $giftCardsData = !empty(SessionService::get('giftCardsData', false)) ?
+            SessionService::get('giftCardsData', false) : [];
+        $data['adyen-additional-data'] = json_encode($additionalData);
 
         $type = array_key_exists('adyen-type', $data) ? $data['adyen-type'] : '';
         if ($this->isAjaxRequest()) {
@@ -122,6 +122,7 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
             );
 
             if (!$partialTransactionsResponse->isAdditionalActionRequired()) {
+                SessionService::get('giftCardsData');
                 $this->handleSuccessfulPaymentWithoutAdditionalData($type, $cart, $amount);
             }
 

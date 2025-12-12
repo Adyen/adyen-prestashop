@@ -10,10 +10,15 @@ $(document).ready(function () {
     let adyenPaymentMethods = document.getElementsByClassName('adyen-payment-method');
     let paymentUrl = document.getElementsByClassName('adyen-action-url')[0];
     let checkoutUrl = document.getElementsByClassName('adyen-checkout-url')[0];
+    let token = document.getElementsByClassName('adyen-token')[0].value;
+    let saveStateDataUrl = document.getElementsByClassName('adyen-state-data-url')[0].value;
+    let getStateDataUrl = document.getElementsByClassName('adyen-get-state-data-url')[0].value;
     let totalDiscount = 0;
     let minorTotalDiscount = 0;
     let remainingAmount = -1;
     let orderTotalAmount = document.getElementsByClassName('adyen-order-total-amount')[0];
+
+    checkoutController = getCheckoutController(document.getElementsByClassName('adyen-config-url')[0].value);
 
     $('.payment-option').filter(function () {
         return $(this).find('input[data-module-name="adyenofficial"]').length > 0;
@@ -64,17 +69,17 @@ $(document).ready(function () {
         sessionStorage.setItem('remainingAmount', remainingAmount);
     }
 
-    let responses = sessionStorage.getItem('giftCardsData') ? JSON.parse(sessionStorage.getItem('giftCardsData')) : null;
-    let originalPaymentId = paymentId;
-
-    if (responses) {
-        for (let response of responses) {
-            paymentId = response.paymentId;
-            renderGiftCardDetails(response, response.cardValue);
+    checkoutController.getGiftCardStateData().then(responses => {
+        let originalPaymentId = paymentId;
+        if (responses.giftCardsData !== undefined) {
+            for (let response of responses.giftCardsData) {
+                paymentId = response.paymentId;
+                renderGiftCardDetails(response, response.cardValue, response);
+            }
         }
-    }
 
-    paymentId = originalPaymentId;
+        paymentId = originalPaymentId;
+    });
 
     function mountComponent(paymentForm) {
         let type = paymentForm.find('[name=adyen-type]').val();
@@ -144,27 +149,22 @@ $(document).ready(function () {
             "checkoutConfigUrl": checkoutConfigUrl + '?discountAmount=' + totalDiscount,
             "onStateChange": handleStateChange,
             "onClickToPay": handleClickOnPay,
-            "balanceCheck": checkBalance
+            "balanceCheck": checkBalance,
+            "saveStateDataUrl": saveStateDataUrl + '?token=' + token,
+            "getStateDataUrl": getStateDataUrl + '?token=' + token
         });
     }
 
     function handleClickOnPay() {
-        let addData = paymentForm.find('[name=adyen-additional-data]');
-        let giftcardData = paymentForm.find('[name=adyen-giftcards-data]');
-
         $.ajax({
             method: 'POST',
             dataType: 'json',
             url: paymentUrl.value + '?isXHR=1',
-            data: {
-                "adyen-giftcards-data": giftcardData.val(),
-                "adyen-additional-data": addData.val(checkoutController.getPaymentMethodStateData())
-            },
+            data: {},
             success: function (response) {
                 sessionStorage.removeItem('remainingAmount');
                 sessionStorage.removeItem('totalDiscount');
                 sessionStorage.removeItem('minorTotalDiscount');
-                sessionStorage.removeItem('giftCardsData');
 
                 if (response.nextStepUrl) {
                     window.location.href = response.nextStepUrl;
@@ -205,45 +205,56 @@ $(document).ready(function () {
                 }
 
                 resolve(response.response);
+                delete response.response;
+                checkoutController.getGiftCardStateData().then(savedData => {
+                    checkoutController.getPaymentMethodStateData().then(stateData => {
+                        let cardValue = parseFloat(response.majorValue);
 
-                let cardValue = parseFloat(response.majorValue);
+                        if (remainingAmount === -1) {
+                            remainingAmount = response.orderTotal;
+                        }
 
-                if (remainingAmount === -1) {
-                    remainingAmount = response.orderTotal;
-                }
+                        if (response.resultCode === 'Success') {
+                            cardValue = parseFloat(remainingAmount).toFixed(2);
+                            remainingAmount = 0;
+                            totalDiscount = response.orderTotal;
+                        } else {
+                            remainingAmount -= response.majorValue;
+                            totalDiscount = parseFloat(totalDiscount) + parseFloat(response.majorValue);
+                        }
 
-                if (response.response.resultCode === 'Success') {
-                    cardValue = parseFloat(remainingAmount).toFixed(2);
-                    remainingAmount = 0;
-                    totalDiscount = response.orderTotal;
-                } else {
-                    remainingAmount -= response.majorValue;
-                    totalDiscount = parseFloat(totalDiscount) + parseFloat(response.majorValue);
-                    minorTotalDiscount = parseInt(minorTotalDiscount) + parseInt(response.response.balance.value)
-                }
+                        minorTotalDiscount = parseInt(minorTotalDiscount) + parseInt(response.minorValue);
 
-                let data = JSON.parse(checkoutController.getPaymentMethodStateData());
-                data['cardAmount'] = remainingAmount === 0 ? response.minorOrderTotal - minorTotalDiscount : response.response.balance.value;
+                        let data = [];
+                        data['cardAmount'] = remainingAmount === 0 ? response.minorOrderTotal - minorTotalDiscount : parseInt(response.minorValue);
 
-                sessionStorage.setItem('remainingAmount', remainingAmount);
-                sessionStorage.setItem('totalDiscount', totalDiscount);
-                sessionStorage.setItem('minorTotalDiscount', minorTotalDiscount);
-                let giftCardsData = sessionStorage.getItem('giftCardsData');
-                let responses = [];
-                response['cardValue'] = cardValue;
-                response['paymentId'] = paymentId;
-                response['stateData'] = JSON.stringify(data);
+                        sessionStorage.setItem('remainingAmount', remainingAmount);
+                        sessionStorage.setItem('totalDiscount', totalDiscount);
+                        sessionStorage.setItem('minorTotalDiscount', minorTotalDiscount);
+                        response['cardValue'] = cardValue;
+                        response['paymentId'] = paymentId;
+                        response['stateData'] = JSON.stringify(data);
+                        stateData.stateData.majorValue = response.majorValue;
+                        stateData.stateData.orderTotal = response.orderTotal;
+                        stateData.stateData.minorValue = response.minorValue;
+                        stateData.stateData.responseCurrency = response.responseCurrency;
+                        stateData.stateData.currency = response.currency;
+                        stateData.stateData.minorOrderTotal = response.minorOrderTotal;
+                        stateData.stateData.paymentId = paymentId;
+                        stateData.stateData.cardAmount = parseInt(response.minorValue);
+                        stateData.stateData.cardValue = cardValue;
 
-                responses.push(response);
+                        if (savedData.giftCardsData === undefined) {
+                            savedData.giftCardsData = [stateData.stateData];
+                        } else {
+                            savedData.giftCardsData.push(stateData.stateData);
+                        }
 
-                if (giftCardsData) {
-                    responses = JSON.parse(giftCardsData);
-                    responses.push(response);
-                }
+                        checkoutController.saveGiftCardStateData(savedData.giftCardsData);
 
-                sessionStorage.setItem('giftCardsData', JSON.stringify(responses));
-
-                renderGiftCardDetails(response, cardValue);
+                        renderGiftCardDetails(response, cardValue, stateData.stateData);
+                    });
+                })
             },
             error: function (response) {
                 reject(response)
@@ -272,37 +283,37 @@ $(document).ready(function () {
         sessionStorage.setItem('totalDiscount', totalDiscount);
         sessionStorage.setItem('minorTotalDiscount', minorTotalDiscount);
 
-        let savedData = JSON.parse(sessionStorage.getItem('giftCardsData'));
+        checkoutController.getGiftCardStateData().then(savedData => {
+            if (savedData.giftCardsData !== undefined) {
+                for (let data of savedData.giftCardsData) {
+                    if (JSON.stringify(data) === stateData.value) {
+                        let index = savedData.giftCardsData.indexOf(data);
 
-        if (savedData) {
-            for (let data of savedData) {
-                if (data.stateData === stateData.value) {
-                    let index = savedData.indexOf(data);
+                        if (paymentId === data.paymentId) {
+                            let paymentForm = $("#pay-with-" + paymentId + "-form");
+                            mountComponent(paymentForm);
+                        }
 
-                    if (paymentId === data.paymentId) {
-                        let paymentForm = $("#pay-with-" + paymentId + "-form");
-                        mountComponent(paymentForm);
-                    }
-
-                    if (index !== -1) {
-                        savedData.splice(index, 1);
+                        if (index !== -1) {
+                            savedData.giftCardsData.splice(index, 1);
+                        }
                     }
                 }
             }
-        }
 
-        sessionStorage.setItem('giftCardsData', JSON.stringify(savedData));
+            checkoutController.saveGiftCardStateData(savedData.giftCardsData).then(savedData => {
+                renderCartSummary(currency);
 
-        renderCartSummary(currency);
+                stateData.value = '';
+                parentEl.hidden = true;
 
-        stateData.value = '';
-        parentEl.hidden = true;
+                let paymentOptions = $('input[name="payment-option"]');
 
-        let paymentOptions = $('input[name="payment-option"]');
-
-        for (let paymentOption of paymentOptions) {
-            paymentOption.disabled = false;
-        }
+                for (let paymentOption of paymentOptions) {
+                    paymentOption.disabled = false;
+                }
+            })
+        });
     }
 
     function renderCartSummary(currency) {
@@ -352,7 +363,7 @@ $(document).ready(function () {
         cartSummary.insertBefore(adyenSummary, totalDiv);
     }
 
-    function renderGiftCardDetails(response, cardValue) {
+    function renderGiftCardDetails(response, cardValue, savedData) {
         let paymentForm = $("#pay-with-" + paymentId + "-form");
         let paymentMethod = $("#" + paymentId + "-container")[0];
         let configUrl = paymentForm.find(".adyen-config-url").val();
@@ -372,17 +383,17 @@ $(document).ready(function () {
         removeLink.addEventListener('click', removeCard);
         let stateData = document.createElement('input');
         stateData.type = 'hidden';
-        stateData.value = response.stateData;
+        stateData.value = JSON.stringify(savedData);
         stateData.classList.add('adyen-giftcard-state-data');
         cardInfo.appendChild(stateData);
 
         let deductedAmount = $('[name="adyen-giftcard-deducted-amount"]')[0];
         cardLabel.innerText = deductedAmount.value.replace("{currencySymbol}", response.currency)
-            .replace("{cardValue}", cardValue).replace("{currencyIso}", response.response.balance.currency);
+            .replace("{cardValue}", cardValue).replace("{currencyIso}", response.responseCurrency);
         cardInfo.appendChild(cardLabel);
         cardInfo.appendChild(removeLink);
-        cardInfo.setAttribute('adyen-card-value-minor', response.response.balance.value);
-        cardInfo.setAttribute('adyen-card-value', cardValue);
+        cardInfo.setAttribute('adyen-card-value-minor', parseInt(response.minorValue));
+        cardInfo.setAttribute('adyen-card-value', parseFloat(cardValue));
         cardInfo.setAttribute('adyen-card-currency', response.currency);
 
         paymentMethod.append(cardInfo);

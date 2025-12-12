@@ -12,6 +12,9 @@ var AdyenWallets = window.AdyenWallets || {};
             type = '',
             productData = null,
             countryCode = '';
+        let token = document.getElementsByClassName('adyen-token')[0].value;
+        let saveStateDataUrl = document.getElementsByClassName('adyen-state-data-url')[0].value;
+        let getStateDataUrl = document.getElementsByClassName('adyen-get-state-data-url')[0].value;
 
         function mountElements(getData) {
             if (!document.getElementById('adyen-express-checkout')) {
@@ -58,7 +61,9 @@ var AdyenWallets = window.AdyenWallets || {};
                     "onShippingContactSelected": onShippingContactSelected,
                     "onAdditionalDetails": onAdditionalDetails,
                     "onShopperDetails": onShopperDetails,
-                    "onShippingAddressChanged": onShippingAddressChanged
+                    "onShippingAddressChanged": onShippingAddressChanged,
+                    "saveStateDataUrl": saveStateDataUrl + '?token=' + token,
+                    "getStateDataUrl": getStateDataUrl + '?token=' + token
                 });
 
                 if (type === 'amazonpay' && getData !== undefined) {
@@ -149,80 +154,79 @@ var AdyenWallets = window.AdyenWallets || {};
         }
 
         function submitOrder(type) {
-            if (!checkoutController[type].getPaymentMethodStateData() ||
-                (paymentStarted && (type === 'paywithgoogle' || type === 'googlepay' || type === 'applepay'))) {
-                return;
-            }
-
-            let state = JSON.parse(checkoutController[type].getPaymentMethodStateData());
-            type = state ? state.paymentMethod.type : '';
-
-            let shippingAddress = $('[name=adyenShippingAddress]').val();
-            let billingAddress = $('[name=adyenBillingAddress]').val();
-            let email = $('[name=adyenEmail]').val();
-            let userLoggedIn = $('[name=adyenLoggedIn]').length;
-
-            if (type === 'applepay' && !userLoggedIn) {
-                return;
-            }
-
-            if (type === 'paywithgoogle' || type === 'googlepay' || type === 'applepay') {
-                paymentStarted = true;
-            }
-
-            let data;
-
-            if (productData) {
-                data = {
-                    "adyen-additional-data": checkoutController[type].getPaymentMethodStateData(),
-                    "product": (type === 'amazonpay' && sessionStorage.amazonPayProductData !== undefined)
-                        ? sessionStorage.amazonPayProductData : productData,
-                    'adyenShippingAddress': shippingAddress,
-                    'adyenBillingAddress': billingAddress,
-                    'adyenEmail': email
-                };
-            } else {
-                data = {
-                    "adyen-additional-data": checkoutController[type].getPaymentMethodStateData(),
-                    'adyenShippingAddress': shippingAddress,
-                    'adyenBillingAddress': billingAddress,
-                    'adyenEmail': email
-                };
-            }
-
-            let paymentUrl = document.getElementsByClassName('adyen-action-url')[0];
-
-            $.ajax({
-                method: 'POST',
-                dataType: 'json',
-                url: paymentUrl.value + '?isXHR=1',
-                data: data,
-                success: function (response) {
-                    if (response.nextStepUrl) {
-                        window.location.href = response.nextStepUrl;
-                        return;
-                    }
-
-                    if (!response.action) {
-                        window.location.reload();
-                        return;
-                    }
-
-                    if (response.pspReference) {
-                        pspReference = response.pspReference;
-                    }
-
-                    reference = response.reference;
-                    paymentData = null;
-                    if (response.action.paymentData) {
-                        paymentData = response.action.paymentData;
-                    }
-
-                    checkoutController[type].handleAction(response.action);
-                },
-                error: function () {
-                    window.location.reload();
+            checkoutController[type].getPaymentMethodStateData().then(state => {
+                if (state.length === 0 ||
+                    (paymentStarted && (type === 'paywithgoogle' || type === 'googlepay' || type === 'applepay'))) {
+                    return;
                 }
+
+                type = (state.stateData && state.stateData.paymentMethod) ? state.stateData.paymentMethod.type : '';
+
+                let shippingAddress = $('[name=adyenShippingAddress]').val();
+                let billingAddress = $('[name=adyenBillingAddress]').val();
+                let email = $('[name=adyenEmail]').val();
+                let userLoggedIn = $('[name=adyenLoggedIn]').length;
+
+                if (type === 'applepay' && !userLoggedIn) {
+                    return;
+                }
+
+                if (type === 'paywithgoogle' || type === 'googlepay' || type === 'applepay') {
+                    paymentStarted = true;
+                }
+
+                let data;
+
+                if (productData) {
+                    data = {
+                        "product": (type === 'amazonpay' && sessionStorage.amazonPayProductData !== undefined)
+                            ? sessionStorage.amazonPayProductData : productData,
+                        'adyenShippingAddress': shippingAddress,
+                        'adyenBillingAddress': billingAddress,
+                        'adyenEmail': email
+                    };
+                } else {
+                    data = {
+                        'adyenShippingAddress': shippingAddress,
+                        'adyenBillingAddress': billingAddress,
+                        'adyenEmail': email
+                    };
+                }
+
+                let paymentUrl = document.getElementsByClassName('adyen-action-url')[0];
+
+                $.ajax({
+                    method: 'POST',
+                    dataType: 'json',
+                    url: paymentUrl.value + '?isXHR=1',
+                    data: data,
+                    success: function (response) {
+                        if (response.nextStepUrl) {
+                            window.location.href = response.nextStepUrl;
+                            return;
+                        }
+
+                        if (!response.action) {
+                            window.location.reload();
+                            return;
+                        }
+
+                        if (response.pspReference) {
+                            pspReference = response.pspReference;
+                        }
+
+                        reference = response.reference;
+                        paymentData = null;
+                        if (response.action.paymentData) {
+                            paymentData = response.action.paymentData;
+                        }
+
+                        checkoutController[type].handleAction(response.action);
+                    },
+                    error: function () {
+                        window.location.reload();
+                    }
+                });
             });
         }
 
@@ -376,7 +380,6 @@ var AdyenWallets = window.AdyenWallets || {};
 
             if (productData) {
                 data = {
-                    "adyen-additional-data": checkoutController[type].getPaymentMethodStateData(),
                     "product": productData,
                     'adyenShippingAddress': JSON.stringify(shippingAddress),
                     'adyenBillingAddress': JSON.stringify(shippingAddress),
@@ -384,7 +387,6 @@ var AdyenWallets = window.AdyenWallets || {};
                 };
             } else {
                 data = {
-                    "adyen-additional-data": checkoutController[type].getPaymentMethodStateData(),
                     'adyenShippingAddress': JSON.stringify(shippingAddress),
                     'adyenBillingAddress': JSON.stringify(shippingAddress),
                     'adyenEmail': JSON.stringify(shippingContact.emailAddress)

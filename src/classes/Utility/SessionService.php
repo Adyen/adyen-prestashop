@@ -26,10 +26,11 @@ class SessionService
 
     /**
      * @param string $key
+     * @param bool $delete
      *
      * @return mixed
      */
-    public static function get(string $key)
+    public static function get(string $key, bool $delete = true)
     {
         $result = '';
 
@@ -39,7 +40,10 @@ class SessionService
 
         if (isset($_SESSION[$key])) {
             $result = $_SESSION[$key];
-            unset($_SESSION[$key]);
+
+            if ($delete) {
+                unset($_SESSION[$key]);
+            }
         }
 
         return $result;
