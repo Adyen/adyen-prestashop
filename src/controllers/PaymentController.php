@@ -140,6 +140,7 @@ class PaymentController extends \ModuleFrontController
      * @return void
      *
      * @throws PrestaShopException
+     * @throws Exception
      */
     protected function handleSuccessfulPaymentWithoutAdditionalData(string $type, Cart $cart, Amount $amount)
     {
@@ -166,20 +167,25 @@ class PaymentController extends \ModuleFrontController
      * @return void
      *
      * @throws PrestaShopException
+     * @throws Exception
      */
-    protected function handleSuccessfulPaymentWithAdditionalData(Response $response, string $type, Cart $cart, Amount $amount)
-    {
+    protected function handleSuccessfulPaymentWithAdditionalData(
+        Response $response,
+        string $type,
+        Cart $cart,
+        Amount $amount
+    ) {
         if ($this->isAjaxRequest() && PaymentMethodCode::scheme()->equals($type)) {
             SessionService::set('cartId', $cart->id);
             SessionService::set('adyenAction', json_encode($response->getAction()));
             SessionService::set('adyenPaymentMethodType', $type);
 
             die(
-                json_encode(
-                    [
-                        'nextStepUrl' => Url::getFrontUrl('clicktopay')
-                    ]
-                )
+            json_encode(
+                [
+                    'nextStepUrl' => Url::getFrontUrl('clicktopay')
+                ]
+            )
             );
         }
 
@@ -194,7 +200,7 @@ class PaymentController extends \ModuleFrontController
             );
         }
 
-        if ($response->shouldPresentToShopper() || $response->isRecieved() || $response->isPending()) {
+        if ($response->shouldPresentToShopper() || $response->isRecieved()) {
             $this->saveOrder($type, $cart, $amount);
 
             SessionService::set('cartId', $cart->id);
@@ -244,6 +250,7 @@ class PaymentController extends \ModuleFrontController
      * @throws PaymentMethodNotConfiguredException
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
+     * @throws Exception
      */
     private function doSaveOrder(string $paymentMethodCode, Cart $cart, Amount $amount)
     {
@@ -307,7 +314,6 @@ class PaymentController extends \ModuleFrontController
      * @param int $idOrderState
      *
      * @return void
-     *
      *
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException

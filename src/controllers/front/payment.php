@@ -2,6 +2,7 @@
 
 use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
 use Adyen\Core\BusinessLogic\CheckoutAPI\PartialPayment\Request\StartPartialTransactionsRequest;
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidPaymentMethodCodeException;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\PaymentMethodCode;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\ShopperReference;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
@@ -141,7 +142,8 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
                         ['adyenMerchantReference' => $cart->id, 'adyenPaymentType' => $type]
                     ),
                     'checkoutConfigUrl' => Url::getFrontUrl('paymentconfig'),
-                    'checkoutUrl' => $this->context->link->getPageLink('order', $this->ssl, null)
+                    'checkoutUrl' => $this->context->link->getPageLink('order', $this->ssl, null),
+                    'displayCancelButton' => $this->isCancelButtonSupported($type),
                 ]
             );
         } catch (Throwable $e) {
@@ -183,5 +185,32 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
         $shop = Shop::getShop(Context::getContext()->shop->id);
 
         return ShopperReference::parse($shop['domain'] . '_' . Context::getContext()->shop->id . '_' . $customer->id);
+    }
+
+    /**
+     * @param string $methodCode
+     *
+     * @return bool
+     *
+     * @throws InvalidPaymentMethodCodeException
+     */
+    private function isCancelButtonSupported(string $methodCode): bool
+    {
+        $method = PaymentMethodCode::parse($methodCode);
+
+        $supportsCancelButton = [
+            PaymentMethodCode::blik(),
+            PaymentMethodCode::weChatPay(),
+            PaymentMethodCode::mbWay(),
+            PaymentMethodCode::bcmcMobile()
+        ];
+
+        foreach ($supportsCancelButton as $supportedMethod) {
+            if ($method->equals($supportedMethod)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

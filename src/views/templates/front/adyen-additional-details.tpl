@@ -23,6 +23,14 @@
                     <input type="hidden" id="adyen-checkout-url" value="{$checkoutUrl|escape:'html':'UTF-8'}">
                 </div>
             </div>
+            {if ($displayCancelButton)}
+                <div class="card-block">
+                    <button class="btn btn-comment" id="adyen-cancel-button">
+                        <i class="material-icons">not_interested</i>
+                        {l s='Cancel' mod='adyenofficial'}
+                    </button>
+                </div>
+            {/if}
         </div>
     {/if}
 {/block}

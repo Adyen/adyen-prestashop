@@ -4,6 +4,12 @@ $(document).ready(function () {
     let checkoutUrl = document.getElementById('adyen-checkout-url');
     let adyenLoader = document.getElementById('adyen-loader');
 
+    let cancelButton = document.getElementById('adyen-cancel-button');
+
+   cancelButton && cancelButton.addEventListener('click', () => {
+       redirectToCheckout();
+    });
+
     const additionalActionDiv = $('[data-adyen-payment-action-container]')[0];
 
     if (!additionalActionDiv || additionalActionDiv === 'undefined') {
@@ -36,12 +42,13 @@ $(document).ready(function () {
             url: additionalDataUrl.value,
             data: additionalData,
             success: function (response) {
+                hideCancelButton();
                 window.location.href = response.nextStepUrl;
             },
             error: function () {
                 try {
-                    const checkoutUrlObject = new URL(checkoutUrl.value);
-                    window.location.href = checkoutUrlObject.href;
+                    hideCancelButton();
+                    redirectToCheckout();
                 } catch (err) {
                     console.error('Invalid URL, redirection aborted.', err);
                 }
@@ -49,5 +56,14 @@ $(document).ready(function () {
         }).complete(() => {
             adyenLoader.style.display = "none";
         });
+    }
+
+    function redirectToCheckout() {
+        const checkoutUrlObject = new URL(checkoutUrl.value);
+        window.location.href = checkoutUrlObject.href;
+    }
+
+    function hideCancelButton() {
+        cancelButton && (cancelButton.hidden = true);
     }
 })
