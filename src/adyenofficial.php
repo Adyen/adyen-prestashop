@@ -36,6 +36,7 @@ require_once rtrim(_PS_MODULE_DIR_, '/') . '/adyenofficial/vendor/autoload.php';
  * @property string displayName
  * @property string description
  * @property string confirmUninstall
+ * @property string module_key
  */
 class AdyenOfficial extends PaymentModule
 {
@@ -58,6 +59,7 @@ class AdyenOfficial extends PaymentModule
         $this->displayName = $this->l('Adyen');
         $this->description = $this->l('Accept all payments offered by Adyen');
         $this->confirmUninstall = $this->l('Are you sure you want to uninstall?');
+        $this->module_key = '0d28de799435cd859f10e31f2edafc39';
     }
 
     /**
@@ -65,7 +67,7 @@ class AdyenOfficial extends PaymentModule
      *
      * @return Context|null
      */
-    public function getContext()
+    public function getContext(): ?Context
     {
         return $this->context;
     }
