@@ -1613,8 +1613,7 @@ class AdyenOfficial extends PaymentModule
                 'captureURL' => $this->getAction('AdyenCapture', 'captureOrder', ['ajax' => true]),
                 'orderId' => $orderId,
                 'adyenLink' => $authorisationDetail['viewOnAdyenUrl'] ?? '',
-                'refundSupported' => $authorisationDetail['refund'] ?? false,
-
+                'refundSupported' => $authorisationDetail['refund'] ?? false
             ];
 
             $authorizationAdjustment &= $lastDetail['authorizationAdjustmentAvailable'];
@@ -1662,14 +1661,13 @@ class AdyenOfficial extends PaymentModule
         $result['isAdyenOrder']  = $order->module === $this->name;
         $result['status'] = ucfirst(strtolower($status));
         $result['statusDate'] = $lastDetail['date'] ?? '';
-        $result['merchantID'] = $authorisationDetail['merchantAccountCode'] ?? '';
+        $result['merchantID'] = $lastDetail['merchantAccountCode'] ?? '';
         $result['authorizationAdjustmentDate'] = $lastDetail['authorizationAdjustmentDate'] ?? '';
         $result['extendAuthorizationURL'] = $this->getAction('AdyenAuthorizationAdjustment', 'extendAuthorization',
             ['ajax' => true]);
         $result['authorizationAdjustmentAmount'] = $lastDetail['authorizationAdjustmentAmount'] ?? '0';
         $result['displayAdjustmentButton'] = $authorizationAdjustment;
         $result['orderId'] = $orderId;
-
 
         usort($sorted, static function ($a, $b) {
             return strtotime($a['date']) - strtotime($b['date']);

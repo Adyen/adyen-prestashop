@@ -284,17 +284,19 @@ class PaymentController extends \ModuleFrontController
         // refresh delivery option list because of guest express checkout
         $cart->getDeliveryOptionList(new \Country($cart->id_address_delivery), true);
 
-        $this->module->validateOrder(
-            $cart->id,
-            (int)$inProgressPaymentId,
-            $amount->getPriceInCurrencyUnits(),
-            $this->module->displayName,
-            null,
-            [],
-            null,
-            true,
-            $cart->secure_key
-        );
+        if(!$cart->orderExists()) {
+            $this->module->validateOrder(
+                $cart->id,
+                (int)$inProgressPaymentId,
+                $amount->getPriceInCurrencyUnits(),
+                $this->module->displayName,
+                null,
+                [],
+                null,
+                true,
+                $cart->secure_key
+            );
+        }
 
         $order = new Order($this->module->currentOrder);
         if ((int)$order->id_carrier !== (int)$cart->id_carrier) {

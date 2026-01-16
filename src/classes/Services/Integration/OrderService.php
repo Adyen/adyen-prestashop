@@ -2,13 +2,14 @@
 
 namespace AdyenPayment\Classes\Services\Integration;
 
+use Adyen\Core\BusinessLogic\AdminAPI\AdminAPI;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency as AdyenCurrency;
 use Adyen\Core\BusinessLogic\Domain\Integration\Order\OrderService as OrderServiceInterface;
-use Adyen\Core\BusinessLogic\Domain\ShopNotifications\Models\ShopEvents;
 use Adyen\Core\BusinessLogic\Domain\TransactionHistory\Repositories\TransactionHistoryRepository;
 use Adyen\Core\BusinessLogic\Domain\Webhook\Models\Webhook;
+use Adyen\Core\Infrastructure\Logger\Logger;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Adyen\Core\Infrastructure\Utility\TimeProvider;
 use Adyen\Webhook\EventCodes;
@@ -278,5 +279,48 @@ class OrderService implements OrderServiceInterface
                 Configuration::get('PS_TIMEZONE')
             )
         );
+    }
+
+    /**
+     * @param Webhook $webhook
+     *
+     * @return bool
+     *
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    public function createOrderFromWebhook(Webhook $webhook): bool
+    {
+        $cart = new Cart($webhook->getMerchantReference());
+
+        if($cart->orderExists()) {
+            return true;
+        }
+
+        $inProgressPaymentId = AdminAPI::get()->orderMappings($cart->id_shop)
+            ->getOrderStatusMap()->toArray()['inProgress'];
+        $module = Module::getInstanceByName('adyenofficial');
+
+        try {
+            $success = $module->validateOrder(
+                $cart->id,
+                (int)$inProgressPaymentId,
+                $webhook->getAmount()->getPriceInCurrencyUnits(),
+                $module->displayName,
+                null,
+                [],
+                null,
+                true,
+                $cart->secure_key
+            );
+        } catch (Exception $e) {
+            Logger::logError('Adyen plugin failed to create order with cart id: ' .
+                $webhook->getMerchantReference() . ' ,from webhook. Exception' . $e->getMessage()
+            );
+
+            $success = false;
+        }
+
+        return $success;
     }
 }
