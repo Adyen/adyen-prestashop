@@ -293,12 +293,16 @@ class OrderService implements OrderServiceInterface
     {
         $cart = new Cart($webhook->getMerchantReference());
 
-        if($cart->orderExists()) {
+        if ($cart->orderExists()) {
             return true;
         }
 
-        $inProgressPaymentId = AdminAPI::get()->orderMappings($cart->id_shop)
-            ->getOrderStatusMap()->toArray()['inProgress'];
+        $orderStatusMap = AdminAPI::get()->orderMappings($cart->id_shop)->getOrderStatusMap();
+        if(!$orderStatusMap->isSuccessful()) {
+            return false;
+        }
+
+        $inProgressPaymentId = $orderStatusMap->toArray()['inProgress'];
         $module = Module::getInstanceByName('adyenofficial');
 
         try {
