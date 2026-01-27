@@ -117,4 +117,9 @@ interface VersionHandler
      * @return string
      */
     public function backofficeOrderTemplate(): string;
+
+    /**
+     * @return int
+     */
+    public function getPrecision(): int;
 }

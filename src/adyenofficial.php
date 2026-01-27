@@ -51,7 +51,7 @@ class AdyenOfficial extends PaymentModule
 
         $this->author = $this->l('Adyen');
         $this->need_instance = 0;
-        $this->ps_versions_compliancy = ['min' => '1.7.5.0', 'max' => '8.2.3'];
+        $this->ps_versions_compliancy = ['min' => '1.7.5.0', 'max' => '9.0.2'];
         $this->bootstrap = true;
 
         parent::__construct();
@@ -323,10 +323,10 @@ class AdyenOfficial extends PaymentModule
         $storeService = \Adyen\Core\Infrastructure\ServiceRegister::getService(
             Adyen\Core\BusinessLogic\Domain\Integration\Store\StoreService::class
         );
-        $precision = _PS_PRICE_COMPUTE_PRECISION_;
-        if (version_compare(_PS_VERSION_, '1.7.7.0', 'ge')) {
-            $precision = Context::getContext()->getComputingPrecision();
-        }
+        /** @var \AdyenPayment\Classes\Version\Contract\VersionHandler $versionHandler */
+        $versionHandler = \Adyen\Core\Infrastructure\ServiceRegister::getService(
+            \AdyenPayment\Classes\Version\Contract\VersionHandler::class);
+        $precision = $versionHandler->getPrecision();
 
         $cart = $params['cart'];
         $store = $cart->id_shop;

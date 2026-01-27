@@ -17,12 +17,19 @@ $(document).ready(function () {
     let minorTotalDiscount = 0;
     let remainingAmount = -1;
     let orderTotalAmount = document.getElementsByClassName('adyen-order-total-amount')[0];
+    let prestaVersion = document.querySelector('[name=adyen-presta-version]').value;
 
     checkoutController = getCheckoutController(document.getElementsByClassName('adyen-config-url')[0].value);
 
-    $('.payment-option').filter(function () {
-        return $(this).find('input[data-module-name="adyenofficial"]').length > 0;
-    }).addClass('adyen-image')
+    if (prestaVersion >= '9.0.0') {
+        $('.payment__option').filter(function () {
+            return $(this).find('input[data-module-name="adyenofficial"]').length > 0;
+        }).addClass('adyen-image')
+    } else {
+        $('.payment-option').filter(function () {
+            return $(this).find('input[data-module-name="adyenofficial"]').length > 0;
+        }).addClass('adyen-image')
+    }
 
     for (let adyenPaymentMethod of adyenPaymentMethods) {
         adyenPaymentMethod.addEventListener('click', (event) => {
@@ -318,6 +325,11 @@ $(document).ready(function () {
 
     function renderCartSummary(currency) {
         let totalDiv = $(".cart-summary-totals")[0];
+
+        if (prestaVersion >= '9.0.0') {
+            totalDiv = $(".cart-total")[0];
+        }
+
         let cartSummary = totalDiv.parentNode;
         let adyenSummary = $('.adyen-cart-summary')[0];
 
@@ -333,26 +345,42 @@ $(document).ready(function () {
         adyenInnerBlock.style.borderTop = "none";
         adyenInnerBlock.style.paddingTop = "0";
         let redeemed = document.createElement('div');
-        redeemed.classList.add('cart-summary-line', 'cart-summary-subtotals')
         let redeemedTitle = document.createElement('span');
         let redeemedTitleValue = $('[name="adyen-giftcard-discount"]')[0];
-        redeemedTitle.classList.add('label');
         redeemedTitle.innerText = redeemedTitleValue.value;
         let redeemedValue = document.createElement('span');
-        redeemedValue.classList.add('value');
         redeemedValue.innerText = currency + totalDiscount.toFixed(2);
+
+        if (prestaVersion >= '9.0.0') {
+            redeemed.classList.add('cart-summary__line', 'cart-total');
+            redeemedTitle.classList.add('cart-summary__label');
+            redeemedValue.classList.add('cart-summary__value');
+        } else {
+            redeemedTitle.classList.add('label');
+            redeemedValue.classList.add('value');
+            redeemed.classList.add('cart-summary-line', 'cart-summary-subtotals');
+        }
+
         redeemed.appendChild(redeemedTitle);
         redeemed.appendChild(redeemedValue);
 
         let remaining = document.createElement('div');
-        remaining.classList.add('cart-summary-line', 'cart-summary-subtotals');
         let remainingTitle = document.createElement('span');
         let remainingTitleValue = $('[name="adyen-giftcard-remaining-amount"]')[0];
-        remainingTitle.classList.add('label');
         remainingTitle.innerText = remainingTitleValue.value;
         let remainingValue = document.createElement('span');
-        remainingValue.classList.add('value');
         remainingValue.innerText = currency + remainingAmount.toFixed(2);
+
+        if (prestaVersion >= '9.0.0') {
+            remaining.classList.add('cart-summary__line', 'cart-total');
+            remainingTitle.classList.add('cart-summary__label');
+            remainingValue.classList.add('cart-summary__value');
+        } else {
+            remaining.classList.add('cart-summary-line', 'cart-summary-subtotals');
+            remainingTitle.classList.add('label');
+            remainingValue.classList.add('value');
+        }
+
         remaining.appendChild(remainingTitle);
         remaining.appendChild(remainingValue);
 

@@ -20,6 +20,7 @@ use AdyenPayment\Classes\Services\CheckoutHandler;
 use AdyenPayment\Classes\SurchargeCalculator;
 use AdyenPayment\Classes\Utility\SessionService;
 use AdyenPayment\Classes\Utility\Url;
+use AdyenPayment\Classes\Version\Contract\VersionHandler;
 use Carrier;
 use Cart;
 use Context;
@@ -69,10 +70,9 @@ class PaymentController extends \ModuleFrontController
         return StoreContext::doWithStore($cart->id_shop, function () use ($cart, $paymentMethodType) {
             $paymentMethod = $this->getPaymentMethod($paymentMethodType);
 
-            $precision = _PS_PRICE_COMPUTE_PRECISION_;
-            if (version_compare(_PS_VERSION_, '1.7.7.0', 'ge')) {
-                $precision = Context::getContext()->getComputingPrecision();
-            }
+            /** @var VersionHandler $versionHandler */
+            $versionHandler = ServiceRegister::getService(VersionHandler::class);
+            $precision = $versionHandler->getPrecision();
 
             if (!$paymentMethod) {
                 throw new PaymentMethodNotConfiguredException(new TranslatableLabel('Method not configured.', ''));
@@ -356,10 +356,9 @@ class PaymentController extends \ModuleFrontController
     {
         $productId = $this->getProductRepository()->getProductIdByProductName($this->module->l('Surcharge'));
         $cartCurrency = new \Currency($currencyId);
-        $precision = _PS_PRICE_COMPUTE_PRECISION_;
-        if (version_compare(_PS_VERSION_, '1.7.7.0', 'ge')) {
-            $precision = Context::getContext()->getComputingPrecision();
-        }
+        /** @var VersionHandler $versionHandler */
+        $versionHandler = ServiceRegister::getService(VersionHandler::class);
+        $precision = $versionHandler->getPrecision();
 
         $price = Tools::ps_round(
             Tools::convertPrice(

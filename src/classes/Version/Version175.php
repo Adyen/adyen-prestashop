@@ -322,4 +322,12 @@ class Version175 implements VersionHandler
     {
         return 'adyen-backoffice-order-creation-175.tpl';
     }
+
+    /**
+     * @return int
+     */
+    public function getPrecision(): int
+    {
+        return _PS_PRICE_COMPUTE_PRECISION_;
+    }
 }

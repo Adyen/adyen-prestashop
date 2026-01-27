@@ -23,6 +23,15 @@ class AdyenOfficialClickToPayModuleFrontController extends ModuleFrontController
     public function initContent()
     {
         parent::initContent();
+
+        $themeName = $this->context->shop->theme->getName();
+        $parentTheme = $this->context->shop->theme->get('parent');
+
+        if ($themeName === 'hummingbird' || $parentTheme === 'hummingbird') {
+            $this->setTemplate('module:adyenofficial/views/templates/front/adyen-additional-details-hummingbird.tpl');
+            return;
+        }
+
         $this->setTemplate('module:adyenofficial/views/templates/front/adyen-additional-details.tpl');
     }
 

@@ -229,4 +229,12 @@ class Version177 implements VersionHandler
     {
         return 'adyen-backoffice-order-creation-177.tpl';
     }
+
+    /**
+     * @return int
+     */
+    public function getPrecision(): int
+    {
+        return Context::getContext()->getComputingPrecision();
+    }
 }

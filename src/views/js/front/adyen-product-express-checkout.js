@@ -23,8 +23,17 @@ $(document).ready(function () {
 
         function moveExpressCheckoutButtons() {
             let expressCheckoutDiv = document.getElementById('adyen-express-checkout'),
-                prodQuantity = document.getElementsByClassName('product-quantity'),
-                tempParent = prodQuantity[0].parentNode;
+                prestaVersion = document.getElementsByClassName('adyen-presta-version')[0],
+                prodQuantity;
+
+            if (prestaVersion && prestaVersion.value >= '9.0.0') {
+                prodQuantity = document.getElementsByClassName('product-actions__quantity');
+            } else {
+                prodQuantity = document.getElementsByClassName('product-quantity');
+            }
+
+            let tempParent = prodQuantity[0].parentNode;
+
             if (expressCheckoutDiv) {
                 tempParent.appendChild(expressCheckoutDiv);
             }
