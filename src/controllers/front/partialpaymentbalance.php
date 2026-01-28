@@ -4,10 +4,8 @@ use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
 use Adyen\Core\BusinessLogic\CheckoutAPI\PartialPayment\Request\BalanceCheckRequest;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
-use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\Bootstrap;
 use AdyenPayment\Classes\Utility\AdyenPrestaShopUtility;
-use AdyenPayment\Classes\Version\Contract\VersionHandler;
 use AdyenPayment\Controllers\PaymentController;
 
 class AdyenOfficialPartialPaymentBalanceModuleFrontController extends PaymentController
@@ -51,9 +49,7 @@ class AdyenOfficialPartialPaymentBalanceModuleFrontController extends PaymentCon
                 $paymentMethod
             ));
 
-        /** @var VersionHandler $versionHandler */
-        $versionHandler = ServiceRegister::getService(VersionHandler::class);
-        $precision = $versionHandler->getPrecision();
+        $precision = $this->getVersionHandler()->getPrecision();
 
         $responseArray = $response->toArray();
         $result['response'] = $responseArray;
