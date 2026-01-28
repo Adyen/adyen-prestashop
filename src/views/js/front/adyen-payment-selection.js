@@ -21,15 +21,12 @@ $(document).ready(function () {
 
     checkoutController = getCheckoutController(document.getElementsByClassName('adyen-config-url')[0].value);
 
-    if (prestaVersion >= '9.0.0') {
-        $('.payment__option').filter(function () {
-            return $(this).find('input[data-module-name="adyenofficial"]').length > 0;
-        }).addClass('adyen-image')
-    } else {
-        $('.payment-option').filter(function () {
-            return $(this).find('input[data-module-name="adyenofficial"]').length > 0;
-        }).addClass('adyen-image')
-    }
+    $('.payment__option').filter(function () {
+        return $(this).find('input[data-module-name="adyenofficial"]').length > 0;
+    }).addClass('adyen-image');
+    $('.payment-option').filter(function () {
+        return $(this).find('input[data-module-name="adyenofficial"]').length > 0;
+    }).addClass('adyen-image');
 
     for (let adyenPaymentMethod of adyenPaymentMethods) {
         adyenPaymentMethod.addEventListener('click', (event) => {
@@ -326,7 +323,7 @@ $(document).ready(function () {
     function renderCartSummary(currency) {
         let totalDiv = $(".cart-summary-totals")[0];
 
-        if (prestaVersion >= '9.0.0') {
+        if (typeof totalDiv === 'undefined') {
             totalDiv = $(".cart-total")[0];
         }
 
@@ -350,16 +347,9 @@ $(document).ready(function () {
         redeemedTitle.innerText = redeemedTitleValue.value;
         let redeemedValue = document.createElement('span');
         redeemedValue.innerText = currency + totalDiscount.toFixed(2);
-
-        if (prestaVersion >= '9.0.0') {
-            redeemed.classList.add('cart-summary__line', 'cart-total');
-            redeemedTitle.classList.add('cart-summary__label');
-            redeemedValue.classList.add('cart-summary__value');
-        } else {
-            redeemedTitle.classList.add('label');
-            redeemedValue.classList.add('value');
-            redeemed.classList.add('cart-summary-line', 'cart-summary-subtotals');
-        }
+        redeemedTitle.classList.add('label', 'cart-summary__label');
+        redeemedValue.classList.add('value', 'cart-summary__value');
+        redeemed.classList.add('cart-summary-line', 'cart-summary-subtotals', 'cart-summary__line', 'cart-total');
 
         redeemed.appendChild(redeemedTitle);
         redeemed.appendChild(redeemedValue);
@@ -370,16 +360,9 @@ $(document).ready(function () {
         remainingTitle.innerText = remainingTitleValue.value;
         let remainingValue = document.createElement('span');
         remainingValue.innerText = currency + remainingAmount.toFixed(2);
-
-        if (prestaVersion >= '9.0.0') {
-            remaining.classList.add('cart-summary__line', 'cart-total');
-            remainingTitle.classList.add('cart-summary__label');
-            remainingValue.classList.add('cart-summary__value');
-        } else {
-            remaining.classList.add('cart-summary-line', 'cart-summary-subtotals');
-            remainingTitle.classList.add('label');
-            remainingValue.classList.add('value');
-        }
+        remaining.classList.add('cart-summary-line', 'cart-summary-subtotals', 'cart-summary__line', 'cart-total');
+        remainingTitle.classList.add('label', 'cart-summary__label');
+        remainingValue.classList.add('value', 'cart-summary__value');
 
         remaining.appendChild(remainingTitle);
         remaining.appendChild(remainingValue);

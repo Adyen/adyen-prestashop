@@ -44,10 +44,7 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
     {
         parent::initContent();
 
-        $themeName = $this->context->shop->theme->getName();
-        $parentTheme = $this->context->shop->theme->get('parent');
-
-        if ($themeName === 'hummingbird' || $parentTheme === 'hummingbird') {
+        if ($this->isHummigbirdTheme()) {
             $this->setTemplate('module:adyenofficial/views/templates/front/adyen-additional-details-hummingbird.tpl');
             return;
         }

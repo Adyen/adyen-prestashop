@@ -4,8 +4,9 @@ use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use AdyenPayment\Classes\Bootstrap;
 use AdyenPayment\Classes\Utility\SessionService;
 use AdyenPayment\Classes\Utility\Url;
+use AdyenPayment\Controllers\PaymentController;
 
-class AdyenOfficialClickToPayModuleFrontController extends ModuleFrontController
+class AdyenOfficialClickToPayModuleFrontController extends PaymentController
 {
     /**
      * @throws RepositoryClassException
@@ -24,10 +25,7 @@ class AdyenOfficialClickToPayModuleFrontController extends ModuleFrontController
     {
         parent::initContent();
 
-        $themeName = $this->context->shop->theme->getName();
-        $parentTheme = $this->context->shop->theme->get('parent');
-
-        if ($themeName === 'hummingbird' || $parentTheme === 'hummingbird') {
+        if ($this->isHummigbirdTheme()) {
             $this->setTemplate('module:adyenofficial/views/templates/front/adyen-additional-details-hummingbird.tpl');
             return;
         }

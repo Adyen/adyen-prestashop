@@ -23,13 +23,10 @@ $(document).ready(function () {
 
         function moveExpressCheckoutButtons() {
             let expressCheckoutDiv = document.getElementById('adyen-express-checkout'),
-                prestaVersion = document.getElementsByClassName('adyen-presta-version')[0],
-                prodQuantity;
-
-            if (prestaVersion && prestaVersion.value >= '9.0.0') {
-                prodQuantity = document.getElementsByClassName('product-actions__quantity');
-            } else {
                 prodQuantity = document.getElementsByClassName('product-quantity');
+
+            if (prodQuantity.length === 0) {
+                prodQuantity = document.getElementsByClassName('product-actions__quantity');
             }
 
             let tempParent = prodQuantity[0].parentNode;

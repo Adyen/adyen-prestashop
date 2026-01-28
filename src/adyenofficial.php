@@ -323,9 +323,7 @@ class AdyenOfficial extends PaymentModule
         $storeService = \Adyen\Core\Infrastructure\ServiceRegister::getService(
             Adyen\Core\BusinessLogic\Domain\Integration\Store\StoreService::class
         );
-        /** @var \AdyenPayment\Classes\Version\Contract\VersionHandler $versionHandler */
-        $versionHandler = \Adyen\Core\Infrastructure\ServiceRegister::getService(
-            \AdyenPayment\Classes\Version\Contract\VersionHandler::class);
+        $versionHandler = $this->getVersionHandler();
         $precision = $versionHandler->getPrecision();
 
         $cart = $params['cart'];

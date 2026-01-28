@@ -240,6 +240,18 @@ class PaymentController extends \ModuleFrontController
         );
     }
 
+    protected function isHummigbirdTheme(): bool
+    {
+        $themeName = $this->context->shop->theme->getName();
+        $parentTheme = $this->context->shop->theme->get('parent');
+
+        if ($themeName === 'hummingbird' || $parentTheme === 'hummingbird') {
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * @param string $paymentMethodCode
      * @param Cart $cart
