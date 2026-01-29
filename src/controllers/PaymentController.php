@@ -439,6 +439,30 @@ class PaymentController extends \ModuleFrontController
     }
 
     /**
+     * @return PaymentService
+     */
+    protected function getPaymentService(): PaymentService
+    {
+        return ServiceRegister::getService(PaymentService::class);
+    }
+
+    /**
+     * @return ProductRepository
+     */
+    protected function getProductRepository(): ProductRepository
+    {
+        return new ProductRepository();
+    }
+
+    /**
+     * @return VersionHandler
+     */
+    protected function getVersionHandler(): VersionHandler
+    {
+        return ServiceRegister::getService(VersionHandler::class);
+    }
+
+    /**
      * @return PaymentMethod
      *
      * @throws Exception
@@ -475,21 +499,5 @@ class PaymentController extends \ModuleFrontController
         }
 
         return null;
-    }
-
-    /**
-     * @return PaymentService
-     */
-    private function getPaymentService(): PaymentService
-    {
-        return ServiceRegister::getService(PaymentService::class);
-    }
-
-    /**
-     * @return ProductRepository
-     */
-    private function getProductRepository(): ProductRepository
-    {
-        return new ProductRepository();
     }
 }
