@@ -67,7 +67,7 @@ class AdyenOfficial extends PaymentModule
      *
      * @return Context|null
      */
-    public function getContext(): ?Context
+    public function getContext()
     {
         return $this->context;
     }
@@ -220,7 +220,7 @@ class AdyenOfficial extends PaymentModule
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      */
-    public function hookActionOrderGridDefinitionModifier(array $params): void
+    public function hookActionOrderGridDefinitionModifier(array $params)
     {
         $definition = $params['definition'];
 
@@ -260,7 +260,7 @@ class AdyenOfficial extends PaymentModule
      *
      * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      */
-    public function hookActionOrderGridPresenterModifier(array $params): void
+    public function hookActionOrderGridPresenterModifier(array $params)
     {
         \AdyenPayment\Classes\Bootstrap::init();
 
@@ -565,7 +565,7 @@ class AdyenOfficial extends PaymentModule
      *
      * @return void
      */
-    public function hookActionFrontControllerSetMedia(): void
+    public function hookActionFrontControllerSetMedia()
     {
         if ($this->context->controller->page_name === 'module-adyenofficial-storedmethods') {
             $this->getContext()->controller->addCSS($this->getPathUri() . 'views/css/credit-cards.css');
@@ -787,7 +787,7 @@ class AdyenOfficial extends PaymentModule
      * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      * @throws \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode
      */
-    public function hookActionOrderStatusUpdate(array $params): void
+    public function hookActionOrderStatusUpdate(array $params)
     {
         $order = new Order($params['id_order']);
         $newOrderStatus = $params['newOrderStatus'];
@@ -808,7 +808,7 @@ class AdyenOfficial extends PaymentModule
      *
      * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      */
-    public function hookActionAdminControllerSetMedia(): void
+    public function hookActionAdminControllerSetMedia()
     {
         $order = new \Order((int)Tools::getValue('id_order'));
 
@@ -853,7 +853,7 @@ class AdyenOfficial extends PaymentModule
      * @throws \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Exceptions\InvalidMerchantReferenceException
      * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      */
-    public function hookActionOrderSlipAdd(array $params): void
+    public function hookActionOrderSlipAdd(array $params)
     {
         $order = $params['order'];
 
@@ -989,7 +989,7 @@ class AdyenOfficial extends PaymentModule
      * @throws \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Exceptions\InvalidMerchantReferenceException
      * @throws \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode
      */
-    public function hookActionValidateOrder(array $params): void
+    public function hookActionValidateOrder(array $params)
     {
         if (!isset($this->getContext()->controller) ||
             'admin' !== $this->getContext()->controller->controller_type ||
@@ -1043,7 +1043,7 @@ class AdyenOfficial extends PaymentModule
      *
      * @throws \Exception
      */
-    public function hookSendMailAlterTemplateVars(array &$params): void
+    public function hookSendMailAlterTemplateVars(array &$params)
     {
         if (isset($params['template_vars']['{adyen_payment_link}']) || !isset($params['template_vars']['{id_order}'])) {
 
@@ -1091,7 +1091,7 @@ class AdyenOfficial extends PaymentModule
      * @throws \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode
      * @throws \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Exceptions\InvalidMerchantReferenceException
      */
-    public function hookActionObjectOrderUpdateAfter(array $params): void
+    public function hookActionObjectOrderUpdateAfter(array $params)
     {
         $order = new Order($params['object']->id);
 
@@ -1110,7 +1110,7 @@ class AdyenOfficial extends PaymentModule
      *
      * @return array | null
      */
-    private function getAuthorisationDetail(array $transactionDetails): ?array
+    private function getAuthorisationDetail(array $transactionDetails)
     {
         $filteredDetails = array_filter($transactionDetails, function ($detail) {
             return isset($detail['status']) && $detail['status'] === true;
@@ -1151,7 +1151,7 @@ class AdyenOfficial extends PaymentModule
      *
      * @return void
      */
-    private function loadStyles(): void
+    private function loadStyles()
     {
         $this->context->controller->addCSS(
             [
@@ -1169,7 +1169,7 @@ class AdyenOfficial extends PaymentModule
      *
      * @return void
      */
-    private function loadScripts(): void
+    private function loadScripts()
     {
         $this->context->controller->addJS(
             [
@@ -1869,7 +1869,7 @@ class AdyenOfficial extends PaymentModule
      *
      * @return void
      */
-    private function initTranslations(): void
+    private function initTranslations()
     {
         $this->l('Capture request successfully sent to Adyen.');
         $this->l('Capture request failed. Please check Adyen configuration. Reason: ');
