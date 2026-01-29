@@ -3,7 +3,9 @@
 namespace AdyenPayment\Classes\Overrides;
 
 use Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext;
+use Adyen\Core\BusinessLogic\Domain\TransactionHistory\Models\TransactionHistory;
 use Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionDetailsService;
+use Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\Bootstrap;
@@ -69,13 +71,9 @@ class AdminOrdersController
     public function getOrderPspReference(string $orderId, \Context $context): string
     {
         $order = new Order($orderId);
-        $transactionDetails = $this->getTransactionDetails($order);
-        $authorisationDetail = $transactionDetails[array_search(
-            \Adyen\Webhook\EventCodes::AUTHORISATION,
-            array_column($transactionDetails, 'eventCode'),
-            true
-        )];
-        $pspReference = $order->module === 'adyenofficial' && !empty($transactionDetails) ? $authorisationDetail['pspReference'] : '--';
+        $transactionHistory = $this->getTransactionDetails($order);
+        $authItem = $transactionHistory->getLastSuccessfulAuthorizationItem();
+        $pspReference = $order->module === 'adyenofficial' && !empty($transactionHistory) ?$authItem->getPspReference() : '--';
 
         $context->smarty->assign(
             [
@@ -102,9 +100,9 @@ class AdminOrdersController
     public function getOrderPaymentMethod(string $orderId, \Context $context): string
     {
         $order = new Order($orderId);
-        $transactionDetails = $this->getTransactionDetails($order);
-        $lastItem = end($transactionDetails);
-        $paymentMethod = $order->module === 'adyenofficial' && !empty($transactionDetails) ? $lastItem['paymentMethodType'] : '--';
+        $transactionHistory = $this->getTransactionDetails($order);
+        $authItem = $transactionHistory->getLastSuccessfulAuthorizationItem();
+        $paymentMethod = $order->module === 'adyenofficial' && !empty($transactionHistory) ? $authItem->getPaymentMethod() : '--';
 
         $context->smarty->assign(
             [
@@ -145,16 +143,20 @@ class AdminOrdersController
     /**
      * @param Order $order
      *
-     * @return array
+     * @return TransactionHistory
      *
      * @throws Exception
      */
-    private function getTransactionDetails(Order $order): array
+    private function getTransactionDetails(Order $order): TransactionHistory
     {
+        /** @var TransactionHistoryService $service */
+        $service = ServiceRegister::getService(TransactionHistoryService::class);
+        /** @var TransactionHistory $transactionHistory */
         return StoreContext::doWithStore(
-            (string)$order->id_shop,
-            [self::getTransactionDetailsService((string)$order->id_shop), 'getTransactionDetails'],
-            [(string)$order->id_cart, (string)$order->id_shop]
+            $order->id_shop,
+            static function () use ($order, $service) {
+                return $service->getTransactionHistory($order->id_cart);
+            }
         );
     }
 

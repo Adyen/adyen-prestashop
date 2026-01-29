@@ -205,7 +205,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                {foreach from=$history item=item}
+                {foreach from=$transactionDetailsSorted item=item}
                     <tr>
                         <td>{$item.eventCode}</td>
                         <td>{$item.date}</td>
