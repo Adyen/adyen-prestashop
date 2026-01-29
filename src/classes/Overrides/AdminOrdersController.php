@@ -73,7 +73,8 @@ class AdminOrdersController
         $order = new Order($orderId);
         $transactionHistory = $this->getTransactionDetails($order);
         $authItem = $transactionHistory->getLastSuccessfulAuthorizationItem();
-        $pspReference = $order->module === 'adyenofficial' && !empty($transactionHistory) ?$authItem->getPspReference() : '--';
+        $pspReference = ($order->module === 'adyenofficial' && !empty($transactionHistory) &&
+            $authItem !== null) ? $authItem->getPspReference() : '--';
 
         $context->smarty->assign(
             [
@@ -102,7 +103,8 @@ class AdminOrdersController
         $order = new Order($orderId);
         $transactionHistory = $this->getTransactionDetails($order);
         $authItem = $transactionHistory->getLastSuccessfulAuthorizationItem();
-        $paymentMethod = $order->module === 'adyenofficial' && !empty($transactionHistory) ? $authItem->getPaymentMethod() : '--';
+        $paymentMethod = ($order->module === 'adyenofficial' && !empty($transactionHistory) && $authItem !== null)
+            ? $authItem->getPaymentMethod() : '--';
 
         $context->smarty->assign(
             [
