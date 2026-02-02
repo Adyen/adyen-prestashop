@@ -9,6 +9,7 @@ rm -rf ./adyenofficial
 echo -e "\e[32mSTEP 1:\e[0m Copying plugin source..."
 mkdir adyenofficial
 cp -r ./src/* adyenofficial
+cp ./src/.htaccess adyenofficial/
 
 cd ./adyenofficial
 echo -e "\e[32mSTEP 2:\e[0m Installing composer dependencies..."
@@ -28,12 +29,15 @@ rm -rf ./adyenofficial/vendor/adyen/php-webhook-module/.github
 rm -rf ./adyenofficial/controllers/front/test.php
 rm -rf ./adyenofficial/classes/E2ETest
 rm -rf ./adyenofficial/vendor/adyen/integration-core/src/BusinessLogic/E2ETest
+rm -rf ./adyenofficial/vendor/adyen/integration-core/src/Infrastructure/Serializer/Concrete/NativeSerializer.php
 
-echo -e "\e[32mSTEP 4:\e[0m Adding PrestaShop mandatory index.php file to all folders..."
+echo -e "\e[32mSTEP 4:\e[0m Adding PS version check in every PHP file"
+./dist/scripts/check_ps_version.sh
+echo -e "\e[32mSTEP 5:\e[0m Adding PrestaShop mandatory index.php file to all folders..."
 php "$PWD/lib/autoindex/index.php" "$PWD/adyenofficial" >/dev/null
 
 # Create plugin archive
-echo -e "\e[32mSTEP 5:\e[0m Creating new archive..."
+echo -e "\e[32mSTEP 6:\e[0m Creating new archive..."
 zip -r -q  adyenofficial.zip ./adyenofficial
 
 echo -e "\e[93mNew plugin archive created: $PWD/adyenofficial.zip"

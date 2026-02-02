@@ -55,6 +55,7 @@ function addIndex($path, $cli = false)
 {
     $is_dot = array('.', '..');
     $file_extension = substr(strrchr($path, '.'), 1);
+    copyFile(dirname(__FILE__) . '/sources/index.php', $path . '/index.php');
     if (is_dir($path)) {
         if (__PHP53__) {
             $iterator = new RecursiveIteratorIterator(
