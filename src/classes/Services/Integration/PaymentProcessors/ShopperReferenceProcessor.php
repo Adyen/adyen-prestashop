@@ -6,15 +6,9 @@ use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentLink\Factory\PaymentLinkRequ
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentLink\Models\PaymentLinkRequestContext;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\ShopperReference;
 use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\ShopperReferenceProcessor as PaymentLinkShopperReferenceProcessorInterface;
-use Cart;
-use Context;
-use Customer;
-use Shop;
 
 /**
  * Class ShopperReferenceProcessor
- *
- * @package AdyenPayment\Integration\PaymentProcessors
  */
 class ShopperReferenceProcessor implements PaymentLinkShopperReferenceProcessorInterface
 {
@@ -26,7 +20,7 @@ class ShopperReferenceProcessor implements PaymentLinkShopperReferenceProcessorI
      */
     public function processPaymentLink(PaymentLinkRequestBuilder $builder, PaymentLinkRequestContext $context): void
     {
-        if ($shopperReference = $this->getShopperReferenceFromCart($context->getReference())) {
+        if ($shopperReference = $this->getShopperReferenceFromCart((int) $context->getReference())) {
             $builder->setShopperReference($shopperReference);
         }
     }
@@ -38,15 +32,15 @@ class ShopperReferenceProcessor implements PaymentLinkShopperReferenceProcessorI
      */
     private function getShopperReferenceFromCart(int $cartId): ?ShopperReference
     {
-        $cart = new Cart($cartId);
-        $customer = new Customer($cart->id_customer);
+        $cart = new \Cart($cartId);
+        $customer = new \Customer($cart->id_customer);
 
         if (!$customer) {
             return null;
         }
 
-        $shop = Shop::getShop(Context::getContext()->shop->id);
+        $shop = \Shop::getShop(\Context::getContext()->shop->id);
 
-        return ShopperReference::parse($shop['domain'] . '_' . Context::getContext()->shop->id . '_' . $customer->id);
+        return ShopperReference::parse($shop['domain'] . '_' . \Context::getContext()->shop->id . '_' . $customer->id);
     }
 }

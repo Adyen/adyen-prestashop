@@ -6,8 +6,6 @@ use Adyen\Core\BusinessLogic\DataAccess\TransactionLog\Contracts\ShopLogsReposit
 
 /**
  * Class TransactionLogRepository
- *
- * @package AdyenPayment\Classes\Repositories
  */
 class TransactionLogRepository extends BaseRepositoryWithConditionalDelete implements ShopLogsRepository
 {

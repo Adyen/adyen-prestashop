@@ -13,8 +13,6 @@ use Adyen\Core\Infrastructure\ORM\Utility\IndexHelper;
 
 /**
  * Class BaseRepository
- *
- * @package AdyenPayment\Repositories
  */
 class BaseRepository implements RepositoryInterface
 {
@@ -38,7 +36,7 @@ class BaseRepository implements RepositoryInterface
     /**
      * Returns full class name.
      *
-     * @return string Full class name.
+     * @return string full class name
      */
     public static function getClassName(): string
     {
@@ -48,7 +46,7 @@ class BaseRepository implements RepositoryInterface
     /**
      * Sets repository entity.
      *
-     * @param string $entityClass Repository entity class.
+     * @param string $entityClass repository entity class
      */
     public function setEntityClass($entityClass): void
     {
@@ -58,17 +56,17 @@ class BaseRepository implements RepositoryInterface
     /**
      * Executes select query.
      *
-     * @param QueryFilter|null $filter Filter for query.
+     * @param QueryFilter|null $filter filter for query
      *
-     * @return Entity[] A list of resulting entities.
+     * @return Entity[] a list of resulting entities
      *
      * @throws QueryFilterInvalidParamException
      * @throws \PrestaShopDatabaseException
      */
-    public function select(QueryFilter $filter = null): array
+    public function select(?QueryFilter $filter = null): array
     {
         /** @var Entity $entity */
-        $entity = new $this->entityClass;
+        $entity = new $this->entityClass();
 
         $fieldIndexMap = IndexHelper::mapFieldsToIndexes($entity);
         $groups = $filter ? $this->buildConditionGroups($filter, $fieldIndexMap) : [];
@@ -87,14 +85,14 @@ class BaseRepository implements RepositoryInterface
     /**
      * Executes select query and returns first result.
      *
-     * @param QueryFilter|null $filter Filter for query.
+     * @param QueryFilter|null $filter filter for query
      *
-     * @return Entity|null First found entity or NULL.
+     * @return Entity|null first found entity or NULL
      *
      * @throws QueryFilterInvalidParamException
      * @throws \PrestaShopDatabaseException
      */
-    public function selectOne(QueryFilter $filter = null): ?Entity
+    public function selectOne(?QueryFilter $filter = null): ?Entity
     {
         if ($filter === null) {
             $filter = new QueryFilter();
@@ -109,9 +107,9 @@ class BaseRepository implements RepositoryInterface
     /**
      * Executes insert query and returns ID of created entity. Entity will be updated with new ID.
      *
-     * @param Entity $entity Entity to be saved.
+     * @param Entity $entity entity to be saved
      *
-     * @return int Identifier of saved entity.
+     * @return int identifier of saved entity
      *
      * @throws \PrestaShopDatabaseException
      */
@@ -131,7 +129,7 @@ class BaseRepository implements RepositoryInterface
             throw new \RuntimeException($message);
         }
 
-        $entity->setId((int)\Db::getInstance()->Insert_ID());
+        $entity->setId((int) \Db::getInstance()->Insert_ID());
 
         return $entity->getId();
     }
@@ -139,14 +137,14 @@ class BaseRepository implements RepositoryInterface
     /**
      * Counts records that match filter criteria.
      *
-     * @param QueryFilter|null $filter Filter for query.
+     * @param QueryFilter|null $filter filter for query
      *
-     * @return int Number of records that match filter criteria.
+     * @return int number of records that match filter criteria
      *
      * @throws QueryFilterInvalidParamException
      * @throws \PrestaShopDatabaseException
      */
-    public function count(QueryFilter $filter = null): int
+    public function count(?QueryFilter $filter = null): int
     {
         return count($this->select($filter));
     }
@@ -154,16 +152,16 @@ class BaseRepository implements RepositoryInterface
     /**
      * Executes update query and returns success flag.
      *
-     * @param Entity $entity Entity to be updated.
+     * @param Entity $entity entity to be updated
      *
-     * @return bool TRUE if operation succeeded; otherwise, FALSE.
+     * @return bool TRUE if operation succeeded; otherwise, FALSE
      */
     public function update(Entity $entity): bool
     {
         $indexes = IndexHelper::transformFieldsToIndexes($entity);
         $record = $this->prepareDataForInsertOrUpdate($entity, $indexes);
 
-        $id = (int)$entity->getId();
+        $id = (int) $entity->getId();
         $result = \Db::getInstance()->update($this->getDbName(), $record, "id = $id");
         if (!$result) {
             Logger::logError('Entity ' . $entity->getConfig()->getType() . ' with ID ' . $id . ' cannot be updated.');
@@ -175,13 +173,13 @@ class BaseRepository implements RepositoryInterface
     /**
      * Executes delete query and returns success flag.
      *
-     * @param Entity $entity Entity to be deleted.
+     * @param Entity $entity entity to be deleted
      *
-     * @return bool TRUE if operation succeeded; otherwise, FALSE.
+     * @return bool TRUE if operation succeeded; otherwise, FALSE
      */
     public function delete(Entity $entity): bool
     {
-        $id = (int)$entity->getId();
+        $id = (int) $entity->getId();
         $result = \Db::getInstance()->delete($this->getDbName(), "id = $id");
 
         if (!$result) {
@@ -196,7 +194,7 @@ class BaseRepository implements RepositoryInterface
     /**
      * Translates database records to Adyen entities.
      *
-     * @param array $records Array of database records.
+     * @param array $records array of database records
      *
      * @return Entity[]
      */
@@ -206,7 +204,7 @@ class BaseRepository implements RepositoryInterface
         foreach ($records as $record) {
             $entity = $this->unserializeEntity($record['data']);
             if ($entity !== null) {
-                $entity->setId((int)$record['id']);
+                $entity->setId((int) $record['id']);
                 $entities[] = $entity;
             }
         }
@@ -217,14 +215,14 @@ class BaseRepository implements RepositoryInterface
     /**
      * Returns index mapped to given property.
      *
-     * @param string $property Property name.
+     * @param string $property property name
      *
-     * @return string Index column in Adyen entity table.
+     * @return string index column in Adyen entity table
      */
     protected function getIndexMapping(string $property): ?string
     {
         if ($this->indexMapping === null) {
-            $this->indexMapping = IndexHelper::mapFieldsToIndexes(new $this->entityClass);
+            $this->indexMapping = IndexHelper::mapFieldsToIndexes(new $this->entityClass());
         }
 
         if (array_key_exists($property, $this->indexMapping)) {
@@ -237,7 +235,7 @@ class BaseRepository implements RepositoryInterface
     /**
      * Returns columns that should be in the result of a select query on Adyen entity table.
      *
-     * @return array Select columns.
+     * @return array select columns
      */
     protected function getSelectColumns(): array
     {
@@ -248,8 +246,8 @@ class BaseRepository implements RepositoryInterface
      * Builds condition groups (each group is chained with OR internally, and with AND externally) based on query
      * filter.
      *
-     * @param QueryFilter $filter Query filter object.
-     * @param array $fieldIndexMap Map of property indexes.
+     * @param QueryFilter $filter query filter object
+     * @param array $fieldIndexMap map of property indexes
      *
      * @return array Array of condition groups..
      *
@@ -262,14 +260,12 @@ class BaseRepository implements RepositoryInterface
         $fieldIndexMap['id'] = 0;
         foreach ($filter->getConditions() as $condition) {
             if (!empty($groups[$counter]) && $condition->getChainOperator() === 'OR') {
-                $counter++;
+                ++$counter;
             }
 
             // Only index columns can be filtered.
             if (!array_key_exists($condition->getColumn(), $fieldIndexMap)) {
-                throw new QueryFilterInvalidParamException(
-                    "Field " . $condition->getColumn() . " is not indexed!"
-                );
+                throw new QueryFilterInvalidParamException('Field ' . $condition->getColumn() . ' is not indexed!');
             }
 
             $groups[$counter][] = $condition;
@@ -325,7 +321,7 @@ class BaseRepository implements RepositoryInterface
 
             $subWhere .= $part[0];
             $count = count($part);
-            for ($i = 1; $i < $count; $i++) {
+            for ($i = 1; $i < $count; ++$i) {
                 $subWhere .= ' AND ' . $part[$i];
             }
 
@@ -348,12 +344,12 @@ class BaseRepository implements RepositoryInterface
         $column = $condition->getColumn();
 
         if ($column === 'id') {
-            return "id=" . $condition->getValue();
+            return 'id=' . $condition->getValue();
         }
 
-        $part = "index_" . $indexMap[$column] . ' ' . $condition->getOperator();
-        if (!in_array($condition->getOperator(), array(Operators::NULL, Operators::NOT_NULL), true)) {
-            if (in_array($condition->getOperator(), array(Operators::NOT_IN, Operators::IN), true)) {
+        $part = 'index_' . $indexMap[$column] . ' ' . $condition->getOperator();
+        if (!in_array($condition->getOperator(), [Operators::NULL, Operators::NOT_NULL], true)) {
+            if (in_array($condition->getOperator(), [Operators::NOT_IN, Operators::IN], true)) {
                 $part .= $this->getInOperatorValues($condition);
             } else {
                 $part .= " '" . IndexHelper::castFieldValue($condition->getValue(), $condition->getValueType()) . "'";
@@ -390,10 +386,10 @@ class BaseRepository implements RepositoryInterface
      * Builds WHERE statement of SELECT query by separating AND and OR conditions.
      * Output format: (C1 AND C2) OR (C3 AND C4) OR (C5 AND C6 AND C7)
      *
-     * @param array $groups Array of condition groups.
-     * @param array $fieldIndexMap Map of property indexes.
+     * @param array $groups array of condition groups
+     * @param array $fieldIndexMap map of property indexes
      *
-     * @return string Fully formed WHERE statement.
+     * @return string fully formed WHERE statement
      */
     protected function buildWhereCondition(array $groups, array $fieldIndexMap): string
     {
@@ -427,17 +423,17 @@ class BaseRepository implements RepositoryInterface
     /**
      * Filters records by given condition.
      *
-     * @param QueryCondition $condition Query condition object.
-     * @param array $indexMap Map of property indexes.
+     * @param QueryCondition $condition query condition object
+     * @param array $indexMap map of property indexes
      *
-     * @return string A single WHERE condition.
+     * @return string a single WHERE condition
      */
     private function addCondition(QueryCondition $condition, array $indexMap): string
     {
         $column = $condition->getColumn();
         $columnName = $column === 'id' ? 'id' : 'index_' . $indexMap[$column];
         if ($column === 'id') {
-            $conditionValue = (int)$condition->getValue();
+            $conditionValue = (int) $condition->getValue();
         } else {
             $conditionValue = IndexHelper::castFieldValue($condition->getValue(), $condition->getValueType());
         }
@@ -450,6 +446,7 @@ class BaseRepository implements RepositoryInterface
 
                 if (is_int($item)) {
                     $val = IndexHelper::castFieldValue($item, 'integer');
+
                     return "'{$val}'";
                 }
 
@@ -472,14 +469,14 @@ class BaseRepository implements RepositoryInterface
      * Returns Adyen entity records that satisfy provided condition.
      *
      * @param string $condition Condition in format: KEY OPERATOR VALUE
-     * @param QueryFilter|null $filter Query filter object.
+     * @param QueryFilter|null $filter query filter object
      *
-     * @return array Array of Adyen entity records.
+     * @return array array of Adyen entity records
      *
      * @throws QueryFilterInvalidParamException
      * @throws \PrestaShopDatabaseException
      */
-    private function getRecordsByCondition(string $condition, QueryFilter $filter = null): array
+    private function getRecordsByCondition(string $condition, ?QueryFilter $filter = null): array
     {
         $query = new \DbQuery();
         $query->select(implode(',', $this->getSelectColumns()))
@@ -495,15 +492,15 @@ class BaseRepository implements RepositoryInterface
     /**
      * Applies limit and order by statements to provided SELECT query.
      *
-     * @param \DbQuery $query SELECT query.
-     * @param QueryFilter|null $filter Query filter object.
+     * @param \DbQuery $query SELECT query
+     * @param QueryFilter|null $filter query filter object
      *
      * @throws QueryFilterInvalidParamException
      */
-    private function applyLimitAndOrderBy(\DbQuery $query, QueryFilter $filter = null)
+    private function applyLimitAndOrderBy(\DbQuery $query, ?QueryFilter $filter = null)
     {
         if ($filter) {
-            $limit = (int)$filter->getLimit();
+            $limit = (int) $filter->getLimit();
 
             if ($limit) {
                 $query->limit($limit, $filter->getOffset());
@@ -513,9 +510,7 @@ class BaseRepository implements RepositoryInterface
             if ($orderByColumn) {
                 $indexedColumn = $orderByColumn === 'id' ? 'id' : $this->getIndexMapping($orderByColumn);
                 if (empty($indexedColumn)) {
-                    throw new QueryFilterInvalidParamException(
-                        'Unknown or not indexed OrderBy column ' . $filter->getOrderByColumn()
-                    );
+                    throw new QueryFilterInvalidParamException('Unknown or not indexed OrderBy column ' . $filter->getOrderByColumn());
                 }
 
                 $query->orderBy($indexedColumn . ' ' . $filter->getOrderDirection());
@@ -526,10 +521,10 @@ class BaseRepository implements RepositoryInterface
     /**
      * Prepares data for inserting a new record or updating an existing one.
      *
-     * @param Entity $entity Adyen entity object.
-     * @param array $indexes Array of index values.
+     * @param Entity $entity adyen entity object
+     * @param array $indexes array of index values
      *
-     * @return array Prepared record for inserting or updating.
+     * @return array prepared record for inserting or updating
      */
     protected function prepareDataForInsertOrUpdate(Entity $entity, array $indexes): array
     {
@@ -557,20 +552,20 @@ class BaseRepository implements RepositoryInterface
     /**
      * Unserializes entity form given string.
      *
-     * @param string $data Serialized entity as string.
+     * @param string $data serialized entity as string
      *
-     * @return Entity Created entity object.
+     * @return Entity created entity object
      */
     private function unserializeEntity(string $data): Entity
     {
         $jsonEntity = json_decode($data, true);
         if (array_key_exists('class_name', $jsonEntity)) {
-            $entity = new $jsonEntity['class_name'];
+            $entity = new $jsonEntity['class_name']();
         } else {
-            $entity = new $this->entityClass;
+            $entity = new $this->entityClass();
         }
 
-        /** @var Entity $entity */
+        /* @var Entity $entity */
         $entity->inflate($jsonEntity);
 
         return $entity;

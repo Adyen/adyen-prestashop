@@ -6,12 +6,9 @@ use Adyen\Core\BusinessLogic\AdyenAPI\Http\Requests\HttpRequest;
 use Adyen\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use Adyen\Core\Infrastructure\Http\HttpClient;
 use Adyen\Core\Infrastructure\Http\HttpResponse;
-use Exception;
 
 /**
  * Class TestProxy
- *
- * @package AdyenPayment\E2ETest\Http
  */
 class TestProxy
 {
@@ -48,7 +45,7 @@ class TestProxy
      *
      * @param HttpRequest $request
      *
-     * @return HttpResponse Get HTTP response.
+     * @return HttpResponse get HTTP response
      *
      * @throws HttpRequestException
      */
@@ -62,7 +59,7 @@ class TestProxy
      *
      * @param HttpRequest $request
      *
-     * @return HttpResponse DELETE HTTP response.
+     * @return HttpResponse DELETE HTTP response
      *
      * @throws HttpRequestException
      */
@@ -76,7 +73,7 @@ class TestProxy
      *
      * @param HttpRequest $request
      *
-     * @return HttpResponse Response instance.
+     * @return HttpResponse response instance
      *
      * @throws HttpRequestException
      */
@@ -90,7 +87,7 @@ class TestProxy
      *
      * @param HttpRequest $request
      *
-     * @return HttpResponse Response instance.
+     * @return HttpResponse response instance
      *
      * @throws HttpRequestException
      */
@@ -104,7 +101,7 @@ class TestProxy
      *
      * @param HttpRequest $request
      *
-     * @return HttpResponse Response instance.
+     * @return HttpResponse response instance
      *
      * @throws HttpRequestException
      */
@@ -116,13 +113,13 @@ class TestProxy
     /**
      * Performs HTTP call.
      *
-     * @param string $method Specifies which http method is utilized in call.
+     * @param string $method specifies which http method is utilized in call
      * @param HttpRequest $request
      *
-     * @return HttpResponse Response instance.
+     * @return HttpResponse response instance
      *
      * @throws HttpRequestException
-     * @throws Exception
+     * @throws \Exception
      */
     protected function call(string $method, HttpRequest $request): HttpResponse
     {
@@ -145,7 +142,7 @@ class TestProxy
     /**
      * Retrieves request headers.
      *
-     * @return array Complete list of request headers.
+     * @return array complete list of request headers
      */
     protected function getHeaders(): array
     {
@@ -159,11 +156,12 @@ class TestProxy
 
     /**
      * @param HttpRequest $request
+     *
      * @return string
      */
     protected function getEncodedBody(HttpRequest $request): string
     {
-        return array_key_exists('data', $request->getBody()) ? (string)$request->getBody()['data'] : '';
+        return array_key_exists('data', $request->getBody()) ? (string) $request->getBody()['data'] : '';
     }
 
     /**
@@ -171,7 +169,7 @@ class TestProxy
      *
      * @param HttpRequest $request
      *
-     * @return string Full request url.
+     * @return string full request url
      */
     protected function getRequestUrl(HttpRequest $request): string
     {
@@ -200,7 +198,7 @@ class TestProxy
     /**
      * Validates HTTP response.
      *
-     * @param HttpResponse $response Response object to be validated.
+     * @param HttpResponse $response response object to be validated
      *
      * @throws HttpRequestException
      */

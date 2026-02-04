@@ -27,23 +27,22 @@ use AdyenPayment\Classes\E2ETest\Http\CountryTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\CurrencyTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\CustomerTestProxy;
 use Module;
-use PaymentModule;
-use PrestaShop\PrestaShop\Adapter\Entity\Currency;
-use PrestaShop\PrestaShop\Adapter\Entity\Country;
 use PrestaShop\PrestaShop\Adapter\Entity\Carrier;
+use PrestaShop\PrestaShop\Adapter\Entity\Country;
+use PrestaShop\PrestaShop\Adapter\Entity\Currency;
 use PrestaShop\PrestaShop\Adapter\Entity\Product;
 use Shop;
 
 /**
  * Class CreateCheckoutSeedDataService
- *
- * @package AdyenPayment\E2ETest\Services
  */
 class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
 {
     /**
      * @param string $testApiKey
+     *
      * @return string
+     *
      * @throws ApiCredentialsDoNotExistException
      * @throws ApiKeyCompanyLevelException
      * @throws ClientKeyGenerationFailedException
@@ -71,6 +70,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
         $this->deactivateCountries();
         $this->addCurrencies();
         $this->updateProductPrice(1);
+
         return $this->createCustomerAndAddress();
     }
 
@@ -128,7 +128,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
                     '{contains_states}',
                     '{need_identification_number}',
                     '{display_tax_label}',
-                    '{language1}'
+                    '{language1}',
                 ],
                 [
                     $countryId,
@@ -138,7 +138,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
                     $countryData['contains_states'] ?? 0,
                     $countryData['need_identification_number'] ?? 0,
                     $countryData['display_tax_label'],
-                    $countryData['name']
+                    $countryData['name'],
                 ],
                 $data
             );
@@ -147,7 +147,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
             $this->enableCarrierInSpecificZone($countryId);
         }
 
-        $moduleId = Module::getInstanceByName('adyenofficial')->id;
+        $moduleId = \Module::getInstanceByName('adyenofficial')->id;
         $countries = Country::getCountriesByIdShop(1, 1);
         Country::addModuleRestrictions([], $countries, [['id_module' => $moduleId]]);
     }
@@ -178,7 +178,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
                     '{contains_states}',
                     '{need_identification_number}',
                     '{display_tax_label}',
-                    '{language1}'
+                    '{language1}',
                 ],
                 [
                     $countryId,
@@ -188,7 +188,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
                     $countryData['contains_states'] ?? 0,
                     $countryData['need_identification_number'] ?? 0,
                     $countryData['display_tax_label'] ?? 0,
-                    $countryData['name']
+                    $countryData['name'],
                 ],
                 $data
             );
@@ -239,7 +239,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
                 '{conversion_rate}',
                 '{active}',
                 '{language1}',
-                '{symbol_language1}'
+                '{symbol_language1}',
             ],
             [
                 $currencyId,
@@ -249,7 +249,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
                 $currencyData['conversion_rate'],
                 1,
                 $currencyData['names'],
-                $currencyData['symbol']
+                $currencyData['symbol'],
             ],
             $data
         );
@@ -282,16 +282,16 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
                 $currencyTestData['isoCode'],
                 $currencyTestData['precision'],
                 $currencyTestData['conversionRate'],
-                1
+                1,
             ],
             $data
         );
 
         $createdCurrency = $this->getCurrencyTestProxy()->createCurrency(['data' => $data])['currency'];
         if ($createdCurrency) {
-            $createdCurrencyId = (int)$createdCurrency['id'];
-            $moduleId = Module::getInstanceByName('adyenofficial')->id;
-            PaymentModule::addCurrencyPermissions($createdCurrencyId, [$moduleId]);
+            $createdCurrencyId = (int) $createdCurrency['id'];
+            $moduleId = \Module::getInstanceByName('adyenofficial')->id;
+            \PaymentModule::addCurrencyPermissions($createdCurrencyId, [$moduleId]);
         }
     }
 
@@ -309,6 +309,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
      * Creates customer and address in database
      *
      * @return string
+     *
      * @throws HttpRequestException
      */
     private function createCustomerAndAddress(): string
@@ -324,7 +325,9 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
      * Creates customer
      *
      * @param array $customer
+     *
      * @return string
+     *
      * @throws HttpRequestException
      */
     private function createCustomer(array $customer): string
@@ -343,7 +346,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
                 '{active}',
                 '{is_guest}',
                 '{id_shop}',
-                '{id_shop_group}'
+                '{id_shop_group}',
             ],
             [
                 $customer['defaultGroupId'],
@@ -357,7 +360,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
                 1,
                 0,
                 1,
-                1
+                1,
             ],
             $data
         );
@@ -375,7 +378,9 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
      *
      * @param array $customer
      * @param string $createdCustomerId
+     *
      * @return void
+     *
      * @throws HttpRequestException
      */
     private function createCustomerAddress(array $customer, string $createdCustomerId): void
@@ -391,7 +396,7 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
                 '{firstname}',
                 '{address1}',
                 '{postcode}',
-                '{city}'
+                '{city}',
             ],
             [
                 $createdCustomerId,
@@ -419,10 +424,10 @@ class CreateCheckoutSeedDataService extends BaseCreateSeedDataService
      */
     private function updateProductPrice(int $subStoreId): void
     {
-        Shop::setContext(1, $subStoreId);
+        \Shop::setContext(1, $subStoreId);
         $products = Product::searchByName(1, 'The adventure begins Framed poster');
         foreach ($products as $productData) {
-            $product = new Product((int)$productData['id_product']);
+            $product = new Product((int) $productData['id_product']);
             $product->price = 30.000000;
             $product->save();
         }

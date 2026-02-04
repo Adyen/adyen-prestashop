@@ -6,8 +6,6 @@ use AdyenPayment\Classes\Repositories\LogsRepository;
 
 /**
  * Class LogsService
- *
- * @package AdyenPayment\Classes\Services
  */
 class LogsService
 {

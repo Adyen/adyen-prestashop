@@ -14,14 +14,9 @@ use Adyen\Core\Infrastructure\ORM\Interfaces\RepositoryInterface;
 use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\Repositories\ConfigurationRepository;
 use AdyenPayment\Classes\Services\AdyenOrderStatusMapping;
-use Module;
-use PrestaShop\PrestaShop\Adapter\Entity\OrderState;
-use PrestaShop\PrestaShop\Adapter\Entity\Shop;
 
 /**
  * Class StoreService
- *
- * @package AdyenPayment\Integration
  */
 class StoreService implements StoreServiceInterface
 {
@@ -41,28 +36,28 @@ class StoreService implements StoreServiceInterface
      */
     public function __construct(
         ConfigurationRepository $configurationRepository,
-        RepositoryInterface     $connectionRepository
-    )
-    {
+        RepositoryInterface $connectionRepository,
+    ) {
         $this->configurationRepository = $configurationRepository;
         $this->connectionRepository = $connectionRepository;
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
+     *
      * @throws QueryFilterInvalidParamException
      */
     public function getStoreDomain(): string
     {
         $storeId = StoreContext::getInstance()->getStoreId();
-        $shop = \Shop::getShop($storeId);
+        $shop = \Shop::getShop((int) $storeId);
 
         if (strpos($shop['domain'], '/') === false) {
             $domain = \Tools::getShopProtocol() . $shop['domain'];
 
             // only for test purposes
             $testHostname = $this->getConfigurationManager()->getConfigValue('testHostname');
-            if($testHostname){
+            if ($testHostname) {
                 $domain = str_replace('localhost', $testHostname, $domain);
             }
 
@@ -73,7 +68,7 @@ class StoreService implements StoreServiceInterface
 
         // only for test purposes
         $testHostname = $this->getConfigurationManager()->getConfigValue('testHostname');
-        if($testHostname){
+        if ($testHostname) {
             $domain = str_replace('localhost', $testHostname, $domain);
         }
 
@@ -81,7 +76,7 @@ class StoreService implements StoreServiceInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @throws \PrestaShopDatabaseException
      */
@@ -89,7 +84,7 @@ class StoreService implements StoreServiceInterface
     {
         $stores = [];
 
-        foreach (Shop::getShops() as $shop) {
+        foreach (\Shop::getShops() as $shop) {
             $stores[] = new Store($shop['id_shop'], $shop['name'], $this->isStoreInMaintenanceMode($shop['id_shop']));
         }
 
@@ -97,7 +92,7 @@ class StoreService implements StoreServiceInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @throws \PrestaShopDatabaseException
      */
@@ -106,12 +101,12 @@ class StoreService implements StoreServiceInterface
         $defaultStore = null;
         $defaultStoreId = \Configuration::get('PS_SHOP_DEFAULT');
 
-        foreach (Shop::getShops() as $shop) {
+        foreach (\Shop::getShops() as $shop) {
             if ($shop['id_shop'] === $defaultStoreId) {
                 $defaultStore = new Store(
                     $shop['id_shop'],
                     $shop['name'],
-                    $this->isStoreInMaintenanceMode($shop['id_shop'])
+                    $this->isStoreInMaintenanceMode((int) $shop['id_shop'])
                 );
                 break;
             }
@@ -121,13 +116,13 @@ class StoreService implements StoreServiceInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @throws \PrestaShopDatabaseException
      */
     public function getStoreById(string $id): ?Store
     {
-        $shop = Shop::getShop($id);
+        $shop = \Shop::getShop((int) $id);
 
         if (!$shop) {
             return null;
@@ -137,17 +132,17 @@ class StoreService implements StoreServiceInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @throws InvalidShopOrderDataException
      */
     public function getStoreOrderStatuses(): array
     {
-        return $this->transformStoreOrderStatuses(OrderState::getOrderStates(\Context::getContext()->language->id));
+        return $this->transformStoreOrderStatuses(\OrderState::getOrderStates(\Context::getContext()->language->id));
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function getDefaultOrderStatusMapping(): array
     {
@@ -179,6 +174,7 @@ class StoreService implements StoreServiceInterface
      */
     public function checkStoreConnection(string $id): bool
     {
+        /** @var ConnectionSettings[] $settings */
         $settings = $this->connectionRepository->select();
 
         foreach ($settings as $item) {
@@ -219,13 +215,13 @@ class StoreService implements StoreServiceInterface
     {
         return array_filter(array_map(function ($orderState) {
             if ($orderState['name'] === AdyenOrderStatusMapping::PRESTA_CHARGEBACK) {
-                $orderState['name'] = Module::getInstanceByName('adyenofficial')->l('Chargeback');
+                $orderState['name'] = \Module::getInstanceByName('adyenofficial')->l('Chargeback');
             }
             if ($orderState['name'] === AdyenOrderStatusMapping::PRESTA_PENDING) {
-                $orderState['name'] = Module::getInstanceByName('adyenofficial')->l('Pending');
+                $orderState['name'] = \Module::getInstanceByName('adyenofficial')->l('Pending');
             }
             if ($orderState['name'] === AdyenOrderStatusMapping::PRESTA_PARTIALLY_REFUNDED) {
-                $orderState['name'] = Module::getInstanceByName('adyenofficial')->l('Partially refunded');
+                $orderState['name'] = \Module::getInstanceByName('adyenofficial')->l('Partially refunded');
             }
 
             if (empty($orderState['id_order_state']) || empty($orderState['name'])) {

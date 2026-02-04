@@ -40,18 +40,18 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
             $config = $this->getConfigForNewAddress($newAddress);
 
             header('Content-Type: application/json');
-            die(json_encode(
+            exit(json_encode(
                 [
                     'amount' => $config->toArray()['amount']['value'],
                     'currency' => $config->toArray()['amount']['currency'],
-                    'country' => Context::getContext()->country->iso_code
+                    'country' => Context::getContext()->country->iso_code,
                 ])
             );
         }
 
         $cartId = $this->context->cart->id ?: 0;
         $customerId = Context::getContext()->customer->id;
-        $productId = (int)Tools::getValue('id_product');
+        $productId = (int) Tools::getValue('id_product');
         $isGuest = false;
 
         if (!$customerId) {
@@ -94,8 +94,8 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
         $countryCode = $billingAddress->country;
         /** @var CustomerService $customerService */
         $customerService = ServiceRegister::getService(CustomerService::class);
-        if (!$customerService->verifyIfCountryNotRestricted($countryCode, (int)$this->context->language->id)) {
-            AdyenPrestaShopUtility::die400(["message" => "Invalid country code"]);
+        if (!$customerService->verifyIfCountryNotRestricted($countryCode, (int) $this->context->language->id)) {
+            AdyenPrestaShopUtility::die400(['message' => 'Invalid country code']);
         }
 
         $cartId = $this->context->cart->id ?: 0;
@@ -108,7 +108,7 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
             $deliveryAddressId = $cart->id_address_delivery;
             $billingAddressId = $cart->id_address_invoice;
             $cart = $this->updateCartWithAddresses($data, $cart);
-            $customerService->updateDeliveryAddress((int)$cart->id, (int)$cart->id_address_delivery);
+            $customerService->updateDeliveryAddress((int) $cart->id, (int) $cart->id_address_delivery);
             $cart->update();
 
             $config = CheckoutHandler::getExpressCheckoutConfig($cart, true);
@@ -122,14 +122,14 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
             return $config;
         }
 
-        if ((int)Tools::getValue('id_product') === 0) {
+        if ((int) Tools::getValue('id_product') === 0) {
             AdyenPrestaShopUtility::die400(['message' => 'Invalid parameters.']);
         }
 
         $cart = $this->createEmptyCart();
         $cart = $this->updateCartWithAddresses($data, $cart);
         $cart = $this->addProductsToCart($cart);
-        $customerService->updateDeliveryAddress((int)$cart->id, (int)$cart->id_address_delivery);
+        $customerService->updateDeliveryAddress((int) $cart->id, (int) $cart->id_address_delivery);
         $cart->update();
 
         $config = CheckoutHandler::getExpressCheckoutConfig($cart, true);
@@ -160,9 +160,9 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
         $address = $customerService->createAddress($address);
         $address->add();
 
-        \Context::getContext()->cart->id_address_invoice = $address->id;
-        \Context::getContext()->cart->id_address_delivery = $address->id;
-        \Context::getContext()->cart->update();
+        Context::getContext()->cart->id_address_invoice = $address->id;
+        Context::getContext()->cart->id_address_delivery = $address->id;
+        Context::getContext()->cart->update();
 
         $cart->id_address_delivery = $address->id;
         $cart->id_address_invoice = $address->id;
@@ -175,14 +175,13 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
      * @param Cart $cart
      *
      * @return Cart
-     *
      */
     private function addProductsToCart(Cart $cart): Cart
     {
-        $productId = (int)Tools::getValue('id_product');
-        $productAttributeId = (int)Tools::getValue('id_product_attribute');
-        $quantityWanted = (int)Tools::getValue('quantity_wanted');
-        $customizationId = (int)Tools::getValue('id_customization');
+        $productId = (int) Tools::getValue('id_product');
+        $productAttributeId = (int) Tools::getValue('id_product_attribute');
+        $quantityWanted = (int) Tools::getValue('quantity_wanted');
+        $customizationId = (int) Tools::getValue('id_customization');
 
         if ($quantityWanted === 0) {
             $quantityWanted = 1;
@@ -195,15 +194,16 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
 
     /**
      * @return Cart
+     *
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      */
     private function getCartForProduct(): Cart
     {
         $cart = $this->createEmptyCart();
-        $customer = new Customer((int)$this->context->customer->id);
-        if($customer->id){
-            $addresses = $customer->getAddresses((int)$this->context->language->id);
+        $customer = new Customer((int) $this->context->customer->id);
+        if ($customer->id) {
+            $addresses = $customer->getAddresses((int) $this->context->language->id);
             if (count($addresses) > 0) {
                 $cart = $this->updateCart($customer, $addresses[0]['id_address'], $addresses[0]['id_address'], $cart);
             }
@@ -214,13 +214,14 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
 
     /**
      * @return Cart
+     *
      * @throws PrestaShopException
      */
     private function createEmptyCart(): Cart
     {
         $cart = new Cart();
-        $cart->id_currency = (int)$this->context->currency->id;
-        $cart->id_lang = (int)$this->context->language->id;
+        $cart->id_currency = (int) $this->context->currency->id;
+        $cart->id_lang = (int) $this->context->language->id;
         $cart->save();
 
         return $cart;
@@ -231,7 +232,9 @@ class AdyenOfficialPaymentConfigExpressCheckoutModuleFrontController extends Mod
      * @param int $deliveryAddressId
      * @param int $invoiceAddressId
      * @param Cart $cart
+     *
      * @return Cart
+     *
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      */

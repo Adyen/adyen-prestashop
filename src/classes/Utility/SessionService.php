@@ -4,8 +4,6 @@ namespace AdyenPayment\Classes\Utility;
 
 /**
  * Class CookieService
- *
- * @package AdyenPayment\Classes\Utility
  */
 class SessionService
 {

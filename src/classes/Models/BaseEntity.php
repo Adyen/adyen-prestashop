@@ -8,53 +8,51 @@ use Adyen\Core\Infrastructure\ORM\Entity;
 
 /**
  * Class BaseEntity
- *
- * @package AdyenPayment\Classes\Models
  */
 class BaseEntity extends Entity
 {
     /**
-     * @var string $type
+     * @var string
      */
     protected $type;
     /**
-     * @var string $index_1
+     * @var string
      */
     protected $index_1;
     /**
-     * @var string $index_2
+     * @var string
      */
     protected $index_2;
     /**
-     * @var string $index_3
+     * @var string
      */
     protected $index_3;
     /**
-     * @var string $index_4
+     * @var string
      */
     protected $index_4;
     /**
-     * @var string $index_5
+     * @var string
      */
     protected $index_5;
     /**
-     * @var string $index_6
+     * @var string
      */
     protected $index_6;
     /**
-     * @var string $index_7
+     * @var string
      */
     protected $index_7;
     /**
-     * @var string $index_8
+     * @var string
      */
     protected $index_8;
     /**
-     * @var string $index_9
+     * @var string
      */
     protected $index_9;
     /**
-     * @var string $data
+     * @var string
      */
     protected $data;
 

@@ -1,7 +1,7 @@
 <?php
 
 global $_MODULE;
-$_MODULE = array();
+$_MODULE = [];
 $_MODULE['<{adyenofficial}prestashop>adyenofficial_5a48670b2f7db9746161ffd7eeb0aabf'] = 'Adyen';
 $_MODULE['<{adyenofficial}prestashop>adyenofficial_75b242792b9ddba1fdf1587925b4ee47'] = 'Accept all payments offered by Adyen';
 $_MODULE['<{adyenofficial}prestashop>adyenofficial_876f23178c29dc2552c0b48bf23cd9bd'] = 'Are you sure you want to uninstall?';

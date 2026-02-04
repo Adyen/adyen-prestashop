@@ -7,13 +7,11 @@ use AdyenPayment\Classes\Bootstrap;
 
 /**
  * Class PrestashopGenericQueueItemRepositoryTest
- *
- * @package AdyenPayment\Tests\Repositories
  */
 class PrestashopGenericQueueItemRepositoryTest extends AbstractGenericQueueItemRepositoryTest
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function tearDownAfterClass(): void
     {
@@ -22,7 +20,7 @@ class PrestashopGenericQueueItemRepositoryTest extends AbstractGenericQueueItemR
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function setUp(): void
     {

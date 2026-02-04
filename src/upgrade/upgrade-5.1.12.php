@@ -3,10 +3,6 @@
 use Adyen\Core\Infrastructure\Logger\Logger;
 use AdyenPayment\Classes\Bootstrap;
 
-if (!defined('_PS_VERSION_')) {
-    exit;
-}
-
 require_once 'Autoloader.php';
 
 /**
@@ -25,7 +21,7 @@ function upgrade_module_5_1_12(AdyenOfficial $module): bool
     Autoloader::setFileExt('.php');
     spl_autoload_register('Autoloader::loader');
     Shop::setContext(ShopCore::CONTEXT_ALL);
-    $installer = new \AdyenPayment\Classes\Utility\Installer($module);
+    $installer = new AdyenPayment\Classes\Utility\Installer($module);
     $pendingState = 'Pending';
 
     Bootstrap::init();

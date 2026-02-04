@@ -6,15 +6,11 @@ use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentLink\Factory\PaymentLinkRequ
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentLink\Models\PaymentLinkRequestContext;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Factory\PaymentRequestBuilder;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\StartTransactionRequestContext;
-use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\BirthdayProcessor as BirthdayProcessorInterface;
 use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\ShopperBirthdayProcessor as PaymentLinkShopperBirthdayProcessorInterface;
-use Cart;
-use Customer;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\BirthdayProcessor as BirthdayProcessorInterface;
 
 /**
  * Class BirthdayProcessor
- *
- * @package AdyenPayment\Integration\PaymentProcessors
  */
 class BirthdayProcessor implements BirthdayProcessorInterface, PaymentLinkShopperBirthdayProcessorInterface
 {
@@ -26,7 +22,7 @@ class BirthdayProcessor implements BirthdayProcessorInterface, PaymentLinkShoppe
      */
     public function process(PaymentRequestBuilder $builder, StartTransactionRequestContext $context): void
     {
-        if ($customersBirthday = $this->getCustomersBirthdayFromCartId($context->getReference())) {
+        if ($customersBirthday = $this->getCustomersBirthdayFromCartId((int) $context->getReference())) {
             $builder->setDateOfBirth($customersBirthday);
         }
     }
@@ -39,7 +35,7 @@ class BirthdayProcessor implements BirthdayProcessorInterface, PaymentLinkShoppe
      */
     public function processPaymentLink(PaymentLinkRequestBuilder $builder, PaymentLinkRequestContext $context): void
     {
-        if ($customersBirthday = $this->getCustomersBirthdayFromCartId((int)$context->getReference())) {
+        if ($customersBirthday = $this->getCustomersBirthdayFromCartId((int) $context->getReference())) {
             $builder->setDateOfBirth($customersBirthday);
         }
     }
@@ -51,10 +47,10 @@ class BirthdayProcessor implements BirthdayProcessorInterface, PaymentLinkShoppe
      */
     private function getCustomersBirthdayFromCartId(int $cartId): ?string
     {
-        $cart = new Cart($cartId);
-        $customer = new Customer($cart->id_customer);
+        $cart = new \Cart($cartId);
+        $customer = new \Customer($cart->id_customer);
 
-        if (!$customer || strtotime($customer->birthday) < 0 || !strtotime($customer->birthday)) {
+        if (strtotime($customer->birthday) < 0 || !strtotime($customer->birthday)) {
             return null;
         }
 

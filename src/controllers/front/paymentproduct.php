@@ -2,12 +2,12 @@
 
 use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
 use Adyen\Core\BusinessLogic\CheckoutAPI\PartialPayment\Request\StartPartialTransactionsRequest;
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount;
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\PaymentMethodCode;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\ShopperReference;
 use Adyen\Core\Infrastructure\Logger\Logger;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
-use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount;
-use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency;
 use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\Bootstrap;
 use AdyenPayment\Classes\Services\CheckoutHandler;
@@ -25,7 +25,7 @@ use Currency as PrestaCurrency;
 class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
 {
     /** @var string File name for translation contextualization */
-    const FILE_NAME = 'AdyenOfficialPaymentProductModuleFrontController';
+    public const FILE_NAME = 'AdyenOfficialPaymentProductModuleFrontController';
 
     /**
      * @throws RepositoryClassException
@@ -46,6 +46,7 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
 
         if ($this->isHummigbirdTheme()) {
             $this->setTemplate('module:adyenofficial/views/templates/front/adyen-additional-details-hummingbird.tpl');
+
             return;
         }
 
@@ -66,17 +67,17 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
 
         $type = !empty($additionalData['paymentMethod']['type']) ? $additionalData['paymentMethod']['type'] : '';
 
-        $currencyId = (int)$this->context->currency->id;
-        $langId = (int)$this->context->language->id;
+        $currencyId = (int) $this->context->currency->id;
+        $langId = (int) $this->context->language->id;
 
         $cart = $this->context->cart;
         $products = $cart->getProducts();
         foreach ($products as $product) {
             $cart->deleteProduct(
                 (int) $product['id_product'],
-                (int) $product['id_product_attribute'] ?? 0,
+                $product['id_product_attribute'] ? (int) $product['id_product_attribute'] : 0,
                 0, // id_customization
-                (int) $product['id_address_delivery'] ?? 0
+                $product['id_address_delivery'] ? (int) $product['id_address_delivery'] : 0
             );
         }
         $cart->save();
@@ -117,10 +118,10 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
         $currency = new PrestaCurrency($currencyId);
 
         try {
-            $partialTransactionsResponse = CheckoutApi::get()->partialPaymentRequest((string)$cart->id_shop)
+            $partialTransactionsResponse = CheckoutAPI::get()->partialPaymentRequest((string) $cart->id_shop)
                 ->startPartialTransactions(
                     new StartPartialTransactionsRequest(
-                        (string)$cart->id,
+                        (string) $cart->id,
                         Currency::fromIsoCode($currency->iso_code ?? 'EUR'),
                         Url::getFrontUrl(
                             'paymentredirect',
@@ -136,7 +137,7 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
                 );
 
             if (!$partialTransactionsResponse->isSuccessful()) {
-                $product = new \Product($product['id_product'] ?? 0);
+                $product = new Product($product['id_product'] ?? 0);
                 $this->handleNotSuccessfulPayment(self::FILE_NAME, $product->getLink());
             }
 
@@ -166,38 +167,6 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
     }
 
     /**
-     * @param string $fileName
-     * @param int $productId
-     *
-     * @return void
-     *
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
-     */
-    private function redirectBack(string $fileName, int $productId): void
-    {
-        $message = $this->module->l('Your payment could not be processed, please resubmit order.', $fileName);
-        SessionService::set(
-            'errorMessage',
-            $message
-        );
-        $product = new \Product($productId);
-
-        if ($this->isAjaxRequest()) {
-            die(
-            json_encode(
-                [
-                    'nextStepUrl' => $product->getLink()
-                ]
-            )
-            );
-        }
-
-        Tools::redirect($product->getLink());
-    }
-
-
-    /**
      * @param Cart $cart
      * @param $product
      *
@@ -205,10 +174,10 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
      */
     private function addProductToCart(Cart $cart, $product)
     {
-        $productId = array_key_exists('id_product', $product) ? (int)$product['id_product'] : 0;
-        $idProductAttribute = array_key_exists('id_product', $product) ? (int)$product['id_product_attribute'] : 0;
-        $quantityWanted = array_key_exists('id_product', $product) ? (int)$product['quantity_wanted'] : 0;
-        $customizationId = array_key_exists('id_product', $product) ? (int)$product['id_customization'] : 0;
+        $productId = array_key_exists('id_product', $product) ? (int) $product['id_product'] : 0;
+        $idProductAttribute = array_key_exists('id_product', $product) ? (int) $product['id_product_attribute'] : 0;
+        $quantityWanted = array_key_exists('id_product', $product) ? (int) $product['quantity_wanted'] : 0;
+        $customizationId = array_key_exists('id_product', $product) ? (int) $product['id_customization'] : 0;
 
         if ($quantityWanted === 0) {
             $quantityWanted = 1;

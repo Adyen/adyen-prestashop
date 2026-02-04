@@ -1,8 +1,9 @@
 <?php
 
-
 use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount;
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency;
+use Adyen\Core\Infrastructure\Logger\LogContextData;
 use Adyen\Core\Infrastructure\Logger\Logger;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Adyen\Core\Infrastructure\ServiceRegister;
@@ -11,7 +12,6 @@ use AdyenPayment\Classes\Services\Integration\CustomerService;
 use AdyenPayment\Classes\Utility\AdyenPrestaShopUtility;
 use AdyenPayment\Controllers\PaymentController;
 use Currency as PrestaCurrency;
-use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency;
 
 /**
  * Class AdyenOfficialPayPalUpdateOrderModuleFrontController
@@ -19,7 +19,7 @@ use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Curren
 class AdyenOfficialPayPalUpdateOrderModuleFrontController extends PaymentController
 {
     /** @var string File name for translation contextualization */
-    const FILE_NAME = 'AdyenOfficialPayPalUpdateOrderModuleFrontController';
+    public const FILE_NAME = 'AdyenOfficialPayPalUpdateOrderModuleFrontController';
 
     /**
      * @throws RepositoryClassException
@@ -43,13 +43,13 @@ class AdyenOfficialPayPalUpdateOrderModuleFrontController extends PaymentControl
         Logger::logDebug(
             'Received paypalupdateorder request',
             'Integration',
-            ['request' => json_encode($requestData)]
+            [new LogContextData('request', json_encode($requestData))]
         );
 
         $amount = $this->getConfigForNewAddress($requestData);
 
         $response = CheckoutAPI::get()
-            ->paymentRequest((string)Context::getContext()->shop->id)->paypalUpdateOrder(
+            ->paymentRequest((string) Context::getContext()->shop->id)->paypalUpdateOrder(
                 [
                     'amount' => $amount,
                     'paymentData' => $requestData['paymentData'],
@@ -68,8 +68,8 @@ class AdyenOfficialPayPalUpdateOrderModuleFrontController extends PaymentControl
         $countryCode = $shippingAddress['countryCode'];
         /** @var CustomerService $customerService */
         $customerService = ServiceRegister::getService(CustomerService::class);
-        if (!$customerService->verifyIfCountryNotRestricted($countryCode, (int)$this->context->language->id)) {
-            AdyenPrestaShopUtility::die400(["message" => "Invalid country code"]);
+        if (!$customerService->verifyIfCountryNotRestricted($countryCode, (int) $this->context->language->id)) {
+            AdyenPrestaShopUtility::die400(['message' => 'Invalid country code']);
         }
 
         $cart = $this->addProductsToCart();
@@ -100,18 +100,18 @@ class AdyenOfficialPayPalUpdateOrderModuleFrontController extends PaymentControl
 
     private function addProductsToCart(): Cart
     {
-        $currencyId = (int)$this->context->currency->id;
-        $langId = (int)$this->context->language->id;
+        $currencyId = (int) $this->context->currency->id;
+        $langId = (int) $this->context->language->id;
         $cart = $this->createEmptyCart($currencyId, $langId);
-        $productId = (int)Tools::getValue('id_product');
-        $productAttributeId = (int)Tools::getValue('id_product_attribute');
-        $quantityWanted = (int)Tools::getValue('quantity_wanted');
+        $productId = (int) Tools::getValue('id_product');
+        $productAttributeId = (int) Tools::getValue('id_product_attribute');
+        $quantityWanted = (int) Tools::getValue('quantity_wanted');
 
         if ($quantityWanted === 0) {
             $quantityWanted = 1;
         }
 
-        $customizationId = (int)Tools::getValue('id_customization');
+        $customizationId = (int) Tools::getValue('id_customization');
         $cart->updateQty($quantityWanted, $productId, $productAttributeId, $customizationId);
 
         return $cart;
@@ -120,7 +120,9 @@ class AdyenOfficialPayPalUpdateOrderModuleFrontController extends PaymentControl
     /**
      * @param int $currencyId
      * @param int $langId
+     *
      * @return Cart
+     *
      * @throws PrestaShopException
      */
     private function createEmptyCart(int $currencyId, int $langId): Cart

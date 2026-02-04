@@ -2,7 +2,6 @@
 
 namespace AdyenPayment\Classes\E2ETest\Services;
 
-use Address;
 use Adyen\Core\BusinessLogic\AdminAPI\AdminAPI;
 use Adyen\Core\BusinessLogic\AdminAPI\OrderMappings\Request\OrderMappingsRequest;
 use Adyen\Core\BusinessLogic\Domain\GeneralSettings\Exceptions\InvalidCaptureDelayException;
@@ -19,14 +18,10 @@ use AdyenPayment\Classes\E2ETest\Http\OrderTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\ProductTestProxy;
 use AdyenPayment\Classes\Services\AdyenOrderStatusMapping;
 use Cart;
-use Currency;
-use Exception;
 use Shop;
 
 /**
  * Class CreateWebhooksSeedDataService
- *
- * @package AdyenPayment\Classes\E2ETest\Services
  */
 class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
 {
@@ -34,18 +29,21 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
      * Returns webhook config data from plugin database
      *
      * @return array
+     *
      * @throws HttpRequestException
      */
     public function getWebhookAuthorizationData(): array
     {
-       return $this->getCreateIntegrationDataService()->getWebhookAuthorizationData();
+        return $this->getCreateIntegrationDataService()->getWebhookAuthorizationData();
     }
 
     /**
      * Creates OrdersMappingConfiguration and orders for created existing customer
      *
      * @param string $customerId
+     *
      * @return array
+     *
      * @throws HttpRequestException
      * @throws InvalidCaptureDelayException
      * @throws InvalidCaptureTypeException
@@ -55,6 +53,7 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
     {
         $this->getCreateIntegrationDataService()->createGeneralSettingsConfiguration();
         $this->createOrdersMappingConfiguration();
+
         return $this->createOrders($customerId);
     }
 
@@ -85,22 +84,24 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
      * Creates orders, transaction history details and returns array of merchant references and order amounts per order
      *
      * @param string $customerId
+     *
      * @return array
+     *
      * @throws HttpRequestException
      * @throws \PrestaShopException
-     * @throws Exception
+     * @throws \Exception
      */
     private function createOrders(string $customerId): array
     {
         $ordersMerchantReferenceAndAmount = [];
-        $addressId = Address::getFirstCustomerAddressId($customerId);
+        $addressId = \Address::getFirstCustomerAddressId($customerId);
         $orders = $this->readFromJSONFile()['orders'] ?? [];
         foreach ($orders as $order) {
-            $currencyId = Currency::getIdByIsoCode($order['currencyIsoCode']);
+            $currencyId = \Currency::getIdByIsoCode($order['currencyIsoCode']);
             $cartData = $this->createCart($customerId, $addressId, $currencyId, $order['orderItems']);
-            Shop::setContext(1, 1);
+            \Shop::setContext(1, 1);
             $cartId = $cartData['cart']['id'];
-            $cart = new Cart($cartId);
+            $cart = new \Cart($cartId);
             $totalAmount = $cart->getOrderTotal();
             $this->createOrderAndUpdateState($cartData, $totalAmount);
             $totalAmount = round($totalAmount, 2);
@@ -112,7 +113,7 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
             );
             $ordersMerchantReferenceAndAmount[$order['name']] = [
                 'merchantReference' => $cartId,
-                'amount' => $totalAmount * 100
+                'amount' => $totalAmount * 100,
             ];
         }
 
@@ -123,6 +124,7 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
      * Returns capture type for specific order
      *
      * @param string $captureTypeData
+     *
      * @return CaptureType
      */
     private function getCaptureType(string $captureTypeData): CaptureType
@@ -143,7 +145,9 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
      *
      * @param array $cartData
      * @param string $totalAmount
+     *
      * @return void
+     *
      * @throws HttpRequestException
      */
     private function createOrderAndUpdateState(array $cartData, string $totalAmount): void
@@ -175,7 +179,7 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
                 AdminAPI::get()->orderMappings($cart['id_shop'])->getOrderStatusMap()->toArray()['inProgress'],
                 $cart['id_shop_group'],
                 $cart['id_shop'],
-                $totalAmount
+                $totalAmount,
             ],
             $data
         );
@@ -241,20 +245,21 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
      * @param int $customerId
      * @param int $addressId
      * @param int $currencyId
+     *
      * @return array
+     *
      * @throws HttpRequestException
      */
     private function createCartDataWithOneProduct(
         array $orderItem,
-        int   $customerId,
-        int   $addressId,
-        int   $currencyId
-    ): array
-    {
-        $productId = $orderItem["productId"];
+        int $customerId,
+        int $addressId,
+        int $currencyId,
+    ): array {
+        $productId = $orderItem['productId'];
         $productData = $this->getProductTestProxy()->getProductData($productId)['product'];
         $productAttributeId = $productData['cache_default_attribute'];
-        $quantity = $orderItem["quantity"];
+        $quantity = $orderItem['quantity'];
         $data = $this->readFomXMLFile('create_cart_one_product');
         $data = str_replace(
             [
@@ -268,7 +273,7 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
                 '{id_carrier}',
                 '{id_product}',
                 '{id_product_attribute}',
-                '{quantity}'
+                '{quantity}',
             ],
             [
                 $addressId,
@@ -281,7 +286,7 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
                 1,
                 $productId,
                 $productAttributeId,
-                $quantity
+                $quantity,
             ],
             $data
         );
@@ -296,16 +301,17 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
      * @param int $customerId
      * @param int $addressId
      * @param int $currencyId
+     *
      * @return array
+     *
      * @throws HttpRequestException
      */
     private function createCartDataWithTwoProducts(
         array $orderItems,
-        int   $customerId,
-        int   $addressId,
-        int   $currencyId
-    ): array
-    {
+        int $customerId,
+        int $addressId,
+        int $currencyId,
+    ): array {
         $data = $this->readFomXMLFile('create_cart_two_products');
         $data = str_replace(
             [
@@ -316,7 +322,7 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
                 '{id_lang}',
                 '{id_shop_group}',
                 '{id_shop}',
-                '{id_carrier}'
+                '{id_carrier}',
             ],
             [
                 $addressId,
@@ -332,21 +338,21 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
         );
 
         $countOfOrderItems = count($orderItems);
-        for ($i = 1; $i <= $countOfOrderItems; $i++) {
-            $productId = $orderItems[$i - 1]["productId"];
+        for ($i = 1; $i <= $countOfOrderItems; ++$i) {
+            $productId = $orderItems[$i - 1]['productId'];
             $productData = $this->getProductTestProxy()->getProductData($productId)['product'];
             $productAttributeId = $productData['cache_default_attribute'];
-            $quantity = $orderItems[$i - 1]["quantity"];
+            $quantity = $orderItems[$i - 1]['quantity'];
             $data = str_replace(
                 [
                     "{id_product_$i}",
                     "{id_product_attribute_$i}",
-                    "{quantity_$i}"
+                    "{quantity_$i}",
                 ],
                 [
                     $productId,
                     $productAttributeId,
-                    $quantity
+                    $quantity,
                 ],
                 $data
             );

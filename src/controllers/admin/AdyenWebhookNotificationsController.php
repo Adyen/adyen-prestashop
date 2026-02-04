@@ -37,8 +37,8 @@ class AdyenWebhookNotificationsController extends AdyenBaseController
         $mapLink = $this->mapOrderLink($references);
 
         foreach ($jsonResponse['notifications'] as $key => $item) {
-            $jsonResponse['notifications'][$key]['orderId'] = (string)$mapId[$item['orderId']];
-            $jsonResponse['notifications'][$key]['details']['shopLink'] = (string)$mapLink[$item['orderId']];
+            $jsonResponse['notifications'][$key]['orderId'] = (string) $mapId[$item['orderId']];
+            $jsonResponse['notifications'][$key]['details']['shopLink'] = (string) $mapLink[$item['orderId']];
         }
 
         AdyenPrestaShopUtility::dieJsonArray($jsonResponse);
@@ -71,7 +71,7 @@ class AdyenWebhookNotificationsController extends AdyenBaseController
 
         $orderNumbers = [];
         foreach ($references as $reference) {
-            $orderNumbers[$reference] = Order::getIdByCartId((int)$reference);
+            $orderNumbers[$reference] = Order::getIdByCartId((int) $reference);
         }
 
         return $orderNumbers;

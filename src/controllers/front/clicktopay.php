@@ -27,6 +27,7 @@ class AdyenOfficialClickToPayModuleFrontController extends PaymentController
 
         if ($this->isHummigbirdTheme()) {
             $this->setTemplate('module:adyenofficial/views/templates/front/adyen-additional-details-hummingbird.tpl');
+
             return;
         }
 
@@ -44,11 +45,11 @@ class AdyenOfficialClickToPayModuleFrontController extends PaymentController
                     'paymentredirect',
                     [
                         'adyenMerchantReference' => $cartId,
-                        'adyenPaymentType' => SessionService::get('adyenPaymentMethodType')
+                        'adyenPaymentType' => SessionService::get('adyenPaymentMethodType'),
                     ]
                 ),
                 'checkoutConfigUrl' => Url::getFrontUrl('paymentconfig'),
-                'checkoutUrl' => $this->context->link->getPageLink('order', $this->ssl, null)
+                'checkoutUrl' => $this->context->link->getPageLink('order', $this->ssl, null),
             ]
         );
     }

@@ -2,7 +2,6 @@
 
 namespace AdyenPayment\Tests;
 
-
 use Adyen\Core\Infrastructure\Configuration\Configuration;
 use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\Services\Integration\ConfigService;

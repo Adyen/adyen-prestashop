@@ -2,12 +2,8 @@
 
 namespace AdyenPayment\Classes\Utility;
 
-use Db;
-
 /**
  * Class DatabaseHandler
- *
- * @package AdyenPayment\Utility
  */
 class DatabaseHandler
 {
@@ -22,11 +18,11 @@ class DatabaseHandler
     public static function createTable(string $name, int $indexNum): bool
     {
         $indexColumns = '';
-        for ($i = 1; $i <= $indexNum; $i++) {
+        for ($i = 1; $i <= $indexNum; ++$i) {
             $indexColumns .= 'index_' . $i . '      VARCHAR(255),';
         }
 
-        $sql = 'CREATE TABLE IF NOT EXISTS ' . bqSQL(_DB_PREFIX_ . "${name}")
+        $sql = 'CREATE TABLE IF NOT EXISTS ' . bqSQL(_DB_PREFIX_ . "{$name}")
             . '(
   	        `id`           INT(64) unsigned NOT NULL AUTO_INCREMENT,
   	        `type`         VARCHAR(255),' .
@@ -36,7 +32,7 @@ class DatabaseHandler
 	         PRIMARY KEY (`id`)
              ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8';
 
-        return Db::getInstance()->execute($sql);
+        return \Db::getInstance()->execute($sql);
     }
 
     /**
@@ -48,8 +44,8 @@ class DatabaseHandler
      */
     public static function dropTable(string $name): bool
     {
-        $script = 'DROP TABLE IF EXISTS ' . bqSQL(_DB_PREFIX_ . "${name}");
+        $script = 'DROP TABLE IF EXISTS ' . bqSQL(_DB_PREFIX_ . "{$name}");
 
-        return Db::getInstance()->execute($script);
+        return \Db::getInstance()->execute($script);
     }
 }

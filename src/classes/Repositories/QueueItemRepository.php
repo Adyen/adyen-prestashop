@@ -2,6 +2,7 @@
 
 namespace AdyenPayment\Classes\Repositories;
 
+use Adyen\Core\BusinessLogic\ORM\Interfaces\QueueItemRepository as BaseItemRepository;
 use Adyen\Core\Infrastructure\Logger\Logger;
 use Adyen\Core\Infrastructure\ORM\Entity;
 use Adyen\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
@@ -10,13 +11,10 @@ use Adyen\Core\Infrastructure\ORM\QueryFilter\QueryFilter;
 use Adyen\Core\Infrastructure\ORM\Utility\IndexHelper;
 use Adyen\Core\Infrastructure\TaskExecution\Exceptions\QueueItemSaveException;
 use Adyen\Core\Infrastructure\TaskExecution\QueueItem;
-use Adyen\Core\BusinessLogic\ORM\Interfaces\QueueItemRepository as BaseItemRepository;
 use Exception;
 
 /**
  * Class QueueItemRepository
- *
- * @package AdyenPayment\Classes\Repositories
  */
 class QueueItemRepository extends BaseRepository implements BaseItemRepository
 {
@@ -36,10 +34,10 @@ class QueueItemRepository extends BaseRepository implements BaseItemRepository
      *
      * @return void
      */
-    public function deleteWhere(QueryFilter $queryFilter = null): void
+    public function deleteWhere(?QueryFilter $queryFilter = null): void
     {
         try {
-            $entity = new $this->entityClass;
+            $entity = new $this->entityClass();
             $type = $entity->getConfig()->getType();
             $indexMap = IndexHelper::mapFieldsToIndexes($entity);
 
@@ -49,7 +47,7 @@ class QueueItemRepository extends BaseRepository implements BaseItemRepository
             $whereClause = $this->generateWhereStatement($queryParts);
 
             \Db::getInstance()->delete($this->getDbName(), $whereClause . " AND type='" . pSQL($type) . "'");
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Logger::logError('Delete where failed with error ' . $e->getMessage());
         }
     }
@@ -85,9 +83,9 @@ class QueueItemRepository extends BaseRepository implements BaseItemRepository
      *
      * @param QueueItem $queueItem Item to save
      * @param array $additionalWhere List of key/value pairs that must be satisfied upon saving queue item. Key is
-     *  queue item property and value is condition value for that property. Example for MySql storage:
-     *  $storage->save($queueItem, array('status' => 'queued')) should produce query
-     *  UPDATE queue_storage_table SET .... WHERE .... AND status => 'queued'
+     *                               queue item property and value is condition value for that property. Example for MySql storage:
+     *                               $storage->save($queueItem, array('status' => 'queued')) should produce query
+     *                               UPDATE queue_storage_table SET .... WHERE .... AND status => 'queued'
      *
      * @return int
      *
@@ -117,11 +115,11 @@ class QueueItemRepository extends BaseRepository implements BaseItemRepository
     public function batchStatusUpdate(array $ids, $status): void
     {
         $sql = 'UPDATE `' . _DB_PREFIX_ . $this->getDbName() . '` SET `status` = "' . pSQL(
-                $status
-            ) . '" WHERE `id` IN (' . implode(
-                ',',
-                array_map('intval', $ids)
-            ) . ')';
+            $status
+        ) . '" WHERE `id` IN (' . implode(
+            ',',
+            array_map('intval', $ids)
+        ) . ')';
 
         \Db::getInstance()->execute($sql);
     }
@@ -147,7 +145,7 @@ class QueueItemRepository extends BaseRepository implements BaseItemRepository
             $filter->where($name, Operators::EQUALS, $value ?? '');
         }
 
-        /** @var QueueItem $item */
+        /** @var QueueItem|null $item */
         $item = $this->selectOne($filter);
         if ($item === null) {
             throw new QueueItemSaveException("Cannot update queue item with id {$queueItem->getId()}.");
@@ -198,7 +196,7 @@ class QueueItemRepository extends BaseRepository implements BaseItemRepository
      * @param array $runningQueueNames
      * @param int $limit
      *
-     * @return Entity[]
+     * @return QueueItem[]
      *
      * @throws \PrestaShopException
      */
@@ -213,7 +211,7 @@ class QueueItemRepository extends BaseRepository implements BaseItemRepository
                 $this->buildWhereString([
                     'type' => 'QueueItem',
                     $this->getIndexMapping('status') => QueueItem::QUEUED,
-                    $this->getIndexMapping('priority') => $priority
+                    $this->getIndexMapping('priority') => $priority,
                 ])
             );
 
@@ -237,6 +235,7 @@ class QueueItemRepository extends BaseRepository implements BaseItemRepository
                 . ' ON queueView.id = queueTable.id';
 
             $records = \Db::getInstance()->executeS($query);
+            /** @var QueueItem[] $queuedItems */
             $queuedItems = $this->unserializeEntities($records);
         } catch (\PrestaShopDatabaseException $exception) {
             // In case of exception return empty result set
@@ -257,9 +256,9 @@ class QueueItemRepository extends BaseRepository implements BaseItemRepository
     {
         $where = [];
         foreach ($whereFields as $field => $value) {
-            $where[] = is_int($value) ? bqSQL($field) . Operators::EQUALS . pSQL($value) : bqSQL(
-                    $field
-                ) . Operators::EQUALS . "'" . pSQL($value) . "'";
+            $where[] = is_int($value) ? bqSQL($field) . Operators::EQUALS . pSQL((string) $value) : bqSQL(
+                $field
+            ) . Operators::EQUALS . "'" . pSQL($value) . "'";
         }
 
         return implode(' AND ', $where);

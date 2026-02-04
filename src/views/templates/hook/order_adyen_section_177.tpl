@@ -154,7 +154,7 @@
                 <input type="text"
                        name="adyenPaymentLinkInput"
                        class="col-md-6 form-control"
-                       value="{$adyenPaymentLink}"
+                       value="{$adyenPaymentLink|escape:'htmlall':'UTF-8'}"
                        id="adyen-payment-link"
                        disabled>
                 <div class="input-group-append">
@@ -177,8 +177,8 @@
                 <tbody>
                 {foreach from=$transactionDetailsSorted item=item}
                     <tr>
-                        <td>{$item.eventCode}</td>
-                        <td>{$item.date}</td>
+                        <td>{$item.eventCode|escape:'htmlall':'UTF-8'}</td>
+                        <td>{$item.date|escape:'htmlall':'UTF-8'}</td>
                         <td>{if $item.status} true {else} false {/if}</td>
                     </tr>
                 {/foreach}
@@ -205,7 +205,7 @@
                 <input type="text"
                        name="adyenPaymentLinkInput"
                        class="col-md-6 form-control"
-                       value="{$adyenPaymentLink}"
+                       value="{$adyenPaymentLink|escape:'htmlall':'UTF-8'}"
                        id="adyen-payment-link"
                        disabled>
                 <div class="input-group-append">

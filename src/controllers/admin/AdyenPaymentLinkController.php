@@ -12,8 +12,6 @@ require_once rtrim(_PS_MODULE_DIR_, '/') . '/adyenofficial/vendor/autoload.php';
 
 /**
  * Class AdyenPaymentLinkController
- *
- * @package AdyenPayment\Controllers\admin
  */
 class AdyenPaymentLinkController extends AdyenBaseController
 {
@@ -32,15 +30,14 @@ class AdyenPaymentLinkController extends AdyenBaseController
         $order = new Order($orderId);
         $currency = new PrestaCurrency($order->id_currency);
 
-        $response = AdminAPI::get()->paymentLink((string)$order->id_shop)->createPaymentLink(
-            new CreatePaymentLinkRequest(!empty($captureAmount) ? $captureAmount : $order->getOrdersTotalPaid(), $currency->iso_code, $order->id_cart)
+        $response = AdminAPI::get()->paymentLink((string) $order->id_shop)->createPaymentLink(
+            new CreatePaymentLinkRequest(!empty($captureAmount) ? $captureAmount : $order->getOrdersTotalPaid(), $currency->iso_code, (string) $order->id_cart)
         );
 
         if (!$response->isSuccessful()) {
-
             SessionService::set(
                 'errorMessage',
-                $this->module->l('Payment link generation failed. Reason: ') . $response->toArray()['errorMessage'] ?? ''
+                $this->module->l('Payment link generation failed. Reason: ') . ($response->toArray()['errorMessage'] ?? '')
             );
             AdyenPrestaShopUtility::dieJson($response);
         }

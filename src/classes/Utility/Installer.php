@@ -9,23 +9,16 @@ use Adyen\Core\BusinessLogic\Domain\Payment\Repositories\PaymentMethodConfigRepo
 use Adyen\Core\Infrastructure\Logger\Logger;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Adyen\Core\Infrastructure\ServiceRegister;
-use AdyenOfficial;
 use AdyenPayment\Classes\Bootstrap;
 use AdyenPayment\Classes\Services\ImageHandler;
 use AdyenPayment\Classes\Services\Integration\StoreService;
 use AdyenPayment\Classes\Version\Contract\VersionHandler;
 use Configuration;
-use Db;
 use Exception;
 use PrestaShop\PrestaShop\Adapter\Entity\OrderState;
-use PrestaShopDatabaseException;
-use PrestaShopException;
-use Tab;
 
 /**
  * Class Installer
- *
- * @package AdyenPayment\Utility
  */
 class Installer
 {
@@ -68,7 +61,7 @@ class Installer
         'AdyenWebhookValidation',
         'AdyenCapture',
         'AdyenPaymentLink',
-        'AdyenAuthorizationAdjustment'
+        'AdyenAuthorizationAdjustment',
     ];
 
     /** @var string[] */
@@ -85,28 +78,28 @@ class Installer
         'actionValidateOrder',
         'sendMailAlterTemplateVars',
         'displayOrderConfirmation',
-        'actionObjectOrderUpdateAfter'
+        'actionObjectOrderUpdateAfter',
     ];
 
     /** @var string[] */
     private static $deprecated_hooks = [
-        'paymentReturn'
+        'paymentReturn',
     ];
 
     /** @var array */
     private static $allPrestaShopStatuses = [];
 
     /**
-     * @var AdyenOfficial
+     * @var \AdyenOfficial
      */
     private $module;
 
     /**
      * Installer class constructor.
      *
-     * @param AdyenOfficial $module
+     * @param \AdyenOfficial $module
      */
-    public function __construct(AdyenOfficial $module)
+    public function __construct(\AdyenOfficial $module)
     {
         $this->module = $module;
     }
@@ -118,9 +111,9 @@ class Installer
      * @return void
      *
      * @throws RepositoryClassException
-     * @throws PrestaShopException
-     * @throws PrestaShopDatabaseException
-     * @throws Exception
+     * @throws \PrestaShopException
+     * @throws \PrestaShopDatabaseException
+     * @throws \Exception
      */
     public function install(): void
     {
@@ -138,8 +131,7 @@ class Installer
      * @return void
      *
      * @throws RepositoryClassException
-     *
-     * @throws Exception
+     * @throws \Exception
      */
     public function uninstall(): void
     {
@@ -167,19 +159,19 @@ class Installer
      *
      * @return void Controller deletion status
      *
-     * @throws PrestaShopException
-     * @throws Exception
+     * @throws \PrestaShopException
+     * @throws \Exception
      */
     public function removeControllers(): void
     {
-        /** @var Tab[] $tabs */
-        $tabs = Tab::getCollectionFromModule($this->module->name);
-        if ($tabs && count($tabs)) {
+        /** @var \Tab[] $tabs */
+        $tabs = \Tab::getCollectionFromModule($this->module->name);
+        if ($tabs) {
             foreach ($tabs as $tab) {
                 $success = $tab->delete();
 
                 if (!$success) {
-                    throw new Exception('Adyen plugin failed to remove controller: ' . $tab->name);
+                    throw new \Exception('Adyen plugin failed to remove controller: ' . $tab->name);
                 }
             }
         }
@@ -190,7 +182,7 @@ class Installer
      *
      * @return void
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function addControllersAndHooks(): void
     {
@@ -199,10 +191,10 @@ class Installer
     }
 
     /**
-     * @return bool
+     * @return void
      *
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      */
     public function deactivateCustomOrderStates(): void
     {
@@ -213,8 +205,8 @@ class Installer
     /**
      * @return void
      *
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      */
     public function deactivateOldCustomOrderStates(): void
     {
@@ -225,8 +217,8 @@ class Installer
     /**
      * @return void
      *
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      */
     public function activateCustomOrderStates(): void
     {
@@ -237,11 +229,9 @@ class Installer
     /**
      * @param string $name
      *
-     * @return bool
+     * @return void
      *
-     * @throws PrestaShopException
-     * @throws PrestaShopDatabaseException
-     * @throws Exception
+     * @throws \PrestaShopDatabaseException
      */
     public function deactivateCustomOrderState(string $name): void
     {
@@ -259,7 +249,7 @@ class Installer
             $success = $orderState->update();
 
             if (!$success) {
-                throw new Exception('Adyen plugin failed to delete order state: ' . $name);
+                throw new \Exception('Adyen plugin failed to delete order state: ' . $name);
             }
         }
     }
@@ -269,13 +259,13 @@ class Installer
      *
      * @return void
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function addHook(string $hook): void
     {
         $result = $this->module->registerHook($hook);
         if (!$result) {
-            throw new Exception('Adyen plugin failed to register hook: ' . $hook);
+            throw new \Exception('Adyen plugin failed to register hook: ' . $hook);
         }
     }
 
@@ -287,28 +277,28 @@ class Installer
      *
      * @return void
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function addController(string $name, int $parentId = -1): void
     {
-        $tab = new Tab();
+        $tab = new \Tab();
 
-        $tab->active = 1;
-        $tab->name[(int)Configuration::get('PS_LANG_DEFAULT')] = $this->module->name;
+        $tab->active = true;
+        $tab->name[(int) \Configuration::get('PS_LANG_DEFAULT')] = $this->module->name;
         $tab->class_name = $name;
         $tab->module = $this->module->name;
         $tab->id_parent = $parentId;
         $success = $tab->add();
 
         if (!$success) {
-            throw new Exception('Adyen plugin failed to register controller: ' . $name);
+            throw new \Exception('Adyen plugin failed to register controller: ' . $name);
         }
     }
 
     /**
      * @return void
      *
-     * @throws Exception
+     * @throws \Exception
      */
     private function disconnect()
     {
@@ -325,7 +315,7 @@ class Installer
                     }
                 );
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Logger::logWarning('Failed to disconnect merchant account because ' . $e->getMessage());
         }
     }
@@ -335,7 +325,7 @@ class Installer
      *
      * @return void
      *
-     * @throws Exception
+     * @throws \Exception
      */
     private function removeImages(): void
     {
@@ -353,7 +343,7 @@ class Installer
     /**
      * @return void
      *
-     * @throws Exception
+     * @throws \Exception
      */
     private function doRemoveImages(): void
     {
@@ -372,7 +362,7 @@ class Installer
      *
      * @return void
      *
-     * @throws Exception
+     * @throws \Exception
      */
     private function createTables(): void
     {
@@ -388,14 +378,14 @@ class Installer
      *
      * @return void
      *
-     * @throws Exception
+     * @throws \Exception
      */
     private function createTable(string $tableName, int $indexNumber): void
     {
         $createdTable = DatabaseHandler::createTable($tableName, $indexNumber);
 
         if (!$createdTable) {
-            throw new Exception('Adyen plugin failed to create table: ' . $tableName);
+            throw new \Exception('Adyen plugin failed to create table: ' . $tableName);
         }
     }
 
@@ -404,7 +394,7 @@ class Installer
      *
      * @return void
      *
-     * @throws Exception
+     * @throws \Exception
      */
     private function addControllers(): void
     {
@@ -414,24 +404,11 @@ class Installer
     }
 
     /**
-     * Call functions with arguments given as second parameter
-     *
-     * @param callable $handler Callback of function
-     * @param string $arg Argument of function
-     *
-     * @return mixed|void Return value of the called handler
-     */
-    private function call(callable $handler, string $arg)
-    {
-        return call_user_func($handler, $arg);
-    }
-
-    /**
      * Registers module hooks.
      *
      * @return void
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function addHooks(): void
     {
@@ -439,7 +416,7 @@ class Installer
             if ($this->module->isRegisteredInHook($hook)) {
                 $result = $this->module->unregisterHook($hook);
                 if (!$result) {
-                    throw new Exception('Adyen plugin failed to unregister hook: ' . $hook);
+                    throw new \Exception('Adyen plugin failed to unregister hook: ' . $hook);
                 }
             }
         }
@@ -455,11 +432,9 @@ class Installer
      * @param string $name
      * @param string $color
      *
-     * @return bool
+     * @return void
      *
-     * @throws PrestaShopException
-     * @throws PrestaShopDatabaseException
-     * @throws Exception
+     * @throws \PrestaShopDatabaseException
      */
     private function addCustomOrderState(string $name, string $color): void
     {
@@ -471,7 +446,7 @@ class Installer
 
             $success = $orderState->update();
             if (!$success) {
-                throw new Exception('Adyen plugin failed to delete order state: ' . $name);
+                throw new \Exception('Adyen plugin failed to delete order state: ' . $name);
             }
 
             return;
@@ -480,7 +455,7 @@ class Installer
         $orderState = new OrderState();
         $orderState->name = [
             1 => $name,
-            2 => $name
+            2 => $name,
         ];
 
         $orderState->color = $color;
@@ -492,11 +467,11 @@ class Installer
 
         $success = $orderState->add();
         if ($success) {
-            self::$allPrestaShopStatuses[$name] = (string)$orderState->id;
+            self::$allPrestaShopStatuses[$name] = (string) $orderState->id;
         }
 
         if (!$success) {
-            throw new Exception('Adyen plugin failed to add order state: ' . $name);
+            throw new \Exception('Adyen plugin failed to add order state: ' . $name);
         }
     }
 
@@ -505,7 +480,7 @@ class Installer
      *
      * @return void
      *
-     * @throws Exception
+     * @throws \Exception
      */
     private function dropTables(): void
     {
@@ -520,14 +495,14 @@ class Installer
      *
      * @return void
      *
-     * @throws Exception
+     * @throws \Exception
      */
     private function dropTable(string $tableName): void
     {
         $createdTable = DatabaseHandler::dropTable($tableName);
 
         if (!$createdTable) {
-            throw new Exception('Adyen plugin failed to drop table: ' . $tableName);
+            throw new \Exception('Adyen plugin failed to drop table: ' . $tableName);
         }
     }
 
@@ -575,19 +550,19 @@ class Installer
      *
      * @return array
      *
-     * @throws PrestaShopDatabaseException
+     * @throws \PrestaShopDatabaseException
      */
     private function getAllPrestaShopStatuses(): array
     {
-        if (!static::$allPrestaShopStatuses) {
-            static::$allPrestaShopStatuses = array_column(
+        if (!self::$allPrestaShopStatuses) {
+            self::$allPrestaShopStatuses = array_column(
                 $this->getPrestaStatusesFromDatabase(),
                 'id_order_state',
                 'name'
             );
         }
 
-        return static::$allPrestaShopStatuses;
+        return self::$allPrestaShopStatuses;
     }
 
     /**
@@ -596,11 +571,11 @@ class Installer
      *
      * @return array
      *
-     * @throws PrestaShopDatabaseException
+     * @throws \PrestaShopDatabaseException
      */
     private function getPrestaStatusesFromDatabase(): array
     {
-        return Db::getInstance()->executeS(
+        return \Db::getInstance()->executeS(
             '
             SELECT *
             FROM `' . _DB_PREFIX_ . 'order_state` os

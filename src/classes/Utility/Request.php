@@ -4,8 +4,6 @@ namespace AdyenPayment\Classes\Utility;
 
 /**
  * Class Request
- *
- * @package AdyenPayment\Classes\Utility
  */
 class Request
 {

@@ -11,8 +11,6 @@ use AdyenPayment\Classes\Utility\Url;
 
 /**
  * Class WebhookUrlService
- *
- * @package AdyenPayment\Integration
  */
 class WebhookUrlService implements WebhookUrlServiceInterface
 {
@@ -20,6 +18,7 @@ class WebhookUrlService implements WebhookUrlServiceInterface
      * Returns web-hook callback URL for current system.
      *
      * @return string
+     *
      * @throws QueryFilterInvalidParamException
      */
     public function getWebhookUrl(): string
@@ -28,7 +27,7 @@ class WebhookUrlService implements WebhookUrlServiceInterface
 
         // only for test purposes
         $testHostname = $this->getConfigurationManager()->getConfigValue('testHostname');
-        if($testHostname){
+        if ($testHostname) {
             $url = str_replace('localhost', $testHostname, $url);
         }
 

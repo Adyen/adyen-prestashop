@@ -4,19 +4,16 @@ namespace AdyenPayment\Classes\E2ETest\Services;
 
 use Adyen\Core\BusinessLogic\E2ETest\Services\CreateIntegrationDataService;
 use Adyen\Core\Infrastructure\Http\Exceptions\HttpRequestException;
-use Adyen\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Adyen\Core\Infrastructure\Http\HttpClient;
+use Adyen\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
 use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\E2ETest\Http\ShopsTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\TestProxy;
-use Configuration;
 use Module;
 use Shop;
 
 /**
  * Class CreateInitialSeedDataService
- *
- * @package AdyenPayment\Classes\E2ETest\Services
  */
 class CreateInitialSeedDataService extends BaseCreateSeedDataService
 {
@@ -37,7 +34,7 @@ class CreateInitialSeedDataService extends BaseCreateSeedDataService
      */
     public function __construct(string $url, string $credentials)
     {
-        $host = Configuration::get('PS_SHOP_DOMAIN');
+        $host = \Configuration::get('PS_SHOP_DOMAIN');
         $this->shopProxy = new ShopsTestProxy(ServiceRegister::getService(HttpClient::class), $host, $credentials);
         $this->baseUrl = $url;
     }
@@ -49,7 +46,7 @@ class CreateInitialSeedDataService extends BaseCreateSeedDataService
      */
     public function createInitialData(): void
     {
-        Configuration::updateValue('PS_MULTISHOP_FEATURE_ACTIVE', 1);
+        \Configuration::updateValue('PS_MULTISHOP_FEATURE_ACTIVE', 1);
         $this->createSubStores();
         $this->updateBaseUrlAndDefaultShopName();
         $this->getCreateIntegrationDataService()->saveTestHostname($this->baseUrl);
@@ -81,12 +78,12 @@ class CreateInitialSeedDataService extends BaseCreateSeedDataService
                     [
                         '{id_shop}',
                         '{host}',
-                        '{virtual_uri}'
+                        '{virtual_uri}',
                     ],
                     [
                         $newSubStore['id'],
                         parse_url($this->baseUrl)['host'],
-                        $newSubStore['subStore'] . '/'
+                        $newSubStore['subStore'] . '/',
                     ],
                     $data
                 );
@@ -111,21 +108,23 @@ class CreateInitialSeedDataService extends BaseCreateSeedDataService
         $host = parse_url($this->baseUrl)['host'];
         $data = str_replace('{host}', $host, $data);
         $this->shopProxy->updateSubStoreUrl(['data' => $data]);
-        Configuration::updateValue('PS_SHOP_DOMAIN', $host);
-        Configuration::updateValue('PS_SHOP_DOMAIN_SSL', $host);
+        \Configuration::updateValue('PS_SHOP_DOMAIN', $host);
+        \Configuration::updateValue('PS_SHOP_DOMAIN_SSL', $host);
     }
 
     /**
      * Enables module in given subStore
      *
      * @param int $subStoreId
+     *
      * @return void
+     *
      * @throws \PrestaShopException
      */
     private function enableModuleInNewSubStore(int $subStoreId): void
     {
-        Shop::setContext(1, $subStoreId);
-        $module = Module::getInstanceByName('adyenofficial');
+        \Shop::setContext(1, $subStoreId);
+        $module = \Module::getInstanceByName('adyenofficial');
         $module->enable();
     }
 

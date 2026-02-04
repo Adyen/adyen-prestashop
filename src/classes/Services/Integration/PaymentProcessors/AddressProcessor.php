@@ -2,25 +2,19 @@
 
 namespace AdyenPayment\Classes\Services\Integration\PaymentProcessors;
 
+use Address as PrestaAddress;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentLink\Factory\PaymentLinkRequestBuilder;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentLink\Models\PaymentLinkRequestContext;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Factory\PaymentRequestBuilder;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\BillingAddress;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\DeliveryAddress;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\StartTransactionRequestContext;
-use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\AddressProcessor as AddressProcessorInterface;
 use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\AddressProcessor as PaymentLinkAddressProcessorInterface;
-use Cart;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\AddressProcessor as AddressProcessorInterface;
 use Country as PrestaCountry;
-use Address as PrestaAddress;
-use PrestaShopDatabaseException;
-use PrestaShopException;
-use State;
 
 /**
  * Class AddressProcessor
- *
- * @package AdyenPayment\Integration\PaymentProcessors
  */
 class AddressProcessor implements AddressProcessorInterface, PaymentLinkAddressProcessorInterface
 {
@@ -30,13 +24,13 @@ class AddressProcessor implements AddressProcessorInterface, PaymentLinkAddressP
      *
      * @return void
      *
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      */
     public function process(PaymentRequestBuilder $builder, StartTransactionRequestContext $context): void
     {
-        $cart = new Cart($context->getReference());
-        $country = $this->getCountry($cart->id_address_invoice);
+        $cart = new \Cart((int) $context->getReference());
+        $country = $this->getCountry((string) $cart->id_address_invoice);
         $billingAddress = $this->getBillingAddress($cart);
 
         if ($billingAddress) {
@@ -56,13 +50,14 @@ class AddressProcessor implements AddressProcessorInterface, PaymentLinkAddressP
      * @param PaymentLinkRequestContext $context
      *
      * @return void
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
+     *
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      */
     public function processPaymentLink(PaymentLinkRequestBuilder $builder, PaymentLinkRequestContext $context): void
     {
-        $cart = new Cart($context->getReference());
-        $country = $this->getCountry($cart->id_address_invoice);
+        $cart = new \Cart((int) $context->getReference());
+        $country = $this->getCountry((string) $cart->id_address_invoice);
 
         if ($billingAddress = $this->getBillingAddress($cart)) {
             $builder->setBillingAddress($billingAddress);
@@ -75,17 +70,17 @@ class AddressProcessor implements AddressProcessorInterface, PaymentLinkAddressP
     }
 
     /**
-     * @param Cart $cart
+     * @param \Cart $cart
      *
      * @return BillingAddress|null
      *
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      */
-    private function getBillingAddress(Cart $cart): ?BillingAddress
+    private function getBillingAddress(\Cart $cart): ?BillingAddress
     {
-        $country = $this->getCountry($cart->id_address_invoice);
-        $address = $this->formatAddressInfo($this->getAddress($cart->id_address_invoice));
+        $country = $this->getCountry((string) $cart->id_address_invoice);
+        $address = $this->formatAddressInfo($this->getAddress((string) $cart->id_address_invoice));
 
         if (!empty($address->address1)) {
             $stateIsoCode = $this->getStateIsoCode($country, $address);
@@ -104,17 +99,17 @@ class AddressProcessor implements AddressProcessorInterface, PaymentLinkAddressP
     }
 
     /**
-     * @param Cart $cart
+     * @param \Cart $cart
      *
      * @return DeliveryAddress|null
      *
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      */
-    private function getDeliveryAddress(Cart $cart): ?DeliveryAddress
+    private function getDeliveryAddress(\Cart $cart): ?DeliveryAddress
     {
-        $country = $this->getCountry($cart->id_address_invoice);
-        $address = $this->formatAddressInfo($this->getAddress($cart->id_address_invoice));
+        $country = $this->getCountry((string) $cart->id_address_invoice);
+        $address = $this->formatAddressInfo($this->getAddress((string) $cart->id_address_invoice));
 
         if ($cart->id_address_invoice === $cart->id_address_delivery && !empty($cart->id_address_delivery)) {
             $stateIsoCode = $this->getStateIsoCode($country, $address);
@@ -130,8 +125,8 @@ class AddressProcessor implements AddressProcessorInterface, PaymentLinkAddressP
         }
 
         if (!empty($cart->id_address_delivery)) {
-            $deliveryCountry = $this->getCountry($cart->id_address_delivery);
-            $deliveryAddress = $this->formatAddressInfo($this->getAddress($cart->id_address_delivery));
+            $deliveryCountry = $this->getCountry((string) $cart->id_address_delivery);
+            $deliveryAddress = $this->formatAddressInfo($this->getAddress((string) $cart->id_address_delivery));
             $deliveryStateIsoCode = $this->getStateIsoCode($deliveryCountry, $deliveryAddress);
 
             return new DeliveryAddress(
@@ -175,7 +170,7 @@ class AddressProcessor implements AddressProcessorInterface, PaymentLinkAddressP
      */
     private function getAddress(string $id): PrestaAddress
     {
-        return new \Address($id);
+        return new PrestaAddress((int) $id);
     }
 
     /**
@@ -183,12 +178,12 @@ class AddressProcessor implements AddressProcessorInterface, PaymentLinkAddressP
      *
      * @return PrestaCountry
      *
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      */
     private function getCountry(string $id): PrestaCountry
     {
-        return new PrestaCountry(PrestaAddress::getCountryAndState($id)['id_country']);
+        return new PrestaCountry(PrestaAddress::getCountryAndState((int) $id)['id_country']);
     }
 
     /**
@@ -197,11 +192,11 @@ class AddressProcessor implements AddressProcessorInterface, PaymentLinkAddressP
      *
      * @return string
      *
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      */
     private function getStateIsoCode(PrestaCountry $country, PrestaAddress $address): string
     {
-        return (new State($address->id_state))->iso_code ?? '';
+        return (new \State($address->id_state))->iso_code ?? '';
     }
 }

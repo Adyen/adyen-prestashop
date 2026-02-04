@@ -4,8 +4,6 @@ namespace AdyenPayment\Classes\Repositories;
 
 /**
  * Class LogsRepository
- *
- * @package AdyenPayment\Classes\Repositories
  */
 class LogsRepository
 {

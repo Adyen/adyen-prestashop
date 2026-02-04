@@ -17,7 +17,7 @@ class Autoloader
      * A placeholder to hold the file iterator so that directory traversal is only
      * performed once.
      */
-    protected static $fileIterator = null;
+    protected static $fileIterator;
 
     /**
      * Autoload function for registration with spl_autoload_register
@@ -71,5 +71,4 @@ class Autoloader
     {
         static::$pathTop = $path;
     }
-
 }

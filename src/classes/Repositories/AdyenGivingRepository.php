@@ -6,8 +6,6 @@ use Adyen\Core\BusinessLogic\DataAccess\AdyenGiving\Contracts\AdyenGivingReposit
 
 /**
  * Class AdyenGivingRepository
- *
- * @package AdyenPayment\Classes\Repositories
  */
 class AdyenGivingRepository extends BaseRepositoryWithConditionalDelete implements BaseAdyenGivingRepository
 {

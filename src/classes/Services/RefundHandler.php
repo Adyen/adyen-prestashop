@@ -15,20 +15,10 @@ use AdyenPayment\Classes\Bootstrap;
 use AdyenPayment\Classes\Utility\SessionService;
 use AdyenPayment\Classes\Version\Contract\VersionHandler;
 use Currency as PrestaCurrency;
-use Db;
-use Exception;
-use Module;
 use Order;
-use OrderDetail;
-use OrderSlip;
-use PrestaShopDatabaseException;
-use PrestaShopException;
-use Tools;
 
 /**
  * Class RefundHandler
- *
- * @package AdyenPayment\Classes\Utility
  */
 class RefundHandler
 {
@@ -36,8 +26,7 @@ class RefundHandler
      * Sends refund request to Adyen.
      * Order slip is already created at this point.
      *
-     * @param Order $order
-     *
+     * @param \Order $order
      * @param array $quantityList
      *
      * @return void
@@ -45,9 +34,9 @@ class RefundHandler
      * @throws InvalidCurrencyCode
      * @throws InvalidMerchantReferenceException
      * @throws RepositoryClassException
-     * @throws Exception
+     * @throws \Exception
      */
-    public static function handleRefund(Order $order, array $quantityList): void
+    public static function handleRefund(\Order $order, array $quantityList): void
     {
         Bootstrap::init();
 
@@ -58,8 +47,8 @@ class RefundHandler
 
         $currency = new PrestaCurrency($order->id_currency);
         $amount = self::versionHandler()->getRefundedAmount($order);
-        $response = AdminAPI::get()->refund((string)$order->id_shop)->handle(
-            (string)$order->id_cart,
+        $response = AdminAPI::get()->refund((string) $order->id_shop)->handle(
+            (string) $order->id_cart,
             $amount,
             $currency->iso_code
         );
@@ -67,59 +56,59 @@ class RefundHandler
         if (!$response->isSuccessful()) {
             self::versionHandler()->rollbackOrderSlipAdd($order, $quantityList);
             self::setErrorMessage(
-                Module::getInstanceByName('adyenofficial')->l(
+                \Module::getInstanceByName('adyenofficial')->l(
                     'Refund request failed. Please check Adyen configuration. Reason: '
                 )
-                . $response->toArray()['errorMessage'] ?? ''
+                . ($response->toArray()['errorMessage'] ?? '')
             );
 
-            Tools::redirect(self::orderService()->getOrderUrl((string)$order->id_cart));
+            \Tools::redirect(self::orderService()->getOrderUrl((string) $order->id_cart));
 
             return;
         }
 
         self::setSuccessMessage(
-            Module::getInstanceByName('adyenofficial')->l('Refund request successfully sent to Adyen.')
+            \Module::getInstanceByName('adyenofficial')->l('Refund request successfully sent to Adyen.')
         );
     }
 
     /**
-     * @param Order $order
+     * @param \Order $order
      * @param float $amount
      *
      * @return void
      *
      * @throws InvalidCurrencyCode
      * @throws RepositoryClassException
-     * @throws PrestaShopDatabaseException
-     * @throws Exception
+     * @throws \PrestaShopDatabaseException
+     * @throws \Exception
      */
-    public static function handleAdyenSuccessRefund(Order $order, float $amount): void
+    public static function handleAdyenSuccessRefund(\Order $order, float $amount): void
     {
         Bootstrap::init();
         $currency = new PrestaCurrency($order->id_currency);
-        $transactionHistory = self::getTransactionHistoryService()->getTransactionHistory($order->id_cart);
+        $transactionHistory = self::getTransactionHistoryService()->getTransactionHistory((string) $order->id_cart);
         $refundedOnAdyen = $transactionHistory->getTotalAmountForEventCode('REFUND');
         $refundedOnPresta = self::versionHandler()->getRefundedAmountOnPresta($order);
         if ($refundedOnAdyen->getPriceInCurrencyUnits() > Amount::fromFloat(
-                $refundedOnPresta,
-                Currency::fromIsoCode($currency->iso_code)
-            )->getPriceInCurrencyUnits()) {
+            $refundedOnPresta,
+            Currency::fromIsoCode($currency->iso_code)
+        )->getPriceInCurrencyUnits()) {
             self::refundOnPresta($order, $amount);
         }
     }
 
     /**
-     * @param Order $order
+     * @param \Order $order
      * @param float $amount
      *
      * @return void
      *
      * @throws InvalidCurrencyCode
      * @throws RepositoryClassException
-     * @throws Exception
+     * @throws \Exception
      */
-    public static function handleAdyenFailRefund(Order $order, float $amount)
+    public static function handleAdyenFailRefund(\Order $order, float $amount)
     {
         Bootstrap::init();
 
@@ -127,15 +116,15 @@ class RefundHandler
     }
 
     /**
-     * @param Order $order
+     * @param \Order $order
      * @param float $amount
      *
      * @return void
      *
-     * @throws PrestaShopException
+     * @throws \PrestaShopException
      * @throws InvalidCurrencyCode
      */
-    private static function rollbackRefundOnPresta(Order $order, float $amount): void
+    private static function rollbackRefundOnPresta(\Order $order, float $amount): void
     {
         $orderSlip = self::findOrderSlipToDelete($order, $amount);
 
@@ -144,7 +133,7 @@ class RefundHandler
         }
 
         foreach ($orderSlip->getProducts() as $product) {
-            $orderDetail = new OrderDetail((int)$product['id_order_detail']);
+            $orderDetail = new \OrderDetail((int) $product['id_order_detail']);
             $orderSlipDetail = self::getOrderSlipDetail($orderSlip->id, $orderDetail->id);
             if (empty($orderSlipDetail)) {
                 continue;
@@ -165,7 +154,7 @@ class RefundHandler
      */
     private static function removeOrderSlipDetails(int $orderSlipId): void
     {
-        Db::getInstance()->delete('order_slip_detail', 'id_order_slip = ' . $orderSlipId);
+        \Db::getInstance()->delete('order_slip_detail', 'id_order_slip = ' . $orderSlipId);
     }
 
     /**
@@ -174,38 +163,37 @@ class RefundHandler
      *
      * @return array
      *
-     * @throws PrestaShopDatabaseException
+     * @throws \PrestaShopDatabaseException
      */
     private static function getOrderSlipDetail(int $orderSlipId, int $orderDetailId): array
     {
-        return Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
+        return \Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
             ($orderDetailId ? 'SELECT `product_quantity`, `amount_tax_incl`,`amount_tax_excl`' : 'SELECT *') .
             'FROM `' . _DB_PREFIX_ . 'order_slip_detail`'
-            . ($orderSlipId ? ' WHERE `id_order_slip` = ' . (int)($orderSlipId) : '')
-            . ($orderDetailId ? ' AND `id_order_detail` = ' . (int)($orderDetailId) : '')
+            . ($orderSlipId ? ' WHERE `id_order_slip` = ' . (int) ($orderSlipId) : '')
+            . ($orderDetailId ? ' AND `id_order_detail` = ' . (int) ($orderDetailId) : '')
         );
     }
 
-
     /**
-     * @param Order $order
+     * @param \Order $order
      * @param float $amount
      *
-     * @return OrderSlip|null
+     * @return \OrderSlip|null
      *
      * @throws InvalidCurrencyCode
      */
-    private static function findOrderSlipToDelete(Order $order, float $amount): ?OrderSlip
+    private static function findOrderSlipToDelete(\Order $order, float $amount): ?\OrderSlip
     {
         $currency = new PrestaCurrency($order->id_currency);
 
         foreach ($order->getOrderSlipsCollection()->getResults() as $item) {
             $orderSlipAmount = Amount::fromFloat(
-                (float)$item->amount + (float)$item->shipping_cost_amount,
+                (float) $item->amount + (float) $item->shipping_cost_amount,
                 Currency::fromIsoCode($currency->iso_code)
             )->getPriceInCurrencyUnits();
 
-            if ((float)$orderSlipAmount === $amount) {
+            if ((float) $orderSlipAmount === $amount) {
                 return $item;
             }
         }
@@ -214,27 +202,27 @@ class RefundHandler
     }
 
     /**
-     * @param Order $order
+     * @param \Order $order
      * @param float $amount
      *
      * @return void
      *
-     * @throws PrestaShopDatabaseException
+     * @throws \PrestaShopDatabaseException
      */
-    private static function refundOnPresta(Order $order, float $amount): void
+    private static function refundOnPresta(\Order $order, float $amount): void
     {
         $orderSlip = self::createOrderSlip($order, $amount);
-        $taxRate = (float)$order->carrier_tax_rate;
+        $taxRate = (float) $order->carrier_tax_rate;
 
         foreach ($order->getOrderDetailList() as $detail) {
-            $orderDetail = new OrderDetail($detail['id_order_detail']);
+            $orderDetail = new \OrderDetail($detail['id_order_detail']);
             $refundableAmountForOrderLine = $orderDetail->total_price_tax_incl - self::versionHandler(
-                )->getRefundedAmountForOrderDetail($orderDetail);
+            )->getRefundedAmountForOrderDetail($orderDetail);
             if ($refundableAmountForOrderLine) {
                 $amountToRefundForOrderLine = min($refundableAmountForOrderLine, $amount);
                 $amount -= $amountToRefundForOrderLine;
                 $amountWithoutTax = $taxRate > 0 ? $amountToRefundForOrderLine / (1 + $taxRate / 100.0) : $amountToRefundForOrderLine;
-                $quantityRefunded = (int)ceil($amountToRefundForOrderLine / (float)$orderDetail->unit_price_tax_incl);
+                $quantityRefunded = (int) ceil($amountToRefundForOrderLine / (float) $orderDetail->unit_price_tax_incl);
                 $quantityToAdd = self::versionHandler()->calculateQuantityToAdd($orderDetail, $quantityRefunded);
                 self::addOrderSlipDetail(
                     $orderSlip->id,
@@ -259,42 +247,42 @@ class RefundHandler
 
     /**
      * @param int $orderSlipId
-     * @param OrderDetail $orderDetail
+     * @param \OrderDetail $orderDetail
      * @param int $quantity
      * @param float $amount
      * @param float $amountWithoutTax
      *
      * @return void
      *
-     * @throws PrestaShopDatabaseException
+     * @throws \PrestaShopDatabaseException
      */
     private static function addOrderSlipDetail(
         int $orderSlipId,
-        OrderDetail $orderDetail,
+        \OrderDetail $orderDetail,
         int $quantity,
         float $amount,
-        float $amountWithoutTax
+        float $amountWithoutTax,
     ): void {
-        Db::getInstance()->insert('order_slip_detail', [
-            'id_order_slip' => (int)$orderSlipId,
+        \Db::getInstance()->insert('order_slip_detail', [
+            'id_order_slip' => (int) $orderSlipId,
             'id_order_detail' => $orderDetail->id,
             'product_quantity' => $quantity,
-            'unit_price_tax_excl' => (float)$orderDetail->unit_price_tax_excl,
-            'unit_price_tax_incl' => (float)$orderDetail->unit_price_tax_incl,
+            'unit_price_tax_excl' => (float) $orderDetail->unit_price_tax_excl,
+            'unit_price_tax_incl' => (float) $orderDetail->unit_price_tax_incl,
             'total_price_tax_incl' => $amount,
             'amount_tax_incl' => $amount,
             'total_price_tax_excl' => $amountWithoutTax,
-            'amount_tax_excl' => $amountWithoutTax
+            'amount_tax_excl' => $amountWithoutTax,
         ]);
     }
 
     /**
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      */
-    private static function createOrderSlip(Order $order, float $amount): OrderSlip
+    private static function createOrderSlip(\Order $order, float $amount): \OrderSlip
     {
-        $refundableProducts = (float)$order->total_products_wt - self::getRefundedProducts($order);
+        $refundableProducts = (float) $order->total_products_wt - self::getRefundedProducts($order);
         $totalProducts = $amount;
         $totalShipping = 0;
 
@@ -302,8 +290,8 @@ class RefundHandler
             $totalProducts = $refundableProducts;
             $totalShipping = $amount - $totalProducts;
         }
-        $taxRate = (float)$order->carrier_tax_rate;
-        $orderSlip = new OrderSlip();
+        $taxRate = (float) $order->carrier_tax_rate;
+        $orderSlip = new \OrderSlip();
         $orderSlip->id_order = $order->id;
         $orderSlip->id_customer = $order->id_customer;
         $orderSlip->conversion_rate = $order->conversion_rate;
@@ -321,11 +309,11 @@ class RefundHandler
     /**
      * Gets refunded products amount.
      *
-     * @param Order $order
+     * @param \Order $order
      *
      * @return float
      */
-    private static function getRefundedProducts(Order $order): float
+    private static function getRefundedProducts(\Order $order): float
     {
         $amount = 0;
 

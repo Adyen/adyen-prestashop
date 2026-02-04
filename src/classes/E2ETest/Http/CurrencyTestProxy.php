@@ -7,8 +7,6 @@ use Adyen\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
  * Class CurrencyTestProxy
- *
- * @package AdyenPayment\Classes\E2ETest\Http
  */
 class CurrencyTestProxy extends TestProxy
 {
@@ -16,19 +14,20 @@ class CurrencyTestProxy extends TestProxy
      * Creates request to create currency
      *
      * @param array $currencyData
+     *
      * @return array
+     *
      * @throws HttpRequestException
      */
     public function createCurrency(array $currencyData): array
     {
         $httpRequest = new HttpRequest(
-            "/api/currencies",
+            '/api/currencies',
             $currencyData
         );
 
         return $this->post($httpRequest)->decodeBodyToArray();
     }
-
 
     /**
      * Creates request to update currency
@@ -45,7 +44,6 @@ class CurrencyTestProxy extends TestProxy
     }
 
     /**
-     *
      * Creates request to get currency data from system
      *
      * @throws HttpRequestException

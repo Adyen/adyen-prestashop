@@ -63,12 +63,12 @@ class AdyenOfficialStoredMethodsModuleFrontController extends ModuleFrontControl
      *
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
-     * @throws \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode
+     * @throws Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode
      * @throws Exception
      */
     public function postProcess(): void
     {
-        StoreContext::doWithStore((string)\Context::getContext()->shop->id, function () {
+        StoreContext::doWithStore((string) Context::getContext()->shop->id, function () {
             $this->renderStoredCards();
         });
     }
@@ -83,7 +83,7 @@ class AdyenOfficialStoredMethodsModuleFrontController extends ModuleFrontControl
         $breadcrumb['links'][] = $this->addMyAccountToBreadcrumb();
 
         $breadcrumb['links'][] = [
-            'title' => $this->trans('Stored payment methods', [], 'Shop.Theme.Global')
+            'title' => $this->trans('Stored payment methods', [], 'Shop.Theme.Global'),
         ];
 
         return $breadcrumb;
@@ -133,7 +133,7 @@ class AdyenOfficialStoredMethodsModuleFrontController extends ModuleFrontControl
                     'name' => $method->getMetadata()['name'],
                     'expiryDate' => $method->getMetadata()['expiryMonth'] . '/' . $method->getMetadata()['expiryYear'],
                     'isCreditCard' => true,
-                    'logo' => $configuredPaymentMethod->getLogo()
+                    'logo' => $configuredPaymentMethod->getLogo(),
                 ];
 
                 $storedPaymentMethodsInfo[] = $storedPayment;
@@ -151,7 +151,7 @@ class AdyenOfficialStoredMethodsModuleFrontController extends ModuleFrontControl
                 'id' => $method->getMetadata()['id'],
                 'name' => $configuredPaymentMethod->getName(),
                 'isCreditCard' => false,
-                'logo' => $configuredPaymentMethod->getLogo()
+                'logo' => $configuredPaymentMethod->getLogo(),
             ];
 
             $storedPaymentMethodsInfo[] = $storedPayment;
@@ -161,7 +161,7 @@ class AdyenOfficialStoredMethodsModuleFrontController extends ModuleFrontControl
             [
                 'storedPaymentMethods' => $storedPaymentMethodsInfo,
                 'numberOfStoredPaymentMethods' => count($storedPaymentMethodsInfo),
-                'deletionUrl' => Url::getFrontUrl('storedmethoddelete')
+                'deletionUrl' => Url::getFrontUrl('storedmethoddelete'),
             ]
         );
     }

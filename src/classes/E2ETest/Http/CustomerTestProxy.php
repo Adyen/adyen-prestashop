@@ -7,8 +7,6 @@ use Adyen\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
  * Class CustomerTestProxy
- *
- * @package AdyenPayment\Classes\E2ETest\Http
  */
 class CustomerTestProxy extends TestProxy
 {
@@ -16,13 +14,15 @@ class CustomerTestProxy extends TestProxy
      * Creates request to create customer in database
      *
      * @param array $customerData
+     *
      * @return array
+     *
      * @throws HttpRequestException
      */
     public function createCustomer(array $customerData): array
     {
         $httpRequest = new HttpRequest(
-            "/api/customers",
+            '/api/customers',
             $customerData
         );
 

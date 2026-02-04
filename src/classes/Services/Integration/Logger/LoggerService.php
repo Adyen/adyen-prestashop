@@ -10,8 +10,6 @@ use Adyen\Core\Infrastructure\ServiceRegister;
 
 /**
  * Class LoggerService
- *
- * @package AdyenPayment\Integration\Logger
  */
 class LoggerService implements ShopLoggerAdapter
 {
@@ -47,7 +45,7 @@ class LoggerService implements ShopLoggerAdapter
     ];
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function logMessage(LogData $data): void
     {
@@ -60,7 +58,7 @@ class LoggerService implements ShopLoggerAdapter
             return;
         }
 
-        $message = 'ADYEN LOG:' . ' | '
+        $message = 'ADYEN LOG: | '
             . 'Date: ' . date('d/m/Y') . ' | '
             . 'Time: ' . date('H:i:s') . ' | '
             . 'Log level: ' . self::$logLevelName[$logLevel] . ' | '
@@ -72,7 +70,7 @@ class LoggerService implements ShopLoggerAdapter
                 $contextData[$item->getName()] = print_r($item->getValue(), true);
             }
 
-            $message .= ' | ' . 'Content data: [' . json_encode($contextData) . ']';
+            $message .= ' | Content data: [' . json_encode($contextData) . ']';
         }
 
         \PrestaShopLogger::addLog($message, self::$logMapping[$logLevel]);

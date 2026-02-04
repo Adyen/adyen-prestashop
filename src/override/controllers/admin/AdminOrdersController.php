@@ -7,7 +7,7 @@ class AdminOrdersController extends AdminOrdersControllerCore
     private const ADYEN_ORDER_DRAFT_PAYMENT_METHOD = 'adyen_order_draft_payment_method';
 
     /**
-     * @var \AdyenPayment\Classes\Overrides\AdminOrdersController
+     * @var AdyenPayment\Classes\Overrides\AdminOrdersController
      */
     private $adminOrderController;
 
@@ -20,6 +20,7 @@ class AdminOrdersController extends AdminOrdersControllerCore
 
     /**
      * @param string $orderId
+     *
      * @return string
      *
      * @throws SmartyException
@@ -31,6 +32,7 @@ class AdminOrdersController extends AdminOrdersControllerCore
 
     /**
      * @param string $orderId
+     *
      * @return string
      *
      * @throws SmartyException
@@ -50,7 +52,7 @@ class AdminOrdersController extends AdminOrdersControllerCore
     {
         require_once rtrim(_PS_MODULE_DIR_, '/') . '/adyenofficial/vendor/autoload.php';
 
-        $this->adminOrderController = new \AdyenPayment\Classes\Overrides\AdminOrdersController();
+        $this->adminOrderController = new AdyenPayment\Classes\Overrides\AdminOrdersController();
 
         $this->fields_list = $this->adminOrderController->insertAdyenPaymentColumn(
             $this->fields_list,

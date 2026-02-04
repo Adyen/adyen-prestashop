@@ -1,7 +1,7 @@
 <?php
 
-define('__PHP52__', version_compare((float)phpversion(), (float)'5.2.17', '<='));
-define('__PHP53__', version_compare((float)phpversion(), (float)'5.3', '<='));
+define('__PHP52__', version_compare((float) phpversion(), (float) '5.2.17', '<='));
+define('__PHP53__', version_compare((float) phpversion(), (float) '5.3', '<='));
 
 function p($obj)
 {
@@ -12,7 +12,7 @@ function p($obj)
 
 function copyFile($source, $dest)
 {
-    $is_dot = array('.', '..');
+    $is_dot = ['.', '..'];
     if (is_dir($source)) {
         if (__PHP53__) {
             $iterator = new RecursiveIteratorIterator(
@@ -53,7 +53,7 @@ function copyFile($source, $dest)
 
 function addIndex($path, $cli = false)
 {
-    $is_dot = array('.', '..');
+    $is_dot = ['.', '..'];
     $file_extension = substr(strrchr($path, '.'), 1);
     copyFile(dirname(__FILE__) . '/sources/index.php', $path . '/index.php');
     if (is_dir($path)) {
@@ -80,7 +80,7 @@ function addIndex($path, $cli = false)
                 }
             }
 
-            $name = (string)trim($file->getFilename());
+            $name = (string) trim($file->getFilename());
             $exp = explode('\\', $pathname);
             $dirname = isset($exp[0]) ? $exp[0] . '/' : '';
             if (count($exp) === 2 && $file->isFile()) {
@@ -110,11 +110,11 @@ function addIndex($path, $cli = false)
         }
     } elseif ($file_extension === 'zip') {
         if (class_exists('ZipArchive')) {
-            $add_index = array();
+            $add_index = [];
             $zip = new ZipArchive();
             $res = $zip->open($path);
             if ($res === true) {
-                for ($i = 0; $i < $zip->numFiles; $i++) {
+                for ($i = 0; $i < $zip->numFiles; ++$i) {
                     $stat = $zip->statIndex($i);
                     if (!empty($stat)) {
                         $file_info = pathinfo($stat['name']);

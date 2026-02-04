@@ -10,13 +10,11 @@ use AdyenPayment\Classes\Proxies\GithubProxy;
 
 /**
  * Class VersionInfoService
- *
- * @package AdyenPayment\Integration
  */
 class VersionInfoService implements VersionServiceInterface
 {
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @throws HttpRequestException
      */

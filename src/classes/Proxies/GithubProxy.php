@@ -8,8 +8,6 @@ use Adyen\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
  * Class GithubProxy
- *
- * @package AdyenPayment\Classes\Proxies
  */
 class GithubProxy extends Proxy
 {

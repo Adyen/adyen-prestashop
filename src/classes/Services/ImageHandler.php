@@ -4,8 +4,6 @@ namespace AdyenPayment\Classes\Services;
 
 /**
  * Class ImageHandler
- *
- * @package AdyenPayment\Classes\Utility
  */
 class ImageHandler
 {
@@ -22,7 +20,7 @@ class ImageHandler
      */
     public static function saveImage(string $file, string $fileName, string $storeId): bool
     {
-        if(!file_exists(self::ADYEN_PAYMENT_IMAGE_DIRECTORY)) {
+        if (!file_exists(self::ADYEN_PAYMENT_IMAGE_DIRECTORY)) {
             mkdir(self::ADYEN_PAYMENT_IMAGE_DIRECTORY);
         }
 
@@ -43,7 +41,7 @@ class ImageHandler
      */
     public static function getImageUrl(string $fileName, string $storeId): string
     {
-        $shop = new \Shop($storeId);
+        $shop = new \Shop((int) $storeId);
 
         return $shop->getBaseUrl() . '/img/adyen/' . $storeId . '/' . $fileName . '.png';
     }

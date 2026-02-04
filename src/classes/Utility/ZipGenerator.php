@@ -2,12 +2,8 @@
 
 namespace AdyenPayment\Classes\Utility;
 
-use ZipArchive;
-
 /**
  * Class ZipGenerator
- *
- * @package AdyenPayment\Classes\Utility
  */
 class ZipGenerator
 {
@@ -25,8 +21,8 @@ class ZipGenerator
     {
         $file = tempnam(sys_get_temp_dir(), 'adyen_system_info');
 
-        $zip = new ZipArchive();
-        $zip->open($file, ZipArchive::CREATE);
+        $zip = new \ZipArchive();
+        $zip->open($file, \ZipArchive::CREATE);
 
         $zip->addFromString($filesNames['PHP_INFO_FILE_NAME'], $info['phpInfo']);
         $zip->addFromString(

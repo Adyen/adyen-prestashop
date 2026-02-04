@@ -7,8 +7,6 @@ use Adyen\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
  * Class ProductTestProxy
- *
- * @package AdyenPayment\Classes\E2ETest\Http
  */
 class ProductTestProxy extends TestProxy
 {

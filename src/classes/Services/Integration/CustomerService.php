@@ -6,22 +6,12 @@ use Address;
 use AdyenPayment\Classes\Repositories\CartProductRepository;
 use AdyenPayment\Classes\Repositories\CountryRepository;
 use AdyenPayment\Classes\Services\CheckoutHandler;
-use Configuration;
-use Country;
 use Customer;
-use Cart;
-use Exception;
 use PrestaShop\Module\PrestashopCheckout\Exception\PsCheckoutException;
-use PrestaShop\Module\PrestashopCheckout\Updater\CustomerUpdater;
 use PrestaShop\PrestaShop\Core\Domain\Country\Exception\CountryNotFoundException;
-use PrestaShopDatabaseException;
-use State;
-use stdClass;
 
 /**
  * Class CustomerService.
- *
- * @package AdyenPayment\Classes\Services\Integration
  */
 class CustomerService
 {
@@ -31,10 +21,9 @@ class CustomerService
      * @param string $email
      * @param array $data
      *
-     * @return Customer
-     *
+     * @return \Customer
      */
-    public function createAndLoginCustomer(string $email, $data): Customer
+    public function createAndLoginCustomer(string $email, $data): \Customer
     {
         $email = str_replace(['"', "'"], '', $email);
 
@@ -65,11 +54,11 @@ class CustomerService
     /**
      * Sets customer's billing and shipping address.
      *
-     * @param Customer $customer
+     * @param \Customer $customer
      * @param array $data
-     * @param Cart $cart
+     * @param \Cart $cart
      *
-     * @return Cart
+     * @return \Cart
      *
      * @throws CountryNotFoundException
      * @throws \PrestaShopDatabaseException
@@ -91,7 +80,7 @@ class CustomerService
 
         $idCarrier = CheckoutHandler::getCarrierId($cart);
         \Context::getContext()->cart->setDeliveryOption([
-            $cart->id_address_delivery => $idCarrier . ','  // force correct carrier
+            $cart->id_address_delivery => $idCarrier . ',',  // force correct carrier
         ]);
 
         \Context::getContext()->cart->id_carrier = $idCarrier;
@@ -122,17 +111,17 @@ class CustomerService
     /**
      * Creates a PrestaShop address entity based on the source address.
      *
-     * @param stdClass $sourceAddress
+     * @param \stdClass $sourceAddress
      *
-     * @return Address
+     * @return \Address
      *
      * @throws CountryNotFoundException
      */
-    public function createAddress(stdClass $sourceAddress): Address
+    public function createAddress(\stdClass $sourceAddress): \Address
     {
-        $address = new Address();
-        $countryId = Country::getByIso($sourceAddress->country);
-        $stateId = State::getIdByIso($sourceAddress->state);
+        $address = new \Address();
+        $countryId = \Country::getByIso($sourceAddress->country);
+        $stateId = \State::getIdByIso($sourceAddress->state);
 
         if (!$countryId) {
             throw new CountryNotFoundException('Country not supported');
@@ -162,22 +151,24 @@ class CustomerService
     /**
      * @param $countryIso
      * @param $langId
+     *
      * @return bool
-     * @throws PrestaShopDatabaseException
+     *
+     * @throws \PrestaShopDatabaseException
      */
     public function verifyIfCountryNotRestricted($countryIso, $langId): bool
     {
-        $activeCountries = Country::getCountries($langId, true);
+        $activeCountries = \Country::getCountries($langId, true);
         $activeCountryCodes = array_column($activeCountries, 'iso_code');
 
         $moduleActiveCountries = $this->getCountryRepository()->getModuleCountries(
-            (int)\Module::getInstanceByName('adyenofficial')->id,
-            (int)\Context::getContext()->shop->id
+            (int) \Module::getInstanceByName('adyenofficial')->id,
+            (int) \Context::getContext()->shop->id
         );
         $moduleActiveCountryCodes = array_column($moduleActiveCountries, 'iso_code');
 
-        return in_array($countryIso, $activeCountryCodes, true) &&
-            in_array($countryIso, $moduleActiveCountryCodes, true);
+        return in_array($countryIso, $activeCountryCodes, true)
+            && in_array($countryIso, $moduleActiveCountryCodes, true);
     }
 
     /**
@@ -187,18 +178,18 @@ class CustomerService
      * @param string $firstName
      * @param string $lastName
      *
-     * @return Customer
+     * @return \Customer
      *
-     * @throws PsCheckoutException|\PrestaShopException
+     * @throws PsCheckoutException
      */
-    private function createGuestCustomer(string $email, string $firstName, string $lastName): Customer
+    private function createGuestCustomer(string $email, string $firstName, string $lastName): \Customer
     {
-        $customer = new Customer();
+        $customer = new \Customer();
         $customer->email = $email;
         $customer->firstname = $firstName;
         $customer->lastname = $lastName;
         $customer->is_guest = true;
-        $customer->id_default_group = (int)Configuration::get('PS_GUEST_GROUP');
+        $customer->id_default_group = (int) \Configuration::get('PS_GUEST_GROUP');
 
         if (class_exists('PrestaShop\PrestaShop\Core\Crypto\Hashing')) {
             $crypto = new \PrestaShop\PrestaShop\Core\Crypto\Hashing();
@@ -212,7 +203,7 @@ class CustomerService
 
         try {
             $customer->save();
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             throw new PsCheckoutException($exception->getMessage(), PsCheckoutException::PSCHECKOUT_EXPRESS_CHECKOUT_CANNOT_SAVE_CUSTOMER, $exception);
         }
 

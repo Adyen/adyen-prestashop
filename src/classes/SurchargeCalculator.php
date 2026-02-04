@@ -17,8 +17,8 @@ class SurchargeCalculator
     public static function calculateSurcharge(PaymentMethod $paymentMethod, string $conversionRate, Amount $amount)
     {
         $surchargeType = $paymentMethod->getSurchargeType();
-        $fixedAmount = (float)$paymentMethod->getFixedSurcharge() * $conversionRate;
-        $limit = (float)$paymentMethod->getSurchargeLimit() * $conversionRate;
+        $fixedAmount = (float) $paymentMethod->getFixedSurcharge() * (float) $conversionRate;
+        $limit = (float) $paymentMethod->getSurchargeLimit() * (float) $conversionRate;
         $percent = $paymentMethod->getPercentSurcharge();
 
         if ($surchargeType === 'fixed') {

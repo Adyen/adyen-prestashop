@@ -31,7 +31,7 @@ class AdyenNotificationsController extends AdyenBaseController
         $map = $this->mapOrderNumbers($this->getMerchantReferences($jsonResponse['notifications']));
 
         foreach ($jsonResponse['notifications'] as $key => $item) {
-            $jsonResponse['notifications'][$key]['orderId'] =(string) $map[$item['orderId']];
+            $jsonResponse['notifications'][$key]['orderId'] = (string) $map[$item['orderId']];
         }
 
         AdyenPrestaShopUtility::dieJsonArray($jsonResponse);
@@ -62,10 +62,9 @@ class AdyenNotificationsController extends AdyenBaseController
             return [];
         }
 
-
         $orderNumbers = [];
         foreach ($references as $reference) {
-            $orderNumbers[$reference] = Order::getIdByCartId((int)$reference);
+            $orderNumbers[$reference] = Order::getIdByCartId((int) $reference);
         }
 
         return $orderNumbers;

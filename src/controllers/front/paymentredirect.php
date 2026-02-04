@@ -2,10 +2,11 @@
 
 use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
 use Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService;
+use Adyen\Core\Infrastructure\Logger\LogContextData;
 use Adyen\Core\Infrastructure\Logger\Logger;
+use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\Bootstrap;
-use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use AdyenPayment\Classes\Services\Integration\CustomerService;
 use AdyenPayment\Classes\Utility\SessionService;
 use AdyenPayment\Controllers\PaymentController;
@@ -16,7 +17,7 @@ use AdyenPayment\Controllers\PaymentController;
 class AdyenOfficialPaymentRedirectModuleFrontController extends PaymentController
 {
     /** @var string File name for translation contextualization */
-    const FILE_NAME = 'AdyenOfficialPaymentRedirectModuleFrontController';
+    public const FILE_NAME = 'AdyenOfficialPaymentRedirectModuleFrontController';
 
     /**
      * @throws RepositoryClassException
@@ -40,13 +41,13 @@ class AdyenOfficialPaymentRedirectModuleFrontController extends PaymentControlle
         Logger::logDebug(
             'Received handleRedirectAction request',
             'Integration',
-            ['request' => json_encode($requestData)]
+            [new LogContextData('request', json_encode($requestData))]
         );
 
         $cart = $this->getCurrentCart();
         $page = Tools::getValue('adyenPage');
 
-        if (!\Validate::isLoadedObject($cart)) {
+        if (!Validate::isLoadedObject($cart)) {
             Tools::redirect($this->context->link->getPageLink('order', $this->ssl));
         }
 
@@ -70,7 +71,7 @@ class AdyenOfficialPaymentRedirectModuleFrontController extends PaymentControlle
         }
 
         $response = CheckoutAPI::get()
-            ->paymentRequest((string)$cart->id_shop)
+            ->paymentRequest((string) $cart->id_shop)
             ->updatePaymentDetails(
                 array_key_exists('details', $requestData) ? $requestData : ['details' => $requestData]);
 
@@ -95,22 +96,22 @@ class AdyenOfficialPaymentRedirectModuleFrontController extends PaymentControlle
 
             /** @var TransactionHistoryService $transactionService */
             $transactionService = ServiceRegister::getService(TransactionHistoryService::class);
-            $transactionHistory = \Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext::doWithStore(
-                $cart->id_shop,
+            $transactionHistory = Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext::doWithStore(
+                (string) $cart->id_shop,
                 static function () use ($cart, $transactionService) {
-                    return $transactionService->getTransactionHistory($cart->id);
+                    return $transactionService->getTransactionHistory((string) $cart->id);
                 }
             );
             $currency = new Currency($cart->id_currency);
             $payments = $transactionHistory->collection()->filterAllByEventCode('PAYMENT_REQUESTED')
                 ->getAmount(
-                    \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency::fromIsoCode($currency->iso_code)
+                    Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency::fromIsoCode($currency->iso_code)
                 );
             SessionService::get('giftCardsData');
             $this->saveOrder(Tools::getValue('adyenPaymentType'), $cart, $payments);
 
             if (isset($requestData['details'])) {
-                die(json_encode(['nextStepUrl' => $this->generateSuccessURL($cart)]));
+                exit(json_encode(['nextStepUrl' => $this->generateSuccessURL($cart)]));
             }
 
             Tools::redirect($this->generateSuccessURL($cart));
@@ -133,7 +134,6 @@ class AdyenOfficialPaymentRedirectModuleFrontController extends PaymentControlle
     }
 
     /**
-     * @param Customer $customer
      * @param int $deliveryAddressId
      * @param int $invoiceAddressId
      * @param Cart $cart

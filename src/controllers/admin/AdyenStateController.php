@@ -12,6 +12,7 @@ class AdyenStateController extends AdyenBaseController
 {
     /**
      * @return void
+     *
      * @throws Exception
      */
     public function displayAjaxIndex(): void

@@ -36,8 +36,14 @@ echo -e "\e[32mSTEP 4:\e[0m Adding PS version check in every PHP file"
 echo -e "\e[32mSTEP 5:\e[0m Adding PrestaShop mandatory index.php file to all folders..."
 php "$PWD/lib/autoindex/index.php" "$PWD/adyenofficial" >/dev/null
 
+echo -e "\e[32mSTEP 6:\e[0m Adding PrestaShop mandatory licence header to files..."
+php "$PWD/lib/autoLicence.php" "$PWD/adyenofficial"
+
+echo -e "\e[32mSTEP 7:\e[0m Converting all files to Unix line endings..."
+find ./adyenofficial -type f -exec dos2unix {} \;
+
 # Create plugin archive
-echo -e "\e[32mSTEP 6:\e[0m Creating new archive..."
+echo -e "\e[32mSTEP 8:\e[0m Creating new archive..."
 zip -r -q  adyenofficial.zip ./adyenofficial
 
 echo -e "\e[93mNew plugin archive created: $PWD/adyenofficial.zip"

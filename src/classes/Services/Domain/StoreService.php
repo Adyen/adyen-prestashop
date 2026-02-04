@@ -7,8 +7,6 @@ use Adyen\Core\BusinessLogic\Domain\Stores\Services\StoreService as DomainStoreS
 
 /**
  * Class StoreService
- *
- * @package AdyenPayment\Classes\Services\Domain
  */
 class StoreService extends DomainStoreService
 {
@@ -17,6 +15,6 @@ class StoreService extends DomainStoreService
      */
     public function getCurrentStore(): ?Store
     {
-        return $this->integrationStoreService->getStoreById((string)\Context::getContext()->shop->id);
+        return $this->integrationStoreService->getStoreById((string) \Context::getContext()->shop->id);
     }
 }

@@ -6,8 +6,6 @@ use Adyen\Core\BusinessLogic\DataAccess\Payment\Contracts\PaymentsRepository;
 
 /**
  * Class PaymentMethodRepository
- *
- * @package AdyenPayment\Classes\Repositories
  */
 class PaymentMethodRepository extends BaseRepositoryWithConditionalDelete implements PaymentsRepository
 {

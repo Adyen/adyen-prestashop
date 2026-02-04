@@ -6,8 +6,6 @@ use PrestaShop\PrestaShop\Adapter\Entity\PhpEncryption;
 
 /**
  * Class Encryptor
- *
- * @package AdyenPayment\Classes\Utility
  */
 class Encryptor
 {
@@ -20,7 +18,11 @@ class Encryptor
      */
     public static function encryptData(string $data): string
     {
-        return (new PhpEncryption(_NEW_COOKIE_KEY_))->encrypt($data);
+        $path = _PS_ROOT_DIR_ . '/app/config/parameters.php';
+        $config = require $path;
+        $newCookieKey = $config['parameters']['new_cookie_key'];
+
+        return (new PhpEncryption($newCookieKey))->encrypt($data);
     }
 
     /**
@@ -34,6 +36,10 @@ class Encryptor
      */
     public static function decryptData(string $data): string
     {
-        return (new PhpEncryption(_NEW_COOKIE_KEY_))->decrypt($data);
+        $path = _PS_ROOT_DIR_ . '/app/config/parameters.php';
+        $config = require $path;
+        $newCookieKey = $config['parameters']['new_cookie_key'];
+
+        return (new PhpEncryption($newCookieKey))->decrypt($data);
     }
 }

@@ -6,8 +6,6 @@ use Adyen\Webhook\PaymentStates;
 
 /**
  * Class AdyenOrderStatusMapping
- *
- * @package AdyenPayment\Classes\Utility
  */
 class AdyenOrderStatusMapping
 {
@@ -51,12 +49,12 @@ class AdyenOrderStatusMapping
     /**
      * @var int[]
      */
-    private static $prestaMap;
+    public static $prestaMap;
 
     /**
      * @var array
      */
-    private static $statusMap;
+    public static $statusMap;
 
     /**
      * @return int[]
@@ -83,7 +81,7 @@ class AdyenOrderStatusMapping
     /**
      * @return array
      */
-    private static function mapPrestaStatuses(): array
+    protected static function mapPrestaStatuses(): array
     {
         return [
             PaymentStates::STATE_IN_PROGRESS => static::getPrestaShopOrderStatusId(self::PRESTA_PROCESSING_IN_PROGRESS)
@@ -97,21 +95,21 @@ class AdyenOrderStatusMapping
             PaymentStates::STATE_REFUNDED => static::getPrestaShopOrderStatusId(self::PRESTA_REFUNDED)
                 ?? self::getFirstValidStatus(),
             PaymentStates::STATE_PARTIALLY_REFUNDED => static::getPrestaShopOrderStatusId(
-                    self::PRESTA_PARTIALLY_REFUNDED
-                ) ?? self::getFirstValidStatus(),
+                self::PRESTA_PARTIALLY_REFUNDED
+            ) ?? self::getFirstValidStatus(),
             PaymentStates::STATE_CANCELLED => static::getPrestaShopOrderStatusId(self::PRESTA_CANCELED)
                 ?? self::getFirstValidStatus(),
             PaymentStates::STATE_NEW => static::getPrestaShopOrderStatusId(self::PRESTA_ON_BACKORDER)
                 ?? self::getFirstValidStatus(),
             PaymentStates::CHARGE_BACK => static::getPrestaShopOrderStatusId(self::PRESTA_CHARGEBACK)
-                ?? self::getFirstValidStatus()
+                ?? self::getFirstValidStatus(),
         ];
     }
 
     /**
      * @return array
      */
-    private static function getStatusMap(): array
+    protected static function getStatusMap(): array
     {
         if (!static::$statusMap) {
             static::$statusMap = array_column(
@@ -127,7 +125,7 @@ class AdyenOrderStatusMapping
     /**
      * @return string|null
      */
-    private static function getFirstValidStatus(): ?string
+    protected static function getFirstValidStatus(): ?string
     {
         $statuses = self::getStatusMap();
 

@@ -6,8 +6,6 @@ use Adyen\Core\BusinessLogic\AdminAPI\Response\Response;
 
 /**
  * Class AdyenPrestaShopUtility
- *
- * @package AdyenPayment\Utility
  */
 class AdyenPrestaShopUtility
 {
@@ -16,7 +14,7 @@ class AdyenPrestaShopUtility
      *
      * @param Response|null $response
      */
-    public static function dieJson(Response $response = null): void
+    public static function dieJson(?Response $response = null): void
     {
         header('Content-Type: application/json');
 
@@ -24,7 +22,7 @@ class AdyenPrestaShopUtility
             static::setHttpStatusHeader($response);
         }
 
-        die(json_encode($response ? $response->toArray() : []));
+        exit(json_encode($response ? $response->toArray() : []));
     }
 
     /**
@@ -32,11 +30,11 @@ class AdyenPrestaShopUtility
      *
      * @param array $response
      */
-    public static function dieJsonArray(array $response ): void
+    public static function dieJsonArray(array $response): void
     {
         header('Content-Type: application/json');
 
-        die(json_encode($response));
+        exit(json_encode($response));
     }
 
     /**
@@ -50,7 +48,7 @@ class AdyenPrestaShopUtility
     {
         header('HTTP/1.1 404 Not Found');
 
-        die(json_encode($data));
+        exit(json_encode($data));
     }
 
     /**
@@ -64,14 +62,14 @@ class AdyenPrestaShopUtility
     {
         header('HTTP/1.1 400 Bad Request');
 
-        die(json_encode($data));
+        exit(json_encode($data));
     }
 
     public static function die403(array $data = []): void
     {
         header('HTTP/1.1 403 Forbidden');
 
-        die(json_encode($data));
+        exit(json_encode($data));
     }
 
     /**
@@ -95,7 +93,7 @@ class AdyenPrestaShopUtility
         header('Content-Length: ' . filesize($filePath));
         readfile($filePath);
 
-        die(200);
+        exit(200);
     }
 
     /**
@@ -109,7 +107,7 @@ class AdyenPrestaShopUtility
     {
         header('Content-Type: text/plain');
 
-        die($plainText);
+        exit($plainText);
     }
 
     /**
@@ -127,10 +125,11 @@ class AdyenPrestaShopUtility
                 header('HTTP/1.1 400 Bad request');
                 break;
             case 401:
-                header("HTTP/1.1 401 Unauthorized");
+                header('HTTP/1.1 401 Unauthorized');
                 break;
             case 404:
                 header('HTTP/1.1 404 Bad request');
+                // no break
             case 503:
                 header('HTTP/1.1 503 Service unavailable');
         }

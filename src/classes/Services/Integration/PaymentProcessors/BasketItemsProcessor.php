@@ -2,18 +2,16 @@
 
 namespace AdyenPayment\Classes\Services\Integration\PaymentProcessors;
 
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Factory\PaymentRequestBuilder;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\AdditionalData\AdditionalData;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\AdditionalData\BasketItem;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\AdditionalData\RiskData;
-use Adyen\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
-use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Factory\PaymentRequestBuilder;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\StartTransactionRequestContext;
+use Adyen\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
 use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\BasketItemsProcessor as BasketItemsProcessorInterface;
 
 /**
  * Class BasketItemsProcessor
- *
- * @package AdyenPayment\Integration\PaymentProcessors
  */
 class BasketItemsProcessor implements BasketItemsProcessorInterface
 {
@@ -36,7 +34,7 @@ class BasketItemsProcessor implements BasketItemsProcessorInterface
     public function process(PaymentRequestBuilder $builder, StartTransactionRequestContext $context): void
     {
         $generalSettings = $this->generalSettingsService->getGeneralSettings();
-        $cart = new \Cart($context->getReference());
+        $cart = new \Cart((int) $context->getReference());
 
         $additionalData = new AdditionalData(
             ($generalSettings && $generalSettings->isBasketItemSync())
@@ -48,6 +46,7 @@ class BasketItemsProcessor implements BasketItemsProcessorInterface
 
     /**
      * @param \Cart $cart
+     *
      * @return BasketItem[]
      */
     private function getItems(\Cart $cart): array
@@ -79,9 +78,9 @@ class BasketItemsProcessor implements BasketItemsProcessorInterface
     /**
      * @param int $id
      *
-     * @return string|string[]
+     * @return string
      */
-    private function getCurrency(int $id)
+    private function getCurrency(int $id): string
     {
         return (new \Currency($id))->iso_code;
     }

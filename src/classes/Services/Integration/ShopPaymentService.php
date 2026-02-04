@@ -6,13 +6,9 @@ use Adyen\Core\BusinessLogic\Domain\Integration\Payment\ShopPaymentService as Sh
 use Adyen\Core\BusinessLogic\Domain\Payment\Models\PaymentMethod;
 use Adyen\Core\BusinessLogic\Domain\Payment\Repositories\PaymentMethodConfigRepository;
 use AdyenPayment\Classes\Services\ImageHandler;
-use Context;
-use Exception;
 
 /**
  * Class ShopPaymentService
- *
- * @package AdyenPayment\Integration
  */
 class ShopPaymentService implements ShopPaymentServiceInterface
 {
@@ -30,7 +26,7 @@ class ShopPaymentService implements ShopPaymentServiceInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function createPaymentMethod(PaymentMethod $method): void
     {
@@ -40,27 +36,26 @@ class ShopPaymentService implements ShopPaymentServiceInterface
      * @param PaymentMethod $method
      *
      * @return void
-     *
      */
     public function updatePaymentMethod(PaymentMethod $method): void
     {
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function deletePaymentMethod(string $methodId): void
     {
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function deleteAllPaymentMethods(): void
     {
-        $storeId = (string)Context::getContext()->shop->id;
+        $storeId = (string) \Context::getContext()->shop->id;
 
         foreach ($this->paymentMethodRepository->getConfiguredPaymentMethods() as $paymentMethod) {
             ImageHandler::removeImage($paymentMethod->getMethodId(), $storeId);

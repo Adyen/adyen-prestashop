@@ -2,12 +2,8 @@
 
 namespace AdyenPayment\Classes\Repositories;
 
-use Db;
-
 /**
  * Class CartProductRepository
- *
- * @package AdyenPayment\Classes\Repositories
  */
 class CartProductRepository
 {
@@ -16,12 +12,12 @@ class CartProductRepository
      *
      * @param int $cartId
      * @param int $addressId
-     * @return bool
      *
+     * @return bool
      */
     public function updateDeliveryAddress(int $cartId, int $addressId): bool
     {
-        return Db::getInstance()->update(
+        return \Db::getInstance()->update(
             'cart_product',
             ['id_address_delivery' => $addressId],
             "id_cart=$cartId"

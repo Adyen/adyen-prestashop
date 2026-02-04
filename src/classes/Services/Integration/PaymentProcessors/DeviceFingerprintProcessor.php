@@ -8,8 +8,6 @@ use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\Device
 
 /**
  * Class DeviceFingerprintProcessor
- *
- * @package AdyenPayment\Integration\PaymentProcessors
  */
 class DeviceFingerprintProcessor implements DeviceFingerprintProcessorInterface
 {

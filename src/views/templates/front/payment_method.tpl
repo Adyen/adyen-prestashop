@@ -1,5 +1,5 @@
 <div class="adyen-payment-method">
-    <p>{$description}</p>
+    <p>{$description|escape:'htmlall':'UTF-8'}</p>
     <form class="adyen-form-{$paymentMethodType|escape:'html':'UTF-8'}"
           action="{$paymentActionURL|escape:'html':'UTF-8'}" method="POST"
             {if $paymentMethodType==='applepay'} onsubmit="preventSubmit();"{/if}>

@@ -7,12 +7,9 @@ use Adyen\Core\BusinessLogic\Domain\TransactionHistory\Exceptions\InvalidMerchan
 use Adyen\Core\BusinessLogic\Domain\Webhook\Models\Webhook;
 use Adyen\Core\BusinessLogic\Domain\Webhook\Services\WebhookSynchronizationService as CoreWebhookSynchronizationService;
 use Adyen\Webhook\EventCodes;
-use Cart;
 
 /**
  * Class WebhookSynchronizationService
- *
- * @package AdyenPayment\Classes\Services\Domain
  */
 class WebhookSynchronizationService extends CoreWebhookSynchronizationService
 {
@@ -25,15 +22,15 @@ class WebhookSynchronizationService extends CoreWebhookSynchronizationService
      */
     public function isSynchronizationNeeded(Webhook $webhook): bool
     {
-        $cart = new Cart((int)$webhook->getMerchantReference());
-        if ((int)$cart->id_shop !== (int)StoreContext::getInstance()->getStoreId()) {
+        $cart = new \Cart((int) $webhook->getMerchantReference());
+        if ((int) $cart->id_shop !== (int) StoreContext::getInstance()->getStoreId()) {
             return false;
         }
 
         $transactionHistory = $this->transactionHistoryService->getTransactionHistory($webhook->getMerchantReference());
         if (
-            $webhook->getEventCode() !== EventCodes::AUTHORISATION &&
-            $transactionHistory->collection()->filterAllByEventCode('PAYMENT_REQUESTED')->isEmpty()
+            $webhook->getEventCode() !== EventCodes::AUTHORISATION
+            && $transactionHistory->collection()->filterAllByEventCode('PAYMENT_REQUESTED')->isEmpty()
         ) {
             return false;
         }

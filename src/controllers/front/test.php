@@ -62,6 +62,7 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
      * Handles request by generating seed data for testing purposes
      *
      * @return void
+     *
      * @throws QueryFilterInvalidParamException
      * @throws Exception
      */
@@ -99,7 +100,7 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
             $createWebhookSeedDataService = new CreateWebhooksSeedDataService();
             $ordersMerchantReferenceAndAmount = $createWebhookSeedDataService->createWebhookSeedData($customerId);
             $webhookData = $createWebhookSeedDataService->getWebhookAuthorizationData();
-            die(json_encode(array_merge(
+            exit(json_encode(array_merge(
                 $ordersMerchantReferenceAndAmount,
                 $webhookData,
                 ['message' => 'The initial data setup was successfully completed.']
@@ -107,15 +108,15 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
         } catch (InvalidDataException $exception) {
             AdyenPrestaShopUtility::die400(
                 [
-                    'message' => $exception->getMessage()
+                    'message' => $exception->getMessage(),
                 ]
             );
         } catch (HttpRequestException $exception) {
             header('HTTP/1.1 503 Service Unavailable');
-            die(json_encode(['message' => $exception->getMessage()]));
+            exit(json_encode(['message' => $exception->getMessage()]));
         } catch (Exception $exception) {
             header('HTTP/1.1 500 Internal Server Error');
-            die(json_encode(['message' => $exception->getMessage()]));
+            exit(json_encode(['message' => $exception->getMessage()]));
         } finally {
             header('Content-Type: application/json');
         }
@@ -140,6 +141,7 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
      * Registers proxies for webservice rest api requests
      *
      * @param string $credentials
+     *
      * @return void
      */
     private function registerProxies(string $credentials): void
@@ -200,9 +202,11 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
      * Returns hmac signature for given data
      *
      * @param array $data
+     *
      * @return void
+     *
      * @throws HttpRequestException
-     * @throws \Adyen\Webhook\Exception\InvalidDataException
+     * @throws Adyen\Webhook\Exception\InvalidDataException
      */
     private function getHmacSignature(array $data): void
     {
@@ -215,8 +219,8 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
         $createWebhookDataService = new CreateWebhooksSeedDataService();
         $hmac = $createWebhookDataService->getWebhookAuthorizationData()['hmac'];
         $hmacSignature = new HmacSignature();
-        unset($data["additionalData"]);
-        die(json_encode(array_merge(
+        unset($data['additionalData']);
+        exit(json_encode(array_merge(
             ['hmacSignature' => $hmacSignature->calculateNotificationHMAC($hmac, $data)]
         )));
     }
@@ -226,14 +230,16 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
      *
      * @param string $merchantReference
      * @param string $eventCode
+     *
      * @return void
+     *
      * @throws QueryFilterInvalidParamException
      */
     private function verifyWebhookStatus(string $merchantReference, string $eventCode): void
     {
         $transactionLogService = new TransactionLogService();
 
-        die(json_encode(array_merge(
+        exit(json_encode(array_merge(
             ['finished' => $transactionLogService->findLogsByMerchantReference($merchantReference, $eventCode)]
         )));
     }
@@ -243,7 +249,9 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
      *
      * @param string $testApiKey
      * @param string $liveApiKey
+     *
      * @return void
+     *
      * @throws HttpRequestException
      */
     private function verifyManagementApi(string $testApiKey, string $liveApiKey): void
@@ -255,6 +263,7 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
      * Calls service to create authorization credentials for webservice rest api
      *
      * @return string
+     *
      * @throws Exception
      */
     private function getAuthorizationCredentials(): string
@@ -277,6 +286,7 @@ class AdyenOfficialTestModuleFrontController extends ModuleFrontController
      * Calls service to create checkout seed data and returns existing customer id
      *
      * @param string $testApiKey
+     *
      * @return string
      *
      * @throws ApiCredentialsDoNotExistException

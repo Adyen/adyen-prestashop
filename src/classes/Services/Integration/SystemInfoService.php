@@ -4,12 +4,9 @@ namespace AdyenPayment\Classes\Services\Integration;
 
 use Adyen\Core\BusinessLogic\Domain\InfoSettings\Models\SystemInfo;
 use Adyen\Core\BusinessLogic\Domain\Integration\SystemInfo\SystemInfoService as SystemInfoServiceInterface;
-use Adyen\Core\BusinessLogic\Domain\Configuration\Configuration;
 
 /**
  * Class SystemInfoService
- *
- * @package AdyenPayment\Integration
  */
 class SystemInfoService implements SystemInfoServiceInterface
 {
@@ -18,13 +15,14 @@ class SystemInfoService implements SystemInfoServiceInterface
      */
     private $configuration;
 
-    public function __construct(Configuration $configuration)
+    public function __construct(ConfigService $configuration)
     {
         $this->configuration = $configuration;
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
+     *
      * @throws \PrestaShopException
      */
     public function getSystemInfo(): SystemInfo

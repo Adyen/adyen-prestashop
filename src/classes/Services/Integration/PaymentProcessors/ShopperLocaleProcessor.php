@@ -6,14 +6,11 @@ use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentLink\Factory\PaymentLinkRequ
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentLink\Models\PaymentLinkRequestContext;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Factory\PaymentRequestBuilder;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\StartTransactionRequestContext;
-use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\ShopperLocaleProcessor as ShopperLocaleProcessorInterface;
 use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\ShopperLocaleProcessor as PaymentLinkShopperLocaleProcessorInterface;
-use Context;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\ShopperLocaleProcessor as ShopperLocaleProcessorInterface;
 
 /**
  * Class ShopperLocaleProcessor
- *
- * @package AdyenPayment\Integration\PaymentProcessors
  */
 class ShopperLocaleProcessor implements ShopperLocaleProcessorInterface, PaymentLinkShopperLocaleProcessorInterface
 {
@@ -38,6 +35,6 @@ class ShopperLocaleProcessor implements ShopperLocaleProcessorInterface, Payment
      */
     private function getShopperLocale(): string
     {
-        return str_replace('-', '_', Context::getContext()->language->locale);
+        return str_replace('-', '_', \Context::getContext()->language->locale);
     }
 }

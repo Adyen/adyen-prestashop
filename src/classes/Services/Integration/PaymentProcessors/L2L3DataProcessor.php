@@ -2,20 +2,19 @@
 
 namespace AdyenPayment\Classes\Services\Integration\PaymentProcessors;
 
+use Address as PrestaAddress;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Factory\PaymentRequestBuilder;
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\AdditionalData\AdditionalData;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\AdditionalData\EnhancedSchemeData;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\AdditionalData\ItemDetailLine;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\StartTransactionRequestContext;
 use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\L2L3DataProcessor as L2L3DataProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Payment\Models\MethodAdditionalData\CardConfig;
 use Adyen\Core\BusinessLogic\Domain\Payment\Services\PaymentService;
-use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\AdditionalData\AdditionalData;
 use Country as PrestaCountry;
-use Address as PrestaAddress;
 
 /**
  * Class L2L3DataProcessor
- *
- * @package AdyenPayment\Integration\PaymentProcessors
  */
 class L2L3DataProcessor implements L2L3DataProcessorInterface
 {
@@ -39,19 +38,19 @@ class L2L3DataProcessor implements L2L3DataProcessorInterface
      */
     public function process(PaymentRequestBuilder $builder, StartTransactionRequestContext $context): void
     {
-        $cart = new \Cart($context->getReference());
-        $country = $this->getCountry($cart->id_address_delivery);
-        $address = $this->getAddress($cart->id_address_delivery);
+        $cart = new \Cart((int) $context->getReference());
+        $country = $this->getCountry((string) $cart->id_address_delivery);
+        $address = $this->getAddress((string) $cart->id_address_delivery);
 
-        if (!$this->shouldSyncL2L3Data((string)$context->getPaymentMethodCode())) {
+        if (!$this->shouldSyncL2L3Data((string) $context->getPaymentMethodCode())) {
             return;
         }
 
         $additionalData = new AdditionalData(
             null,
             new EnhancedSchemeData(
-                $cart->getOrderTotal() ? (string)($cart->getOrderTotal() - $cart->getOrderTotal(false)) : '',
-                $cart->id_customer ? (string)$cart->id_customer : '',
+                $cart->getOrderTotal() ? (string) ($cart->getOrderTotal() - $cart->getOrderTotal(false)) : '',
+                $cart->id_customer ? (string) $cart->id_customer : '',
                 $this->getTotalShippingCost($cart),
                 '',
                 (new \DateTime())->format('dMy'),
@@ -78,7 +77,10 @@ class L2L3DataProcessor implements L2L3DataProcessorInterface
         $creditCardConfig = $this->paymentService->getPaymentMethodByCode($code);
 
         if ($creditCardConfig) {
-            return $creditCardConfig->getAdditionalData()->isSendBasket();
+            /** @var CardConfig $config */
+            $config = $creditCardConfig->getAdditionalData();
+
+            return $config->isSendBasket();
         }
 
         return false;
@@ -95,7 +97,7 @@ class L2L3DataProcessor implements L2L3DataProcessorInterface
 
         foreach ($basketContent as $item) {
             $details[] = new ItemDetailLine(
-                strip_tags($item['description_short']) ?? '',
+                strip_tags($item['description_short']),
                 $item['upc'] ?? '',
                 $item['quantity'] ?? 0,
                 '',
@@ -116,7 +118,7 @@ class L2L3DataProcessor implements L2L3DataProcessorInterface
      */
     private function getTotalShippingCost(\Cart $cart): string
     {
-        return ($cart->getTotalShippingCost() >= 0.0) ? (string)$cart->getTotalShippingCost() : '';
+        return ($cart->getTotalShippingCost() >= 0.0) ? (string) $cart->getTotalShippingCost() : '';
     }
 
     /**
@@ -129,7 +131,7 @@ class L2L3DataProcessor implements L2L3DataProcessorInterface
      */
     private function getCountry(string $id): PrestaCountry
     {
-        return new PrestaCountry(PrestaAddress::getCountryAndState($id)['id_country']);
+        return new PrestaCountry(PrestaAddress::getCountryAndState((int) $id)['id_country']);
     }
 
     /**
@@ -139,6 +141,6 @@ class L2L3DataProcessor implements L2L3DataProcessorInterface
      */
     private function getAddress(string $id): PrestaAddress
     {
-        return new \Address($id);
+        return new PrestaAddress((int) $id);
     }
 }

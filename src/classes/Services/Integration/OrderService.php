@@ -17,23 +17,11 @@ use AdyenPayment\Classes\Services\AdyenOrderStatusMapping;
 use AdyenPayment\Classes\Services\RefundHandler;
 use AdyenPayment\Classes\Version\Contract\VersionHandler;
 use Cart;
-use Configuration;
-use DateTime;
-use Db;
-use Module;
 use Order;
-use OrderHistory;
-use Exception;
 use PrestaShop\PrestaShop\Adapter\Entity\Currency;
-use PrestaShopDatabaseException;
-use PrestaShopException;
-use Shop;
-use Validate;
 
 /**
  * Class OrderService.
- *
- * @package AdyenPayment\Integration
  */
 class OrderService implements OrderServiceInterface
 {
@@ -64,9 +52,9 @@ class OrderService implements OrderServiceInterface
      */
     public function cartExists(string $merchantReference): bool
     {
-        $cart = new Cart($merchantReference);
+        $cart = new \Cart((int) $merchantReference);
 
-        return Validate::isLoadedObject($cart) && $cart->id;
+        return \Validate::isLoadedObject($cart) && $cart->id;
     }
 
     /**
@@ -74,28 +62,26 @@ class OrderService implements OrderServiceInterface
      *
      * @return bool
      *
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
-     * @throws Exception
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
+     * @throws \Exception
      */
     public function orderExists(string $merchantReference): bool
     {
-        $cart = new Cart((int)$merchantReference);
-        $idOrder = (int)$this->getIdByCartId((int)$merchantReference);
-        $order = new Order($idOrder);
+        $cart = new \Cart((int) $merchantReference);
+        $idOrder = (int) $this->getIdByCartId((int) $merchantReference);
+        $order = new \Order($idOrder);
 
-        if (!$cart->orderExists() ||
-            !$this->transactionHistoryRepository->getTransactionHistory($merchantReference)) {
-            throw new Exception('Order with cart ID: ' . $merchantReference . ' still not created.');
+        if (!$cart->orderExists()
+            || !$this->transactionHistoryRepository->getTransactionHistory($merchantReference)) {
+            throw new \Exception('Order with cart ID: ' . $merchantReference . ' still not created.');
         }
 
-        if (!isset($order->current_state) || (int)$order->current_state === 0) {
-            $orderCreationTime = new DateTime($order->date_add);
+        if (!isset($order->current_state) || (int) $order->current_state === 0) {
+            $orderCreationTime = new \DateTime($order->date_add);
             $now = TimeProvider::getInstance()->getCurrentLocalTime();
             $passedTimeSinceOrderCreation = $now->getTimestamp() - $orderCreationTime->getTimestamp();
-            throw new Exception(
-                'Order with cart ID:' . $merchantReference . ' can not be updated, because order is still not initialized. Order is not in initial state after ' . $passedTimeSinceOrderCreation . ' seconds since its creation.'
-            );
+            throw new \Exception('Order with cart ID:' . $merchantReference . ' can not be updated, because order is still not initialized. Order is not in initial state after ' . $passedTimeSinceOrderCreation . ' seconds since its creation.');
         }
 
         if ($order->module !== 'adyenofficial') {
@@ -111,20 +97,20 @@ class OrderService implements OrderServiceInterface
      *
      * @return void
      *
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      * @throws InvalidCurrencyCode
      * @throws RepositoryClassException
-     * @throws Exception
+     * @throws \Exception
      */
     public function updateOrderStatus(Webhook $webhook, string $statusId): void
     {
-        $idOrder = (int)$this->getIdByCartId((int)$webhook->getMerchantReference());
+        $idOrder = (int) $this->getIdByCartId((int) $webhook->getMerchantReference());
 
         if (!$idOrder) {
-            throw new Exception('Order for cart id: ' . $webhook->getMerchantReference() . ' could not be found.');
+            throw new \Exception('Order for cart id: ' . $webhook->getMerchantReference() . ' could not be found.');
         }
-        $order = new Order($idOrder);
+        $order = new \Order($idOrder);
         $this->setTimezone($order->id_shop);
 
         if ($order->current_state === AdyenOrderStatusMapping::getPrestaShopOrderStatusId(AdyenOrderStatusMapping::PRESTA_PAYMENT_ERROR)
@@ -134,17 +120,15 @@ class OrderService implements OrderServiceInterface
             return;
         }
 
-        if ((int)$statusId && (int)$statusId !== (int)$order->current_state) {
-            $history = new OrderHistory();
+        if ((int) $statusId && (int) $statusId !== (int) $order->current_state) {
+            $history = new \OrderHistory();
             $history->id_order = $idOrder;
-            $history->id_employee = "0";
-            $history->changeIdOrderState((int)$statusId, $idOrder, true);
+            $history->id_employee = 0;
+            $history->changeIdOrderState((int) $statusId, $idOrder, true);
             $history->add();
             $updatedState = $this->getOrderCurrentState($idOrder);
-            if ((int)$updatedState !== (int)$statusId) {
-                throw new Exception(
-                    'Order status update failed for order with ID: ' . $idOrder . '. Adyen tried to change order state id to ' . $statusId . ' but PrestaShop API failed to update order to desired status. '
-                );
+            if ((int) $updatedState !== (int) $statusId) {
+                throw new \Exception('Order status update failed for order with ID: ' . $idOrder . '. Adyen tried to change order state id to ' . $statusId . ' but PrestaShop API failed to update order to desired status. ');
             }
         }
 
@@ -164,7 +148,7 @@ class OrderService implements OrderServiceInterface
      */
     public function getOrderCurrency(string $merchantReference): string
     {
-        $cart = new Cart((int)$merchantReference);
+        $cart = new \Cart((int) $merchantReference);
 
         return (new Currency($cart->id_currency))->iso_code;
     }
@@ -184,19 +168,19 @@ class OrderService implements OrderServiceInterface
      *
      * @return void
      *
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      */
     public function updateOrderPayment(Webhook $webhook): void
     {
-        $idOrder = (int)$this->getIdByCartId((int)$webhook->getMerchantReference());
+        $idOrder = (int) $this->getIdByCartId((int) $webhook->getMerchantReference());
 
         if (!$idOrder) {
             return;
         }
 
-        $order = new Order($idOrder);
-        $adyenModule = Module::getInstanceByName('adyenofficial');
+        $order = new \Order($idOrder);
+        $adyenModule = \Module::getInstanceByName('adyenofficial');
 
         if ($order->module !== $adyenModule->name) {
             $order->module = $adyenModule->name;
@@ -212,15 +196,16 @@ class OrderService implements OrderServiceInterface
      * @return Amount
      *
      * @throws InvalidCurrencyCode
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      */
     public function getOrderAmount(string $merchantReference): Amount
     {
-        $idOrder = (int)$this->getIdByCartId((int)$merchantReference);
-        $order = new Order($idOrder);
+        $idOrder = (int) $this->getIdByCartId((int) $merchantReference);
+        $order = new \Order($idOrder);
         $currency = new Currency($order->id_currency);
-        return Amount::fromFloat((float)$order->getOrdersTotalPaid(),
+
+        return Amount::fromFloat((float) $order->getOrdersTotalPaid(),
             AdyenCurrency::fromIsoCode($currency->iso_code));
     }
 
@@ -234,10 +219,10 @@ class OrderService implements OrderServiceInterface
      */
     private function getIdByCartId(int $cartId)
     {
-        return Db::getInstance()->getValue(
-            "
+        return \Db::getInstance()->getValue(
+            '
                                  SELECT `id_order`
-                                 FROM `" . _DB_PREFIX_ . "orders`
+                                 FROM `' . _DB_PREFIX_ . "orders`
                                  WHERE `id_cart` = '" . $cartId . "'
                                  "
         );
@@ -252,10 +237,10 @@ class OrderService implements OrderServiceInterface
      */
     private function getOrderCurrentState(int $orderId)
     {
-        return Db::getInstance()->getValue(
-            "
+        return \Db::getInstance()->getValue(
+            '
                                  SELECT `current_state`
-                                 FROM `" . _DB_PREFIX_ . "orders`
+                                 FROM `' . _DB_PREFIX_ . "orders`
                                  WHERE `id_order` = '" . $orderId . "'
                                  "
         );
@@ -268,15 +253,15 @@ class OrderService implements OrderServiceInterface
      */
     private function setTimezone(int $storeId): void
     {
-        $shop = new Shop($storeId);
+        $shop = new \Shop($storeId);
 
         @date_default_timezone_set(
-            Configuration::get(
+            \Configuration::get(
                 'PS_TIMEZONE',
                 null,
                 $shop->id_shop_group,
                 $shop->id,
-                Configuration::get('PS_TIMEZONE')
+                \Configuration::get('PS_TIMEZONE')
             )
         );
     }
@@ -286,29 +271,30 @@ class OrderService implements OrderServiceInterface
      *
      * @return bool
      *
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      */
     public function createOrderFromWebhook(Webhook $webhook): bool
     {
-        $cart = new Cart($webhook->getMerchantReference());
+        $cart = new \Cart((int) $webhook->getMerchantReference());
 
         if ($cart->orderExists()) {
             return true;
         }
 
-        $orderStatusMap = AdminAPI::get()->orderMappings($cart->id_shop)->getOrderStatusMap();
-        if(!$orderStatusMap->isSuccessful()) {
+        $orderStatusMap = AdminAPI::get()->orderMappings((string) $cart->id_shop)->getOrderStatusMap();
+        if (!$orderStatusMap->isSuccessful()) {
             return false;
         }
 
         $inProgressPaymentId = $orderStatusMap->toArray()['inProgress'];
-        $module = Module::getInstanceByName('adyenofficial');
+        /** @var \AdyenOfficial $module */
+        $module = \Module::getInstanceByName('adyenofficial');
 
         try {
             $success = $module->validateOrder(
                 $cart->id,
-                (int)$inProgressPaymentId,
+                (int) $inProgressPaymentId,
                 $webhook->getAmount()->getPriceInCurrencyUnits(),
                 $module->displayName,
                 null,
@@ -317,7 +303,7 @@ class OrderService implements OrderServiceInterface
                 true,
                 $cart->secure_key
             );
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Logger::logError('Adyen plugin failed to create order with cart id: ' .
                 $webhook->getMerchantReference() . ' ,from webhook. Exception' . $e->getMessage()
             );

@@ -3,10 +3,6 @@
 use Adyen\Core\Infrastructure\Logger\Logger;
 use AdyenPayment\Classes\Bootstrap;
 
-if (!defined('_PS_VERSION_')) {
-    exit;
-}
-
 require_once 'Autoloader.php';
 
 /**
@@ -40,4 +36,3 @@ function upgrade_module_5_2_10(AdyenOfficial $module): bool
 
     return true;
 }
-

@@ -3,13 +3,9 @@
 namespace AdyenPayment\Classes\Utility;
 
 use Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext;
-use Context;
-use PrestaShopException;
 
 /**
  * Class Url
- *
- * @package AdyenPayment\Classes\Utility
  */
 class Url
 {
@@ -25,20 +21,20 @@ class Url
      *
      * @return string
      *
-     * @throws PrestaShopException
+     * @throws \PrestaShopException
      */
     public static function getAdminUrl(
         string $controller,
         string $action,
-        string $storeId = null,
-        string $methodId = null,
-        string $queueItemId = null,
-        bool $ajax = true
+        ?string $storeId = null,
+        ?string $methodId = null,
+        ?string $queueItemId = null,
+        bool $ajax = true,
     ): string {
-        $url = Context::getContext()->link->getAdminLink($controller) . '&';
+        $url = \Context::getContext()->link->getAdminLink($controller) . '&';
         $params = [
             'ajax' => $ajax,
-            'action' => $action
+            'action' => $action,
         ];
 
         $queryString = http_build_query($params);
@@ -62,13 +58,13 @@ class Url
     {
         $shopId = StoreContext::getInstance()->getStoreId();
 
-        return Context::getContext()->link->getModuleLink(
+        return \Context::getContext()->link->getModuleLink(
             'adyenofficial',
             $controller,
             $params,
             null,
             null,
-            $shopId ?: Context::getContext()->shop->id
+            $shopId ?: \Context::getContext()->shop->id
         );
     }
 

@@ -11,7 +11,7 @@ use AdyenPayment\Classes\Utility\SessionService;
 class AdyenOfficialStateDataModuleFrontController extends ModuleFrontController
 {
     /** @var string File name for translation contextualization */
-    const FILE_NAME = 'AdyenOfficialStateDataModuleFrontController';
+    public const FILE_NAME = 'AdyenOfficialStateDataModuleFrontController';
 
     /**
      * @throws RepositoryClassException
@@ -39,7 +39,6 @@ class AdyenOfficialStateDataModuleFrontController extends ModuleFrontController
 
         $payload = Tools::file_get_contents('php://input');
         $data = json_decode($payload, true);
-
 
         foreach ($data as $key => $item) {
             SessionService::set($key, json_decode($item, true));

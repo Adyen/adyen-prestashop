@@ -37,7 +37,7 @@ class AdyenAuthorizationAdjustmentController extends AdyenBaseController
 
         $order = new Order($orderId);
 
-        $response = AdminAPI::get()->authorizationAdjustment((string)$order->id_shop)->handleExtendingAuthorizationPeriod((string)$order->id_cart);
+        $response = AdminAPI::get()->authorizationAdjustment((string) $order->id_shop)->handleExtendingAuthorizationPeriod((string) $order->id_cart);
 
         if ($response->isSuccessful()) {
             SessionService::set(
@@ -50,7 +50,7 @@ class AdyenAuthorizationAdjustmentController extends AdyenBaseController
 
         SessionService::set(
             'errorMessage',
-            $this->module->l('Authorization adjustment request failed. Reason: ') . $response->toArray()['errorMessage'] ?? ''
+            $this->module->l('Authorization adjustment request failed. Reason: ') . ($response->toArray()['errorMessage'] ?? '')
         );
         AdyenPrestaShopUtility::dieJson($response);
     }

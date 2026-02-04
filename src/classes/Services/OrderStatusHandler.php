@@ -16,22 +16,15 @@ use Adyen\Core\Infrastructure\ServiceRegister;
 use Adyen\Webhook\PaymentStates;
 use AdyenPayment\Classes\Bootstrap;
 use AdyenPayment\Classes\Utility\SessionService;
-use Currency;
-use Exception;
-use Module;
 use Order;
-use Tools;
 
 /**
  * Class OrderStatusHandler
- *
- * @package AdyenPayment\Classes\Utility
  */
 class OrderStatusHandler
 {
     /**
-     * @param Order $order
-     *
+     * @param \Order $order
      * @param int $newOrderStatus
      *
      * @return void
@@ -39,14 +32,14 @@ class OrderStatusHandler
      * @throws InvalidMerchantReferenceException
      * @throws RepositoryClassException
      * @throws InvalidCurrencyCode
-     * @throws Exception
+     * @throws \Exception
      */
-    public static function handleOrderStatusChange(Order $order, int $newOrderStatus): void
+    public static function handleOrderStatusChange(\Order $order, int $newOrderStatus): void
     {
         Bootstrap::init();
         $transactionDetails = TransactionDetailsHandler::getTransactionDetails($order);
         $orderStatusMapping = StoreContext::doWithStore(
-            (string)$order->id_shop,
+            (string) $order->id_shop,
             [self::orderStatusMappingService(), 'getOrderStatusMappingSettings']
         );
 
@@ -54,13 +47,13 @@ class OrderStatusHandler
             return;
         }
 
-        $manualCaptureId = self::getManualCaptureStatus((string)$order->id_shop);
+        $manualCaptureId = self::getManualCaptureStatus((string) $order->id_shop);
 
-        if ($newOrderStatus === (int)$orderStatusMapping[PaymentStates::STATE_CANCELLED]) {
+        if ($newOrderStatus === (int) $orderStatusMapping[PaymentStates::STATE_CANCELLED]) {
             self::handleCancellation($order, self::isCancellationSupported($transactionDetails));
         }
 
-        if (!empty($manualCaptureId) && (int)$manualCaptureId === $newOrderStatus) {
+        if (!empty($manualCaptureId) && (int) $manualCaptureId === $newOrderStatus) {
             self::handleCapture($order, self::isCaptureSupported($transactionDetails));
         }
     }
@@ -68,34 +61,33 @@ class OrderStatusHandler
     /**
      * If order is in cancelled, failed or new status and if payment link is enabled return true.
      *
-     * @param Order $order
+     * @param \Order $order
      *
      * @return bool
      *
      * @throws RepositoryClassException
-     * @throws Exception
+     * @throws \Exception
      */
-    public static function shouldGeneratePaymentLinkForNonAdyenOrder(Order $order): bool
+    public static function shouldGeneratePaymentLinkForNonAdyenOrder(\Order $order): bool
     {
         Bootstrap::init();
         $orderStatusMapping = StoreContext::doWithStore(
-            (string)$order->id_shop,
+            (string) $order->id_shop,
             [self::orderStatusMappingService(), 'getOrderStatusMappingSettings']
         );
 
         /** @var GeneralSettings|null $generalSettings */
         $generalSettings = StoreContext::doWithStore(
-            (string)$order->id_shop,
+            (string) $order->id_shop,
             [self::generalSettingsRepository(), 'getGeneralSettings']
         );
 
         $paymentLinkEnabled = $generalSettings && $generalSettings->isEnablePayByLink();
 
         if ($paymentLinkEnabled && (
-                (int)$order->current_state === (int)$orderStatusMapping[PaymentStates::STATE_CANCELLED] ||
-                (int)$order->current_state === (int)$orderStatusMapping[PaymentStates::STATE_FAILED] ||
-                (int)$order->current_state === (int)$orderStatusMapping[PaymentStates::STATE_NEW])
-
+            (int) $order->current_state === (int) $orderStatusMapping[PaymentStates::STATE_CANCELLED]
+            || (int) $order->current_state === (int) $orderStatusMapping[PaymentStates::STATE_FAILED]
+            || (int) $order->current_state === (int) $orderStatusMapping[PaymentStates::STATE_NEW])
         ) {
             return true;
         }
@@ -105,6 +97,7 @@ class OrderStatusHandler
 
     /**
      * @param array $transactionDetails
+     *
      * @return bool
      */
     private static function isCaptureSupported(array $transactionDetails): bool
@@ -114,6 +107,7 @@ class OrderStatusHandler
 
     /**
      * @param array $transactionDetails
+     *
      * @return bool
      */
     private static function isCancellationSupported(array $transactionDetails): bool
@@ -122,7 +116,9 @@ class OrderStatusHandler
     }
 
     /**
+     * @param string $flagTocCheck
      * @param array $transactionDetails
+     *
      * @return bool
      */
     private static function isDetailsFlagTrue(string $flagTocCheck, array $transactionDetails): bool
@@ -146,77 +142,76 @@ class OrderStatusHandler
     }
 
     /**
-     * @param Order $order
+     * @param \Order $order
      * @param bool $captureSupported
-     * @param float $capturableAmount
      *
      * @return void
      *
      * @throws InvalidCurrencyCode
      * @throws InvalidMerchantReferenceException
-     * @throws Exception
+     * @throws \Exception
      */
-    private static function handleCapture(Order $order, bool $captureSupported): void
+    private static function handleCapture(\Order $order, bool $captureSupported): void
     {
         if (!$captureSupported) {
-            self::setErrorMessage(Module::getInstanceByName('adyenofficial')->l('Capture is not supported on Adyen.'));
+            self::setErrorMessage(\Module::getInstanceByName('adyenofficial')->l('Capture is not supported on Adyen.'));
 
-            Tools::redirect(self::orderService()->getOrderUrl((string)$order->id_cart));
+            \Tools::redirect(self::orderService()->getOrderUrl((string) $order->id_cart));
         }
 
-        $currency = new Currency($order->id_currency);
-        $response = AdminAPI::get()->capture((string)$order->id_shop)->handle(
-            (string)$order->id_cart,
+        $currency = new \Currency($order->id_currency);
+        $response = AdminAPI::get()->capture((string) $order->id_shop)->handle(
+            (string) $order->id_cart,
             (new \Cart($order->id_cart))->getOrderTotal(),
             $currency->iso_code
         );
 
         if (!$response->isSuccessful()) {
             self::setErrorMessage(
-                Module::getInstanceByName('adyenofficial')->l(
+                \Module::getInstanceByName('adyenofficial')->l(
                     'Capture request failed. Please check Adyen configuration. Reason: '
-                ) . $response->toArray()['errorMessage'] ?? ''
+                ) . ($response->toArray()['errorMessage'] ?? '')
             );
 
-            Tools::redirect(self::orderService()->getOrderUrl((string)$order->id_cart));
+            \Tools::redirect(self::orderService()->getOrderUrl((string) $order->id_cart));
         }
 
         self::setSuccessMessage(
-            Module::getInstanceByName('adyenofficial')->l('Capture request successfully sent to Adyen.')
+            \Module::getInstanceByName('adyenofficial')->l('Capture request successfully sent to Adyen.')
         );
     }
 
     /**
-     * @param Order $order
+     * @param \Order $order
      * @param bool $cancelSupported
      *
      * @return void
      *
      * @throws InvalidMerchantReferenceException
      */
-    private static function handleCancellation(Order $order, bool $cancelSupported): void
+    private static function handleCancellation(\Order $order, bool $cancelSupported): void
     {
         if (!$cancelSupported) {
-            self::setErrorMessage(Module::getInstanceByName('adyenofficial')->l('Cancel is not supported on Adyen.'));
+            self::setErrorMessage(\Module::getInstanceByName('adyenofficial')->l('Cancel is not supported on Adyen.'));
 
-            Tools::redirect(self::orderService()->getOrderUrl((string)$order->id_cart));
+            \Tools::redirect(self::orderService()->getOrderUrl((string) $order->id_cart));
         }
 
-        $response = AdminAPI::get()->cancel((string)$order->id_shop)->handle((string)$order->id_cart);
+        $response = AdminAPI::get()->cancel((string) $order->id_shop)->handle((string) $order->id_cart);
 
         if (!$response->isSuccessful()) {
             self::setErrorMessage(
-                Module::getInstanceByName('adyenofficial')->l(
+                \Module::getInstanceByName('adyenofficial')->l(
                     'Cancel request failed. Please check Adyen configuration. Reason: '
                 )
-                . $response->toArray()['errorMessage'] ?? ''
+                . ($response->toArray()['errorMessage'] ?? '')
             );
 
-            Tools::redirect(self::orderService()->getOrderUrl((string)$order->id_cart));
+            \Tools::redirect(self::orderService()->getOrderUrl((string) $order->id_cart));
         }
 
         self::setSuccessMessage(
-            Module::getInstanceByName('adyenofficial')->l('Cancellation request successfully sent to Adyen.')
+            \Module::getInstanceByName('adyenofficial')->l('Cancellation request successfully sent to Adyen.')
         );
     }
 
@@ -245,7 +240,7 @@ class OrderStatusHandler
      *
      * @return string
      *
-     * @throws Exception
+     * @throws \Exception
      */
     private static function getManualCaptureStatus(string $storeId): string
     {

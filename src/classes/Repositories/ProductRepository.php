@@ -2,8 +2,6 @@
 
 namespace AdyenPayment\Classes\Repositories;
 
-use Db;
-
 class ProductRepository
 {
     /**
@@ -15,9 +13,9 @@ class ProductRepository
      */
     public function getProductIdByProductName(string $name)
     {
-        return Db::getInstance()->getValue('
+        return \Db::getInstance()->getValue('
         SELECT id_product
         FROM ' . _DB_PREFIX_ . 'product_lang
-        WHERE name LIKE "%' . (string)$name . '%"');
+        WHERE name LIKE "%' . (string) $name . '%"');
     }
 }

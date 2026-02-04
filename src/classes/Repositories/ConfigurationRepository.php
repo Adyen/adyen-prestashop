@@ -2,14 +2,10 @@
 
 namespace AdyenPayment\Classes\Repositories;
 
-use Logeecom\Infrastructure\ORM\QueryFilter\Operators;
-use Logeecom\Infrastructure\ORM\QueryFilter\QueryFilter;
 use PrestaShop\PrestaShop\Adapter\Entity\Shop;
 
 /**
  * Class ConfigurationRepository
- *
- * @package AdyenPayment\Classes\Repositories
  */
 class ConfigurationRepository
 {
@@ -38,7 +34,7 @@ class ConfigurationRepository
         }
 
         foreach ($manuallyManagedStores as $manualStore) {
-            if ($manualStore['id_shop'] === (string)$storeId && $manualStore['value'] === null) {
+            if ($manualStore['id_shop'] === (string) $storeId && $manualStore['value'] === null) {
                 $maintenanceMode = true;
             }
         }

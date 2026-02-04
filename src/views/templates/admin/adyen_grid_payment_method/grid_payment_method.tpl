@@ -1,5 +1,5 @@
 <span>
     <span>
-        <label>{$paymentMethod}</label>
+        <label>{$paymentMethod|escape:'htmlall':'UTF-8'}</label>
     </span>
 </span>

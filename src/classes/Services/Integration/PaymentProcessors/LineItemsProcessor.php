@@ -7,14 +7,11 @@ use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentLink\Models\PaymentLinkReque
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Factory\PaymentRequestBuilder;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\LineItem;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\StartTransactionRequestContext;
-use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\LineItemsProcessor as LineItemsProcessorInterface;
 use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\LineItemsProcessor as PaymentLinkLineItemsProcessorInterface;
-use Cart;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\LineItemsProcessor as LineItemsProcessorInterface;
 
 /**
  * Class LineItemsProcessor
- *
- * @package AdyenPayment\Integration\PaymentProcessors
  */
 class LineItemsProcessor implements LineItemsProcessorInterface, PaymentLinkLineItemsProcessorInterface
 {
@@ -26,12 +23,12 @@ class LineItemsProcessor implements LineItemsProcessorInterface, PaymentLinkLine
      */
     public function process(PaymentRequestBuilder $builder, StartTransactionRequestContext $context): void
     {
-        $builder->setLineItems($this->getLineItemsFromCart((int)$context->getReference()));
+        $builder->setLineItems($this->getLineItemsFromCart((int) $context->getReference()));
     }
 
     public function processPaymentLink(PaymentLinkRequestBuilder $builder, PaymentLinkRequestContext $context): void
     {
-        $builder->setLineItems($this->getLineItemsFromCart((int)$context->getReference()));
+        $builder->setLineItems($this->getLineItemsFromCart((int) $context->getReference()));
     }
 
     /**
@@ -41,7 +38,7 @@ class LineItemsProcessor implements LineItemsProcessorInterface, PaymentLinkLine
      */
     private function getLineItemsFromCart(int $cartId): array
     {
-        $cart = new Cart($cartId);
+        $cart = new \Cart($cartId);
         $basketContent = $cart->getProducts();
         $lineItems = [];
 
@@ -51,7 +48,7 @@ class LineItemsProcessor implements LineItemsProcessorInterface, PaymentLinkLine
             $amountExcludingTax = $item['price_with_reduction_without_tax'];
             $amountIncludingTax = $item['price_with_reduction'];
             $taxAmount = $amountIncludingTax - $amountExcludingTax;
-            $description = strip_tags($item['description_short']) ?? '';
+            $description = strip_tags($item['description_short']);
 
             $lineItems[] = new LineItem(
                 $item['id_product'] ?? '',
@@ -60,8 +57,8 @@ class LineItemsProcessor implements LineItemsProcessorInterface, PaymentLinkLine
                 $taxAmount * 100,
                 $item['rate'] * 100,
                 $description ?: strip_tags($item['name']),
-                _PS_IMG_DIR_ . $image->getImgPath() . '.' . $image->image_format ?? '',
-                $category->getName($cart->id_lang) ?? '',
+                _PS_IMG_DIR_ . $image->getImgPath() . '.' . $image->image_format,
+                $category->getName($cart->id_lang),
                 $item['quantity'] ?? 0
             );
         }

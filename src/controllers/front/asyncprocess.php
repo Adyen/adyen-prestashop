@@ -4,7 +4,6 @@ use Adyen\Core\Infrastructure\ServiceRegister;
 use Adyen\Core\Infrastructure\TaskExecution\AsyncProcessStarterService;
 use Adyen\Core\Infrastructure\TaskExecution\Interfaces\AsyncProcessService;
 use AdyenPayment\Classes\Bootstrap;
-use AdyenPayment\Classes\Utility\AdyenPrestaShopUtility;
 
 /**
  * Class AdyenOfficialAsyncProcessModuleFrontController
@@ -36,6 +35,6 @@ class AdyenOfficialAsyncProcessModuleFrontController extends ModuleFrontControll
             $asyncProcessService->runProcess($guid);
         }
 
-        die(json_encode(['success' => true]));
+        exit(json_encode(['success' => true]));
     }
 }

@@ -7,8 +7,6 @@ use Adyen\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
  * Class ShopsTestProxy
- *
- * @package AdyenPayment\Classes\E2ETest\Http
  */
 class ShopsTestProxy extends TestProxy
 {
@@ -19,7 +17,7 @@ class ShopsTestProxy extends TestProxy
      */
     public function updateSubStore(array $subStoreData): void
     {
-        $httpRequest = new HttpRequest("/api/shops", $subStoreData);
+        $httpRequest = new HttpRequest('/api/shops', $subStoreData);
         $this->put($httpRequest)->decodeBodyToArray();
     }
 
@@ -30,7 +28,7 @@ class ShopsTestProxy extends TestProxy
      */
     public function updateSubStoreUrl(array $subStoreData): void
     {
-        $httpRequest = new HttpRequest("/api/shop_urls", $subStoreData);
+        $httpRequest = new HttpRequest('/api/shop_urls', $subStoreData);
         $this->put($httpRequest)->decodeBodyToArray();
     }
 
@@ -41,7 +39,7 @@ class ShopsTestProxy extends TestProxy
      */
     public function getSubStores(): array
     {
-        $httpRequest = new HttpRequest("/api/shops");
+        $httpRequest = new HttpRequest('/api/shops');
 
         return $this->get($httpRequest)->decodeBodyToArray();
     }
@@ -53,7 +51,7 @@ class ShopsTestProxy extends TestProxy
      */
     public function getSubStoreUrls(): array
     {
-        $httpRequest = new HttpRequest("/api/shop_urls");
+        $httpRequest = new HttpRequest('/api/shop_urls');
 
         return $this->get($httpRequest)->decodeBodyToArray();
     }
@@ -65,7 +63,7 @@ class ShopsTestProxy extends TestProxy
      */
     public function createSubStore(array $subStoreData): void
     {
-        $httpRequest = new HttpRequest("/api/shops", $subStoreData);
+        $httpRequest = new HttpRequest('/api/shops', $subStoreData);
         $this->post($httpRequest)->decodeBodyToArray();
     }
 
@@ -76,7 +74,7 @@ class ShopsTestProxy extends TestProxy
      */
     public function createShopUrl(array $subStoreUrl): void
     {
-        $httpRequest = new HttpRequest("/api/shop_urls", $subStoreUrl);
+        $httpRequest = new HttpRequest('/api/shop_urls', $subStoreUrl);
         $this->post($httpRequest)->decodeBodyToArray();
     }
 }

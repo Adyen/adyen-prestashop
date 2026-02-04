@@ -6,8 +6,6 @@ use Adyen\Core\BusinessLogic\DataAccess\Notifications\Contracts\ShopNotification
 
 /**
  * Class NotificationsRepository
- *
- * @package AdyenPayment\Classes\Repositories
  */
 class NotificationsRepository extends BaseRepositoryWithConditionalDelete implements ShopNotificationRepository
 {

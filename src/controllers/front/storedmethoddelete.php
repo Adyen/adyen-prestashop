@@ -34,7 +34,7 @@ class AdyenOfficialStoredMethodDeleteModuleFrontController extends ModuleFrontCo
         if (empty($methodId)) {
             AdyenPrestaShopUtility::die404(
                 [
-                    'message' => 'Disable action could not be processed, invalid request.'
+                    'message' => 'Disable action could not be processed, invalid request.',
                 ]
             );
         }
@@ -42,7 +42,7 @@ class AdyenOfficialStoredMethodDeleteModuleFrontController extends ModuleFrontCo
         if (empty($customerId)) {
             AdyenPrestaShopUtility::die404(
                 [
-                    'message' => 'Disable action could not be processed, customer not found.'
+                    'message' => 'Disable action could not be processed, customer not found.',
                 ]
             );
         }
@@ -53,14 +53,14 @@ class AdyenOfficialStoredMethodDeleteModuleFrontController extends ModuleFrontCo
             $methodId
         );
 
-        $result = CheckoutAPI::get()->checkoutConfig(Context::getContext()->shop->id)->disableStoredDetails(
+        $result = CheckoutAPI::get()->checkoutConfig((string) Context::getContext()->shop->id)->disableStoredDetails(
             $disableRequest
         );
 
         if (!$result->isSuccessful()) {
             AdyenPrestaShopUtility::die400(
                 [
-                    'message' => 'Disable action could not be processed.'
+                    'message' => 'Disable action could not be processed.',
                 ]
             );
         }

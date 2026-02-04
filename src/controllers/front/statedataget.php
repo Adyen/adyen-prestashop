@@ -11,7 +11,7 @@ use AdyenPayment\Classes\Utility\SessionService;
 class AdyenOfficialStateDataGetModuleFrontController extends ModuleFrontController
 {
     /** @var string File name for translation contextualization */
-    const FILE_NAME = 'AdyenOfficialStateDataGetModuleFrontController';
+    public const FILE_NAME = 'AdyenOfficialStateDataGetModuleFrontController';
 
     /**
      * @throws RepositoryClassException

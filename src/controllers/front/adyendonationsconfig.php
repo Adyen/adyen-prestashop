@@ -32,9 +32,9 @@ class AdyenOfficialAdyenDonationsConfigModuleFrontController extends ModuleFront
         $merchantReference = Tools::getValue('merchantReference');
         $key = Tools::getValue('key');
         $module = Tools::getValue('module');
-        $orderId = Order::getIdByCartId((int)($merchantReference));
+        $orderId = Order::getIdByCartId((int) $merchantReference);
         $cart = new Cart($merchantReference);
-        $order = new Order((int)($orderId));
+        $order = new Order((int) $orderId);
 
         if (!$merchantReference || !$key || !$module) {
             AdyenPrestaShopUtility::die400(
@@ -58,8 +58,8 @@ class AdyenOfficialAdyenDonationsConfigModuleFrontController extends ModuleFront
         $currencyFactor = $currency->conversion_rate;
 
         $result = CheckoutAPI::get()
-            ->donation((string)Context::getContext()->shop->id)
-            ->getDonationSettings($merchantReference, empty($currencyFactor) ? 1 : $currencyFactor);
+            ->donation((string) Context::getContext()->shop->id)
+            ->getDonationSettings($merchantReference, (string) (empty($currencyFactor) ? 1 : $currencyFactor));
 
         AdyenPrestaShopUtility::dieJson($result);
     }

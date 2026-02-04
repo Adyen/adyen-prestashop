@@ -24,15 +24,11 @@ use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryNotRegisteredException;
 use Adyen\Core\Infrastructure\ORM\QueryFilter\Operators;
 use Adyen\Core\Infrastructure\ORM\QueryFilter\QueryFilter;
 use Adyen\Core\Infrastructure\ORM\RepositoryRegistry;
-use Adyen\Core\Infrastructure\Serializer\Serializer;
 use Adyen\Core\Infrastructure\ServiceRegister;
 use Adyen\Core\Infrastructure\TaskExecution\QueueItem;
 use Adyen\Core\Infrastructure\TaskExecution\QueueService;
 use Adyen\Core\Infrastructure\TaskExecution\Task;
 use AdyenPayment\Classes\Repositories\OrderRepository;
-use ConfigurationCore;
-use Exception;
-use PrestaShopDatabaseException;
 
 class MigrateTransactionHistoryTask extends Task
 {
@@ -42,26 +38,7 @@ class MigrateTransactionHistoryTask extends Task
     private $textNotificationsOffset = 0;
 
     /**
-     * @inheritDoc
-     */
-    public function serialize(): ?string
-    {
-        return Serializer::serialize($this->toArray());
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function unserialize($serialized)
-    {
-        $unserialized = Serializer::unserialize($serialized);
-
-        $this->handledOrders = $unserialized['handledOrders'];
-        $this->textNotificationsOffset = $unserialized['textNotificationsOffset'];
-    }
-
-    /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public static function fromArray(array $array)
     {
@@ -73,22 +50,22 @@ class MigrateTransactionHistoryTask extends Task
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function toArray(): array
     {
         return [
             'handledOrders' => $this->handledOrders,
-            'textNotificationsOffset' => $this->textNotificationsOffset
+            'textNotificationsOffset' => $this->textNotificationsOffset,
         ];
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      *
      * @throws InvalidCurrencyCode
      * @throws InvalidMerchantReferenceException
-     * @throws PrestaShopDatabaseException
+     * @throws \PrestaShopDatabaseException
      * @throws QueryFilterInvalidParamException
      * @throws RepositoryNotRegisteredException
      */
@@ -125,7 +102,7 @@ class MigrateTransactionHistoryTask extends Task
      *
      * @throws InvalidCurrencyCode
      * @throws InvalidMerchantReferenceException
-     * @throws PrestaShopDatabaseException
+     * @throws \PrestaShopDatabaseException
      * @throws QueryFilterInvalidParamException
      * @throws RepositoryNotRegisteredException
      */
@@ -155,7 +132,7 @@ class MigrateTransactionHistoryTask extends Task
      * @throws InvalidMerchantReferenceException
      * @throws QueryFilterInvalidParamException
      * @throws RepositoryNotRegisteredException
-     * @throws Exception
+     * @throws \Exception
      */
     private function processHandledNotificationsBatch(array $notifications)
     {
@@ -164,8 +141,8 @@ class MigrateTransactionHistoryTask extends Task
         $transactionHistoryMap = $this->getTransactionHistoryMapFor($notifications, $ordersMap);
 
         foreach ($notifications as $notification) {
-            if (!array_key_exists($notification['merchant_reference'], $ordersMap) ||
-                !array_key_exists($notification['merchant_reference'], $transactionHistoryMap)) {
+            if (!array_key_exists($notification['merchant_reference'], $ordersMap)
+                || !array_key_exists($notification['merchant_reference'], $transactionHistoryMap)) {
                 continue;
             }
 
@@ -193,7 +170,7 @@ class MigrateTransactionHistoryTask extends Task
      * @throws InvalidMerchantReferenceException
      * @throws QueryFilterInvalidParamException
      * @throws RepositoryNotRegisteredException
-     * @throws Exception
+     * @throws \Exception
      */
     private function processUnhandledNotificationsBatch(array $notifications)
     {
@@ -202,8 +179,8 @@ class MigrateTransactionHistoryTask extends Task
         $transactionHistoryMap = $this->getTransactionHistoryMapFor($notifications, $ordersMap);
 
         foreach ($notifications as $notification) {
-            if (!array_key_exists($notification['merchant_reference'], $ordersMap) ||
-                !array_key_exists($notification['merchant_reference'], $transactionHistoryMap)) {
+            if (!array_key_exists($notification['merchant_reference'], $ordersMap)
+                || !array_key_exists($notification['merchant_reference'], $transactionHistoryMap)) {
                 continue;
             }
 
@@ -227,15 +204,15 @@ class MigrateTransactionHistoryTask extends Task
 
     private function transformNotificationToLog(array $notification, array $order): TransactionLog
     {
-        $mode = ConfigurationCore::get('ADYEN_MODE', null, null, $order['id_shop']);
+        $mode = \ConfigurationCore::get('ADYEN_MODE', null, null, $order['id_shop']);
 
         $transactionLog = new TransactionLog();
-        $transactionLog->setStoreId((string)$order['id_shop']);
-        $transactionLog->setMerchantReference((string)$order['id_cart']);
+        $transactionLog->setStoreId((string) $order['id_shop']);
+        $transactionLog->setMerchantReference((string) $order['id_cart']);
         $transactionLog->setExecutionId(0);
         $transactionLog->setEventCode($notification['event_code']);
         $transactionLog->setReason($notification['reason']);
-        $transactionLog->setIsSuccessful((bool)$notification['success']);
+        $transactionLog->setIsSuccessful((bool) $notification['success']);
         $transactionLog->setTimestamp(
             \DateTime::createFromFormat('Y-m-d H:i:s', $notification['created_at'])->getTimestamp()
         );
@@ -260,10 +237,9 @@ class MigrateTransactionHistoryTask extends Task
      */
     private function updateTransactionHistoryWith(
         TransactionHistory $transactionHistory,
-        array              $notification,
-        array              $order
-    )
-    {
+        array $notification,
+        array $order,
+    ) {
         $webhook = $this->transformNotificationToWebhook($notification, $order, $transactionHistory);
 
         $transactionHistory->add(
@@ -294,32 +270,32 @@ class MigrateTransactionHistoryTask extends Task
      * @throws InvalidCurrencyCode
      */
     private function transformNotificationToWebhook(
-        array              $notification,
-        array              $order,
-        TransactionHistory $transactionHistory
-    ): Webhook
-    {
-        $mode = ConfigurationCore::get('ADYEN_MODE', null, null, $order['id_shop']);
+        array $notification,
+        array $order,
+        TransactionHistory $transactionHistory,
+    ): Webhook {
+        $mode = \ConfigurationCore::get('ADYEN_MODE', null, null, $order['id_shop']);
 
         return new Webhook(
             Amount::fromInt(
-                (int)$notification['amount_value'],
+                (int) $notification['amount_value'],
                 !empty($notification['amount_currency']) ? Currency::fromIsoCode(
                     $notification['amount_currency']
                 ) : Currency::getDefault()
             ),
-            (string)$notification['event_code'],
+            (string) $notification['event_code'],
             \DateTime::createFromFormat('Y-m-d H:i:s', $notification['created_at'])->format('Y-m-d\TH:i:sP'),
             '',
             '',
-            (string)$order['id_cart'],
-            (string)$notification['pspreference'],
-            (string)$notification['payment_method'],
-            (string)$notification['reason'],
-            (bool)$notification['success'],
+            (string) $order['id_cart'],
+            (string) $notification['pspreference'],
+            (string) $notification['payment_method'],
+            (string) $notification['reason'],
+            (bool) $notification['success'],
             $transactionHistory->getOriginalPspReference(),
             0,
-            $mode === Mode::MODE_LIVE
+            $mode === Mode::MODE_LIVE,
+            []
         );
     }
 
@@ -393,7 +369,7 @@ class MigrateTransactionHistoryTask extends Task
      *
      * @return array|bool|resource|null
      *
-     * @throws PrestaShopDatabaseException
+     * @throws \PrestaShopDatabaseException
      */
     private function getUnhandledNotificationsForOrderId(string $orderId)
     {
@@ -412,7 +388,7 @@ class MigrateTransactionHistoryTask extends Task
      *
      * @return array|bool|resource|null
      *
-     * @throws PrestaShopDatabaseException
+     * @throws \PrestaShopDatabaseException
      */
     private function getHandledNotificationsForOrderId(string $orderId)
     {
@@ -429,7 +405,7 @@ class MigrateTransactionHistoryTask extends Task
     /**
      * @return array
      *
-     * @throws PrestaShopDatabaseException
+     * @throws \PrestaShopDatabaseException
      */
     private function getOrderIdsForMigration(): array
     {
@@ -448,7 +424,7 @@ class MigrateTransactionHistoryTask extends Task
 
         return array_filter(array_map(static function ($notification) {
             if (is_numeric($notification['merchant_reference'])) {
-                return (string)$notification['merchant_reference'];
+                return (string) $notification['merchant_reference'];
             }
 
             return '';
@@ -495,7 +471,7 @@ class MigrateTransactionHistoryTask extends Task
         return $result;
     }
 
-    //<editor-fold desc="Service getters" defaultstate="collapsed">
+    // <editor-fold desc="Service getters" defaultstate="collapsed">
 
     /**
      * @return OrderRepository
@@ -545,5 +521,5 @@ class MigrateTransactionHistoryTask extends Task
         return ServiceRegister::getService(QueueService::class);
     }
 
-    //</editor-fold>
+    // </editor-fold>
 }

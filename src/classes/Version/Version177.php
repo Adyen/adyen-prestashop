@@ -3,24 +3,15 @@
 namespace AdyenPayment\Classes\Version;
 
 use AdyenPayment\Classes\Version\Contract\VersionHandler;
-use Context;
-use Db;
-use Order;
-use OrderDetail;
-use OrderSlip;
 use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
-use PrestaShopDatabaseException;
-use PrestaShopException;
 
 /**
  * Class Version177. Used from PrestaShop 1.7.7.x+.
- *
- * @package AdyenPayment\Classes\Version
  */
 class Version177 implements VersionHandler
 {
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function hooks(): array
     {
@@ -29,12 +20,12 @@ class Version177 implements VersionHandler
             'displayAdminOrderTabLink',
             'actionOrderGridDefinitionModifier',
             'actionOrderGridPresenterModifier',
-            'displayProductActions'
+            'displayProductActions',
         ];
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function tabLink(): string
     {
@@ -42,7 +33,7 @@ class Version177 implements VersionHandler
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function tabContent(): string
     {
@@ -50,65 +41,64 @@ class Version177 implements VersionHandler
     }
 
     /**
-     * @param Order $order
+     * @param \Order $order
      *
      * @return float
      */
-    public function getRefundedAmount(Order $order): float
+    public function getRefundedAmount(\Order $order): float
     {
-        /** @var OrderSlip $lastOrderSlip */
+        /** @var \OrderSlip $lastOrderSlip */
         $lastOrderSlip = $order->getOrderSlipsCollection()->getLast();
 
         return $lastOrderSlip->total_products_tax_incl + $lastOrderSlip->shipping_cost_amount;
     }
 
     /**
-     * @param Order $order
+     * @param \Order $order
      * @param array $quantityList
+     *
      * @return void
      *
-     * @throws PrestaShopException
+     * @throws \PrestaShopException
      */
-    public function rollbackOrderSlipAdd(Order $order, array $quantityList = []): void
+    public function rollbackOrderSlipAdd(\Order $order, array $quantityList = []): void
     {
-        /** @var OrderSlip $lastOrderSlip */
+        /** @var \OrderSlip $lastOrderSlip */
         $lastOrderSlip = $order->getOrderSlipsCollection()->getLast();
-        Db::getInstance()->execute(
-            'DELETE FROM `' . _DB_PREFIX_ . 'order_slip_detail` WHERE `id_order_slip` = ' . (int)$lastOrderSlip->id
+        \Db::getInstance()->execute(
+            'DELETE FROM `' . _DB_PREFIX_ . 'order_slip_detail` WHERE `id_order_slip` = ' . (int) $lastOrderSlip->id
         );
 
         $lastOrderSlip->delete();
     }
 
     /**
-     * @param Order $order
+     * @param \Order $order
      *
      * @return float
      */
-    public function getRefundedAmountOnPresta(Order $order): float
+    public function getRefundedAmountOnPresta(\Order $order): float
     {
         return $this->getRefundedProducts($order) + $this->getRefundedShipping($order);
     }
 
     /**
-     * @param OrderDetail $orderDetail
-     *
+     * @param \OrderDetail $orderDetail
      * @param float $amount
      * @param float $amountWithoutTax
      * @param int $quantityRefunded
      *
      * @return void
      *
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      */
     public function updateOrderDetail(
-        OrderDetail $orderDetail,
-        float       $amount,
-        float       $amountWithoutTax,
-        int         $quantityRefunded
-    ): void
-    {
+        \OrderDetail $orderDetail,
+        float $amount,
+        float $amountWithoutTax,
+        int $quantityRefunded,
+    ): void {
         $orderDetail->total_refunded_tax_incl += $amount;
         $orderDetail->total_refunded_tax_excl += $amountWithoutTax;
         $orderDetail->product_quantity_return += $quantityRefunded;
@@ -121,42 +111,41 @@ class Version177 implements VersionHandler
     }
 
     /**
-     * @param OrderDetail $orderDetail
+     * @param \OrderDetail $orderDetail
      *
      * @return float
      */
-    public function getRefundedAmountForOrderDetail(OrderDetail $orderDetail): float
+    public function getRefundedAmountForOrderDetail(\OrderDetail $orderDetail): float
     {
         return $orderDetail->total_refunded_tax_incl;
     }
 
     /**
-     * @param OrderDetail $orderDetail
+     * @param \OrderDetail $orderDetail
      * @param int $quantityRefunded
      *
      * @return int
      */
-    public function calculateQuantityToAdd(OrderDetail $orderDetail, int $quantityRefunded): int
+    public function calculateQuantityToAdd(\OrderDetail $orderDetail, int $quantityRefunded): int
     {
-        return $quantityRefunded + (int)$orderDetail->product_quantity_return + (int)$orderDetail->product_quantity_refunded <= (int)$orderDetail->product_quantity ? $quantityRefunded : (int)$orderDetail->product_quantity - (int)$orderDetail->product_quantity_return - (int)$orderDetail->product_quantity_refunded;
+        return $quantityRefunded + (int) $orderDetail->product_quantity_return + (int) $orderDetail->product_quantity_refunded <= (int) $orderDetail->product_quantity ? $quantityRefunded : (int) $orderDetail->product_quantity - (int) $orderDetail->product_quantity_return - (int) $orderDetail->product_quantity_refunded;
     }
 
     /**
-     * @param OrderDetail $orderDetail
-     *
+     * @param \OrderDetail $orderDetail
      * @param array $details
      *
      * @return void
      *
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      */
-    public function rollbackOrderDetail(OrderDetail $orderDetail, array $details): void
+    public function rollbackOrderDetail(\OrderDetail $orderDetail, array $details): void
     {
-        $orderDetail->product_quantity_return -= (int)$details['product_quantity'];
-        $orderDetail->product_quantity_reinjected -= (int)$details['product_quantity'];
-        $orderDetail->total_refunded_tax_incl -= (float)$details['amount_tax_incl'];
-        $orderDetail->total_refunded_tax_excl -= (float)$details['amount_tax_excl'];
+        $orderDetail->product_quantity_return -= (int) $details['product_quantity'];
+        $orderDetail->product_quantity_reinjected -= (int) $details['product_quantity'];
+        $orderDetail->total_refunded_tax_incl -= (float) $details['amount_tax_incl'];
+        $orderDetail->total_refunded_tax_excl -= (float) $details['amount_tax_excl'];
 
         $orderDetail->update();
     }
@@ -168,24 +157,24 @@ class Version177 implements VersionHandler
      */
     public function getOrderUrl(string $merchantReference): string
     {
-        $id = Order::getIdByCartId((int)$merchantReference);
+        $id = \Order::getIdByCartId((int) $merchantReference);
 
         if (!SymfonyContainer::getInstance()) {
             return '';
         }
 
-        return rtrim(Context::getContext()->link->getBaseLink(), '/') . SymfonyContainer::getInstance()->get('router')
+        return rtrim(\Context::getContext()->link->getBaseLink(), '/') . SymfonyContainer::getInstance()->get('router')
                 ->generate('admin_orders_view', ['orderId' => $id]);
     }
 
     /**
      * Gets refunded shipping amount.
      *
-     * @param Order $order
+     * @param \Order $order
      *
      * @return float
      */
-    private function getRefundedShipping(Order $order): float
+    private function getRefundedShipping(\Order $order): float
     {
         $amount = 0;
 
@@ -199,11 +188,11 @@ class Version177 implements VersionHandler
     /**
      * Gets refunded products amount.
      *
-     * @param Order $order
+     * @param \Order $order
      *
      * @return float
      */
-    private function getRefundedProducts(Order $order): float
+    private function getRefundedProducts(\Order $order): float
     {
         $amount = 0;
 
@@ -235,6 +224,6 @@ class Version177 implements VersionHandler
      */
     public function getPrecision(): int
     {
-        return Context::getContext()->getComputingPrecision();
+        return \Context::getContext()->getComputingPrecision();
     }
 }

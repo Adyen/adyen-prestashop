@@ -9,7 +9,7 @@ class OrderRepository
         $query = new \DbQuery();
         $query->select('*')
             ->from('orders')
-            ->where("id_cart in (" . implode(',', array_map('pSQL', $orderIds)) . ")");
+            ->where('id_cart in (' . implode(',', array_map('pSQL', $orderIds)) . ')');
 
         return \Db::getInstance()->executeS($query);
     }

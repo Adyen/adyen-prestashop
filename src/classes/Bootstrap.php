@@ -15,9 +15,17 @@ use Adyen\Core\BusinessLogic\DataAccess\Payment\Entities\PaymentMethod;
 use Adyen\Core\BusinessLogic\DataAccess\TransactionHistory\Entities\TransactionHistory;
 use Adyen\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
 use Adyen\Core\BusinessLogic\DataAccess\Webhook\Entities\WebhookConfig;
+use Adyen\Core\BusinessLogic\Domain\Connection\Repositories\ConnectionSettingsRepository as ConnectionSettingsRepositoryInterface;
 use Adyen\Core\BusinessLogic\Domain\GeneralSettings\Services\GeneralSettingsService;
 use Adyen\Core\BusinessLogic\Domain\Integration\Order\OrderService as OrderServiceInterface;
 use Adyen\Core\BusinessLogic\Domain\Integration\Payment\ShopPaymentService as ShopPaymentServiceInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\AddressProcessor as PaymentLinkAddressProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\LineItemsProcessor as PaymentLinkLineItemsProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\ShopperBirthdayProcessor as PaymentLinkShopperBirthdayProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\ShopperEmailProcessor as PaymentLinkShopperEmailProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\ShopperLocaleProcessor as PaymentLinkShopperLocaleProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\ShopperNameProcessor as PaymentLinkShopperNameProcessorInterface;
+use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\ShopperReferenceProcessor as PaymentLinkShopperReferenceProcessorInterface;
 use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\AddressProcessor as AddressProcessorInterface;
 use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\BasketItemsProcessor as BasketItemsProcessorInterface;
 use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\BirthdayProcessor as BirthdayProcessorInterface;
@@ -27,20 +35,14 @@ use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\LineIt
 use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\ShopperEmailProcessor as ShopperEmailProcessorInterface;
 use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\ShopperLocaleProcessor as ShopperLocaleProcessorInterface;
 use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentRequest\ShopperNameProcessor as ShopperNameProcessorInterface;
-use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\AddressProcessor as PaymentLinkAddressProcessorInterface;
-use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\LineItemsProcessor as PaymentLinkLineItemsProcessorInterface;
-use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\ShopperBirthdayProcessor as PaymentLinkShopperBirthdayProcessorInterface;
-use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\ShopperEmailProcessor as PaymentLinkShopperEmailProcessorInterface;
-use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\ShopperLocaleProcessor as PaymentLinkShopperLocaleProcessorInterface;
-use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\ShopperNameProcessor as PaymentLinkShopperNameProcessorInterface;
-use Adyen\Core\BusinessLogic\Domain\Integration\Processors\PaymentLinkRequest\ShopperReferenceProcessor as PaymentLinkShopperReferenceProcessorInterface;
 use Adyen\Core\BusinessLogic\Domain\Integration\Store\StoreService as StoreServiceInterface;
 use Adyen\Core\BusinessLogic\Domain\Integration\SystemInfo\SystemInfoService as SystemInfoServiceInterface;
 use Adyen\Core\BusinessLogic\Domain\Integration\Version\VersionService as VersionServiceInterface;
 use Adyen\Core\BusinessLogic\Domain\Integration\Webhook\WebhookUrlService as WebhookUrlServiceInterface;
 use Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext;
-use Adyen\Core\BusinessLogic\Domain\Payment\Services\PaymentService;
 use Adyen\Core\BusinessLogic\Domain\Payment\Repositories\PaymentMethodConfigRepository;
+use Adyen\Core\BusinessLogic\Domain\Payment\Services\PaymentService;
+use Adyen\Core\BusinessLogic\Domain\Stores\Services\StoreService as DomainStoreServiceCore;
 use Adyen\Core\BusinessLogic\Domain\TransactionHistory\Repositories\TransactionHistoryRepository;
 use Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService;
 use Adyen\Core\BusinessLogic\Domain\Webhook\Repositories\WebhookConfigRepository;
@@ -67,10 +69,12 @@ use AdyenPayment\Classes\Repositories\BaseRepositoryWithConditionalDelete;
 use AdyenPayment\Classes\Repositories\ConfigurationRepository;
 use AdyenPayment\Classes\Repositories\Integration\ConnectionSettingsRepository;
 use AdyenPayment\Classes\Repositories\LogsRepository;
+use AdyenPayment\Classes\Repositories\NotificationsRepository;
 use AdyenPayment\Classes\Repositories\OrderRepository;
 use AdyenPayment\Classes\Repositories\PaymentMethodRepository;
 use AdyenPayment\Classes\Repositories\QueueItemRepository;
 use AdyenPayment\Classes\Repositories\TransactionLogRepository;
+use AdyenPayment\Classes\Services\Domain\StoreService as DomainStoreServiceIntegration;
 use AdyenPayment\Classes\Services\Domain\WebhookSynchronizationService;
 use AdyenPayment\Classes\Services\Integration\ConfigService;
 use AdyenPayment\Classes\Services\Integration\CustomerService;
@@ -91,19 +95,13 @@ use AdyenPayment\Classes\Services\Integration\StoreService;
 use AdyenPayment\Classes\Services\Integration\SystemInfoService;
 use AdyenPayment\Classes\Services\Integration\VersionInfoService;
 use AdyenPayment\Classes\Services\Integration\WebhookUrlService;
-use Adyen\Core\BusinessLogic\Domain\Connection\Repositories\ConnectionSettingsRepository as ConnectionSettingsRepositoryInterface;
-use Adyen\Core\BusinessLogic\Domain\Stores\Services\StoreService as DomainStoreServiceCore;
-use AdyenPayment\Classes\Services\Domain\StoreService as DomainStoreServiceIntegration;
 use AdyenPayment\Classes\Services\LogsService;
-use AdyenPayment\Classes\Repositories\NotificationsRepository;
 use AdyenPayment\Classes\Version\Contract\VersionHandler;
 use AdyenPayment\Classes\Version\Version175;
 use AdyenPayment\Classes\Version\Version177;
 
 /**
  * Class Bootstrap
- *
- * @package AdyenPayment
  */
 class Bootstrap extends BootstrapComponent
 {

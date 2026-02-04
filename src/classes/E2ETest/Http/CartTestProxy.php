@@ -7,8 +7,6 @@ use Adyen\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
  * Class CartTestProxy
- *
- * @package AdyenPayment\Classes\E2ETest\Http
  */
 class CartTestProxy extends TestProxy
 {
@@ -16,13 +14,15 @@ class CartTestProxy extends TestProxy
      * Creates request to create cart in database
      *
      * @param array $cartData
+     *
      * @return array
+     *
      * @throws HttpRequestException
      */
     public function createCart(array $cartData): array
     {
         $httpRequest = new HttpRequest(
-            "/api/carts",
+            '/api/carts',
             $cartData
         );
 

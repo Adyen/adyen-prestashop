@@ -14,13 +14,12 @@ use AdyenPayment\Classes\Services\Encryptor;
 
 /**
  * Class ConnectionSettingsRepository
- *
- * @package AdyenPayment\Classes\Repositories\Integration
  */
 class ConnectionSettingsRepository extends BaseConnectionSettingsRepository
 {
     /**
      * @inerhitDoc
+     *
      * @throws QueryFilterInvalidParamException
      * @throws \Exception
      */
@@ -42,6 +41,7 @@ class ConnectionSettingsRepository extends BaseConnectionSettingsRepository
      * @inerhitDoc
      *
      * @param ConnectionSettings $connectionSettings
+     *
      * @throws QueryFilterInvalidParamException
      * @throws EmptyConnectionDataException
      * @throws EmptyStoreException
@@ -74,6 +74,7 @@ class ConnectionSettingsRepository extends BaseConnectionSettingsRepository
 
     /**
      * @inerhitDoc
+     *
      * @throws \Exception
      */
     public function getOldestConnectionSettings(): ?ConnectionSettings
@@ -92,6 +93,7 @@ class ConnectionSettingsRepository extends BaseConnectionSettingsRepository
 
     /**
      * @inerhitDoc
+     *
      * @throws \Exception
      */
     public function getAllConnectionSettings(): array

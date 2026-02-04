@@ -4,8 +4,6 @@ namespace AdyenPayment\Classes\E2ETest\Services;
 
 /**
  * Class BaseCreateSeedDataService
- *
- * @package AdyenPayment\Classes\E2ETest\Services
  */
 class BaseCreateSeedDataService
 {
@@ -13,6 +11,7 @@ class BaseCreateSeedDataService
      * Reads from xml file
      *
      * @param string $fileName
+     *
      * @return string
      */
     protected function readFomXMLFile(string $fileName): string

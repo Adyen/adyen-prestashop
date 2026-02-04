@@ -2,10 +2,9 @@
 
 namespace AdyenPayment\Controllers;
 
-use Address;
 use Adyen\Core\BusinessLogic\AdminAPI\AdminAPI;
+use Adyen\Core\BusinessLogic\CheckoutAPI\PaymentRequest\Response\StartTransactionResponse;
 use Adyen\Core\BusinessLogic\DataAccess\Payment\Exceptions\PaymentMethodNotConfiguredException;
-use Adyen\Core\BusinessLogic\AdminAPI\Response\Response;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\PaymentMethodCode;
@@ -21,35 +20,23 @@ use AdyenPayment\Classes\SurchargeCalculator;
 use AdyenPayment\Classes\Utility\SessionService;
 use AdyenPayment\Classes\Utility\Url;
 use AdyenPayment\Classes\Version\Contract\VersionHandler;
-use Carrier;
-use Cart;
-use Context;
-use CurrencyCore;
-use Db;
-use Exception;
 use Order;
-use OrderHistory;
-use PrestaShopDatabaseException;
-use PrestaShopException;
-use Product;
-use StockAvailable;
-use Tools;
 
 class PaymentController extends \ModuleFrontController
 {
     /**
      * @param string $paymentMethodCode
-     * @param Cart $cart
+     * @param \Cart $cart
      * @param Amount $amount
      *
      * @return void
      *
-     * @throws Exception
+     * @throws \Exception
      */
-    protected function saveOrder(string $paymentMethodCode, Cart $cart, Amount $amount): void
+    protected function saveOrder(string $paymentMethodCode, \Cart $cart, Amount $amount): void
     {
         StoreContext::doWithStore(
-            (string)$cart->id_shop,
+            (string) $cart->id_shop,
             function () use ($paymentMethodCode, $cart, $amount) {
                 $this->doSaveOrder($paymentMethodCode, $cart, $amount);
             }
@@ -57,17 +44,17 @@ class PaymentController extends \ModuleFrontController
     }
 
     /**
-     * @param Cart $cart
+     * @param \Cart $cart
      * @param string $paymentMethodType
      *
      * @return float|int
      *
      * @throws PaymentMethodNotConfiguredException
-     * @throws Exception
+     * @throws \Exception
      */
-    protected function getOrderTotal(Cart $cart, string $paymentMethodType)
+    protected function getOrderTotal(\Cart $cart, string $paymentMethodType)
     {
-        return StoreContext::doWithStore($cart->id_shop, function () use ($cart, $paymentMethodType) {
+        return StoreContext::doWithStore((string) $cart->id_shop, function () use ($cart, $paymentMethodType) {
             $paymentMethod = $this->getPaymentMethod($paymentMethodType);
 
             /** @var VersionHandler $versionHandler */
@@ -78,28 +65,28 @@ class PaymentController extends \ModuleFrontController
                 throw new PaymentMethodNotConfiguredException(new TranslatableLabel('Method not configured.', ''));
             }
             $idCarrier = CheckoutHandler::getCarrierId($cart);
-            $currency = new CurrencyCore($cart->id_currency);
+            $currency = new \CurrencyCore($cart->id_currency);
 
-            return $cart->getOrderTotal(true, Cart::BOTH, null, $idCarrier) + Tools::ps_round(
-                    $this->convertPrice(
-                        SurchargeCalculator::calculateSurcharge(
-                            $paymentMethod,
-                            $currency->conversion_rate,
-                            Amount::fromFloat(
-                                $cart->getOrderTotal(true, Cart::BOTH, null, $idCarrier),
-                                Currency::fromIsoCode($currency->iso_code)
-                            )
-                        ),
-                        $currency
+            return $cart->getOrderTotal(true, \Cart::BOTH, null, $idCarrier) + \Tools::ps_round(
+                $this->convertPrice(
+                    SurchargeCalculator::calculateSurcharge(
+                        $paymentMethod,
+                        (string) $currency->conversion_rate,
+                        Amount::fromFloat(
+                            $cart->getOrderTotal(true, \Cart::BOTH, null, $idCarrier),
+                            Currency::fromIsoCode($currency->iso_code)
+                        )
                     ),
-                    $precision
-                );
+                    $currency
+                ),
+                $precision
+            );
         });
     }
 
-    protected function convertPrice(float $price, CurrencyCore $currency): float
+    protected function convertPrice(float $price, $currency): float
     {
-        return Tools::convertPrice(Tools::convertPrice($price, $currency, false), $currency);
+        return \Tools::convertPrice(\Tools::convertPrice($price, $currency, false), $currency);
     }
 
     /**
@@ -117,86 +104,85 @@ class PaymentController extends \ModuleFrontController
                 'errorMessage',
                 $message
             );
-            die(
-            json_encode(
-                [
-                    'nextStepUrl' => $url
-                ]
-            )
+            exit(
+                json_encode(
+                    [
+                        'nextStepUrl' => $url,
+                    ]
+                )
             );
         }
 
         $this->context->controller->errors[] = $message;
         $this->redirectWithNotifications(
-            Context::getContext()->link->getPageLink('order')
+            \Context::getContext()->link->getPageLink('order')
         );
     }
 
     /**
      * @param string $type
-     * @param Cart $cart
+     * @param \Cart $cart
      * @param Amount $amount
      *
      * @return void
      *
-     * @throws PrestaShopException
-     * @throws Exception
+     * @throws \PrestaShopException
+     * @throws \Exception
      */
-    protected function handleSuccessfulPaymentWithoutAdditionalData(string $type, Cart $cart, Amount $amount)
+    protected function handleSuccessfulPaymentWithoutAdditionalData(string $type, \Cart $cart, Amount $amount)
     {
         $this->saveOrder($type, $cart, $amount);
 
         if ($this->isAjaxRequest()) {
-            die(
-            json_encode(
-                [
-                    'nextStepUrl' => $this->generateSuccessURL($cart)
-                ]
-            )
+            exit(
+                json_encode(
+                    [
+                        'nextStepUrl' => $this->generateSuccessURL($cart),
+                    ]
+                )
             );
         }
-        Tools::redirect($this->generateSuccessURL($cart));
+        \Tools::redirect($this->generateSuccessURL($cart));
     }
 
     /**
-     * @param Response $response
+     * @param StartTransactionResponse $response
      * @param string $type
-     * @param Cart $cart
+     * @param \Cart $cart
      * @param Amount $amount
      *
      * @return void
      *
-     * @throws PrestaShopException
-     * @throws Exception
+     * @throws \Exception
      */
     protected function handleSuccessfulPaymentWithAdditionalData(
-        Response $response,
+        StartTransactionResponse $response,
         string $type,
-        Cart $cart,
-        Amount $amount
+        \Cart $cart,
+        Amount $amount,
     ) {
         if ($this->isAjaxRequest() && PaymentMethodCode::scheme()->equals($type)) {
             SessionService::set('cartId', $cart->id);
             SessionService::set('adyenAction', json_encode($response->getAction()));
             SessionService::set('adyenPaymentMethodType', $type);
 
-            die(
-            json_encode(
-                [
-                    'nextStepUrl' => Url::getFrontUrl('clicktopay')
-                ]
-            )
+            exit(
+                json_encode(
+                    [
+                        'nextStepUrl' => Url::getFrontUrl('clicktopay'),
+                    ]
+                )
             );
         }
 
         if ($this->isAjaxRequest()) {
-            die(
-            json_encode(
-                [
-                    'action' => $response->getAction(),
-                    'reference' => $cart->id
-                ]
-            )
+            exit(
+                json_encode(
+                    [
+                        'action' => $response->getAction(),
+                        'reference' => $cart->id,
+                    ]
+                )
             );
         }
 
@@ -206,7 +192,7 @@ class PaymentController extends \ModuleFrontController
             SessionService::set('cartId', $cart->id);
             SessionService::set('adyenAction', json_encode($response->getAction()));
             SessionService::set('adyenPaymentMethodType', $type);
-            Tools::redirect($this->generateSuccessURL($cart));
+            \Tools::redirect($this->generateSuccessURL($cart));
         }
     }
 
@@ -215,27 +201,30 @@ class PaymentController extends \ModuleFrontController
      */
     protected function isAjaxRequest()
     {
-        return Tools::getValue('isXHR');
+        return \Tools::getValue('isXHR');
     }
 
     /**
      * Create URL to order-confirmation page.
      *
-     * @param Cart $cart
+     * @param \Cart $cart
      *
      * @return string
      */
-    protected function generateSuccessURL(Cart $cart): string
+    protected function generateSuccessURL(\Cart $cart): string
     {
+        /** @var \AdyenOfficial $module */
+        $module = $this->module;
+
         return $this->context->link->getPageLink(
             'order-confirmation',
             true,
             null,
             [
-                'id_cart' => (int)$cart->id,
-                'id_module' => (int)$this->module->id,
-                'id_order' => $this->module->currentOrder,
-                'key' => $cart->secure_key
+                'id_cart' => (int) $cart->id,
+                'id_module' => (int) $this->module->id,
+                'id_order' => $module->currentOrder,
+                'key' => $cart->secure_key,
             ]
         );
     }
@@ -254,17 +243,17 @@ class PaymentController extends \ModuleFrontController
 
     /**
      * @param string $paymentMethodCode
-     * @param Cart $cart
+     * @param \Cart $cart
      * @param Amount $amount
      *
      * @return void
      *
      * @throws PaymentMethodNotConfiguredException
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
-     * @throws Exception
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
+     * @throws \Exception
      */
-    private function doSaveOrder(string $paymentMethodCode, Cart $cart, Amount $amount)
+    private function doSaveOrder(string $paymentMethodCode, \Cart $cart, Amount $amount)
     {
         $method = $this->getPaymentMethod($paymentMethodCode);
 
@@ -277,42 +266,45 @@ class PaymentController extends \ModuleFrontController
         }
 
         $idCarrier = CheckoutHandler::getCarrierId($cart);
-        $total = $cart->getOrderTotal(true, Cart::BOTH, null, $idCarrier);
+        $total = $cart->getOrderTotal(true, \Cart::BOTH, null, $idCarrier);
         $shouldCalculateSurcharge = $this->methodHasSurcharge($method);
 
         if ($shouldCalculateSurcharge) {
             $product = $this->createSurchargeProduct($method, $total, $cart->id_currency);
             $productId = $product->id;
-            StockAvailable::setQuantity($productId, null, 1);
+            \StockAvailable::setQuantity($productId, 0, 1);
             $cart->updateQty(1, $productId);
             $cart->getPackageList(true);
             $cart->clearCache(true);
             $cart->update();
         }
 
-        $inProgressPaymentId = AdminAPI::get()->orderMappings($cart->id_shop)
+        $inProgressPaymentId = AdminAPI::get()->orderMappings((string) $cart->id_shop)
             ->getOrderStatusMap()->toArray()['inProgress'];
 
         // refresh delivery option list because of guest express checkout
         $cart->getDeliveryOptionList(new \Country($cart->id_address_delivery), true);
 
-        if(!$cart->orderExists()) {
-            $this->module->validateOrder(
-                $cart->id,
-                (int)$inProgressPaymentId,
-                $amount->getPriceInCurrencyUnits(),
-                $this->module->displayName,
-                null,
-                [],
-                null,
-                true,
-                $cart->secure_key
-            );
-        }
+        /** @var \AdyenOfficial $module */
+        $module = $this->module;
 
-        $order = new Order($this->module->currentOrder);
-        if ((int)$order->id_carrier !== (int)$cart->id_carrier) {
-            $this->updateShippingCost($order, $cart->getPackageShippingCost(), $idCarrier, (int)$inProgressPaymentId);
+        $module->validateOrder(
+            $cart->id,
+            (int) $inProgressPaymentId,
+            $amount->getPriceInCurrencyUnits(),
+            $this->module->displayName,
+            null,
+            [],
+            null,
+            true,
+            $cart->secure_key
+        );
+
+        /** @var \AdyenOfficial $module */
+        $module = $this->module;
+        $order = new \Order($module->currentOrder);
+        if ((int) $order->id_carrier !== (int) $cart->id_carrier) {
+            $this->updateShippingCost($order, $cart->getPackageShippingCost(), $idCarrier, (int) $inProgressPaymentId);
         }
 
         if ($shouldCalculateSurcharge && $product->active) {
@@ -322,20 +314,20 @@ class PaymentController extends \ModuleFrontController
     }
 
     /**
-     * @param Order $order
+     * @param \Order $order
      * @param float $newCost
      * @param int $idCarrier
      * @param int $idOrderState
      *
      * @return void
      *
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      */
-    private function updateShippingCost(Order $order, float $newCost, int $idCarrier, int $idOrderState): void
+    private function updateShippingCost(\Order $order, float $newCost, int $idCarrier, int $idOrderState): void
     {
-        $carrier = new Carrier($idCarrier);
-        $taxRate = (float)$carrier->getTaxesRate(new Address($order->id_address_delivery));
+        $carrier = new \Carrier($idCarrier);
+        $taxRate = (float) $carrier->getTaxesRate(new \Address($order->id_address_delivery));
         $order->id_carrier = $idCarrier;
         $order->total_paid = $order->total_paid - ($order->total_shipping - $newCost);
         $order->total_paid_tax_incl = $order->total_paid_tax_incl - ($order->total_shipping - $newCost);
@@ -343,13 +335,13 @@ class PaymentController extends \ModuleFrontController
         $order->total_shipping_tax_incl = $newCost;
         $order->total_shipping_tax_excl = $taxRate > 0 ? round($newCost / (1 + $taxRate / 100.0), 2) : $newCost;
         $order->total_shipping = $newCost;
-        $order->current_state = (int)$idOrderState;
+        $order->current_state = (int) $idOrderState;
         $order->update();
 
-        Db::getInstance()->delete('order_history', 'id_order = ' . (int)$order->id);
-        $history = new OrderHistory();
+        \Db::getInstance()->delete('order_history', 'id_order = ' . (int) $order->id);
+        $history = new \OrderHistory();
         $history->id_order = $order->id;
-        $history->id_employee = "0";
+        $history->id_employee = 0;
         $history->changeIdOrderState($idOrderState, $order->id, true);
         $history->add();
     }
@@ -359,12 +351,12 @@ class PaymentController extends \ModuleFrontController
      * @param float $amount
      * @param int $currencyId
      *
-     * @return Product
+     * @return \Product
      *
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      */
-    private function createSurchargeProduct(PaymentMethod $paymentMethod, float $amount, int $currencyId): Product
+    private function createSurchargeProduct(PaymentMethod $paymentMethod, float $amount, int $currencyId): \Product
     {
         $productId = $this->getProductRepository()->getProductIdByProductName($this->module->l('Surcharge'));
         $cartCurrency = new \Currency($currencyId);
@@ -372,8 +364,8 @@ class PaymentController extends \ModuleFrontController
         $versionHandler = ServiceRegister::getService(VersionHandler::class);
         $precision = $versionHandler->getPrecision();
 
-        $price = Tools::ps_round(
-            Tools::convertPrice(
+        $price = \Tools::ps_round(
+            \Tools::convertPrice(
                 SurchargeCalculator::calculateSurcharge(
                     $paymentMethod,
                     $cartCurrency->getConversionRate(),
@@ -389,7 +381,7 @@ class PaymentController extends \ModuleFrontController
         );
 
         if ($productId) {
-            $product = new Product($productId);
+            $product = new \Product((int) $productId);
             $product->name = $this->module->l('Surcharge');
             $product->price = $price;
             $product->id_tax_rules_group = 0;
@@ -399,8 +391,8 @@ class PaymentController extends \ModuleFrontController
             return $product;
         }
 
-        $product = new Product();
-        $product->name = $this->module->l('Surcharge');;
+        $product = new \Product();
+        $product->name = $this->module->l('Surcharge');
         $product->price = $price;
         $product->id_tax_rules_group = 0;
         $product->add();
@@ -423,7 +415,7 @@ class PaymentController extends \ModuleFrontController
      *
      * @return PaymentMethod|null
      *
-     * @throws Exception
+     * @throws \Exception
      */
     protected function getPaymentMethod(string $paymentMethodType): ?PaymentMethod
     {
@@ -465,7 +457,7 @@ class PaymentController extends \ModuleFrontController
     /**
      * @return PaymentMethod
      *
-     * @throws Exception
+     * @throws \Exception
      */
     private function getGooglePayMethod(): PaymentMethod
     {
@@ -479,7 +471,7 @@ class PaymentController extends \ModuleFrontController
      *
      * @return PaymentMethod|null
      *
-     * @throws Exception
+     * @throws \Exception
      */
     private function getOneyMethod(string $paymentMethodType): ?PaymentMethod
     {

@@ -1,21 +1,5 @@
 <?php
 
-/**
- * 2023 Adyen
- *
- * LICENSE PLACEHOLDER
- *
- * This source file is subject to the Apache License 2.0
- * that is bundled with this package in the file LICENSE.
- * It is also available through the world-wide-web at this URL:
- * http://www.apache.org/licenses/LICENSE-2.0.txt
- *
- * @author Adyen <support@adyen.com>
- * @copyright 2022 Adyen
- * @license   http://www.apache.org/licenses/LICENSE-2.0.txt  Apache License 2.0
- */
-
-
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -25,18 +9,6 @@ require_once rtrim(_PS_MODULE_DIR_, '/') . '/adyenofficial/vendor/autoload.php';
 /**
  * Adyen module base class. This class represents main entry point for the plugin.
  * It is used for: installation, uninstallation, handling hook actions and handling configuration page.
- *
- * @property bool bootstrap
- * @property string name
- * @property string tab
- * @property string version
- * @property string author
- * @property int need_instance
- * @property array ps_versions_compliancy
- * @property string displayName
- * @property string description
- * @property string confirmUninstall
- * @property string module_key
  */
 class AdyenOfficial extends PaymentModule
 {
@@ -86,9 +58,9 @@ class AdyenOfficial extends PaymentModule
             return $success;
         } catch (Throwable $e) {
             $this->_errors[] = $e->getMessage();
-            \PrestaShopLogger::addLog(
+            PrestaShopLogger::addLog(
                 'Adyen plugin installation failed. Error: ' . $e->getMessage() . ' . Trace: ' . $e->getTraceAsString(),
-                \PrestaShopLogger::LOG_SEVERITY_LEVEL_ERROR
+                PrestaShopLogger::LOG_SEVERITY_LEVEL_ERROR
             );
 
             return false;
@@ -109,10 +81,9 @@ class AdyenOfficial extends PaymentModule
             return $success;
         } catch (Throwable $e) {
             $this->_errors[] = $e->getMessage();
-            \PrestaShopLogger::addLog(
-                'Adyen plugin uninstallation failed. Error: ' . $e->getMessage() . ' . Trace: ' . $e->getTraceAsString(
-                ),
-                \PrestaShopLogger::LOG_SEVERITY_LEVEL_ERROR
+            PrestaShopLogger::addLog(
+                'Adyen plugin uninstallation failed. Error: ' . $e->getMessage() . ' . Trace: ' . $e->getTraceAsString(),
+                PrestaShopLogger::LOG_SEVERITY_LEVEL_ERROR
             );
 
             return false;
@@ -172,11 +143,11 @@ class AdyenOfficial extends PaymentModule
      * @return string
      *
      * @throws PrestaShopException
-     * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
+     * @throws Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      */
     public function getContent(): string
     {
-        $isShopContext = \Shop::getContext() === \Shop::CONTEXT_SHOP;
+        $isShopContext = Shop::getContext() === Shop::CONTEXT_SHOP;
 
         if (!$isShopContext) {
             $this->getContext()->controller->errors[] = $this->l('Please select the specific shop to configure.');
@@ -190,11 +161,11 @@ class AdyenOfficial extends PaymentModule
             return '';
         }
 
-        \AdyenPayment\Classes\Bootstrap::init();
+        AdyenPayment\Classes\Bootstrap::init();
 
-        /** @var \Adyen\Core\Infrastructure\TaskExecution\Interfaces\TaskRunnerWakeup $wakeupService */
-        $wakeupService = \Adyen\Core\Infrastructure\ServiceRegister::getService(
-            \Adyen\Core\Infrastructure\TaskExecution\Interfaces\TaskRunnerWakeup::CLASS_NAME
+        /** @var Adyen\Core\Infrastructure\TaskExecution\Interfaces\TaskRunnerWakeup $wakeupService */
+        $wakeupService = Adyen\Core\Infrastructure\ServiceRegister::getService(
+            Adyen\Core\Infrastructure\TaskExecution\Interfaces\TaskRunnerWakeup::CLASS_NAME
         );
         $wakeupService->wakeup();
 
@@ -205,11 +176,11 @@ class AdyenOfficial extends PaymentModule
             [
                 'urls' => $this->getUrls(),
                 'sidebar' => $this->getSidebarContent(),
-                'translations' => $this->getTranslations()
+                'translations' => $this->getTranslations(),
             ]
         );
 
-        return $this->display($this->_path, 'views/templates/index.tpl');
+        return $this->display($this->_path, 'views/templates/hook/index.tpl');
     }
 
     /**
@@ -224,28 +195,28 @@ class AdyenOfficial extends PaymentModule
     {
         $definition = $params['definition'];
 
-        /** @var \PrestaShop\PrestaShop\Core\Grid\Column\ColumnCollection */
+        /** @var PrestaShop\PrestaShop\Core\Grid\Column\ColumnCollection */
         $columns = $definition->getColumns();
 
-        $columnPspReference = new \PrestaShop\PrestaShop\Core\Grid\Column\Type\Common\ActionColumn(
+        $columnPspReference = new PrestaShop\PrestaShop\Core\Grid\Column\Type\Common\ActionColumn(
             'adyen_psp_reference'
         );
         $columnPspReference->setName(
             $this->trans($this->l('Adyen Psp Reference'))
         )
-            ->setOptions(array(
-                'actions' => (new \PrestaShop\PrestaShop\Core\Grid\Action\Row\RowActionCollection()),
-            ));
+            ->setOptions([
+                'actions' => (new PrestaShop\PrestaShop\Core\Grid\Action\Row\RowActionCollection()),
+            ]);
 
-        $columnPaymentMethod = new \PrestaShop\PrestaShop\Core\Grid\Column\Type\Common\ActionColumn(
+        $columnPaymentMethod = new PrestaShop\PrestaShop\Core\Grid\Column\Type\Common\ActionColumn(
             'adyen_payment_method'
         );
         $columnPaymentMethod->setName(
             $this->trans($this->l('Adyen Payment Method'))
         )
-            ->setOptions(array(
-                'actions' => (new \PrestaShop\PrestaShop\Core\Grid\Action\Row\RowActionCollection()),
-            ));
+            ->setOptions([
+                'actions' => (new PrestaShop\PrestaShop\Core\Grid\Action\Row\RowActionCollection()),
+            ]);
 
         $columns->addAfter('payment', $columnPspReference);
         $columns->addAfter('adyen_psp_reference', $columnPaymentMethod);
@@ -258,16 +229,16 @@ class AdyenOfficial extends PaymentModule
      *
      * @return void
      *
-     * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
+     * @throws Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      */
     public function hookActionOrderGridPresenterModifier(array $params)
     {
-        \AdyenPayment\Classes\Bootstrap::init();
+        AdyenPayment\Classes\Bootstrap::init();
 
         $records = $params['presented_grid']['data']['records']->all();
 
         foreach ($records as &$record) {
-            $order = new \Order((int)$record['id_order']);
+            $order = new Order((int) $record['id_order']);
 
             if ($order->module !== 'adyenofficial') {
                 $record['pspReference'] = '--';
@@ -282,24 +253,24 @@ class AdyenOfficial extends PaymentModule
                 continue;
             }
 
-            /** @var \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService $service */
-            $service = \Adyen\Core\Infrastructure\ServiceRegister::getService(\Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService::class);
-            /** @var \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Models\TransactionHistory $transactionHistory */
-            $transactionHistory = \Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext::doWithStore(
-                $order->id_shop,
+            /** @var Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService $service */
+            $service = Adyen\Core\Infrastructure\ServiceRegister::getService(Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService::class);
+            /** @var Adyen\Core\BusinessLogic\Domain\TransactionHistory\Models\TransactionHistory $transactionHistory */
+            $transactionHistory = Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext::doWithStore(
+                (string) $order->id_shop,
                 static function () use ($order, $service) {
-                    return $service->getTransactionHistory($order->id_cart);
+                    return $service->getTransactionHistory((string) $order->id_cart);
                 }
             );
 
-            /** @var \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Models\HistoryItem */
+            /** @var Adyen\Core\BusinessLogic\Domain\TransactionHistory\Models\HistoryItem|null $authItem */
             $authItem = $transactionHistory->getLastSuccessfulAuthorizationItem();
 
             $record['pspReference'] = $authItem ? $authItem->getPspReference() : '--';
             $record['paymentMethod'] = $authItem ? $authItem->getPaymentMethod() : '--';
         }
 
-        $params['presented_grid']['data']['records'] = new \PrestaShop\PrestaShop\Core\Grid\Record\RecordCollection(
+        $params['presented_grid']['data']['records'] = new PrestaShop\PrestaShop\Core\Grid\Record\RecordCollection(
             $records
         );
     }
@@ -311,16 +282,16 @@ class AdyenOfficial extends PaymentModule
      *
      * @return array
      *
-     * @throws \PrestaShopDatabaseException
-     * @throws \PrestaShopException
-     * @throws \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode
-     * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     * @throws Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode
+     * @throws Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      * @throws Exception
      */
     public function hookPaymentOptions(array $params): array
     {
-        \AdyenPayment\Classes\Bootstrap::init();
-        $storeService = \Adyen\Core\Infrastructure\ServiceRegister::getService(
+        AdyenPayment\Classes\Bootstrap::init();
+        $storeService = Adyen\Core\Infrastructure\ServiceRegister::getService(
             Adyen\Core\BusinessLogic\Domain\Integration\Store\StoreService::class
         );
         $versionHandler = $this->getVersionHandler();
@@ -330,21 +301,22 @@ class AdyenOfficial extends PaymentModule
         $store = $cart->id_shop;
         $paymentOptions = [];
 
-        if ($cart->id_address_invoice !== "0" && $storeService->checkStoreConnection($store)) {
-            $config = \AdyenPayment\Classes\Services\CheckoutHandler::getPaymentCheckoutConfig($params['cart'], 0);
+        if ($cart->id_address_invoice !== '0' && $storeService->checkStoreConnection($store)) {
+            $config = AdyenPayment\Classes\Services\CheckoutHandler::getPaymentCheckoutConfig($params['cart'], 0);
 
             if (!$config->isSuccessful()) {
                 return [];
             }
 
-            $availablePaymentMethods = \AdyenPayment\Classes\Services\CheckoutHandler::getAvailablePaymentMethods(
+            $availablePaymentMethods = AdyenPayment\Classes\Services\CheckoutHandler::getAvailablePaymentMethods(
                 $config
             );
             $storedPaymentMethods = $config->getStoredPaymentMethodResponse();
+            $surchargeLimit = 0;
 
             if ($this->creditCardEnabled($availablePaymentMethods)) {
                 foreach ($storedPaymentMethods as $method) {
-                    $paymentOption = new \PrestaShop\PrestaShop\Core\Payment\PaymentOption();
+                    $paymentOption = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
                     $logo = '';
                     $description = '';
                     $currency = new Currency($cart->id_currency);
@@ -353,12 +325,12 @@ class AdyenOfficial extends PaymentModule
                             $logo = $availablePaymentMethod->getLogo();
                             $description = $availablePaymentMethod->getDescription();
                             $surchargeLimit = Tools::ps_round(
-                                \AdyenPayment\Classes\SurchargeCalculator::calculateSurcharge(
+                                AdyenPayment\Classes\SurchargeCalculator::calculateSurcharge(
                                     $availablePaymentMethod,
-                                    $currency->conversion_rate,
-                                    \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount::fromFloat(
+                                    (string) $currency->conversion_rate,
+                                    Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount::fromFloat(
                                         $cart->getOrderTotal(),
-                                        \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency::fromIsoCode(
+                                        Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency::fromIsoCode(
                                             $currency->iso_code
                                         )
                                     )
@@ -388,7 +360,7 @@ class AdyenOfficial extends PaymentModule
                         'description' => $description,
                         'prestaVersion' => _PS_VERSION_,
                         'checkoutUrl' => $this->context->link->getPageLink('order', true, null),
-                        'clickToPayLabel' => $this->l('Finish payment by saved Credit Card')
+                        'clickToPayLabel' => $this->l('Finish payment by saved Credit Card'),
                     ]);
 
                     $paymentOption->setForm(
@@ -397,11 +369,11 @@ class AdyenOfficial extends PaymentModule
                     $paymentOption->setLogo($logo);
                     $paymentOption->setModuleName($this->name);
                     $paymentOption->setCallToActionText(
-                        (sprintf(
-                                $this->l('Pay by saved %s ending: %s'),
-                                $method->getName(),
-                                $method->getMetadata()['lastFour']
-                            ) . ($surchargeLimit ? " (+$surchargeLimit" . $currency->sign . ')' : ''))
+                        sprintf(
+                            $this->l('Pay by saved %s ending: %s'),
+                            $method->getName(),
+                            $method->getMetadata()['lastFour']
+                        ) . ($surchargeLimit ? " (+$surchargeLimit" . $currency->sign . ')' : '')
                     );
                     $paymentOption->setForm(
                         $this->getContext()->smarty->fetch($this->getTemplatePath('payment_method.tpl'))
@@ -414,7 +386,7 @@ class AdyenOfficial extends PaymentModule
             }
 
             foreach ($config->getRecurringPaymentMethodResponse() as $method) {
-                $paymentOption = new \PrestaShop\PrestaShop\Core\Payment\PaymentOption();
+                $paymentOption = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
                 $logo = '';
                 $description = '';
                 $name = '';
@@ -425,12 +397,12 @@ class AdyenOfficial extends PaymentModule
                         $description = $availablePaymentMethod->getDescription();
                         $name = $availablePaymentMethod->getName();
                         $surchargeLimit = Tools::ps_round(
-                            \AdyenPayment\Classes\SurchargeCalculator::calculateSurcharge(
+                            AdyenPayment\Classes\SurchargeCalculator::calculateSurcharge(
                                 $availablePaymentMethod,
-                                $currency->conversion_rate,
-                                \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount::fromFloat(
+                                (string) $currency->conversion_rate,
+                                Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount::fromFloat(
                                     $cart->getOrderTotal(),
-                                    \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency::fromIsoCode(
+                                    Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency::fromIsoCode(
                                         $currency->iso_code
                                     )
                                 )
@@ -460,7 +432,7 @@ class AdyenOfficial extends PaymentModule
                     'description' => $description,
                     'prestaVersion' => _PS_VERSION_,
                     'checkoutUrl' => $this->context->link->getPageLink('order', true, null),
-                    'clickToPayLabel' => $this->l('Finish payment by saved Credit Card')
+                    'clickToPayLabel' => $this->l('Finish payment by saved Credit Card'),
                 ]);
 
                 $paymentOption->setForm(
@@ -469,10 +441,10 @@ class AdyenOfficial extends PaymentModule
                 $paymentOption->setLogo($logo);
                 $paymentOption->setModuleName($this->name);
                 $paymentOption->setCallToActionText(
-                    (sprintf(
-                            $this->l('Pay by saved %s'),
-                            $name
-                        ) . ($surchargeLimit ? " (+$surchargeLimit" . $currency->sign . ')' : ''))
+                    sprintf(
+                        $this->l('Pay by saved %s'),
+                        $name
+                    ) . ($surchargeLimit ? " (+$surchargeLimit" . $currency->sign . ')' : '')
                 );
                 $paymentOption->setForm(
                     $this->getContext()->smarty->fetch($this->getTemplatePath('payment_method.tpl'))
@@ -484,7 +456,7 @@ class AdyenOfficial extends PaymentModule
             }
 
             foreach ($availablePaymentMethods as $method) {
-                $paymentOption = new \PrestaShop\PrestaShop\Core\Payment\PaymentOption();
+                $paymentOption = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
                 $this->getContext()->smarty->assign([
                     'paymentMethodId' => $method->getMethodId(),
                     'paymentMethodType' => $method->getCode(),
@@ -505,17 +477,17 @@ class AdyenOfficial extends PaymentModule
                     'prestaVersion' => _PS_VERSION_,
                     'checkoutUrl' => $this->context->link->getPageLink('order', true, null),
                     'clickToPayLabel' => $this->l('Finish payment by saved Credit Card'),
-                    'orderTotalAmount' => $this->context->cart->getOrderTotal()
+                    'orderTotalAmount' => $this->context->cart->getOrderTotal(),
                 ]);
 
                 $currency = new Currency($cart->id_currency);
                 $surchargeLimit = Tools::ps_round(
-                    \AdyenPayment\Classes\SurchargeCalculator::calculateSurcharge(
+                    AdyenPayment\Classes\SurchargeCalculator::calculateSurcharge(
                         $method,
-                        $currency->conversion_rate,
-                        \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount::fromFloat(
+                        (string) $currency->conversion_rate,
+                        Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount::fromFloat(
                             $cart->getOrderTotal(),
-                            \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency::fromIsoCode(
+                            Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency::fromIsoCode(
                                 $currency->iso_code
                             )
                         )
@@ -524,7 +496,7 @@ class AdyenOfficial extends PaymentModule
                 );
 
                 $paymentOption->setCallToActionText(
-                    (sprintf($this->l('Pay by %s'), $method->getName()))
+                    sprintf($this->l('Pay by %s'), $method->getName())
                     . ($surchargeLimit ? " (+$surchargeLimit" . $currency->sign . ')' : '')
                 );
                 $paymentOption->setForm(
@@ -545,15 +517,15 @@ class AdyenOfficial extends PaymentModule
      *
      * @return false|string
      *
-     * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
+     * @throws Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      */
     public function hookDisplayCustomerAccount(array $params)
     {
-        \AdyenPayment\Classes\Bootstrap::init();
+        AdyenPayment\Classes\Bootstrap::init();
 
         $this->context->smarty->assign(
             [
-                'storedMethods' => \AdyenPayment\Classes\Utility\Url::getFrontUrl('storedmethods')
+                'storedMethods' => AdyenPayment\Classes\Utility\Url::getFrontUrl('storedmethods'),
             ]
         );
 
@@ -588,7 +560,7 @@ class AdyenOfficial extends PaymentModule
             $this->getContext()->controller->addJS($this->getPathUri() . 'views/js/front/adyen-payment-selection.js');
             $this->getContext()->controller->addJS($this->getPathUri() . 'views/js/front/adyen-wallets.js');
 
-            if ($message = $this->l(\AdyenPayment\Classes\Utility\SessionService::get('errorMessage'))) {
+            if ($message = $this->l(AdyenPayment\Classes\Utility\SessionService::get('errorMessage'))) {
                 $this->getContext()->controller->errors[] = $message;
             }
         }
@@ -601,7 +573,7 @@ class AdyenOfficial extends PaymentModule
                 $this->getPathUri() . 'views/js/front/adyen-wallets-service.js'
             );
 
-            if ($message = $this->l(\AdyenPayment\Classes\Utility\SessionService::get('errorMessage'))) {
+            if ($message = $this->l(AdyenPayment\Classes\Utility\SessionService::get('errorMessage'))) {
                 $this->getContext()->controller->errors[] = $message;
             }
         }
@@ -614,17 +586,17 @@ class AdyenOfficial extends PaymentModule
                 $this->getPathUri() . 'views/js/front/adyen-wallets-service.js'
             );
 
-            if ($message = $this->l(\AdyenPayment\Classes\Utility\SessionService::get('errorMessage'))) {
+            if ($message = $this->l(AdyenPayment\Classes\Utility\SessionService::get('errorMessage'))) {
                 $this->getContext()->controller->warning[] = $message;
             }
         }
 
-        if ($this->context->controller->php_self === 'product' ||
-            $this->context->controller->php_self === 'cart' ||
-            $this->context->controller->php_self === 'order-confirmation' ||
-            $this->context->controller->php_self === 'order' ||
-            $this->context->controller->page_name === 'module-adyenofficial-payment' ||
-            $this->context->controller->page_name === 'module-adyenofficial-clicktopay'
+        if ($this->context->controller->php_self === 'product'
+            || $this->context->controller->php_self === 'cart'
+            || $this->context->controller->php_self === 'order-confirmation'
+            || $this->context->controller->php_self === 'order'
+            || $this->context->controller->page_name === 'module-adyenofficial-payment'
+            || $this->context->controller->page_name === 'module-adyenofficial-clicktopay'
         ) {
             $this->getContext()->controller->addCSS($this->getPathUri() . 'views/css/adyen-checkout.css');
             $this->getContext()->controller->addJS($this->getPathUri() . 'views/js/front/adyen-checkout-controller.js');
@@ -639,8 +611,8 @@ class AdyenOfficial extends PaymentModule
                     'position' => 'head',
                     'attributes' => [
                         'integrity' => 'sha384-d6l5Qqod+Ks601U/jqsLz7QkW0LL6T5pfEsSHypuTSnDUYVGRLNV1ZdITbEwb1yL',
-                        'crossorigin' => 'anonymous'
-                    ]
+                        'crossorigin' => 'anonymous',
+                    ],
                 ]
             );
             $this->getContext()->controller->registerStylesheet(
@@ -651,8 +623,8 @@ class AdyenOfficial extends PaymentModule
                     'position' => 'head',
                     'attributes' => [
                         'integrity' => 'sha384-d6l5Qqod+Ks601U/jqsLz7QkW0LL6T5pfEsSHypuTSnDUYVGRLNV1ZdITbEwb1yL',
-                        'crossorigin' => 'anonymous'
-                    ]
+                        'crossorigin' => 'anonymous',
+                    ],
                 ]
             );
         }
@@ -663,7 +635,7 @@ class AdyenOfficial extends PaymentModule
      *
      * @return string
      *
-     * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
+     * @throws Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      * @throws PrestaShopDatabaseException
      */
     public function hookDisplayProductActions(): string
@@ -678,7 +650,8 @@ class AdyenOfficial extends PaymentModule
      * Hook for adding Adyen express checkout buttons if availability condition is satisfied.
      *
      * @return string
-     * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
+     *
+     * @throws Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      */
     public function hookDisplayProductAdditionalInfo(): string
     {
@@ -693,7 +666,7 @@ class AdyenOfficial extends PaymentModule
      *
      * @return string
      *
-     * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
+     * @throws Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      * @throws PrestaShopDatabaseException
      */
     public function hookDisplayExpressCheckout(): string
@@ -709,13 +682,13 @@ class AdyenOfficial extends PaymentModule
     /**
      * Hook for displaying tab link on order page.
      *
-     * @param array $params Hook parameters containing ID of the order.
+     * @param array $params hook parameters containing ID of the order
      *
      * @return string Tab link HTML as string
      *
-     * @throws \PrestaShopDatabaseException
-     * @throws \PrestaShopException
-     * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     * @throws Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      *
      * @since 1.7.7
      */
@@ -734,7 +707,7 @@ class AdyenOfficial extends PaymentModule
      *
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
-     * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
+     * @throws Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      */
     public function hookDisplayAdminOrderTabShip(array $params): string
     {
@@ -748,9 +721,9 @@ class AdyenOfficial extends PaymentModule
      *
      * @return string
      *
-     * @throws \PrestaShopDatabaseException
-     * @throws \PrestaShopException
-     * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     * @throws Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      *
      * @since 1.7.7
      */
@@ -769,7 +742,7 @@ class AdyenOfficial extends PaymentModule
      *
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
-     * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
+     * @throws Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      */
     public function hookDisplayAdminOrderContentShip(array $params): string
     {
@@ -783,9 +756,9 @@ class AdyenOfficial extends PaymentModule
      *
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
-     * @throws \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Exceptions\InvalidMerchantReferenceException
-     * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
-     * @throws \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode
+     * @throws Adyen\Core\BusinessLogic\Domain\TransactionHistory\Exceptions\InvalidMerchantReferenceException
+     * @throws Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
+     * @throws Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode
      */
     public function hookActionOrderStatusUpdate(array $params)
     {
@@ -793,44 +766,43 @@ class AdyenOfficial extends PaymentModule
         $newOrderStatus = $params['newOrderStatus'];
 
         if (
-            $order->module !== $this->name ||
-            $newOrderStatus->id == $order->current_state ||
-            in_array(Tools::getValue('controller'), ['asyncprocess', 'webhook'])
+            $order->module !== $this->name
+            || $newOrderStatus->id == $order->current_state
+            || in_array(Tools::getValue('controller'), ['asyncprocess', 'webhook'])
         ) {
             return;
         }
 
-        \AdyenPayment\Classes\Services\OrderStatusHandler::handleOrderStatusChange($order, $newOrderStatus->id);
+        AdyenPayment\Classes\Services\OrderStatusHandler::handleOrderStatusChange($order, $newOrderStatus->id);
     }
 
     /**
      * Hook for adding JS && CSS to admin controllers.
      *
-     * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
+     * @throws Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      */
     public function hookActionAdminControllerSetMedia()
     {
-        $order = new \Order((int)Tools::getValue('id_order'));
+        $order = new Order((int) Tools::getValue('id_order'));
 
         $currentController = Tools::getValue('controller');
 
         if ($currentController === 'AdminOrders') {
             $this->getContext()->controller->addJS(
                 [
-                    $this->getPathUri() . $this->getVersionHandler()->backofficeOrderJS()
+                    $this->getPathUri() . $this->getVersionHandler()->backofficeOrderJS(),
                 ]
             );
         }
-        if ($order->module !== $this->name &&
-            !\AdyenPayment\Classes\Services\OrderStatusHandler::shouldGeneratePaymentLinkForNonAdyenOrder($order)) {
-
+        if ($order->module !== $this->name
+            && !AdyenPayment\Classes\Services\OrderStatusHandler::shouldGeneratePaymentLinkForNonAdyenOrder($order)) {
             return;
         }
 
-        if ($message = $this->l(\AdyenPayment\Classes\Utility\SessionService::get('errorMessage'))) {
+        if ($message = $this->l(AdyenPayment\Classes\Utility\SessionService::get('errorMessage'))) {
             $this->getContext()->controller->errors[] = $message;
         }
-        if ($message = $this->l(\AdyenPayment\Classes\Utility\SessionService::get('successMessage'))) {
+        if ($message = $this->l(AdyenPayment\Classes\Utility\SessionService::get('successMessage'))) {
             $this->getContext()->controller->informations[] = $message;
         }
 
@@ -849,9 +821,9 @@ class AdyenOfficial extends PaymentModule
      *
      * @return void
      *
-     * @throws \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode
-     * @throws \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Exceptions\InvalidMerchantReferenceException
-     * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
+     * @throws Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode
+     * @throws Adyen\Core\BusinessLogic\Domain\TransactionHistory\Exceptions\InvalidMerchantReferenceException
+     * @throws Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      */
     public function hookActionOrderSlipAdd(array $params)
     {
@@ -861,7 +833,7 @@ class AdyenOfficial extends PaymentModule
             return;
         }
 
-        \AdyenPayment\Classes\Services\RefundHandler::handleRefund($order, $params['qtyList'] ?? []);
+        AdyenPayment\Classes\Services\RefundHandler::handleRefund($order, $params['qtyList'] ?? []);
     }
 
     /**
@@ -875,49 +847,49 @@ class AdyenOfficial extends PaymentModule
             return null;
         }
 
-        $cartId = \AdyenPayment\Classes\Utility\SessionService::get('cartId');
-        $adyenAction = \AdyenPayment\Classes\Utility\SessionService::get('adyenAction');
-        $adyenPaymentType = \AdyenPayment\Classes\Utility\SessionService::get('adyenPaymentMethodType');
+        $cartId = AdyenPayment\Classes\Utility\SessionService::get('cartId');
+        $adyenAction = AdyenPayment\Classes\Utility\SessionService::get('adyenAction');
+        $adyenPaymentType = AdyenPayment\Classes\Utility\SessionService::get('adyenPaymentMethodType');
 
         $additionalActionConfig = [
             'adyenAction' => $adyenAction,
-            'checkoutConfigUrl' => \AdyenPayment\Classes\Utility\Url::getFrontUrl(
+            'checkoutConfigUrl' => AdyenPayment\Classes\Utility\Url::getFrontUrl(
                 'paymentconfig'
             ),
-            'additionalDataUrl' => \AdyenPayment\Classes\Utility\Url::getFrontUrl(
+            'additionalDataUrl' => AdyenPayment\Classes\Utility\Url::getFrontUrl(
                 'paymentredirect',
                 [
                     'adyenMerchantReference' => $cartId,
                     'adyenPaymentType' => $adyenPaymentType,
-                    'adyenPage' => 'thankYou'
+                    'adyenPage' => 'thankYou',
                 ]
             ),
         ];
 
         $storeId = $params['order']->id_shop;
-        $adyenGivingInformation = \Adyen\Core\BusinessLogic\AdminAPI\AdminAPI::get()->adyenGivingSettings(
+        $adyenGivingInformation = Adyen\Core\BusinessLogic\AdminAPI\AdminAPI::get()->adyenGivingSettings(
             $storeId
         )->getAdyenGivingSettings()->toArray();
 
-        $cart = new \Cart($params['order']->id_cart);
+        $cart = new Cart($params['order']->id_cart);
         $donationConfig = [
             'enabled' => $adyenGivingInformation['enableAdyenGiving'],
-            'donationsConfigUrl' => \AdyenPayment\Classes\Utility\Url::getFrontUrl(
+            'donationsConfigUrl' => AdyenPayment\Classes\Utility\Url::getFrontUrl(
                 'adyendonationsconfig',
                 [
                     'merchantReference' => $cart->id,
                     'key' => $cart->secure_key,
-                    'module' => $params['order']->module
+                    'module' => $params['order']->module,
                 ]
             ),
-            'makeDonationsUrl' => \AdyenPayment\Classes\Utility\Url::getFrontUrl(
+            'makeDonationsUrl' => AdyenPayment\Classes\Utility\Url::getFrontUrl(
                 'adyenmakedonation',
                 [
                     'merchantReference' => $cart->id,
                     'key' => $cart->secure_key,
-                    'module' => $params['order']->module
+                    'module' => $params['order']->module,
                 ]
-            )
+            ),
         ];
 
         $this->context->smarty->assign(
@@ -930,11 +902,11 @@ class AdyenOfficial extends PaymentModule
     /**
      * @return array[]
      *
-     * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
+     * @throws Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      */
     public function hookModuleRoutes(): array
     {
-        \AdyenPayment\Classes\Bootstrap::init();
+        AdyenPayment\Classes\Bootstrap::init();
 
         return [
             'module-adyenofficial-applepay' => [
@@ -943,22 +915,23 @@ class AdyenOfficial extends PaymentModule
                 'keywords' => [
                     'link_rewrite' => [
                         'regexp' => '[_a-zA-Z0-9-\pL]*',
-                        'param' => 'link_rewrite'
+                        'param' => 'link_rewrite',
                     ],
                 ],
                 'params' => [
                     'fc' => 'module',
                     'module' => 'adyenofficial',
-                ]
-            ]
+                ],
+            ],
         ];
     }
 
     /**
      * Hook for displaying header data used in BO.
      *
-     * @return false|string Header HTML data as string
-     * @throws \PrestaShopException
+     * @return string Header HTML data as string
+     *
+     * @throws PrestaShopException
      * @throws Exception
      */
     public function hookDisplayBackOfficeHeader(): string
@@ -966,7 +939,7 @@ class AdyenOfficial extends PaymentModule
         if (!$this->isEnabled($this->name) || Tools::getValue('controller') !== 'AdminOrders') {
             return '';
         }
-        $generalSettings = \Adyen\Core\BusinessLogic\AdminAPI\AdminAPI::get()->generalSettings((string)\Context::getContext()->shop->id)->getGeneralSettings();
+        $generalSettings = Adyen\Core\BusinessLogic\AdminAPI\AdminAPI::get()->generalSettings((string) Context::getContext()->shop->id)->getGeneralSettings();
 
         if (!$generalSettings->isSuccessful() || !$generalSettings->toArray()['enablePayByLink']) {
             return '';
@@ -974,50 +947,48 @@ class AdyenOfficial extends PaymentModule
         $expirationTime = $generalSettings->toArray()['defaultLinkExpirationTime'];
         $date = Adyen\Core\Infrastructure\Utility\TimeProvider::getInstance()->getCurrentLocalTime()->add(
             new DateInterval('P' . $expirationTime . 'D')
-        )->format("Y-m-d");
+        )->format('Y-m-d');
         $this->getContext()->smarty->assign(['payByLinkTitle' => $generalSettings->toArray()['payByLinkTitle'], 'expirationDate' => $date]);
 
         return $this->display($this->getPathUri(), $this->getVersionHandler()->backofficeOrderTemplate());
     }
-
 
     /**
      * @param array $params
      *
      * @return void
      *
-     * @throws \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Exceptions\InvalidMerchantReferenceException
-     * @throws \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode
+     * @throws Adyen\Core\BusinessLogic\Domain\TransactionHistory\Exceptions\InvalidMerchantReferenceException
+     * @throws Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode
      */
     public function hookActionValidateOrder(array $params)
     {
-        if (!isset($this->getContext()->controller) ||
-            'admin' !== $this->getContext()->controller->controller_type ||
-            $params['order']->module !== $this->name) {
-
+        if (!isset($this->getContext()->controller)
+            || 'admin' !== $this->getContext()->controller->controller_type
+            || $params['order']->module !== $this->name) {
             return;
         }
 
-        $expiresAt = \Tools::getValue('adyen-expires-at-date');
-        /** @var \Order $order */
+        $expiresAt = Tools::getValue('adyen-expires-at-date');
+        /** @var Order $order */
         $order = $params['order'];
-        $currency = new  \Currency($order->id_currency);
+        $currency = new Currency($order->id_currency);
 
         if (empty($order->id_shop)) {
-            \AdyenPayment\Classes\Utility\SessionService::set(
+            AdyenPayment\Classes\Utility\SessionService::set(
                 'errorMessage',
                 $this->l('Payment link generation failed. Reason: missing shop context.')
             );
+
             return;
         }
 
-        $paymentLink = \Adyen\Core\BusinessLogic\AdminAPI\AdminAPI::get()->paymentLink((string)$order->id_shop)
+        $paymentLink = Adyen\Core\BusinessLogic\AdminAPI\AdminAPI::get()->paymentLink((string) $order->id_shop)
             ->createPaymentLink(
-                new \Adyen\Core\BusinessLogic\AdminAPI\PaymentLink\Request\CreatePaymentLinkRequest
-                ($order->getOrdersTotalPaid(), $currency->iso_code, $order->id_cart, new \DateTime($expiresAt)));
+                new Adyen\Core\BusinessLogic\AdminAPI\PaymentLink\Request\CreatePaymentLinkRequest($order->getOrdersTotalPaid(), $currency->iso_code, (string) $order->id_cart, new DateTime($expiresAt)));
 
         if ($paymentLink->isSuccessful()) {
-            \AdyenPayment\Classes\Utility\SessionService::set(
+            AdyenPayment\Classes\Utility\SessionService::set(
                 'successMessage',
                 $this->l('Payment link successfully generated.')
             );
@@ -1025,9 +996,9 @@ class AdyenOfficial extends PaymentModule
             return;
         }
 
-        \AdyenPayment\Classes\Utility\SessionService::set(
+        AdyenPayment\Classes\Utility\SessionService::set(
             'errorMessage',
-            $this->l('Payment link generation failed. Reason: ') . $paymentLink->toArray()['errorMessage'] ?? ''
+            $this->l('Payment link generation failed. Reason: ') . ($paymentLink->toArray()['errorMessage'] ?? '')
         );
     }
 
@@ -1038,33 +1009,31 @@ class AdyenOfficial extends PaymentModule
      *
      * @return void
      *
-     * @throws \PrestaShopDatabaseException
-     * @throws \PrestaShopException
-     *
-     * @throws \Exception
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     * @throws Exception
      */
     public function hookSendMailAlterTemplateVars(array &$params)
     {
         if (isset($params['template_vars']['{adyen_payment_link}']) || !isset($params['template_vars']['{id_order}'])) {
-
             return;
         }
 
-        $order = new \Order($params['template_vars']['{id_order}']);
+        $order = new Order($params['template_vars']['{id_order}']);
 
         if (empty($order->id_shop)) {
             return;
         }
 
-        \AdyenPayment\Classes\Bootstrap::init();
+        AdyenPayment\Classes\Bootstrap::init();
 
-        /** @var \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService $service */
-        $service = \Adyen\Core\Infrastructure\ServiceRegister::getService(\Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService::class);
-        /** @var \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Models\TransactionHistory $transactionHistory */
-        $transactionHistory = \Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext::doWithStore(
-            $order->id_shop,
+        /** @var Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService $service */
+        $service = Adyen\Core\Infrastructure\ServiceRegister::getService(Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService::class);
+        /** @var Adyen\Core\BusinessLogic\Domain\TransactionHistory\Models\TransactionHistory $transactionHistory */
+        $transactionHistory = Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext::doWithStore(
+            (string) $order->id_shop,
             static function () use ($order, $service) {
-                return $service->getTransactionHistory($order->id_cart);
+                return $service->getTransactionHistory((string) $order->id_cart);
             }
         );
 
@@ -1080,35 +1049,35 @@ class AdyenOfficial extends PaymentModule
      *
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
-     * @throws \Adyen\Core\BusinessLogic\Domain\AuthorizationAdjustment\Exceptions\AdjustmentRequestAlreadySentException
-     * @throws \Adyen\Core\BusinessLogic\Domain\AuthorizationAdjustment\Exceptions\AmountNotChangedException
-     * @throws \Adyen\Core\BusinessLogic\Domain\AuthorizationAdjustment\Exceptions\InvalidAmountException
-     * @throws \Adyen\Core\BusinessLogic\Domain\AuthorizationAdjustment\Exceptions\InvalidAuthorizationTypeException
-     * @throws \Adyen\Core\BusinessLogic\Domain\AuthorizationAdjustment\Exceptions\InvalidPaymentStateException
-     * @throws \Adyen\Core\BusinessLogic\Domain\AuthorizationAdjustment\Exceptions\OrderFullyCapturedException
-     * @throws \Adyen\Core\BusinessLogic\Domain\AuthorizationAdjustment\Exceptions\PaymentLinkExistsException
-     * @throws \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\CurrencyMismatchException
-     * @throws \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode
-     * @throws \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Exceptions\InvalidMerchantReferenceException
+     * @throws Adyen\Core\BusinessLogic\Domain\AuthorizationAdjustment\Exceptions\AdjustmentRequestAlreadySentException
+     * @throws Adyen\Core\BusinessLogic\Domain\AuthorizationAdjustment\Exceptions\AmountNotChangedException
+     * @throws Adyen\Core\BusinessLogic\Domain\AuthorizationAdjustment\Exceptions\InvalidAmountException
+     * @throws Adyen\Core\BusinessLogic\Domain\AuthorizationAdjustment\Exceptions\InvalidAuthorizationTypeException
+     * @throws Adyen\Core\BusinessLogic\Domain\AuthorizationAdjustment\Exceptions\InvalidPaymentStateException
+     * @throws Adyen\Core\BusinessLogic\Domain\AuthorizationAdjustment\Exceptions\OrderFullyCapturedException
+     * @throws Adyen\Core\BusinessLogic\Domain\AuthorizationAdjustment\Exceptions\PaymentLinkExistsException
+     * @throws Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\CurrencyMismatchException
+     * @throws Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode
+     * @throws Adyen\Core\BusinessLogic\Domain\TransactionHistory\Exceptions\InvalidMerchantReferenceException
      */
     public function hookActionObjectOrderUpdateAfter(array $params)
     {
         $order = new Order($params['object']->id);
 
         if (
-            $order->module !== $this->name ||
-            in_array(Tools::getValue('controller'), ['asyncprocess', 'webhook'])
+            $order->module !== $this->name
+            || in_array(Tools::getValue('controller'), ['asyncprocess', 'webhook'])
         ) {
             return;
         }
 
-        \AdyenPayment\Classes\Services\OrderModificationHandler::handleOrderModification($order);
+        AdyenPayment\Classes\Services\OrderModificationHandler::handleOrderModification($order);
     }
 
     /**
      * @param array $transactionDetails
      *
-     * @return array | null
+     * @return array|null
      */
     private function getAuthorisationDetail(array $transactionDetails)
     {
@@ -1123,7 +1092,7 @@ class AdyenOfficial extends PaymentModule
         $reversedDetails = array_reverse($filteredDetails);
 
         $index = array_search(
-            \Adyen\Webhook\EventCodes::AUTHORISATION,
+            Adyen\Webhook\EventCodes::AUTHORISATION,
             array_column($reversedDetails, 'eventCode'),
             true
         );
@@ -1134,7 +1103,6 @@ class AdyenOfficial extends PaymentModule
 
         return $reversedDetails[$index];
     }
-
 
     /**
      * Creates Adyen Installer.
@@ -1156,7 +1124,7 @@ class AdyenOfficial extends PaymentModule
         $this->context->controller->addCSS(
             [
                 $this->getPathUri() . 'views/css/adyen-core.css',
-                $this->getPathUri() . 'views/css/adyen-presta.css'
+                $this->getPathUri() . 'views/css/adyen-presta.css',
             ],
             'all',
             null,
@@ -1191,7 +1159,7 @@ class AdyenOfficial extends PaymentModule
                 $this->getPathUri() . 'views/js/TableFilterComponent.js',
                 $this->getPathUri() . 'views/js/TemplateService.js',
                 $this->getPathUri() . 'views/js/UtilityService.js',
-                $this->getPathUri() . 'views/js/ValidationService.js'
+                $this->getPathUri() . 'views/js/ValidationService.js',
             ],
             false
         );
@@ -1237,7 +1205,7 @@ class AdyenOfficial extends PaymentModule
                     'AdyenWebhookValidation',
                     'validate',
                     '{storeId}'
-                )
+                ),
             ],
             'payments' => [
                 'getAvailablePaymentsUrl' => AdyenPayment\Classes\Utility\Url::getAdminUrl(
@@ -1271,7 +1239,7 @@ class AdyenOfficial extends PaymentModule
                     'deleteMethod',
                     '{storeId}',
                     '{methodId}'
-                )
+                ),
             ],
             'stores' => [
                 'storesUrl' => AdyenPayment\Classes\Utility\Url::getAdminUrl(
@@ -1286,20 +1254,20 @@ class AdyenOfficial extends PaymentModule
                     'AdyenShopInformation',
                     'switchContext',
                     '{storeId}'
-                )
+                ),
             ],
             'integration' => [
                 'stateUrl' => AdyenPayment\Classes\Utility\Url::getAdminUrl(
                     'AdyenState',
                     'index',
                     '{storeId}'
-                )
+                ),
             ],
             'version' => [
                 'versionUrl' => AdyenPayment\Classes\Utility\Url::getAdminUrl(
                     'AdyenVersion',
                     'getVersion'
-                )
+                ),
             ],
             'settings' => [
                 'getShippingStatusesUrl' => AdyenPayment\Classes\Utility\Url::getAdminUrl(
@@ -1374,7 +1342,7 @@ class AdyenOfficial extends PaymentModule
                     'AdyenDebug',
                     'setDebugMode'
                 ),
-                'webhookReRegistrationUrl' =>  AdyenPayment\Classes\Utility\Url::getAdminUrl(
+                'webhookReRegistrationUrl' => AdyenPayment\Classes\Utility\Url::getAdminUrl(
                     'AdyenAuthorization',
                     'reRegisterWebhooks',
                     '{storeId}'
@@ -1390,8 +1358,8 @@ class AdyenOfficial extends PaymentModule
                     'AdyenWebhookNotifications',
                     'getWebhookNotifications',
                     '{storeId}'
-                )
-            ]
+                ),
+            ],
         ];
     }
 
@@ -1415,7 +1383,7 @@ class AdyenOfficial extends PaymentModule
     {
         return [
             'default' => $this->getDefaultTranslations(),
-            'current' => $this->getCurrentTranslations()
+            'current' => $this->getCurrentTranslations(),
         ];
     }
 
@@ -1465,10 +1433,11 @@ class AdyenOfficial extends PaymentModule
     private function creditCardEnabled(array $availablePaymentMethods): bool
     {
         foreach ($availablePaymentMethods as $method) {
-            if ($method->getCode() === "scheme") {
+            if ($method->getCode() === 'scheme') {
                 return true;
             }
         }
+
         return false;
     }
 
@@ -1481,18 +1450,18 @@ class AdyenOfficial extends PaymentModule
      *
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
-     * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
+     * @throws Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      */
     private function displayTabLink(int $orderId): string
     {
         $order = new Order($orderId);
 
-        if ($order->module !== $this->name &&
-            !\AdyenPayment\Classes\Services\OrderStatusHandler::shouldGeneratePaymentLinkForNonAdyenOrder($order)) {
+        if ($order->module !== $this->name
+            && !AdyenPayment\Classes\Services\OrderStatusHandler::shouldGeneratePaymentLinkForNonAdyenOrder($order)) {
             return '';
         }
 
-        \AdyenPayment\Classes\Bootstrap::init();
+        AdyenPayment\Classes\Bootstrap::init();
 
         $this->getContext()->smarty->assign(
             ['adyen_name' => $this->l('Adyen Payment')]
@@ -1507,40 +1476,41 @@ class AdyenOfficial extends PaymentModule
      * @param int $orderId
      *
      * @return string
+     *
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
-     * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
+     * @throws Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      * @throws Exception
      */
     private function displayTabContent(int $orderId): string
     {
-        $order = new \Order($orderId);
+        $order = new Order($orderId);
 
-        if ($order->module !== $this->name &&
-            !\AdyenPayment\Classes\Services\OrderStatusHandler::shouldGeneratePaymentLinkForNonAdyenOrder($order)) {
+        if ($order->module !== $this->name
+            && !AdyenPayment\Classes\Services\OrderStatusHandler::shouldGeneratePaymentLinkForNonAdyenOrder($order)) {
             return $this->display(__FILE__, 'adyen-empty-tab.tpl');
         }
 
-        /** @var \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService $service */
-        /** @var \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService $service */
-        $service = \Adyen\Core\Infrastructure\ServiceRegister::getService(\Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService::class);
-        /** @var \Adyen\Core\BusinessLogic\Domain\TransactionHistory\Models\TransactionHistory $transactionHistory */
-        $transactionHistory = \Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext::doWithStore(
-            $order->id_shop ?? '',
+        /** @var Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService $service */
+        /** @var Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService $service */
+        $service = Adyen\Core\Infrastructure\ServiceRegister::getService(Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService::class);
+        /** @var Adyen\Core\BusinessLogic\Domain\TransactionHistory\Models\TransactionHistory $transactionHistory */
+        $transactionHistory = Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext::doWithStore(
+            $order->id_shop ? (string) $order->id_shop : '',
             static function () use ($order, $service) {
-                return $service->getTransactionHistory($order->id_cart);
+                return $service->getTransactionHistory((string) $order->id_cart);
             }
         );
 
-        $payByLink = $transactionHistory->collection()->filterAllByEventCode(\Adyen\Core\BusinessLogic\Domain\ShopNotifications\Models\ShopEvents::PAYMENT_LINK_CREATED);
-        $lastAuthorization = $transactionHistory->collection()->filterByEventCode(\Adyen\Webhook\EventCodes::AUTHORISATION)->first();
+        $payByLink = $transactionHistory->collection()->filterAllByEventCode(Adyen\Core\BusinessLogic\Domain\ShopNotifications\Models\ShopEvents::PAYMENT_LINK_CREATED);
+        $lastAuthorization = $transactionHistory->collection()->filterByEventCode(Adyen\Webhook\EventCodes::AUTHORISATION)->first();
 
-        $currency = new \Currency($order->id_currency);
-        $transactionDetails = \AdyenPayment\Classes\Services\TransactionDetailsHandler::getTransactionDetails($order);
+        $currency = new Currency($order->id_currency);
+        $transactionDetails = AdyenPayment\Classes\Services\TransactionDetailsHandler::getTransactionDetails($order);
         $result['history'] = [];
-        $generalSettings = \Adyen\Core\BusinessLogic\AdminAPI\AdminAPI::get()->generalSettings((string)\Context::getContext()->shop->id)->getGeneralSettings();
+        $generalSettings = Adyen\Core\BusinessLogic\AdminAPI\AdminAPI::get()->generalSettings((string) Context::getContext()->shop->id)->getGeneralSettings();
         $paymentLinkEnabled = $generalSettings->isSuccessful() && $generalSettings->toArray()['enablePayByLink'];
-        \AdyenPayment\Classes\Bootstrap::init();
+        AdyenPayment\Classes\Bootstrap::init();
         $paymentLink = '';
         $capturableAmount = 0;
         $shouldDisplayPaymentLink = false;
@@ -1552,18 +1522,18 @@ class AdyenOfficial extends PaymentModule
         foreach ($transactionDetails as $transactionDetail) {
             $authorisationDetail = $this->getAuthorisationDetail($transactionDetail);
 
-            if(!$authorisationDetail) {
+            if (!$authorisationDetail) {
                 continue;
             }
 
             if (!empty($authorisationDetail['eventCode']) && in_array(
-                    $authorisationDetail['eventCode'],
-                    [\Adyen\Webhook\EventCodes::ORDER_CLOSED, \Adyen\Webhook\EventCodes::ORDER_OPENED],
-                    true)
+                $authorisationDetail['eventCode'],
+                [Adyen\Webhook\EventCodes::ORDER_CLOSED, Adyen\Webhook\EventCodes::ORDER_OPENED],
+                true)
             ) {
                 $result['history'][] = [
                     'transactionHistory' => [0 => $authorisationDetail],
-                    'originalReference' => ''
+                    'originalReference' => '',
                 ];
 
                 /** @noinspection SlowArrayOperationsInLoopInspection */
@@ -1573,13 +1543,13 @@ class AdyenOfficial extends PaymentModule
             }
 
             if (
-                $lastAuthorization &&
-                !$payByLink->isEmpty() &&
-                $authorisationDetail['authorizationPspReference'] !== $lastAuthorization->getPspReference()
+                $lastAuthorization
+                && !$payByLink->isEmpty()
+                && $authorisationDetail['authorizationPspReference'] !== $lastAuthorization->getPspReference()
             ) {
                 $result['history'][] = [
                     'transactionHistory' => [0 => $transactionDetail],
-                    'originalReference' => ''
+                    'originalReference' => '',
                 ];
 
                 /** @noinspection SlowArrayOperationsInLoopInspection */
@@ -1605,13 +1575,13 @@ class AdyenOfficial extends PaymentModule
                 'partialCapture' => $lastDetail['partialCapture'] ?? '',
                 'capturableAmount' => $authorisationDetail['capturableAmount'] ?? '',
                 'authorizationAdjustmentAmount' => $authorisationDetail['authorizationAdjustmentAmount'] ?? '0',
-                'currency' => $currency->symbol ?? ($currency->sign ?? ''),
+                'currency' => $currency->symbol !== '' ? $currency->symbol : ($currency->sign !== '' ? $currency->sign : ''),
                 'currencyISO' => $currency->iso_code,
                 'transactionHistory' => $transactionDetail,
                 'captureURL' => $this->getAction('AdyenCapture', 'captureOrder', ['ajax' => true]),
                 'orderId' => $orderId,
                 'adyenLink' => $authorisationDetail['viewOnAdyenUrl'] ?? '',
-                'refundSupported' => $authorisationDetail['refund'] ?? false
+                'refundSupported' => $authorisationDetail['refund'] ?? false,
             ];
 
             $authorizationAdjustment &= $lastDetail['authorizationAdjustmentAvailable'];
@@ -1619,7 +1589,7 @@ class AdyenOfficial extends PaymentModule
             /** @noinspection SlowArrayOperationsInLoopInspection */
             $sorted = array_merge($sorted, $transactionDetail);
 
-            $capturableAmount += (int)$authorisationDetail['capturableAmount'];
+            $capturableAmount += (int) $authorisationDetail['capturableAmount'];
             if (!$paymentLink) {
                 $paymentLink = $authorisationDetail['paymentLink'] ?? '';
             }
@@ -1656,7 +1626,7 @@ class AdyenOfficial extends PaymentModule
         $result['shouldDisplayPaymentLink'] = $shouldDisplayPaymentLink;
         $result['capturableAmount'] = $capturableAmount > 0 ? $capturableAmount : '';
         $result['shouldDisplayPaymentLinkForNonAdyenOrder'] = $shouldDisplayPaymentLinkForNonAdyenOrder;
-        $result['isAdyenOrder']  = $order->module === $this->name;
+        $result['isAdyenOrder'] = $order->module === $this->name;
         $result['status'] = ucfirst(strtolower($status));
         $result['statusDate'] = $lastDetail['date'] ?? '';
         $result['merchantID'] = $lastDetail['merchantAccountCode'] ?? '';
@@ -1681,12 +1651,12 @@ class AdyenOfficial extends PaymentModule
      * Returns Version175 instance if PrestaShop version is < than 1.7.7.
      * Otherwise instance of Version177 is returned.
      *
-     * @return \AdyenPayment\Classes\Version\Contract\VersionHandler
+     * @return AdyenPayment\Classes\Version\Contract\VersionHandler
      */
-    private function getVersionHandler(): \AdyenPayment\Classes\Version\Contract\VersionHandler
+    private function getVersionHandler(): AdyenPayment\Classes\Version\Contract\VersionHandler
     {
-        return \Adyen\Core\Infrastructure\ServiceRegister::getService(
-            \AdyenPayment\Classes\Version\Contract\VersionHandler::class
+        return Adyen\Core\Infrastructure\ServiceRegister::getService(
+            AdyenPayment\Classes\Version\Contract\VersionHandler::class
         );
     }
 
@@ -1699,11 +1669,11 @@ class AdyenOfficial extends PaymentModule
      *
      * @return string Action link
      *
-     * @throws \PrestaShopException
+     * @throws PrestaShopException
      */
     private function getAction(string $controller, string $action, array $params): string
     {
-        $query = array_merge(array('action' => $action), $params);
+        $query = array_merge(['action' => $action], $params);
 
         return $this->getContext()->link->getAdminLink($controller) .
             '&' . http_build_query($query);
@@ -1714,7 +1684,8 @@ class AdyenOfficial extends PaymentModule
      * @param $paymentUrl
      *
      * @return string
-     * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
+     *
+     * @throws Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      * @throws PrestaShopDatabaseException
      */
     private function displayExpress($configUrl, $paymentUrl): string
@@ -1728,7 +1699,7 @@ class AdyenOfficial extends PaymentModule
             'getStateDataURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl('statedataget'),
             'paymentRedirectActionURL' => AdyenPayment\Classes\Utility\Url::getFrontUrl('paymentredirect'),
             'paypalUpdateOrderUrl' => AdyenPayment\Classes\Utility\Url::getFrontUrl('paypalupdateorder'),
-            'version' => _PS_VERSION_
+            'version' => _PS_VERSION_,
         ]);
 
         return $this->display(__FILE__, 'views/templates/front/express_checkout.tpl');
@@ -1736,13 +1707,14 @@ class AdyenOfficial extends PaymentModule
 
     /**
      * @return bool
-     * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
+     *
+     * @throws Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      * @throws PrestaShopDatabaseException
      */
     private function verifyIfExpressCheckoutShouldBeDisplayed(): bool
     {
-        \AdyenPayment\Classes\Bootstrap::init();
-        $storeService = \Adyen\Core\Infrastructure\ServiceRegister::getService(
+        AdyenPayment\Classes\Bootstrap::init();
+        $storeService = Adyen\Core\Infrastructure\ServiceRegister::getService(
             Adyen\Core\BusinessLogic\Domain\Integration\Store\StoreService::class
         );
 
@@ -1750,10 +1722,10 @@ class AdyenOfficial extends PaymentModule
             return false;
         }
 
-        if (!$this->verifyIfCarrierNotRestricted() ||
-            !$this->verifyIfCurrencyNotRestricted() ||
-            !$this->verifyIfCountryNotRestricted() ||
-            !$this->verifyIfUserHasAddress()) {
+        if (!$this->verifyIfCarrierNotRestricted()
+            || !$this->verifyIfCurrencyNotRestricted()
+            || !$this->verifyIfCountryNotRestricted()
+            || !$this->verifyIfUserHasAddress()) {
             return false;
         }
 
@@ -1774,11 +1746,12 @@ class AdyenOfficial extends PaymentModule
 
     /**
      * @return bool
+     *
      * @throws PrestaShopDatabaseException
      */
     private function verifyIfCountryNotRestricted(): bool
     {
-        $activeCountries = $this->getModuleCountries((int)$this->id, (int)$this->context->shop->id);
+        $activeCountries = $this->getModuleCountries((int) $this->id, (int) $this->context->shop->id);
         $countryCodes = array_column($activeCountries, 'iso_code');
         $currentCountry = $this->context->country->iso_code;
 
@@ -1787,13 +1760,14 @@ class AdyenOfficial extends PaymentModule
 
     /**
      * @return bool
+     *
      * @throws PrestaShopDatabaseException
      */
     private function verifyIfUserHasAddress(): bool
     {
         $customer = $this->context->customer;
 
-        if(!$customer->id) {
+        if (!$customer->id) {
             return true;
         }
 
@@ -1807,6 +1781,7 @@ class AdyenOfficial extends PaymentModule
      * @param int $shopId
      *
      * @return array|bool|mysqli_result|PDOStatement|resource|null
+     *
      * @throws PrestaShopDatabaseException
      */
     private function getModuleCountries(int $moduleId, int $shopId)
@@ -1814,9 +1789,9 @@ class AdyenOfficial extends PaymentModule
         $sql = 'SELECT c.*
 				FROM `' . _DB_PREFIX_ . 'module_country` mc
 				LEFT JOIN `' . _DB_PREFIX_ . 'country` c ON c.`id_country` = mc.`id_country`
-				WHERE mc.`id_module` = ' . (int)$moduleId . '
+				WHERE mc.`id_module` = ' . (int) $moduleId . '
 					AND c.`active` = 1
-					AND mc.id_shop = ' . (int)$shopId . '
+					AND mc.id_shop = ' . (int) $shopId . '
 				ORDER BY c.`iso_code` ASC';
 
         return Db::getInstance()->executeS($sql);
@@ -1824,11 +1799,12 @@ class AdyenOfficial extends PaymentModule
 
     /**
      * @return bool
+     *
      * @throws PrestaShopDatabaseException
      */
     private function verifyIfCarrierNotRestricted(): bool
     {
-        $activeCarriers = $this->getModuleCarriers((int)$this->id, (int)$this->context->shop->id);
+        $activeCarriers = $this->getModuleCarriers((int) $this->id, (int) $this->context->shop->id);
 
         if (count($activeCarriers) > 0) {
             return true;
@@ -1849,6 +1825,7 @@ class AdyenOfficial extends PaymentModule
      * @param int $shopId
      *
      * @return array|bool|mysqli_result|PDOStatement|resource|null
+     *
      * @throws PrestaShopDatabaseException
      */
     private function getModuleCarriers(int $moduleId, int $shopId)
@@ -1856,34 +1833,11 @@ class AdyenOfficial extends PaymentModule
         $sql = 'SELECT c.*
 				FROM `' . _DB_PREFIX_ . 'module_carrier` mc
 				LEFT JOIN `' . _DB_PREFIX_ . 'carrier` c ON c.`id_reference` = mc.`id_reference`
-				WHERE mc.`id_module` = ' . (int)$moduleId . '
+				WHERE mc.`id_module` = ' . (int) $moduleId . '
 					AND c.`active` = 1
-					AND mc.id_shop = ' . (int)$shopId . '
+					AND mc.id_shop = ' . (int) $shopId . '
 				ORDER BY c.`name` ASC';
 
         return Db::getInstance()->executeS($sql);
-    }
-
-    /**
-     * Used to define snippets for translating messages.
-     *
-     * @return void
-     */
-    private function initTranslations()
-    {
-        $this->l('Capture request successfully sent to Adyen.');
-        $this->l('Capture request failed. Please check Adyen configuration. Reason: ');
-        $this->l('Capture is not supported on Adyen.');
-        $this->l('Capture request failed. Please check Adyen configuration. Reason: ');
-        $this->l('Cancel is not supported on Adyen.');
-        $this->l('Cancel request failed. Please check Adyen configuration. Reason: ');
-        $this->l('Cancellation request successfully sent to Adyen.');
-        $this->l('Refund is not supported on Adyen.');
-        $this->l('Refund request failed. Please check Adyen configuration. Reason: ');
-        $this->l('Refund request successfully sent to Adyen.');
-        $this->l('Chargeback');
-        $this->l('Pending');
-        $this->l('Partially refunded');
-        $this->l('Surcharge');
     }
 }

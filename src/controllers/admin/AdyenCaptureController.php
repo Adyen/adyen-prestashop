@@ -23,15 +23,15 @@ class AdyenCaptureController extends AdyenBaseController
      */
     public function displayAjaxCaptureOrder()
     {
-        $orderId = \Tools::getValue('orderId');
-        $captureAmount = \Tools::getValue('captureAmount');
-        $order = new \Order($orderId);
+        $orderId = Tools::getValue('orderId');
+        $captureAmount = Tools::getValue('captureAmount');
+        $order = new Order($orderId);
         $currency = new Currency($order->id_currency);
-        $pspReference = \Tools::getValue('pspReference');
+        $pspReference = Tools::getValue('pspReference');
 
-        $response = AdminAPI::get()->capture((string)$order->id_shop)->handle(
-            (string)$order->id_cart,
-            (float)$captureAmount,
+        $response = AdminAPI::get()->capture((string) $order->id_shop)->handle(
+            (string) $order->id_cart,
+            (float) $captureAmount,
             $currency->iso_code,
             $pspReference
         );
@@ -47,8 +47,8 @@ class AdyenCaptureController extends AdyenBaseController
 
         SessionService::set(
             'errorMessage',
-            $this->module->l('Capture request failed. Please check Adyen configuration. Reason: ') . $response->toArray(
-            )['errorMessage'] ?? ''
+            $this->module->l('Capture request failed. Please check Adyen configuration. Reason: ') . ($response->toArray(
+            )['errorMessage'] ?? '')
         );
         AdyenPrestaShopUtility::dieJson($response);
     }

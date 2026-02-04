@@ -41,7 +41,7 @@ class AdyenShopInformationController extends AdyenBaseController
     public function displayAjaxSwitchContext(): void
     {
         $id = Tools::getValue('storeId');
-        $this->context->cookie->shopContext = "s-" . $id;
+        $this->context->cookie->shopContext = 's-' . $id;
 
         AdyenPrestaShopUtility::dieJson();
     }

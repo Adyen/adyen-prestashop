@@ -26,12 +26,7 @@ use Adyen\Core\Infrastructure\TaskExecution\QueueService;
 use AdyenPayment\Classes\Bootstrap;
 use AdyenPayment\Classes\Utility\MigrateTransactionHistoryTask;
 
-if (!defined('_PS_VERSION_')) {
-    exit;
-}
-
 require_once 'Autoloader.php';
-
 
 /**
  * Upgrades module to version 5.0.0.
@@ -52,7 +47,7 @@ function upgrade_module_5_0_0(AdyenOfficial $module): bool
     $previousShopContext = Shop::getContext();
     Shop::setContext(ShopCore::CONTEXT_ALL);
 
-    $installer = new \AdyenPayment\Classes\Utility\Installer($module);
+    $installer = new AdyenPayment\Classes\Utility\Installer($module);
 
     Bootstrap::init();
     try {
@@ -85,7 +80,7 @@ function upgrade_module_5_0_0(AdyenOfficial $module): bool
 
     $module->enable();
     Shop::setContext(ShopCore::CONTEXT_SHOP, $previousShopContext);
-    \Configuration::loadConfiguration();
+    Configuration::loadConfiguration();
 
     $manager->resume();
 
@@ -108,7 +103,7 @@ function migrateApiCredentials(): array
         }
 
         StoreContext::doWithStore(
-            (string)$shop['id_shop'],
+            (string) $shop['id_shop'],
             function () use ($shop, &$migratedShops) {
                 try {
                     if (migrateApiCredentialsForShop()) {
@@ -135,22 +130,22 @@ function migratePaymentMethodConfigs(array $migratedShops)
 
             $availableMethods = $paymentService->getAvailableMethods();
             $settings = getConnectionService()->getConnectionData();
-            $request = new \Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\PaymentMethodsRequest(
+            $request = new Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\PaymentMethodsRequest(
                 $settings->getActiveConnectionData()->getMerchantId(),
                 [
-                    (string)PaymentMethodCode::facilyPay3x(),
-                    (string)PaymentMethodCode::facilyPay4x(),
-                    (string)PaymentMethodCode::facilyPay6x(),
-                    (string)PaymentMethodCode::facilyPay10x(),
-                    (string)PaymentMethodCode::facilyPay12x(),
+                    (string) PaymentMethodCode::facilyPay3x(),
+                    (string) PaymentMethodCode::facilyPay4x(),
+                    (string) PaymentMethodCode::facilyPay6x(),
+                    (string) PaymentMethodCode::facilyPay10x(),
+                    (string) PaymentMethodCode::facilyPay12x(),
                 ]
             );
             $oneyInstallmentsMap = [
-                (string)PaymentMethodCode::facilyPay3x() => '3',
-                (string)PaymentMethodCode::facilyPay4x() => '4',
-                (string)PaymentMethodCode::facilyPay6x() => '6',
-                (string)PaymentMethodCode::facilyPay10x() => '10',
-                (string)PaymentMethodCode::facilyPay12x() => '12',
+                (string) PaymentMethodCode::facilyPay3x() => '3',
+                (string) PaymentMethodCode::facilyPay4x() => '4',
+                (string) PaymentMethodCode::facilyPay6x() => '6',
+                (string) PaymentMethodCode::facilyPay10x() => '10',
+                (string) PaymentMethodCode::facilyPay12x() => '12',
             ];
             $oneyInstallments = $checkoutProxy->getAvailablePaymentMethods($request);
             $oneyEnabledInstallments = [];
@@ -184,8 +179,8 @@ function migratePaymentMethodConfigs(array $migratedShops)
                     $paymentMethod->setAdditionalData(new Oney($oneyEnabledInstallments));
                 }
 
-                if (PaymentMethodCode::googlePay()->equals($availableMethod->getCode()) ||
-                    PaymentMethodCode::payWithGoogle()->equals($availableMethod->getCode())) {
+                if (PaymentMethodCode::googlePay()->equals($availableMethod->getCode())
+                    || PaymentMethodCode::payWithGoogle()->equals($availableMethod->getCode())) {
                     $googleMerchantId = ConfigurationCore::get(
                         'ADYEN_GOOGLE_PAY_GATEWAY_MERCHANT_ID',
                         null,
@@ -227,16 +222,16 @@ function migrateApiCredentialsForShop(): bool
     $ivLength = openssl_cipher_iv_length('aes-256-ctr');
     $testApiKeyEncrypted = ConfigurationCore::get('ADYEN_APIKEY_TEST', null, null, $storeId);
     $liveApiKeyEncrypted = ConfigurationCore::get('ADYEN_APIKEY_LIVE', null, null, $storeId);
-    $hex = \Tools::substr($testApiKeyEncrypted, 0, $ivLength * 2);
+    $hex = Tools::substr($testApiKeyEncrypted, 0, $ivLength * 2);
     $iv = hex2bin($hex);
     $testApiKey = openssl_decrypt(
-        \Tools::substr($testApiKeyEncrypted, $ivLength * 2),
+        Tools::substr($testApiKeyEncrypted, $ivLength * 2),
         'aes-256-ctr',
         _COOKIE_KEY_,
         0,
         $iv
     );
-    $hex = \Tools::substr($liveApiKeyEncrypted, 0, $ivLength * 2);
+    $hex = Tools::substr($liveApiKeyEncrypted, 0, $ivLength * 2);
     $iv = hex2bin($hex);
     $liveApiKey = openssl_decrypt(
         Tools::substr($liveApiKeyEncrypted, $ivLength * 2),
@@ -378,7 +373,7 @@ function getLiveData(
     string $shopId,
     string $merchantAccount,
     string $liveApiKey,
-    string $liveUrlPrefix
+    string $liveUrlPrefix,
 ): ?ConnectionData {
     if (empty($liveApiKey) || empty($liveUrlPrefix)) {
         return null;
@@ -424,7 +419,6 @@ function getApiCredentialsFor(ConnectionSettings $connectionSettings): ?ApiCrede
     return $apiCredentials;
 }
 
-
 function removeHooks(AdyenOfficial $module)
 {
     $registeredHooks = [
@@ -433,7 +427,7 @@ function removeHooks(AdyenOfficial $module)
         'paymentOptions',
         'paymentReturn',
         'actionOrderSlipAdd',
-        'actionEmailSendBefore'
+        'actionEmailSendBefore',
     ];
 
     foreach ($registeredHooks as $hook) {
@@ -443,8 +437,8 @@ function removeHooks(AdyenOfficial $module)
 
 function removeObsoleteData()
 {
-    /** @noinspection SqlDialectInspection */
-    \Db::getInstance()->delete("configuration", "name LIKE '%ADYEN%'");
+    /* @noinspection SqlDialectInspection */
+    Db::getInstance()->delete('configuration', "name LIKE '%ADYEN%'");
 }
 
 /**
@@ -481,7 +475,7 @@ function removeDirectories(string $installPath)
         'service',
         'tools',
         'views/img',
-        'views/js/payment-components'
+        'views/js/payment-components',
     ];
 
     foreach ($directories as $directory) {
@@ -543,7 +537,7 @@ function removeFiles(string $installPath)
     }
 }
 
-//<editor-fold desc="Service getters" defaultstate="collapsed">
+// <editor-fold desc="Service getters" defaultstate="collapsed">
 
 /**
  * @param ConnectionSettings $connectionSettings
@@ -589,4 +583,4 @@ function getTaskRunnerManager(): TaskRunnerManager
     return ServiceRegister::getService(TaskRunnerManager::CLASS_NAME);
 }
 
-//</editor-fold>
+// </editor-fold>

@@ -20,7 +20,7 @@ class LastOpenTime extends Entity
     protected $fields = ['id', 'timestamp'];
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function getConfig(): EntityConfiguration
     {

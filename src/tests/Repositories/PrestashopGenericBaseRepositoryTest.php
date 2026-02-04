@@ -6,13 +6,11 @@ use Adyen\Core\Tests\Infrastructure\ORM\AbstractGenericStudentRepositoryTest;
 
 /**
  * Class PrestashopGenericBaseRepositoryTest
- *
- * @package AdyenPayment\Tests\Repositories
  */
 class PrestashopGenericBaseRepositoryTest extends AbstractGenericStudentRepositoryTest
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function setUp(): void
     {

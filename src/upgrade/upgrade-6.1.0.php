@@ -1,6 +1,5 @@
 <?php
 
-
 use Adyen\Core\BusinessLogic\Domain\Connection\Services\ConnectionService;
 use Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use Adyen\Core\BusinessLogic\Domain\Webhook\Services\WebhookRegistrationService;
@@ -8,10 +7,6 @@ use Adyen\Core\Infrastructure\Logger\Logger;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\Bootstrap;
-
-if (!defined('_PS_VERSION_')) {
-    exit;
-}
 
 require_once 'Autoloader.php';
 
@@ -42,7 +37,7 @@ function upgrade_module_6_1_0(AdyenOfficial $module): bool
 
         try {
             StoreContext::doWithStore(
-                (string)$shop['id_shop'],
+                (string) $shop['id_shop'],
                 static function () use ($shop) {
                     /** @var ConnectionService $connectionService */
                     $connectionService = ServiceRegister::getService(ConnectionService::class);
@@ -50,7 +45,8 @@ function upgrade_module_6_1_0(AdyenOfficial $module): bool
 
                     if (!$connectionSettings) {
                         Logger::logWarning("No connection settings found for shop {$shop['id_shop']} - " .
-                            "skipping webhook update");
+                            'skipping webhook update');
+
                         return;
                     }
 

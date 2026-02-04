@@ -64,8 +64,8 @@ class AdyenGivingSettingsController extends AdyenBaseController
             $requestData['charityMerchantAccount'] ?? '',
             $requestData['donationAmount'] ?? '',
             $requestData['charityWebsite'] ?? '',
-            ImageHandler::getImageUrl('adyen-giving-logo-store-' . $storeId, $storeId) ?? '',
-            ImageHandler::getImageUrl('adyen-giving-background-store-' . $storeId, $storeId) ?? ''
+            ImageHandler::getImageUrl('adyen-giving-logo-store-' . $storeId, $storeId),
+            ImageHandler::getImageUrl('adyen-giving-background-store-' . $storeId, $storeId)
         );
     }
 
@@ -79,10 +79,10 @@ class AdyenGivingSettingsController extends AdyenBaseController
         $logo = Tools::fileAttachment('logo');
 
         if ($logo && !ImageHandler::saveImage(
-                $logo['tmp_name'],
-                'adyen-giving-logo-store-' . $storeId,
-                $storeId
-            )
+            $logo['tmp_name'],
+            'adyen-giving-logo-store-' . $storeId,
+            $storeId
+        )
         ) {
             AdyenPrestaShopUtility::die400(['message' => 'Error occurred while adding Adyen giving logo image']);
         }
@@ -90,10 +90,10 @@ class AdyenGivingSettingsController extends AdyenBaseController
         $backgroundImage = Tools::fileAttachment('backgroundImage');
 
         if ($backgroundImage && !ImageHandler::saveImage(
-                $backgroundImage['tmp_name'],
-                'adyen-giving-background-store-' . $storeId,
-                $storeId
-            )
+            $backgroundImage['tmp_name'],
+            'adyen-giving-background-store-' . $storeId,
+            $storeId
+        )
         ) {
             AdyenPrestaShopUtility::die400(['message' => 'Error occurred while adding Adyen giving background image']);
         }

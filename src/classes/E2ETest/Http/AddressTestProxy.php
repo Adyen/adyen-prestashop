@@ -7,8 +7,6 @@ use Adyen\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 
 /**
  * Class AddressTestProxy
- *
- * @package AdyenPayment\Classes\E2ETest\Http
  */
 class AddressTestProxy extends TestProxy
 {
@@ -20,7 +18,7 @@ class AddressTestProxy extends TestProxy
     public function createAddress(array $addressData): void
     {
         $httpRequest = new HttpRequest(
-            "/api/addresses",
+            '/api/addresses',
             $addressData
         );
         $this->post($httpRequest)->decodeBodyToArray();

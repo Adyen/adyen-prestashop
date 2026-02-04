@@ -3,11 +3,12 @@
 use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;
 use Adyen\Core\BusinessLogic\CheckoutAPI\PartialPayment\Request\StartPartialTransactionsRequest;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidPaymentMethodCodeException;
-use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\PaymentMethodCode;
-use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\ShopperReference;
-use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Currency;
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\PaymentMethodCode;
+use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\ShopperReference;
+use Adyen\Core\Infrastructure\Logger\Logger;
+use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\Bootstrap;
 use AdyenPayment\Classes\Services\Integration\CustomerService;
@@ -16,7 +17,6 @@ use AdyenPayment\Classes\Utility\AdyenPrestaShopUtility;
 use AdyenPayment\Classes\Utility\SessionService;
 use AdyenPayment\Classes\Utility\Url;
 use AdyenPayment\Controllers\PaymentController;
-use Adyen\Core\Infrastructure\Logger\Logger;
 use Currency as PrestaCurrency;
 
 /**
@@ -25,7 +25,7 @@ use Currency as PrestaCurrency;
 class AdyenOfficialPaymentModuleFrontController extends PaymentController
 {
     /** @var string File name for translation contextualization */
-    const FILE_NAME = 'AdyenOfficialPaymentModuleFrontController';
+    public const FILE_NAME = 'AdyenOfficialPaymentModuleFrontController';
 
     /**
      * @throws RepositoryClassException
@@ -46,6 +46,7 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
 
         if ($this->isHummigbirdTheme()) {
             $this->setTemplate('module:adyenofficial/views/templates/front/adyen-additional-details-hummingbird.tpl');
+
             return;
         }
 
@@ -101,10 +102,10 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
         $currency = new PrestaCurrency($cart->id_currency);
 
         try {
-            $partialTransactionsResponse = CheckoutApi::get()->partialPaymentRequest((string)$cart->id_shop)
+            $partialTransactionsResponse = CheckoutAPI::get()->partialPaymentRequest((string) $cart->id_shop)
                 ->startPartialTransactions(
                     new StartPartialTransactionsRequest(
-                        (string)$cart->id,
+                        (string) $cart->id,
                         Currency::fromIsoCode($currency->iso_code ?? 'EUR'),
                         Url::getFrontUrl(
                             'paymentredirect',
@@ -208,7 +209,7 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
             PaymentMethodCode::blik(),
             PaymentMethodCode::weChatPay(),
             PaymentMethodCode::mbWay(),
-            PaymentMethodCode::bcmcMobile()
+            PaymentMethodCode::bcmcMobile(),
         ];
 
         foreach ($supportsCancelButton as $supportedMethod) {

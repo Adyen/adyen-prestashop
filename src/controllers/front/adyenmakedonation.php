@@ -33,8 +33,8 @@ class AdyenOfficialAdyenMakeDonationModuleFrontController extends ModuleFrontCon
     public function postProcess(): void
     {
         $params = Tools::getAllValues();
-        $orderId = Order::getIdByCartId((int)($params['merchantReference']));
-        $order = new Order((int)($orderId));
+        $orderId = Order::getIdByCartId((int) $params['merchantReference']);
+        $order = new Order((int) $orderId);
 
         if (!$params['merchantReference'] || !$params['key'] || !$params['module']) {
             AdyenPrestaShopUtility::die400(
@@ -55,7 +55,7 @@ class AdyenOfficialAdyenMakeDonationModuleFrontController extends ModuleFrontCon
         }
 
         $result = CheckoutAPI::get()
-            ->donation((string)Context::getContext()->shop->id)
+            ->donation((string) Context::getContext()->shop->id)
             ->makeDonation(
                 new MakeDonationRequest(
                     $params['amount']['value'] ?? '',
@@ -67,7 +67,7 @@ class AdyenOfficialAdyenMakeDonationModuleFrontController extends ModuleFrontCon
         if (!$result->isSuccessful()) {
             AdyenPrestaShopUtility::die400(
                 [
-                    'message' => 'Donation failed.'
+                    'message' => 'Donation failed.',
                 ]
             );
         }

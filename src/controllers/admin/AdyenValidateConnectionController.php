@@ -26,6 +26,7 @@ class AdyenValidateConnectionController extends AdyenBaseController
 {
     /**
      * @return void
+     *
      * @throws ConnectionSettingsNotFoundException
      * @throws ApiCredentialsDoNotExistException
      * @throws ApiKeyCompanyLevelException

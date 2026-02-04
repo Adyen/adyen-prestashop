@@ -53,7 +53,7 @@ class AdyenPaymentController extends AdyenBaseController
         $id = Tools::getValue('methodId');
 
         $result = AdminAPI::get()->payment($storeId)->getMethodById($id);
-        if ($result === null) {
+        if (!$result) {
             AdyenPrestaShopUtility::die404(['message' => 'Not found']);
         }
 
@@ -149,7 +149,7 @@ class AdyenPaymentController extends AdyenBaseController
         $requestData['additionalData'] = !empty($requestData['additionalData']) ?
             json_decode($requestData['additionalData'], true) : [];
 
-        $requestData['logo'] =  $file ? ImageHandler::getImageUrl(
+        $requestData['logo'] = $file ? ImageHandler::getImageUrl(
             $requestData['methodId'],
             $storeId
         ) : $requestData['logo'];

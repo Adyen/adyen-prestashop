@@ -4,12 +4,10 @@ namespace AdyenPayment\Classes\Overrides;
 
 use Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use Adyen\Core\BusinessLogic\Domain\TransactionHistory\Models\TransactionHistory;
-use Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionDetailsService;
 use Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionHistoryService;
 use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
 use Adyen\Core\Infrastructure\ServiceRegister;
 use AdyenPayment\Classes\Bootstrap;
-use Exception;
 use PrestaShop\PrestaShop\Adapter\Entity\Order;
 
 class AdminOrdersController
@@ -43,13 +41,13 @@ class AdminOrdersController
         string $title,
         string $callback,
         string $keyColumnName,
-        string $newColumnName
+        string $newColumnName,
     ): array {
         $pspReferenceElement = [
             'title' => $title,
             'align' => 'text-centre',
             'filter_key' => 'a!id_order',
-            'callback' => $callback
+            'callback' => $callback,
         ];
 
         return $this->insertElementIntoArrayAfterSpecificKey(
@@ -70,16 +68,16 @@ class AdminOrdersController
      */
     public function getOrderPspReference(string $orderId, \Context $context): string
     {
-        $order = new Order($orderId);
+        $order = new Order((int) $orderId);
         $transactionHistory = $this->getTransactionDetails($order);
         $authItem = $transactionHistory->getLastSuccessfulAuthorizationItem();
-        $pspReference = ($order->module === 'adyenofficial' && !empty($transactionHistory) &&
-            $authItem !== null) ? $authItem->getPspReference() : '--';
+        $pspReference = ($order->module === 'adyenofficial' && $authItem !== null)
+            ? $authItem->getPspReference() : '--';
 
         $context->smarty->assign(
             [
                 'orderId' => $orderId,
-                'pspReference' => $pspReference
+                'pspReference' => $pspReference,
             ]
         );
 
@@ -100,16 +98,16 @@ class AdminOrdersController
      */
     public function getOrderPaymentMethod(string $orderId, \Context $context): string
     {
-        $order = new Order($orderId);
+        $order = new Order((int) $orderId);
         $transactionHistory = $this->getTransactionDetails($order);
         $authItem = $transactionHistory->getLastSuccessfulAuthorizationItem();
-        $paymentMethod = ($order->module === 'adyenofficial' && !empty($transactionHistory) && $authItem !== null)
+        $paymentMethod = ($order->module === 'adyenofficial' && $authItem !== null)
             ? $authItem->getPaymentMethod() : '--';
 
         $context->smarty->assign(
             [
                 'orderId' => $orderId,
-                'paymentMethod' => $paymentMethod
+                'paymentMethod' => $paymentMethod,
             ]
         );
 
@@ -147,34 +145,19 @@ class AdminOrdersController
      *
      * @return TransactionHistory
      *
-     * @throws Exception
+     * @throws \Exception
      */
     private function getTransactionDetails(Order $order): TransactionHistory
     {
         /** @var TransactionHistoryService $service */
         $service = ServiceRegister::getService(TransactionHistoryService::class);
-        /** @var TransactionHistory $transactionHistory */
-        return StoreContext::doWithStore(
-            $order->id_shop,
-            static function () use ($order, $service) {
-                return $service->getTransactionHistory($order->id_cart);
-            }
-        );
-    }
 
-    /**
-     * @param string $storeId
-     *
-     * @return TransactionDetailsService
-     *
-     * @throws Exception
-     */
-    private function getTransactionDetailsService(string $storeId): TransactionDetailsService
-    {
+        /* @var TransactionHistory $transactionHistory */
         return StoreContext::doWithStore(
-            $storeId,
-            [ServiceRegister::getInstance(), 'getService'],
-            [TransactionDetailsService::class]
+            (string) $order->id_shop,
+            static function () use ($order, $service) {
+                return $service->getTransactionHistory((string) $order->id_cart);
+            }
         );
     }
 }

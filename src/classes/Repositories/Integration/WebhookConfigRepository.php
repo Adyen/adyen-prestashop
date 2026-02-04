@@ -9,13 +9,12 @@ use AdyenPayment\Classes\Services\Encryptor;
 
 /**
  * Class WebhookConfigRepository
- *
- * @package AdyenPayment\Classes\Repositories\Integration
  */
 class WebhookConfigRepository extends BaseWebhookConfigRepository
 {
     /**
      * @inerhitDoc
+     *
      * @throws \Exception
      */
     public function getWebhookConfig(): ?WebhookConfig
@@ -33,7 +32,7 @@ class WebhookConfigRepository extends BaseWebhookConfigRepository
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function setWebhookConfig(WebhookConfig $config): void
     {

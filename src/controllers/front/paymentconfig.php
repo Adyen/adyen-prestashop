@@ -31,15 +31,15 @@ class AdyenOfficialPaymentConfigModuleFrontController extends ModuleFrontControl
     public function postProcess()
     {
         $cartId = $this->getCartId();
-        $discountAmount = (int)Tools::getValue('discountAmount');
+        $discountAmount = (int) Tools::getValue('discountAmount');
         $cart = new Cart($cartId);
-        $currentCustomerId = (int)Context::getContext()->customer->id;
+        $currentCustomerId = (int) Context::getContext()->customer->id;
 
         if (!$cart->id) {
             AdyenPrestaShopUtility::die400(['message' => 'Invalid parameters.']);
         }
 
-        if ($currentCustomerId && $currentCustomerId !== (int)$cart->id_customer) {
+        if ($currentCustomerId && $currentCustomerId !== (int) $cart->id_customer) {
             AdyenPrestaShopUtility::die400(['message' => 'Invalid parameters.']);
         }
 
@@ -50,18 +50,18 @@ class AdyenOfficialPaymentConfigModuleFrontController extends ModuleFrontControl
 
     private function getCartId(): int
     {
-        if ($this->context->cart && (int)$this->context->cart->id > 0) {
-            return (int)$this->context->cart->id;
+        if ($this->context->cart && (int) $this->context->cart->id > 0) {
+            return (int) $this->context->cart->id;
         }
 
-        $cartId = (int)Tools::getValue('id_cart');
+        $cartId = (int) Tools::getValue('id_cart');
 
         if ($cartId <= 0) {
             AdyenPrestaShopUtility::die400(['message' => 'Missing or invalid cart ID.']);
         }
 
-        $orderId = (int)Tools::getValue('id_order');
-        $key = (string)Tools::getValue('key');
+        $orderId = (int) Tools::getValue('id_order');
+        $key = (string) Tools::getValue('key');
 
         if ($orderId > 0 && $key) {
             $order = Order::getByCartId($cartId);

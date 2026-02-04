@@ -1,5 +1,5 @@
 <span>
     <span>
-        <label>{$pspReference}</label>
+        <label>{$pspReference|escape:'htmlall':'UTF-8'}</label>
     </span>
 </span>

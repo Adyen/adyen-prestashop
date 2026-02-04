@@ -1,7 +1,7 @@
 {extends file='customer/page.tpl'}
 
 {block name='page_title'}
-    {l s='Stored payment methods (' mod='adyenofficial'} {$numberOfStoredPaymentMethods} {l s=')' d='Shop.Theme.Customeraccount'}
+    {l s='Stored payment methods (' mod='adyenofficial'} {$numberOfStoredPaymentMethods|escape:'htmlall':'UTF-8'} {l s=')' d='Shop.Theme.Customeraccount'}
 {/block}
 
 {block name='page_content'}
@@ -12,19 +12,19 @@
                 {if $storedPaymentMethod.isCreditCard}
                     <div class="col-lg-6 col-md-6 col-sm-6">
                         {block name='stored_card'}
-                            <article id="stored_card-{$storedPaymentMethod.id}"
-                                     data-id-stored_card="{$storedPaymentMethod.id}">
+                            <article id="stored_card-{$storedPaymentMethod.id|escape:'htmlall':'UTF-8'}"
+                                     data-id-stored_card="{$storedPaymentMethod.id|escape:'htmlall':'UTF-8'}">
                                 <div class="stored-credit-card-div">
                                     <div class="stored-credit-card-info">
-                                        <h4>**** **** **** {$storedPaymentMethod.lastFour}</h4>
-                                        <label>{$storedPaymentMethod.name} <img src="{$storedPaymentMethod.logo}" alt=""
+                                        <h4>**** **** **** {$storedPaymentMethod.lastFour|escape:'htmlall':'UTF-8'}</h4>
+                                        <label>{$storedPaymentMethod.name|escape:'htmlall':'UTF-8'} <img src="{$storedPaymentMethod.logo|escape:'htmlall':'UTF-8'}" alt=""
                                                                                 width="40" height="30"></label><br>
-                                        <label>{l s='Expires' mod='adyenofficial'} {$storedPaymentMethod.expiryDate}</label>
+                                        <label>{l s='Expires' mod='adyenofficial'} {$storedPaymentMethod.expiryDate|escape:'htmlall':'UTF-8'}</label>
                                     </div>
                                     {block name='stored_card_block_item_actions'}
                                         <div class="text-sm-center stored-credit-card-button">
                                             <button class="btn btn-primary center-block adyen-delete-btn"
-                                                    data-adyen-method-id="{$storedPaymentMethod.id}">
+                                                    data-adyen-method-id="{$storedPaymentMethod.id|escape:'htmlall':'UTF-8'}">
                                                 <i class="material-icons shopping-cart" aria-hidden="true">delete</i>
                                                 {l s='Delete' mod='adyenofficial'}
                                             </button>
@@ -37,19 +37,19 @@
                 {else}
                     <div class="col-lg-6 col-md-6 col-sm-6">
                         {block name='stored_payment'}
-                            <article id="stored_card-{$storedPaymentMethod.name}"
-                                     data-id-stored_card="{$storedPaymentMethod.name}">
+                            <article id="stored_card-{$storedPaymentMethod.name|escape:'htmlall':'UTF-8'}"
+                                     data-id-stored_card="{$storedPaymentMethod.name|escape:'htmlall':'UTF-8'}">
                                 <div class="stored-credit-card-div">
                                     <div class="stored-credit-card-info">
                                         <h4>{l s='Recurring payment method' mod='adyenofficial'}</h4>
-                                        <label>{$storedPaymentMethod.name} <img src="{$storedPaymentMethod.logo}"
+                                        <label>{$storedPaymentMethod.name|escape:'htmlall':'UTF-8'} <img src="{$storedPaymentMethod.logo|escape:'htmlall':'UTF-8'}"
                                                                                 alt="" width="40" height="30">
                                         </label>
                                     </div>
                                     {block name='stored_card_block_item_actions'}
                                         <div class="text-sm-center stored-credit-card-button">
                                             <button class="btn btn-primary center-block adyen-delete-btn"
-                                                    data-adyen-method-id="{$storedPaymentMethod.id}">
+                                                    data-adyen-method-id="{$storedPaymentMethod.id|escape:'htmlall':'UTF-8'}">
                                                 <i class="material-icons shopping-cart" aria-hidden="true">delete</i>
                                                 {l s='Delete' mod='adyenofficial'}
                                             </button>
@@ -60,7 +60,7 @@
                         {/block}
                     </div>
                 {/if}
-                <div id="adyen-modal-{$storedPaymentMethod.id}" class="modal modal-vcenter adyen-modal"
+                <div id="adyen-modal-{$storedPaymentMethod.id|escape:'htmlall':'UTF-8'}" class="modal modal-vcenter adyen-modal"
                      data-backdrop="static"
                      data-keyboard="false" style="display: none;" aria-hidden="true">
                     <div class="modal-dialog adyen-modal-dialog">
@@ -69,7 +69,7 @@
                                 <h4 class="modal-title module-modal-title adyen-modal-title">
                                     {l s='Please confirm delete action' mod='adyenofficial'}</h4>
                                 <button id="module-modal-import-closing-cross" type="button"
-                                        class="close adyen-close-window-{$storedPaymentMethod.id}">×
+                                        class="close adyen-close-window-{$storedPaymentMethod.id|escape:'htmlall':'UTF-8'}">×
                                 </button>
                             </div>
                             <div class="modal-body">
@@ -80,11 +80,11 @@
                             </div>
                             <div class="adyen-modal-footer">
                                 <button type="button"
-                                        class="adyen-cancel-delete-btn-{$storedPaymentMethod.id} adyen-cancel-button">
+                                        class="adyen-cancel-delete-btn-{$storedPaymentMethod.id|escape:'htmlall':'UTF-8'} adyen-cancel-button">
                                     {l s='Cancel' mod='adyenofficial'}
                                 </button>
                                 <button type="button"
-                                        class="adyen-confirm-delete-btn-{$storedPaymentMethod.id} adyen-delete-button">
+                                        class="adyen-confirm-delete-btn-{$storedPaymentMethod.id|escape:'htmlall':'UTF-8'} adyen-delete-button">
                                     {l s='Delete' mod='adyenofficial'}
                                 </button>
                             </div>

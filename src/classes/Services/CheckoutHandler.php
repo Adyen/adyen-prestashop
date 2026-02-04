@@ -16,35 +16,28 @@ use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Country;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\PaymentMethodCode;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\PaymentMethodResponse;
 use Adyen\Core\BusinessLogic\Domain\Payment\Exceptions\PaymentMethodDataEmptyException;
+use Adyen\Core\BusinessLogic\Domain\Payment\Models\MethodAdditionalData\Oney;
 use Adyen\Core\BusinessLogic\Domain\Payment\Models\PaymentMethod;
-use Cache;
 use Carrier;
 use Cart as PrestaCart;
-use Configuration;
-use Context;
 use Country as PrestaCountry;
 use Currency as PrestaCurrency;
 use Customer as PrestaCustomer;
 use Module;
-use PrestaShopDatabaseException;
-use PrestaShopException;
-use Tools;
 
 /**
  * Class CheckoutHandler
- *
- * @package AdyenPayment\Classes\Utility
  */
 class CheckoutHandler
 {
     /**
      * @param PrestaCart $cart
      *
-     * @return PaymentCheckoutConfigResponse | TranslatableErrorResponse
+     * @return PaymentCheckoutConfigResponse|TranslatableErrorResponse
      *
      * @throws InvalidCurrencyCode
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      */
     public static function getPaymentCheckoutConfig(PrestaCart $cart, float $discountAmount)
     {
@@ -54,7 +47,7 @@ class CheckoutHandler
         $customer = new PrestaCustomer($cart->id_customer);
         $shop = \Shop::getShop(\Context::getContext()->shop->id);
 
-        return CheckoutAPI::get()->checkoutConfig($cart->id_shop)->getPaymentCheckoutConfig(
+        return CheckoutAPI::get()->checkoutConfig((string) $cart->id_shop)->getPaymentCheckoutConfig(
             new PaymentCheckoutConfigRequest(
                 Amount::fromFloat(
                     $cart->getOrderTotal() - $discountAmount,
@@ -63,7 +56,7 @@ class CheckoutHandler
                     )
                 ),
                 $country->iso_code ? Country::fromIsoCode($country->iso_code) : null,
-                Context::getContext()->getTranslator()->getLocale(),
+                \Context::getContext()->getTranslator()->getLocale(),
                 $shop['domain'] . '_' . \Context::getContext()->shop->id . '_' . $cart->id_customer,
                 $customer->email,
                 $shop['name']
@@ -78,8 +71,8 @@ class CheckoutHandler
      * @return PaymentCheckoutConfigResponse
      *
      * @throws InvalidCurrencyCode
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      * @throws MissingActiveApiConnectionData
      * @throws MissingClientKeyConfiguration
      */
@@ -100,7 +93,7 @@ class CheckoutHandler
         \Context::getContext()->cart->id_carrier = $cart->id_carrier;
         \Context::getContext()->cart->update();
 
-        $expressCheckoutConfig = CheckoutAPI::get()->checkoutConfig($cart->id_shop)->getExpressPaymentCheckoutConfig(
+        $expressCheckoutConfig = CheckoutAPI::get()->checkoutConfig((string) $cart->id_shop)->getExpressPaymentCheckoutConfig(
             new PaymentCheckoutConfigRequest(
                 Amount::fromFloat(
                     $cart->getOrderTotal(true, PrestaCart::BOTH, null, $cart->id_carrier),
@@ -109,8 +102,8 @@ class CheckoutHandler
                     )
                 ),
                 $country->iso_code ?
-                    Country::fromIsoCode($country->iso_code) : Country::fromIsoCode(Context::getContext()->country->iso_code),
-                Context::getContext()->getTranslator()->getLocale(),
+                    Country::fromIsoCode($country->iso_code) : Country::fromIsoCode(\Context::getContext()->country->iso_code),
+                \Context::getContext()->getTranslator()->getLocale(),
                 $shop['domain'] . '_' . \Context::getContext()->shop->id . '_' . $cart->id_customer,
                 null,
                 null,
@@ -127,25 +120,25 @@ class CheckoutHandler
     }
 
     /**
-     * @throws PrestaShopDatabaseException
+     * @throws \PrestaShopDatabaseException
      */
     public static function getCarrierId(PrestaCart $cart): int
     {
-        if (Tools::getValue('controller') === 'paymentconfigexpresscheckout' ||
-            Tools::getValue('controller') === 'paymentproduct' ||
-            (Tools::getValue('controller') === 'payment' && !$cart->id_carrier)
+        if (\Tools::getValue('controller') === 'paymentconfigexpresscheckout'
+            || \Tools::getValue('controller') === 'paymentproduct'
+            || (\Tools::getValue('controller') === 'payment' && !$cart->id_carrier)
         ) {
             if ($cart->id_carrier) {
-                $carrier = new Carrier($cart->id_carrier);
+                $carrier = new \Carrier($cart->id_carrier);
 
                 if (self::isCarrierAvailable($cart, $carrier) && $carrier->active) {
                     return $cart->id_carrier;
                 }
             }
 
-            //Get the default carrier for current shop
-            $carrierId = (int)Configuration::get('PS_CARRIER_DEFAULT', null, null, $cart->id_shop);
-            $carrier = new Carrier($carrierId);
+            // Get the default carrier for current shop
+            $carrierId = (int) \Configuration::get('PS_CARRIER_DEFAULT', null, null, $cart->id_shop);
+            $carrier = new \Carrier($carrierId);
 
             if (self::isCarrierAvailable($cart, $carrier) && $carrier->active) {
                 return $carrierId;
@@ -153,17 +146,17 @@ class CheckoutHandler
 
             $address = new PrestaAddress($cart->id_address_delivery);
             $country = new PrestaCountry($address->id_country);
-            $carriers = Carrier::getCarriers(
-                Context::getContext()->language->id,
+            $carriers = \Carrier::getCarriers(
+                \Context::getContext()->language->id,
                 true,
                 false,
                 $country->id_zone,
                 null,
-                Carrier::ALL_CARRIERS
+                \Carrier::ALL_CARRIERS
             );
 
             foreach ($carriers as $carrier) {
-                $carrier = new Carrier((int)$carrier['id_carrier']);
+                $carrier = new \Carrier((int) $carrier['id_carrier']);
 
                 if (self::isCarrierAvailable($cart, $carrier)) {
                     return $carrier->id;
@@ -173,7 +166,7 @@ class CheckoutHandler
             return 0;
         }
 
-        return (int)$cart->id_carrier;
+        return (int) $cart->id_carrier;
     }
 
     /**
@@ -212,7 +205,7 @@ class CheckoutHandler
      *
      * @throws PaymentMethodDataEmptyException
      */
-    private static function getOneyMethods(array $paymentMethodsConfiguration, array $paymentMethodResponse): array
+    protected static function getOneyMethods(array $paymentMethodsConfiguration, array $paymentMethodResponse): array
     {
         $oneyMethods = [];
 
@@ -220,7 +213,9 @@ class CheckoutHandler
             foreach ($paymentMethodResponse as $response) {
                 if (PaymentMethodCode::isOneyMethod($response->getType())
                     && PaymentMethodCode::isOneyMethod($paymentMethod->getCode())) {
-                    foreach ($paymentMethod->getAdditionalData()->getSupportedInstallments() as $installment) {
+                    /** @var Oney $oneyAdditionalData */
+                    $oneyAdditionalData = $paymentMethod->getAdditionalData();
+                    foreach ($oneyAdditionalData->getSupportedInstallments() as $installment) {
                         if (strpos($response->getType(), $installment)) {
                             $oneyMethods[] = new PaymentMethod(
                                 $paymentMethod->getMethodId(),
@@ -252,21 +247,22 @@ class CheckoutHandler
      * Check if carrier is available for Adyen module.
      *
      * @param PrestaCart $cart
-     * @param Carrier $carrier
+     * @param \Carrier $carrier
      *
      * @return bool
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
+     *
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      */
-    private static function isCarrierAvailable(PrestaCart $cart, Carrier $carrier): bool
+    private static function isCarrierAvailable(PrestaCart $cart, \Carrier $carrier): bool
     {
         $address = new PrestaAddress($cart->id_address_delivery);
         $country = new PrestaCountry($address->id_country);
-        $availableCarriers = Carrier::getCarriersForOrder($country->id_zone, [], $cart);
+        $availableCarriers = \Carrier::getCarriersForOrder($country->id_zone, [], $cart);
         $isAvailable = false;
 
         foreach ($availableCarriers as $availableCarrier) {
-            if ((int)$availableCarrier['id_carrier'] === (int)$carrier->id) {
+            if ((int) $availableCarrier['id_carrier'] === (int) $carrier->id) {
                 $isAvailable = true;
             }
         }
@@ -274,9 +270,9 @@ class CheckoutHandler
         $sql = 'SELECT c.*
 				FROM `' . _DB_PREFIX_ . 'module_carrier` mc
 				LEFT JOIN `' . _DB_PREFIX_ . 'carrier` c ON c.`id_reference` = mc.`id_reference`
-				WHERE mc.`id_module` = ' . (int)Module::getModuleIdByName('adyenofficial') . '
+				WHERE mc.`id_module` = ' . (int) \Module::getModuleIdByName('adyenofficial') . '
 					AND c.`active` = 1
-					AND mc.id_shop = ' . (int)$cart->id_shop . '
+					AND mc.id_shop = ' . (int) $cart->id_shop . '
 					AND mc.id_reference = ' . $carrier->id_reference . '
 				ORDER BY c.`name` ASC';
 
