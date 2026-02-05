@@ -34,7 +34,8 @@ class TransactionDetailsHandler
      *
      * @throws \Exception
      */
-    private static function getTransactionDetailsService(string $storeId): TransactionDetailsService {
+    private static function getTransactionDetailsService(string $storeId): TransactionDetailsService
+    {
         return StoreContext::doWithStore(
             $storeId,
             [ServiceRegister::getInstance(), 'getService'],

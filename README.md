@@ -10,7 +10,7 @@ We strongly encourage you to join us in contributing to this repository so every
 Read our [**contribution guidelines**](CONTRIBUTING.md) to find out how.
 
 ## Requirements
-This plugin supports PrestaShop versions 1.7.5.0 to 8.2.3. 
+This plugin supports PrestaShop versions 1.7.5.0 to 9.0.3. 
 
 ## Documentation
 Please find the relevant documentation for

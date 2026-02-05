@@ -100,7 +100,8 @@ class OrderModificationHandler
      *
      * @throws \Exception
      */
-    private static function getTransactionHistoryService(string $storeId): TransactionHistoryService {
+    private static function getTransactionHistoryService(string $storeId): TransactionHistoryService
+    {
         return StoreContext::doWithStore(
             $storeId,
             [ServiceRegister::getInstance(), 'getService'],
