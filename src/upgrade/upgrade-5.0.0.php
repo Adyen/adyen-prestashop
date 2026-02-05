@@ -373,7 +373,7 @@ function getLiveData(
     string $shopId,
     string $merchantAccount,
     string $liveApiKey,
-    string $liveUrlPrefix,
+    string $liveUrlPrefix
 ): ?ConnectionData {
     if (empty($liveApiKey) || empty($liveUrlPrefix)) {
         return null;

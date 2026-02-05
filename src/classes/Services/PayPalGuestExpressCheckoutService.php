@@ -33,7 +33,7 @@ class PayPalGuestExpressCheckoutService
         \Cart $cart,
         float $orderTotal,
         array $data = [],
-        array $giftCardsData = [],
+        array $giftCardsData = []
     ) {
         $currency = new PrestaCurrency((int) \Context::getContext()->currency->id);
 

@@ -29,7 +29,7 @@ class Url
         ?string $storeId = null,
         ?string $methodId = null,
         ?string $queueItemId = null,
-        bool $ajax = true,
+        bool $ajax = true
     ): string {
         $url = \Context::getContext()->link->getAdminLink($controller) . '&';
         $params = [

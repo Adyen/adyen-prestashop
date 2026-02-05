@@ -60,7 +60,7 @@ class AdyenOfficial extends PaymentModule
             $this->_errors[] = $e->getMessage();
             PrestaShopLogger::addLog(
                 'Adyen plugin installation failed. Error: ' . $e->getMessage() . ' . Trace: ' . $e->getTraceAsString(),
-                PrestaShopLogger::LOG_SEVERITY_LEVEL_ERROR
+                3
             );
 
             return false;

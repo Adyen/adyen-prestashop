@@ -103,7 +103,7 @@ class Version175 implements VersionHandler
         \OrderDetail $orderDetail,
         float $amount,
         float $amountWithoutTax,
-        int $quantityRefunded,
+        int $quantityRefunded
     ): void {
         $orderDetail->product_quantity_refunded += $quantityRefunded;
 
@@ -207,7 +207,7 @@ class Version175 implements VersionHandler
     private function calculateShippingAmount(
         \Order $order,
         \PrestaShopCollection $orderSlipCollection,
-        \OrderSlip $lastOrderSlip,
+        \OrderSlip $lastOrderSlip
     ): float {
         $refundedShipment = 0;
 

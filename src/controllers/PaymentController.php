@@ -159,7 +159,7 @@ class PaymentController extends \ModuleFrontController
         StartTransactionResponse $response,
         string $type,
         \Cart $cart,
-        Amount $amount,
+        Amount $amount
     ) {
         if ($this->isAjaxRequest() && PaymentMethodCode::scheme()->equals($type)) {
             SessionService::set('cartId', $cart->id);

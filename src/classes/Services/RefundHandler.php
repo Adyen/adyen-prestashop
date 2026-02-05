@@ -261,7 +261,7 @@ class RefundHandler
         \OrderDetail $orderDetail,
         int $quantity,
         float $amount,
-        float $amountWithoutTax,
+        float $amountWithoutTax
     ): void {
         \Db::getInstance()->insert('order_slip_detail', [
             'id_order_slip' => (int) $orderSlipId,

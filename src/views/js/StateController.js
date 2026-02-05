@@ -1,3 +1,17 @@
+/**
+ * 2026 Adyen
+ *
+ * LICENSE PLACEHOLDER
+ *
+ * This source file is subject to the Apache License 2.0
+ * that is bundled with this package in the file LICENSE.
+ * It is also available through the world-wide-web at this URL:
+ * http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ * @author Adyen <support@adyen.com>
+ * @copyright 2022 Adyen
+ * @license   http://www.apache.org/licenses/LICENSE-2.0.txt  Apache License 2.0
+ */
 if (!window.AdyenFE) {
     window.AdyenFE = {};
 }
@@ -294,7 +308,10 @@ if (!window.AdyenFE) {
                                         /** @param {Store|Store[]} response */
                                         (response) => {
                                             setStoreId(storeId);
-                                            location.reload();
+                                            const url = new URL(window.location.href);
+                                            url.searchParams.delete('conf');
+                                            url.searchParams.set('setShopContext', 's-' + storeId);
+                                            window.location.href = url.toString();
                                         }
                                     );
                                 }

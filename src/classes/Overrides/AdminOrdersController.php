@@ -41,7 +41,7 @@ class AdminOrdersController
         string $title,
         string $callback,
         string $keyColumnName,
-        string $newColumnName,
+        string $newColumnName
     ): array {
         $pspReferenceElement = [
             'title' => $title,

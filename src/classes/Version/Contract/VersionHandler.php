@@ -66,7 +66,7 @@ interface VersionHandler
         \OrderDetail $orderDetail,
         float $amount,
         float $amountWithoutTac,
-        int $quantityRefunded,
+        int $quantityRefunded
     ): void;
 
     /**

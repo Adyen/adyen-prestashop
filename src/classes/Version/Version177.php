@@ -97,7 +97,7 @@ class Version177 implements VersionHandler
         \OrderDetail $orderDetail,
         float $amount,
         float $amountWithoutTax,
-        int $quantityRefunded,
+        int $quantityRefunded
     ): void {
         $orderDetail->total_refunded_tax_incl += $amount;
         $orderDetail->total_refunded_tax_excl += $amountWithoutTax;

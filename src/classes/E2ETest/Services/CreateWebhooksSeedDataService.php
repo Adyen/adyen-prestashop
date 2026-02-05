@@ -254,7 +254,7 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
         array $orderItem,
         int $customerId,
         int $addressId,
-        int $currencyId,
+        int $currencyId
     ): array {
         $productId = $orderItem['productId'];
         $productData = $this->getProductTestProxy()->getProductData($productId)['product'];
@@ -310,7 +310,7 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
         array $orderItems,
         int $customerId,
         int $addressId,
-        int $currencyId,
+        int $currencyId
     ): array {
         $data = $this->readFomXMLFile('create_cart_two_products');
         $data = str_replace(

@@ -238,7 +238,7 @@ class MigrateTransactionHistoryTask extends Task
     private function updateTransactionHistoryWith(
         TransactionHistory $transactionHistory,
         array $notification,
-        array $order,
+        array $order
     ) {
         $webhook = $this->transformNotificationToWebhook($notification, $order, $transactionHistory);
 
@@ -272,7 +272,7 @@ class MigrateTransactionHistoryTask extends Task
     private function transformNotificationToWebhook(
         array $notification,
         array $order,
-        TransactionHistory $transactionHistory,
+        TransactionHistory $transactionHistory
     ): Webhook {
         $mode = \ConfigurationCore::get('ADYEN_MODE', null, null, $order['id_shop']);
 
