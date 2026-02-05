@@ -371,7 +371,7 @@ class BaseRepository implements RepositoryInterface
         $values = array_map(
             function ($item) {
                 if (is_string($item)) {
-                    return "'$item'";
+                    return "'" . pSQL($item) . "'";
                 }
 
                 return "'" . IndexHelper::castFieldValue($item, is_int($item) ? 'integer' : 'double') . "'";
@@ -441,7 +441,7 @@ class BaseRepository implements RepositoryInterface
         if (in_array($condition->getOperator(), [Operators::NOT_IN, Operators::IN], true)) {
             $values = array_map(function ($item) {
                 if (is_string($item)) {
-                    return "'$item'";
+                    return "'" . pSQL($item) . "'";
                 }
 
                 if (is_int($item)) {
@@ -559,7 +559,7 @@ class BaseRepository implements RepositoryInterface
     private function unserializeEntity(string $data): Entity
     {
         $jsonEntity = json_decode($data, true);
-        if (array_key_exists('class_name', $jsonEntity)) {
+        if (array_key_exists('class_name', $jsonEntity) && is_subclass_of($jsonEntity['class_name'], Entity::class)) {
             $entity = new $jsonEntity['class_name']();
         } else {
             $entity = new $this->entityClass();
