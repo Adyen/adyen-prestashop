@@ -150,8 +150,8 @@ function migratePaymentMethodConfigs(array $migratedShops)
             $oneyInstallments = $checkoutProxy->getAvailablePaymentMethods($request);
             $oneyEnabledInstallments = [];
 
-            foreach ($oneyInstallments as $installment) {
-                $oneyEnabledInstallments[] = $oneyInstallmentsMap[$installment];
+            foreach ($oneyInstallments->getPaymentMethodsResponse() as $installment) {
+                $oneyEnabledInstallments[] = $oneyInstallmentsMap[$installment->getType()];
             }
 
             $oneyIsConfigured = false;
@@ -217,11 +217,11 @@ function migratePaymentMethodConfigs(array $migratedShops)
 function migrateApiCredentialsForShop(): bool
 {
     $storeId = StoreContext::getInstance()->getStoreId();
-    $mode = ConfigurationCore::get('ADYEN_MODE', null, null, $storeId);
-    $merchantAccount = ConfigurationCore::get('ADYEN_MERCHANT_ACCOUNT', null, null, $storeId);
+    $mode = ConfigurationCore::get('ADYEN_MODE', null, null, (int) $storeId);
+    $merchantAccount = ConfigurationCore::get('ADYEN_MERCHANT_ACCOUNT', null, null, (int) $storeId);
     $ivLength = openssl_cipher_iv_length('aes-256-ctr');
-    $testApiKeyEncrypted = ConfigurationCore::get('ADYEN_APIKEY_TEST', null, null, $storeId);
-    $liveApiKeyEncrypted = ConfigurationCore::get('ADYEN_APIKEY_LIVE', null, null, $storeId);
+    $testApiKeyEncrypted = ConfigurationCore::get('ADYEN_APIKEY_TEST', null, null, (int) $storeId);
+    $liveApiKeyEncrypted = ConfigurationCore::get('ADYEN_APIKEY_LIVE', null, null, (int) $storeId);
     $hex = Tools::substr($testApiKeyEncrypted, 0, $ivLength * 2);
     $iv = hex2bin($hex);
     $testApiKey = openssl_decrypt(
@@ -240,7 +240,7 @@ function migrateApiCredentialsForShop(): bool
         0,
         $iv
     );
-    $liveUrlPrefix = ConfigurationCore::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX', null, null, $storeId);
+    $liveUrlPrefix = ConfigurationCore::get('ADYEN_LIVE_ENDPOINT_URL_PREFIX', null, null, (int) $storeId);
 
     if (empty($mode) || empty($merchantAccount)) {
         return false;
@@ -548,7 +548,10 @@ function removeFiles(string $installPath)
  */
 function getProxy(ConnectionSettings $connectionSettings): Proxy
 {
-    return ProxyFactory::makeProxy(Proxy::class, $connectionSettings);
+    /** @var Proxy $proxy */
+    $proxy = ProxyFactory::makeProxy(Proxy::class, $connectionSettings);
+
+    return $proxy;
 }
 
 /**
