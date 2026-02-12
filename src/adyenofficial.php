@@ -1,5 +1,7 @@
 <?php
 
+use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
+
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -536,6 +538,8 @@ class AdyenOfficial extends PaymentModule
      * Loads CSS and JS files on checkout page.
      *
      * @return void
+     *
+     * @throws RepositoryClassException
      */
     public function hookActionFrontControllerSetMedia()
     {
@@ -565,7 +569,7 @@ class AdyenOfficial extends PaymentModule
             }
         }
 
-        if ($this->context->controller->php_self === 'cart') {
+        if ($this->context->controller->php_self === 'cart' && $this->verifyIfExpressCheckoutShouldBeDisplayed()) {
             $this->getContext()->controller->addJS(
                 $this->getPathUri() . 'views/js/front/adyen-cart-express-checkout.js'
             );
@@ -578,7 +582,7 @@ class AdyenOfficial extends PaymentModule
             }
         }
 
-        if ($this->context->controller->php_self === 'product') {
+        if ($this->context->controller->php_self === 'product' && $this->verifyIfExpressCheckoutShouldBeDisplayed()) {
             $this->getContext()->controller->addJS(
                 $this->getPathUri() . 'views/js/front/adyen-product-express-checkout.js'
             );
