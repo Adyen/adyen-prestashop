@@ -1,7 +1,5 @@
 <?php
 
-use Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException;
-
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -539,7 +537,7 @@ class AdyenOfficial extends PaymentModule
      *
      * @return void
      *
-     * @throws RepositoryClassException
+     * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      */
     public function hookActionFrontControllerSetMedia()
     {
