@@ -1,4 +1,8 @@
 $(document).ready(function () {
+    if (!isPaymentStepCurrent()) {
+        return;
+    }
+
     let submitButtonReplacingComponents = ['applepay', 'amazonpay', 'paywithgoogle', 'googlepay', 'paypal'];
     let divPlaceOrder = document.getElementById('payment-confirmation');
     let placeOrder = $(divPlaceOrder).find('[type=submit]');
@@ -17,7 +21,6 @@ $(document).ready(function () {
     let minorTotalDiscount = 0;
     let remainingAmount = -1;
     let orderTotalAmount = document.getElementsByClassName('adyen-order-total-amount')[0];
-    let prestaVersion = document.querySelector('[name=adyen-presta-version]').value;
 
     checkoutController = getCheckoutController(document.getElementsByClassName('adyen-config-url')[0].value);
 
@@ -441,5 +444,11 @@ $(document).ready(function () {
         }
 
         mountComponent(paymentForm);
+    }
+
+    function isPaymentStepCurrent() {
+        const current = document.querySelector('.checkout-step.-current');
+
+        return current && current.id === 'checkout-payment-step';
     }
 })

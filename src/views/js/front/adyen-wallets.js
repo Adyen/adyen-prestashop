@@ -1,4 +1,8 @@
 $(document).ready(function () {
+    if (!isPaymentStepCurrent()) {
+        return;
+    }
+
     let submitButtonReplacingComponents = ['applepay', 'amazonpay', 'paywithgoogle', 'googlepay', 'paypal'],
         checkoutController = null,
         checkoutConfigUrl = document.getElementsByClassName('adyen-config-url')[0],
@@ -212,5 +216,11 @@ $(document).ready(function () {
                 }
             });
         });
+    }
+
+    function isPaymentStepCurrent() {
+        const current = document.querySelector('.checkout-step.-current');
+
+        return current && current.id === 'checkout-payment-step';
     }
 })
