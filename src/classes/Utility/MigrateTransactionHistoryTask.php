@@ -376,7 +376,7 @@ class MigrateTransactionHistoryTask extends Task
         $query = new \DbQuery();
         $query->select('*')
             ->from('adyen_notification', 'notification')
-            ->where('notification.merchant_reference = ' . $orderId)
+            ->where('notification.merchant_reference = ' . pSQL($orderId))
             ->where('notification.done = 0')
             ->orderBy('entity_id');
 
@@ -395,7 +395,7 @@ class MigrateTransactionHistoryTask extends Task
         $query = new \DbQuery();
         $query->select('*')
             ->from('adyen_notification', 'notification')
-            ->where('notification.merchant_reference = ' . $orderId)
+            ->where('notification.merchant_reference = ' . pSQL($orderId))
             ->where('notification.done = 1')
             ->orderBy('entity_id');
 
