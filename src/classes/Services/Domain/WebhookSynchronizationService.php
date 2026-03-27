@@ -27,6 +27,10 @@ class WebhookSynchronizationService extends CoreWebhookSynchronizationService
             return false;
         }
 
+        if ($webhook->getMerchantReference() === ''){
+            return false;
+        }
+
         $transactionHistory = $this->transactionHistoryService->getTransactionHistory($webhook->getMerchantReference());
         if (
             $webhook->getEventCode() !== EventCodes::AUTHORISATION
