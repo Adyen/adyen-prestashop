@@ -20,7 +20,7 @@ use AdyenPayment\Classes\SurchargeCalculator;
 use AdyenPayment\Classes\Utility\SessionService;
 use AdyenPayment\Classes\Utility\Url;
 use AdyenPayment\Classes\Version\Contract\VersionHandler;
-use Order;
+use Configuration;
 
 class PaymentController extends \ModuleFrontController
 {
@@ -281,6 +281,8 @@ class PaymentController extends \ModuleFrontController
 
         $inProgressPaymentId = AdminAPI::get()->orderMappings((string) $cart->id_shop)
             ->getOrderStatusMap()->toArray()['inProgress'];
+
+        $inProgressPaymentId = (int)$inProgressPaymentId ?: Configuration::get('PS_OS_PREPARATION');
 
         // refresh delivery option list because of guest express checkout
         $cart->getDeliveryOptionList(new \Country($cart->id_address_delivery), true);
