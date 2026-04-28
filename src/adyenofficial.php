@@ -1168,7 +1168,7 @@ class AdyenOfficial extends PaymentModule
     }
 
     /**
-     * Returns Adyen module controller URLs.
+     * Returns Adyen module controller  URLs.
      *
      * @return array
      *
