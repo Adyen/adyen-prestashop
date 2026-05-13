@@ -75,9 +75,9 @@ class AdyenOfficialPaymentProductModuleFrontController extends PaymentController
         foreach ($products as $product) {
             $cart->deleteProduct(
                 (int) $product['id_product'],
-                $product['id_product_attribute'] ? (int) $product['id_product_attribute'] : 0,
+                (int) ($product['id_product_attribute'] ?? 0),
                 0, // id_customization
-                $product['id_address_delivery'] ? (int) $product['id_address_delivery'] : 0
+                (int) ($product['id_address_delivery'] ?? 0)
             );
         }
         $cart->save();
