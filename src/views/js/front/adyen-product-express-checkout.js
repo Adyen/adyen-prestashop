@@ -37,31 +37,43 @@ $(document).ready(function () {
         }
 
         function getData() {
+            // CLASSIC theme
             let productDetailsElement = document.getElementById('product-details');
+            if (productDetailsElement && productDetailsElement.dataset && productDetailsElement.dataset.product) {
+                try {
+                    let d = JSON.parse(productDetailsElement.dataset.product);
+                    return JSON.stringify({
+                        'id_product': d.id_product,
+                        'id_product_attribute': d.id_product_attribute,
+                        'id_customization': d.id_customization,
+                        'quantity_wanted': d.quantity_wanted,
+                        'price_amount': d.price_amount
+                    });
+                } catch (error) {
+                    console.error('Error while parsing product JSON data:', error);
+                }
+            }
 
-            if (!productDetailsElement || !productDetailsElement.dataset.product) {
+            // HUMMINGBIRD theme
+            let idProductInput = document.getElementById('product_page_product_id');
+            if (!idProductInput) {
                 console.error('Error: Product details element or data not found.');
                 return JSON.stringify({});
             }
 
-            let productDetails;
+            let form = document.getElementById('add-to-cart-or-refresh');
+            let attrInput = form && form.querySelector('input[name="id_product_attribute"]');
+            let customizationInput = document.getElementById('product_customization_id');
+            let qtyInput = document.getElementById('quantity_wanted');
+            let priceMeta = document.querySelector('meta[property="product:price:amount"]');
 
-            try {
-                productDetails = JSON.parse(productDetailsElement.dataset.product);
-            } catch (error) {
-                console.error('Error while parsing product JSON data:', error);
-                return JSON.stringify({});
-            }
-
-            let product = {
-                'id_product': productDetails.id_product,
-                'id_product_attribute': productDetails.id_product_attribute,
-                'id_customization': productDetails.id_customization,
-                'quantity_wanted': productDetails.quantity_wanted,
-                'price_amount': productDetails.price_amount
-            };
-
-            return JSON.stringify(product);
+            return JSON.stringify({
+                'id_product': parseInt(idProductInput.value, 10) || 0,
+                'id_product_attribute': attrInput ? (parseInt(attrInput.value, 10) || 0) : 0,
+                'id_customization': customizationInput ? (parseInt(customizationInput.value, 10) || 0) : 0,
+                'quantity_wanted': qtyInput ? (parseInt(qtyInput.value, 10) || 1) : 1,
+                'price_amount': priceMeta ? (parseFloat(priceMeta.getAttribute('content')) || 0) : 0
+            });
         }
     }
 )

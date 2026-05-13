@@ -447,8 +447,18 @@ $(document).ready(function () {
     }
 
     function isPaymentStepCurrent() {
-        const current = document.querySelector('.checkout-step.-current');
+        // Classic theme
+        const classicCurrent = document.querySelector('.checkout-step.-current');
+        if (classicCurrent && classicCurrent.id === 'checkout-payment-step') {
+            return true;
+        }
 
-        return current && current.id === 'checkout-payment-step';
+        // Hummingbird theme
+        const paymentStep = document.getElementById('checkout-payment-step');
+        if (paymentStep && paymentStep.classList.contains('active')) {
+            return true;
+        }
+
+        return false;
     }
 })

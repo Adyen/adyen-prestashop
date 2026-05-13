@@ -3,6 +3,35 @@
     height: 55px;
 }
 
+.adyen-image .adyen-payment-method img {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+}
+
+.adyen-image .adyen-checkout__card__brands img,
+.adyen-image .adyen-checkout__card__brands__brand-wrapper img {
+    width: 100%;
+    height: auto;
+    display: block;
+    vertical-align: top;
+    margin: 0;
+}
+
+.adyen-image .payment-option__form-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-left: 0;
+}
+
+.adyen-image .payment-option__form-check > .payment-option__input,
+.adyen-image .payment-option__form-check > .form-check-input {
+    float: none;
+    margin-left: 0;
+    flex-shrink: 0;
+}
+
 .custom-radio.float-xs-left {
     float: none !important;
     display: inline-block;
@@ -32,6 +61,22 @@ body#checkout section.checkout-step .payment-options label {
     width: 50px;
     height: 50px;
     animation: loader-spin 0.8s linear infinite;
+}
+
+.page-order-confirmation [data-adyen-payment-action-container] {
+    display: flex;
+    justify-content: center;
+    padding: 1.5rem 1rem;
+}
+
+.page-order-confirmation [data-adyen-payment-action-container] > * {
+    max-width: 480px;
+    width: 100%;
+}
+
+#adyen-cancel-button {
+    display: block;
+    margin: 1rem auto 0;
 }
 
 #adyen-express-checkout-applepay > button,

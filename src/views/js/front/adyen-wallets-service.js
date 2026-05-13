@@ -134,14 +134,33 @@ var AdyenWallets = window.AdyenWallets || {};
         }
 
         function getConfigParams() {
-            let productDetails = document.getElementById('product-details') ?
-                JSON.parse(document.getElementById('product-details').dataset.product) : null;
-            if (productDetails) {
-                let id_product = productDetails.id_product,
-                    id_product_attribute = productDetails.id_product_attribute,
-                    id_customization = productDetails.id_customization,
-                    quantity_wanted = productDetails.quantity_wanted,
-                    price_amount = productDetails.price_amount;
+            // CLASSIC theme
+            let productDetailsEl = document.getElementById('product-details');
+            if (productDetailsEl && productDetailsEl.dataset && productDetailsEl.dataset.product) {
+                try {
+                    let d = JSON.parse(productDetailsEl.dataset.product);
+                    return '?id_product=' + d.id_product
+                        + '&id_product_attribute=' + d.id_product_attribute
+                        + '&id_customization=' + d.id_customization
+                        + '&quantity_wanted=' + d.quantity_wanted
+                        + '&price_amount=' + d.price_amount;
+                } catch (e) {}
+            }
+
+            // HUMMINGBIRD theme
+            let idProductInput = document.getElementById('product_page_product_id');
+            if (idProductInput) {
+                let form = document.getElementById('add-to-cart-or-refresh');
+                let attrInput = form && form.querySelector('input[name="id_product_attribute"]');
+                let customizationInput = document.getElementById('product_customization_id');
+                let qtyInput = document.getElementById('quantity_wanted');
+                let priceMeta = document.querySelector('meta[property="product:price:amount"]');
+
+                let id_product = parseInt(idProductInput.value, 10) || 0;
+                let id_product_attribute = attrInput ? (parseInt(attrInput.value, 10) || 0) : 0;
+                let id_customization = customizationInput ? (parseInt(customizationInput.value, 10) || 0) : 0;
+                let quantity_wanted = qtyInput ? (parseInt(qtyInput.value, 10) || 1) : 1;
+                let price_amount = priceMeta ? (parseFloat(priceMeta.getAttribute('content')) || 0) : 0;
 
                 return '?id_product=' + id_product
                     + '&id_product_attribute=' + id_product_attribute
