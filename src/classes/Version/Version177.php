@@ -2,6 +2,10 @@
 
 namespace AdyenPayment\Classes\Version;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use AdyenPayment\Classes\Version\Contract\VersionHandler;
 use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
 

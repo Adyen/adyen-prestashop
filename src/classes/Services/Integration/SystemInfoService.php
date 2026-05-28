@@ -2,6 +2,10 @@
 
 namespace AdyenPayment\Classes\Services\Integration;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Adyen\Core\BusinessLogic\Domain\InfoSettings\Models\SystemInfo;
 use Adyen\Core\BusinessLogic\Domain\Integration\SystemInfo\SystemInfoService as SystemInfoServiceInterface;
 

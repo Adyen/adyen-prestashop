@@ -2,6 +2,10 @@
 
 namespace AdyenPayment\Classes\Services;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use AdyenPayment\Classes\Repositories\LogsRepository;
 
 /**

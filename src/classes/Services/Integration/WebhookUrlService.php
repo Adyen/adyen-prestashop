@@ -2,6 +2,10 @@
 
 namespace AdyenPayment\Classes\Services\Integration;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Adyen\Core\BusinessLogic\Domain\Integration\Webhook\WebhookUrlService as WebhookUrlServiceInterface;
 use Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use Adyen\Core\Infrastructure\Configuration\ConfigurationManager;

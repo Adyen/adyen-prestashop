@@ -2,6 +2,10 @@
 
 namespace AdyenPayment\Classes\Repositories;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Adyen\Core\BusinessLogic\DataAccess\Interfaces\ConditionallyDeletes;
 use Adyen\Core\Infrastructure\Logger\Logger;
 use Adyen\Core\Infrastructure\ORM\QueryFilter\QueryFilter;

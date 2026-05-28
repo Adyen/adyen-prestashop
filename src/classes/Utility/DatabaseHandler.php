@@ -2,6 +2,10 @@
 
 namespace AdyenPayment\Classes\Utility;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class DatabaseHandler
  */

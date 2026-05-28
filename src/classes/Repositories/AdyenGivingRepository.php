@@ -2,6 +2,10 @@
 
 namespace AdyenPayment\Classes\Repositories;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Adyen\Core\BusinessLogic\DataAccess\AdyenGiving\Contracts\AdyenGivingRepository as BaseAdyenGivingRepository;
 
 /**

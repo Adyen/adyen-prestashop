@@ -2,6 +2,10 @@
 
 namespace AdyenPayment\Classes\Models;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Adyen\Core\Infrastructure\ORM\Configuration\EntityConfiguration;
 use Adyen\Core\Infrastructure\ORM\Configuration\IndexMap;
 use Adyen\Core\Infrastructure\ORM\Entity;

@@ -2,6 +2,10 @@
 
 namespace AdyenPayment\Classes\Models;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Doctrine\ORM\Mapping as ORM;
 
 /**

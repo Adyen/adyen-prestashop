@@ -2,6 +2,10 @@
 
 namespace AdyenPayment\Classes;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Adyen\Core\BusinessLogic\Bootstrap\SingleInstance;
 use Adyen\Core\BusinessLogic\BootstrapComponent;
 use Adyen\Core\BusinessLogic\DataAccess\AdyenGiving\Entities\DonationsData;

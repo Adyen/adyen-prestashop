@@ -2,6 +2,10 @@
 
 namespace AdyenPayment\Classes\Services\Integration;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Adyen\Core\BusinessLogic\Domain\Integration\Version\VersionService as VersionServiceInterface;
 use Adyen\Core\BusinessLogic\Domain\Version\Models\VersionInfo;
 use Adyen\Core\Infrastructure\Http\Exceptions\HttpRequestException;

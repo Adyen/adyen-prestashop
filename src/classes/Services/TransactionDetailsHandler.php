@@ -2,6 +2,10 @@
 
 namespace AdyenPayment\Classes\Services;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext;
 use Adyen\Core\BusinessLogic\Domain\TransactionHistory\Services\TransactionDetailsService;
 use Adyen\Core\Infrastructure\ServiceRegister;

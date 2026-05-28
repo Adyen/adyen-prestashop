@@ -2,6 +2,10 @@
 
 namespace AdyenPayment\Classes\Services\Integration;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Address;
 use AdyenPayment\Classes\Repositories\CartProductRepository;
 use AdyenPayment\Classes\Repositories\CountryRepository;

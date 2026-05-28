@@ -2,6 +2,10 @@
 
 namespace AdyenPayment\Classes;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Models\Amount\Amount;
 use Adyen\Core\BusinessLogic\Domain\Payment\Models\PaymentMethod;
 

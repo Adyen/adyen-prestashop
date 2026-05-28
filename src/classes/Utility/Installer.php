@@ -2,6 +2,10 @@
 
 namespace AdyenPayment\Classes\Utility;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Adyen\Core\BusinessLogic\Domain\Disconnect\Services\DisconnectService;
 use Adyen\Core\BusinessLogic\Domain\Integration\Store\StoreService as StoreServiceInterface;
 use Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext;

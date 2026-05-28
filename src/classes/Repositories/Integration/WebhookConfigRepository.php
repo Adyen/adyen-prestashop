@@ -2,6 +2,10 @@
 
 namespace AdyenPayment\Classes\Repositories\Integration;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Adyen\Core\BusinessLogic\DataAccess\Webhook\Entities\WebhookConfig as WebhookConfigEntity;
 use Adyen\Core\BusinessLogic\DataAccess\Webhook\Repositories\WebhookConfigRepository as BaseWebhookConfigRepository;
 use Adyen\Core\BusinessLogic\Domain\Webhook\Models\WebhookConfig;

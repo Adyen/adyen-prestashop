@@ -2,6 +2,10 @@
 
 namespace AdyenPayment\Classes\Repositories;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 class OrderRepository
 {
     public function getOrdersByIds(array $orderIds)

@@ -2,6 +2,10 @@
 
 namespace AdyenPayment\Classes\Repositories;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Adyen\Core\BusinessLogic\ORM\Interfaces\QueueItemRepository as BaseItemRepository;
 use Adyen\Core\Infrastructure\Logger\Logger;
 use Adyen\Core\Infrastructure\ORM\Entity;

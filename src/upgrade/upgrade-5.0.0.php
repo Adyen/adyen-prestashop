@@ -1,5 +1,9 @@
 <?php
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Adyen\Core\BusinessLogic\AdyenAPI\Exceptions\ConnectionSettingsNotFoundException;
 use Adyen\Core\BusinessLogic\AdyenAPI\Management\Connection\Http\Proxy;
 use Adyen\Core\BusinessLogic\AdyenAPI\Management\ProxyFactory;

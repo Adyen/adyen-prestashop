@@ -1,5 +1,9 @@
 <?php
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Adyen\Core\Infrastructure\ServiceRegister;
 use Adyen\Core\Infrastructure\TaskExecution\AsyncProcessStarterService;
 use Adyen\Core\Infrastructure\TaskExecution\Interfaces\AsyncProcessService;

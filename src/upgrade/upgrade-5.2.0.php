@@ -1,5 +1,9 @@
 <?php
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Adyen\Core\Infrastructure\Logger\Logger;
 use AdyenPayment\Classes\Bootstrap;
 

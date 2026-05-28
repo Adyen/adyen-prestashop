@@ -2,6 +2,10 @@
 
 namespace AdyenPayment\Classes\Repositories;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Adyen\Core\Infrastructure\Logger\Logger;
 use Adyen\Core\Infrastructure\ORM\Entity;
 use Adyen\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;

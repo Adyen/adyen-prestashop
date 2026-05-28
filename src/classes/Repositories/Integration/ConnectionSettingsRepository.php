@@ -2,6 +2,10 @@
 
 namespace AdyenPayment\Classes\Repositories\Integration;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Adyen\Core\BusinessLogic\DataAccess\Connection\Entities\ConnectionSettings as ConnectionSettingsEntity;
 use Adyen\Core\BusinessLogic\DataAccess\Connection\Repositories\ConnectionSettingsRepository as BaseConnectionSettingsRepository;
 use Adyen\Core\BusinessLogic\Domain\Connection\Exceptions\EmptyConnectionDataException;

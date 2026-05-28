@@ -2,6 +2,10 @@
 
 namespace AdyenPayment\Classes\Version\Contract;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Order;
 
 /**

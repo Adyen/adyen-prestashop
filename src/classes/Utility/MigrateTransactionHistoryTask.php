@@ -2,6 +2,10 @@
 
 namespace AdyenPayment\Classes\Utility;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Adyen\Core\BusinessLogic\DataAccess\TransactionHistory\Entities\TransactionHistory as TransactionEntity;
 use Adyen\Core\BusinessLogic\DataAccess\TransactionLog\Entities\TransactionLog;
 use Adyen\Core\BusinessLogic\Domain\Checkout\PaymentRequest\Exceptions\InvalidCurrencyCode;

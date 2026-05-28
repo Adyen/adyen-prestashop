@@ -2,6 +2,10 @@
 
 namespace AdyenPayment\Classes\Services\Integration\Logger;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Adyen\Core\Infrastructure\Configuration\Configuration;
 use Adyen\Core\Infrastructure\Logger\Interfaces\ShopLoggerAdapter;
 use Adyen\Core\Infrastructure\Logger\LogData;

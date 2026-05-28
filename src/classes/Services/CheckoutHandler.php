@@ -2,6 +2,10 @@
 
 namespace AdyenPayment\Classes\Services;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Address as PrestaAddress;
 use Adyen\Core\BusinessLogic\AdminAPI\Response\TranslatableErrorResponse;
 use Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutAPI;

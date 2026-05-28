@@ -2,6 +2,10 @@
 
 namespace AdyenPayment\Classes\Proxies;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Adyen\Core\BusinessLogic\AdyenAPI\Http\Proxy;
 use Adyen\Core\BusinessLogic\AdyenAPI\Http\Requests\HttpRequest;
 use Adyen\Core\Infrastructure\Http\Exceptions\HttpRequestException;

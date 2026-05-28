@@ -1,5 +1,9 @@
 <?php
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 class AdminOrdersController extends AdminOrdersControllerCore
 {
     private const PRESTA_ORDER_DRAFT_PAYMENT = 'payment';

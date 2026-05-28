@@ -2,6 +2,10 @@
 
 namespace AdyenPayment\Classes\Utility;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Adyen\Core\BusinessLogic\Domain\Multistore\StoreContext;
 
 /**
