@@ -31,7 +31,7 @@ class WebhookSynchronizationService extends CoreWebhookSynchronizationService
             return false;
         }
 
-        if ($webhook->getMerchantReference() === ''){
+        if ($webhook->getMerchantReference() === '') {
             return false;
         }
 
