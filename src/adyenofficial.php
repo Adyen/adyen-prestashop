@@ -1731,7 +1731,9 @@ class AdyenOfficial extends PaymentModule
             return false;
         }
 
-        return true;
+        return Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutAPI::get()
+            ->checkoutConfig($this->context->shop->id)
+            ->hasEnabledExpressCheckoutPaymentMethods(!Context::getContext()->customer->id);
     }
 
     /**
