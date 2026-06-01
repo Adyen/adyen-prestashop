@@ -538,6 +538,7 @@ class AdyenOfficial extends PaymentModule
      * @return void
      *
      * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
+     * @throws PrestaShopDatabaseException
      */
     public function hookActionFrontControllerSetMedia()
     {
@@ -1712,6 +1713,7 @@ class AdyenOfficial extends PaymentModule
      *
      * @throws Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      * @throws PrestaShopDatabaseException
+     * @throws Exception
      */
     private function verifyIfExpressCheckoutShouldBeDisplayed(): bool
     {
@@ -1733,7 +1735,7 @@ class AdyenOfficial extends PaymentModule
 
         return Adyen\Core\BusinessLogic\CheckoutAPI\CheckoutAPI::get()
             ->checkoutConfig($this->context->shop->id)
-            ->hasEnabledExpressCheckoutPaymentMethods(!Context::getContext()->customer->id);
+            ->hasEnabledExpressCheckoutPaymentMethods(!Context::getContext()->customer->id)->isEnabled();
     }
 
     /**
