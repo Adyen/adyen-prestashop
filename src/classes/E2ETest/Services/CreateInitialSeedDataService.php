@@ -3,6 +3,7 @@
 namespace AdyenPayment\Classes\E2ETest\Services;
 
 use Adyen\Core\BusinessLogic\E2ETest\Services\CreateIntegrationDataService;
+use Adyen\Core\Infrastructure\Configuration\Configuration;
 use Adyen\Core\Infrastructure\Http\Exceptions\HttpRequestException;
 use Adyen\Core\Infrastructure\Http\HttpClient;
 use Adyen\Core\Infrastructure\ORM\Exceptions\QueryFilterInvalidParamException;
@@ -50,6 +51,10 @@ class CreateInitialSeedDataService extends BaseCreateSeedDataService
         $this->createSubStores();
         $this->updateBaseUrlAndDefaultShopName();
         $this->getCreateIntegrationDataService()->saveTestHostname($this->baseUrl);
+
+        /** @var Configuration $configService */
+        $configService = ServiceRegister::getService(Configuration::CLASS_NAME);
+        $configService->setAsyncRequestTimeout(5000);
     }
 
     /**
