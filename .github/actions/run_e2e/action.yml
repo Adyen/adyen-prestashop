@@ -148,6 +148,13 @@ runs:
     - name: Change permissions
       shell: bash
       run: docker exec prestashop bash -c 'chmod -R 777 /var/www/html'
+    - name: Keep task runner awake
+      shell: bash
+      run: |
+        nohup bash -c 'while true; do
+        curl -s -o /dev/null "http://localhost:${{ inputs.PORT }}/" || true
+        sleep 5
+        done' > /dev/null 2>&1 &
     - name: Run Playwright tests
       shell: bash
       working-directory: ./tests
