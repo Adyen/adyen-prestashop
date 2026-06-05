@@ -138,6 +138,7 @@ runs:
 
     - name: Install common
       shell: bash
+      working-directory: ./tests
       run: npm install https://${{inputs.GH_PAT}}@github.com/${{inputs.COMMON_TEST_REPO}}#fix-tests
 
     - name: Install Playwright Browsers
