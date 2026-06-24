@@ -81,6 +81,7 @@ jobs:
           ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           PRESTASHOP_TEST_REPO: ${{secrets.PRESTASHOP_TEST_REPO}}
+          PRESTASHOP_TEST_REF: fix/MAIN-2660
           COMMON_TEST_REPO: ${{secrets.COMMON_TEST_REPO}}
           MYSQL: ${{matrix.mysql}}
           PAY_PAL_EMAIL: ${{secrets.PAY_PAL_EMAIL}}

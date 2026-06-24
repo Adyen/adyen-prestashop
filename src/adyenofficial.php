@@ -1633,6 +1633,7 @@ class AdyenOfficial extends PaymentModule
         $result['status'] = ucfirst(strtolower($status));
         $result['statusDate'] = $lastDetail['date'] ?? '';
         $result['merchantID'] = $lastDetail['merchantAccountCode'] ?? '';
+        $result['riskScore'] = $authorisationDetail['riskScore'] ?? '';
         $result['authorizationAdjustmentDate'] = $lastDetail['authorizationAdjustmentDate'] ?? '';
         $result['extendAuthorizationURL'] = $this->getAction('AdyenAuthorizationAdjustment', 'extendAuthorization',
             ['ajax' => true]);

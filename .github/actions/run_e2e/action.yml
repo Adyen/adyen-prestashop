@@ -54,8 +54,12 @@ inputs:
     description: "The Node Version that is used for the E2E Tests."
     required: true
   PRESTASHOP_TEST_REPO:
-    description: "The repository housing the shopware5 e2e tests"
+    description: "The repository housing the prestashop e2e tests"
     required: true
+  PRESTASHOP_TEST_REF:
+    description: "Branch/ref of the prestashop e2e test repo"
+    required: false
+    default: main
   COMMON_TEST_REPO:
     description: "The repository housing the common part of the e2e tests"
     required: true
@@ -123,7 +127,7 @@ runs:
         repository: ${{inputs.PRESTASHOP_TEST_REPO}}
         path: tests
         token: ${{ inputs.GH_PAT }}
-        ref: main
+        ref: ${{ inputs.PRESTASHOP_TEST_REF }}
 
     - name: Setup Node
       uses: actions/setup-node@v3
