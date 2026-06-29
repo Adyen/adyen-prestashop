@@ -17,8 +17,6 @@ use AdyenPayment\Classes\E2ETest\Http\CartTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\OrderTestProxy;
 use AdyenPayment\Classes\E2ETest\Http\ProductTestProxy;
 use AdyenPayment\Classes\Services\AdyenOrderStatusMapping;
-use Cart;
-use Shop;
 
 /**
  * Class CreateWebhooksSeedDataService
@@ -48,6 +46,7 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
      * @throws InvalidCaptureDelayException
      * @throws InvalidCaptureTypeException
      * @throws InvalidRetentionPeriodException
+     * @throws \PrestaShopException
      */
     public function createWebhookSeedData(string $customerId): array
     {
@@ -113,7 +112,7 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
             );
             $ordersMerchantReferenceAndAmount[$order['name']] = [
                 'merchantReference' => $cartId,
-                'amount' => $totalAmount * 100,
+                'amount' => (int) round($totalAmount * 100),
             ];
         }
 
@@ -153,6 +152,8 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
     private function createOrderAndUpdateState(array $cartData, string $totalAmount): void
     {
         $cart = $cartData['cart'];
+
+        $currentState = AdminAPI::get()->orderMappings($cart['id_shop'])->getOrderStatusMap()->toArray()['paid'];
         $data = $this->readFomXMLFile('create_order');
         $data = str_replace(
             [
@@ -176,7 +177,7 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
                 $cart['id_lang'],
                 $cart['id_customer'],
                 $cart['id_carrier'],
-                AdminAPI::get()->orderMappings($cart['id_shop'])->getOrderStatusMap()->toArray()['inProgress'],
+                $currentState,
                 $cart['id_shop_group'],
                 $cart['id_shop'],
                 $totalAmount,
@@ -212,7 +213,7 @@ class CreateWebhooksSeedDataService extends BaseCreateSeedDataService
                 $cart['id_lang'],
                 $cart['id_customer'],
                 $cart['id_carrier'],
-                AdminAPI::get()->orderMappings($cart['id_shop'])->getOrderStatusMap()->toArray()['inProgress'],
+                $currentState,
                 $cart['id_shop_group'],
                 $cart['id_shop'],
                 $totalAmount,

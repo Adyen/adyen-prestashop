@@ -65,7 +65,7 @@
     },
     {
       "isoCode": "USD",
-      "name": "United States Dollar",
+      "name": "US Dollar",
       "conversionRate": 1.09,
       "symbol": "$",
       "precision": 2

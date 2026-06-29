@@ -54,10 +54,7 @@ class PayPalGuestExpressCheckoutService
                     $orderTotal,
                     'paypal',
                     $giftCardsData,
-                    !empty($data['adyen-additional-data']) ? json_decode(
-                        $data['adyen-additional-data'],
-                        true
-                    ) : []
+                    $this->getAdditionalData($data)
                 )
             );
 
@@ -68,5 +65,27 @@ class PayPalGuestExpressCheckoutService
                 'pspReference' => $response->getLatestTransactionResponse()->getPspReference(),
             ]
         ));
+    }
+
+    /**
+     * Safely decodes the Adyen payment state data submitted from the storefront.
+     *
+     * Returns an empty array when the data is missing or malformed (e.g. when a custom theme
+     * interrupts the checkout JS before the component state data is submitted), so that a null
+     * is never passed to the strictly-typed StartPartialTransactionsRequest::$additionalData.
+     *
+     * @param array $data
+     *
+     * @return array
+     */
+    private function getAdditionalData(array $data): array
+    {
+        if (empty($data['adyen-additional-data'])) {
+            return [];
+        }
+
+        $additionalData = json_decode($data['adyen-additional-data'], true);
+
+        return is_array($additionalData) ? $additionalData : [];
     }
 }

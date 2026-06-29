@@ -101,6 +101,10 @@
             <strong>{l s='Merchant ID' mod='adyenofficial'} </strong>
         </p>
         <p>{html_entity_decode($merchantID|escape:'html':'UTF-8')} </p>
+        <p class="mb-1">
+            <strong>{l s='Risk score' mod='adyenofficial'} </strong>
+        </p>
+        <p>{html_entity_decode($riskScore|escape:'html':'UTF-8')} </p>
         {if $displayAdjustmentButton && $authorizationAdjustmentDate}
             <p class="mb-1">
                 <strong>{l s='Authorization adjustment date' mod='adyenofficial'} </strong>
