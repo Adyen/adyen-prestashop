@@ -123,6 +123,8 @@ runs:
         repository: ${{inputs.PRESTASHOP_TEST_REPO}}
         path: tests
         token: ${{ inputs.GH_PAT }}
+        ref: main
+
     - name: Setup Node
       uses: actions/setup-node@v3
       with:
