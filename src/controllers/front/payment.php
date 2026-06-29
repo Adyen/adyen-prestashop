@@ -65,10 +65,10 @@ class AdyenOfficialPaymentModuleFrontController extends PaymentController
     public function postProcess()
     {
         $data = Tools::getAllValues();
-        $additionalData = !empty(SessionService::get('stateData', false)) ?
-            SessionService::get('stateData', true) : [];
-        $giftCardsData = !empty(SessionService::get('giftCardsData', false)) ?
-            SessionService::get('giftCardsData', false) : [];
+        $additionalData = SessionService::get('stateData', true);
+        $additionalData = is_array($additionalData) ? $additionalData : [];
+        $giftCardsData = SessionService::get('giftCardsData', false);
+        $giftCardsData = is_array($giftCardsData) ? $giftCardsData : [];
         $data['adyen-additional-data'] = json_encode($additionalData);
 
         $type = array_key_exists('adyen-type', $data) ? $data['adyen-type'] : '';
