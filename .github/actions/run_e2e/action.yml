@@ -54,7 +54,7 @@ inputs:
     description: "The Node Version that is used for the E2E Tests."
     required: true
   PRESTASHOP_TEST_REPO:
-    description: "The repository housing the prestashop e2e tests"
+    description: "The repository housing the shopware5 e2e tests"
     required: true
   COMMON_TEST_REPO:
     description: "The repository housing the common part of the e2e tests"
@@ -146,13 +146,6 @@ runs:
     - name: Change permissions
       shell: bash
       run: docker exec prestashop bash -c 'chmod -R 777 /var/www/html'
-    - name: Keep task runner awake
-      shell: bash
-      run: |
-        nohup bash -c 'while true; do
-        curl -s -o /dev/null "http://localhost:${{ inputs.PORT }}/" || true
-        sleep 5
-        done' > /dev/null 2>&1 &
     - name: Run Playwright tests
       shell: bash
       working-directory: ./tests
