@@ -40,7 +40,7 @@
     "php": ">=7.2 <8.5",
     "ext-json": "*",
     "ext-zip": "*",
-    "adyen/integration-core": "dev-fix/CS-8270-presta",
+    "adyen/integration-core": "2.1.19",
     "ext-simplexml": "*",
     "ext-openssl": "*"
   },
