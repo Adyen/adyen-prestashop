@@ -56,7 +56,7 @@ class Version175 implements VersionHandler
 
         /** @var \OrderSlip $lastOrderSlip */
         $lastOrderSlip = $orderSlipCollection[count($orderSlipCollection) - 1];
-        $productsAmount = $lastOrderSlip->total_products_tax_incl;
+        $productsAmount = $lastOrderSlip->total_products_tax_incl - $this->getVoucherDiscount($order);
         $shippingAmount = $this->calculateShippingAmount($order, $orderSlipCollection, $lastOrderSlip);
 
         return $productsAmount + $shippingAmount;
@@ -196,6 +196,30 @@ class Version175 implements VersionHandler
             getAdminLink('AdminOrders', false) . '&id_order=' . $id . '&token=' . \Tools::getAdminTokenLite(
                 'AdminOrders'
             ) . '&vieworder';
+    }
+
+    /**
+     * @param \Order $order
+     *
+     * @return float
+     */
+    private function getVoucherDiscount(\Order $order): float
+    {
+        if ($order->total_discounts <= 0) {
+            return 0.0;
+        }
+
+        if ((int) \Tools::getValue('refund_voucher_off') !== 1) {
+            return 0.0;
+        }
+
+        // With TaxMethod unset PrestaShop passes $add_tax = true and already subtracts
+        // the discount from total_products_tax_incl itself, so there is nothing to correct.
+        if (!\Tools::getValue('TaxMethod')) {
+            return 0.0;
+        }
+
+        return (float) \Tools::getValue('order_discount_price');
     }
 
     /**

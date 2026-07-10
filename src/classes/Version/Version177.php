@@ -8,6 +8,7 @@ if (!defined('_PS_VERSION_')) {
 
 use AdyenPayment\Classes\Version\Contract\VersionHandler;
 use PrestaShop\PrestaShop\Adapter\SymfonyContainer;
+use PrestaShop\PrestaShop\Core\Domain\Order\VoucherRefundType;
 
 /**
  * Class Version177. Used from PrestaShop 1.7.7.x+.
@@ -54,7 +55,9 @@ class Version177 implements VersionHandler
         /** @var \OrderSlip $lastOrderSlip */
         $lastOrderSlip = $order->getOrderSlipsCollection()->getLast();
 
-        return $lastOrderSlip->total_products_tax_incl + $lastOrderSlip->shipping_cost_amount;
+        return $lastOrderSlip->total_products_tax_incl
+            - $this->getVoucherDiscount($order)
+            + $lastOrderSlip->shipping_cost_amount;
     }
 
     /**
@@ -169,6 +172,47 @@ class Version177 implements VersionHandler
 
         return rtrim(\Context::getContext()->link->getBaseLink(), '/') . SymfonyContainer::getInstance()->get('router')
                 ->generate('admin_orders_view', ['orderId' => $id]);
+    }
+
+    /**
+     * @param \Order $order
+     *
+     * @return float
+     */
+    private function getVoucherDiscount(\Order $order): float
+    {
+        if ((float) $order->total_discounts <= 0) {
+            return 0.0;
+        }
+
+        $refundData = \Tools::getValue('cancel_product');
+        $voucherRefundType = (int) (is_array($refundData) && isset($refundData['voucher_refund_type'])
+            ? $refundData['voucher_refund_type']
+            : VoucherRefundType::PRODUCT_PRICES_EXCLUDING_VOUCHER_REFUND);
+
+        if ($voucherRefundType !== VoucherRefundType::PRODUCT_PRICES_EXCLUDING_VOUCHER_REFUND) {
+            return 0.0;
+        }
+
+        // In tax-excluded display mode PrestaShop already subtracts the discount
+        // from total_products_tax_incl itself, so there is nothing to correct.
+        if (!$this->isTaxIncludedInOrder($order)) {
+            return 0.0;
+        }
+
+        return (float) $order->total_discounts;
+    }
+
+    /**
+     * @param \Order $order
+     *
+     * @return bool
+     */
+    private function isTaxIncludedInOrder(\Order $order): bool
+    {
+        $customer = new \Customer((int) $order->id_customer);
+
+        return \Group::getPriceDisplayMethod((int) $customer->id_default_group) === PS_TAX_INC;
     }
 
     /**
