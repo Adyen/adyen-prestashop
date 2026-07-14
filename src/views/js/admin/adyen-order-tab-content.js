@@ -7,9 +7,9 @@ $(document).ready(function () {
     let refundsSupported = $('input[name="adyen-refund-supported"]');
     let refund = false;
 
-    for (let supported of refundsSupported) {
-        refund = refund || supported.value;
-    }
+    refundsSupported.each(function () {
+        refund = refund || this.value;
+    });
 
     if (!refund) {
         disableRefundButtons()
