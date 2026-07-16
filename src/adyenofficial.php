@@ -19,7 +19,7 @@ class AdyenOfficial extends PaymentModule
     {
         $this->name = 'adyenofficial';
         $this->tab = 'payments_gateways';
-        $this->version = '7.4.5';
+        $this->version = '7.4.6';
 
         $this->author = $this->l('Adyen');
         $this->need_instance = 0;
@@ -537,7 +537,7 @@ class AdyenOfficial extends PaymentModule
      *
      * @return void
      *
-     * @throws \Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
+     * @throws Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
      * @throws PrestaShopDatabaseException
      */
     public function hookActionFrontControllerSetMedia()
