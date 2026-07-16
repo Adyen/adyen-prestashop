@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Clone Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -23,7 +23,7 @@ jobs:
         run: |
           mkdir -p ~/.build
       - name: Mount Build Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           key: cache-plugin-${{ github.run_id }}
           path: ~/.build
@@ -54,12 +54,12 @@ jobs:
             device: 'Desktop Firefox'
     steps:
       - name: Clone Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           path: main
 
       - name: Mount Build Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           key: cache-plugin-${{ github.run_id }}
           path: ~/.build

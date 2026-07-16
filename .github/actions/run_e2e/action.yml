@@ -118,7 +118,7 @@ runs:
       shell: bash
       run: docker logs prestashop
     - name: Clone Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v6
       with:
         repository: ${{inputs.PRESTASHOP_TEST_REPO}}
         path: tests
@@ -126,7 +126,7 @@ runs:
         ref: main
 
     - name: Setup Node
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v6
       with:
         node-version: ${{ inputs.NODE }}
 
@@ -169,7 +169,7 @@ runs:
         PAY_PAL_PASSWORD: ${{ inputs.PAY_PAL_PASSWORD }}
         BROWSER: ${{ inputs.BROWSER }}
         DEVICE: ${{ inputs.DEVICE }}
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v6
       if: always()
       with:
         name: playwright-report-Prestashop-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}-Browser-${{inputs.BROWSER}}
@@ -183,19 +183,19 @@ runs:
       shell: bash
       run: docker exec db bash -c "mysql -h 127.0.0.1 -u root -pprestashop prestashop -e \"SELECT ps_log.message, ps_log.date_add, ps_log.date_upd FROM ps_log;\"" >& ./integrationLogs.log
       if: always()
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v6
       if: always()
       with:
         name: php-error-log-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}-Browser-${{inputs.BROWSER}}
         path: ./error/
         retention-days: 30
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v6
       if: always()
       with:
         name: docker-error-log-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}-Browser-${{inputs.BROWSER}}
         path: ./dockerLogs.log
         retention-days: 30
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v6
       if: always()
       with:
         name: integration-error-log-${{ inputs.PRESTASHOP }}-PHP-${{ inputs.PHP }}-Browser-${{inputs.BROWSER}}
