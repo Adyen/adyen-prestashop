@@ -19,7 +19,7 @@ class AdyenOfficial extends PaymentModule
     {
         $this->name = 'adyenofficial';
         $this->tab = 'payments_gateways';
-        $this->version = '7.4.6';
+        $this->version = '7.4.7';
 
         $this->author = $this->l('Adyen');
         $this->need_instance = 0;
@@ -1624,6 +1624,24 @@ class AdyenOfficial extends PaymentModule
             }
         }
 
+        if (!$payByLink->isEmpty()) {
+            foreach ($transactionDetails as $transactionDetail) {
+                foreach ($transactionDetail as $detail) {
+                    if (($detail['eventCode'] ?? '') !== Adyen\Core\BusinessLogic\Domain\ShopNotifications\Models\ShopEvents::PAYMENT_LINK_CREATED) {
+                        continue;
+                    }
+
+                    if (!$paymentLink) {
+                        $paymentLink = $detail['paymentLink'] ?? '';
+                    }
+
+                    if (!$shouldDisplayPaymentLink) {
+                        $shouldDisplayPaymentLink = $detail['displayPaymentLink'] ?? false;
+                    }
+                }
+            }
+        }
+
         $result['adyenPaymentLink'] = $paymentLink;
         $result['adyenGeneratePaymentLink'] = $this->getAction('AdyenPaymentLink', 'generatePaymentLink', ['ajax' => true]);
         $result['shouldDisplayPaymentLink'] = $shouldDisplayPaymentLink;
@@ -1638,7 +1656,7 @@ class AdyenOfficial extends PaymentModule
         $result['extendAuthorizationURL'] = $this->getAction('AdyenAuthorizationAdjustment', 'extendAuthorization',
             ['ajax' => true]);
         $result['authorizationAdjustmentAmount'] = $lastDetail['authorizationAdjustmentAmount'] ?? '0';
-        $result['displayAdjustmentButton'] = $authorizationAdjustment;
+        $result['displayAdjustmentButton'] = (bool) $lastAuthorization && $authorizationAdjustment;
         $result['orderId'] = $orderId;
 
         usort($sorted, static function ($a, $b) {
