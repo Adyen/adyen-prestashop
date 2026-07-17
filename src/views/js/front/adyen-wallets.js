@@ -161,9 +161,31 @@ $(document).ready(function () {
         });
     }
 
+    function isSameWalletType(savedType, selectedType) {
+        if (!savedType || !selectedType) {
+            return false;
+        }
+
+        if (savedType === selectedType) {
+            return true;
+        }
+
+        let googlePayAliases = ['googlepay', 'paywithgoogle'];
+
+        return googlePayAliases.includes(savedType) && googlePayAliases.includes(selectedType);
+    }
+
     function submitOrder() {
         checkoutController.getPaymentMethodStateData().then(state => {
             if (state.length === 0 || state.stateData.length === 0 || paymentStarted) {
+                return;
+            }
+            
+            let savedType = state.stateData.paymentMethod ? state.stateData.paymentMethod.type : '';
+            let matchesSelectedWallet = type
+                ? isSameWalletType(savedType, type)
+                : submitButtonReplacingComponents.includes(savedType);
+            if (!matchesSelectedWallet) {
                 return;
             }
 
