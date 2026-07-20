@@ -49,6 +49,19 @@ class AdyenOfficialPaymentConfigModuleFrontController extends ModuleFrontControl
 
         $config = CheckoutHandler::getPaymentCheckoutConfig($cart, $discountAmount);
 
+        $cartCustomer = new Customer((int) $cart->id_customer);
+        $isGuest = !Validate::isLoadedObject($cartCustomer) || $cartCustomer->isGuest();
+
+        if ($isGuest && $config->isSuccessful()) {
+            $configArray = $config->toArray();
+
+            if (isset($configArray['paymentMethodsConfiguration']['card'])) {
+                $configArray['paymentMethodsConfiguration']['card']['enableStoreDetails'] = false;
+            }
+
+            AdyenPrestaShopUtility::dieJsonArray($configArray);
+        }
+
         AdyenPrestaShopUtility::dieJson($config);
     }
 
