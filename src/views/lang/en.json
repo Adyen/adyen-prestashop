@@ -364,24 +364,6 @@
             "description": "Do you want to show Apple Pay Express Checkout on the product, cart, and checkout pages?"
           }
         },
-        "amazonPayFields": {
-          "publicKeyId": {
-            "label": "Amazon Pay public key ID",
-            "description": "Enter identifier of the Amazon Pay public key."
-          },
-          "merchantId": {
-            "label": "Amazon Pay merchant ID",
-            "description": "Enter identifier of the Amazon Pay merchant."
-          },
-          "storeId": {
-            "label": "Store ID",
-            "description": "Enter identifier of the store"
-          },
-          "displayButtonOn": {
-            "label": "Enable express checkout",
-            "description": "Do you want to show Amazon Pay Express Checkout on the product, cart, and checkout pages?"
-          }
-        },
         "googlePayFields": {
           "gatewayMerchantId": {
             "label": "Google Pay merchant gateway ID",

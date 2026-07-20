@@ -3,7 +3,7 @@ $(document).ready(function () {
         return;
     }
 
-    let submitButtonReplacingComponents = ['applepay', 'amazonpay', 'paywithgoogle', 'googlepay', 'paypal'];
+    let submitButtonReplacingComponents = ['applepay', 'paywithgoogle', 'googlepay', 'paypal'];
     let divPlaceOrder = document.getElementById('payment-confirmation');
     let placeOrder = $(divPlaceOrder).find('[type=submit]');
     let formConditions = document.getElementById('conditions-to-approve');

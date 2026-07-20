@@ -3,7 +3,7 @@ $(document).ready(function () {
         return;
     }
 
-    let submitButtonReplacingComponents = ['applepay', 'amazonpay', 'paywithgoogle', 'googlepay', 'paypal'],
+    let submitButtonReplacingComponents = ['applepay', 'paywithgoogle', 'googlepay', 'paypal'],
         checkoutController = null,
         checkoutConfigUrl = document.getElementsByClassName('adyen-config-url')[0],
         additionalDataUrl = document.getElementsByClassName('adyen-redirect-action-url')[0],
@@ -13,7 +13,6 @@ $(document).ready(function () {
         paymentData = null,
         type = '',
         url = new URL(location.href),
-        amazonCheckoutSessionId = url.searchParams.get('amazonCheckoutSessionId'),
         formConditions = document.getElementById('conditions-to-approve'),
         checkBox = $(formConditions).find('[name="conditions_to_approve[terms-and-conditions]"]'),
         paymentStarted = false,
@@ -24,25 +23,6 @@ $(document).ready(function () {
 
     function preventSubmit(event) {
         event.preventDefault(); // Prevents the form from being submitted for ApplePay button
-    }
-
-    if (amazonCheckoutSessionId) {
-        if (checkBox && !checkBox.is(':checked')) {
-            // If not checked, set it to checked
-            checkBox.prop('checked', true);
-        }
-
-        checkoutController = new AdyenComponents.CheckoutController({
-            "checkoutConfigUrl": checkoutConfigUrl.value,
-            "showPayButton": true,
-            "sessionStorage": sessionStorage,
-            "onStateChange": submitOrder,
-            "onAdditionalDetails": onAdditionalDetails,
-            "onPayButtonClick": onPayButtonClick,
-            "saveStateDataUrl": saveStateDataUrl + '?token=' + token,
-            "getStateDataUrl": getStateDataUrl + '?token=' + token
-        });
-        replacePlaceOrderButton('amazonpay');
     }
 
     checkBox.change(function (event) {
