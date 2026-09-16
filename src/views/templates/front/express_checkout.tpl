@@ -1,6 +1,6 @@
 {if $adyenShowExpressCheckout }
     <div id="adyen-express-checkout">
-        {assign var="adyenExpressCheckoutPaymentTypes" value=['applepay', 'amazonpay', 'paywithgoogle', 'paypal']}
+        {assign var="adyenExpressCheckoutPaymentTypes" value=['applepay', 'paywithgoogle', 'paypal']}
         {foreach $adyenExpressCheckoutPaymentTypes as $adyenPaymentMethodType}
             <div class="adyen-express-checkout-element"
                  id="adyen-express-checkout-{$adyenPaymentMethodType|escape:'html':'UTF-8'}">

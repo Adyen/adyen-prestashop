@@ -19,11 +19,11 @@ class AdyenOfficial extends PaymentModule
     {
         $this->name = 'adyenofficial';
         $this->tab = 'payments_gateways';
-        $this->version = '7.4.7';
+        $this->version = '7.5.0';
 
         $this->author = $this->l('Adyen');
         $this->need_instance = 0;
-        $this->ps_versions_compliancy = ['min' => '1.7.5.0', 'max' => '9.1.4'];
+        $this->ps_versions_compliancy = ['min' => '1.7.5.0', 'max' => '9.1.5'];
         $this->bootstrap = true;
 
         parent::__construct();

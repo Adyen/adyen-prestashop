@@ -66,42 +66,8 @@ var AdyenWallets = window.AdyenWallets || {};
                     "getStateDataUrl": getStateDataUrl + '?token=' + token
                 });
 
-                if (type === 'amazonpay' && getData !== undefined) {
-                    sessionStorage.amazonPayProductData = getData();
-                }
-
                 checkoutController[type].mount(type, checkoutElements[i]);
             }
-        }
-
-        function mountAmazon(getData) {
-            if (!document.getElementById('adyen-express-checkout')) {
-                return;
-            }
-
-            let checkoutElements = document.getElementsByClassName("adyen-express-checkout-element");
-
-            if (checkoutElements.length === 0) {
-                return;
-            }
-
-            let checkoutConfigUrl = document.getElementsByClassName('adyen-config-url')[0];
-            productData = getData;
-            checkoutController['amazonpay'] = new AdyenComponents.CheckoutController({
-                "checkoutConfigUrl": checkoutConfigUrl.value + getConfigParams(),
-                "showPayButton": true,
-                "sessionStorage": sessionStorage,
-                "onStateChange": (function (type) {
-                    return function () {
-                        submitOrder(type);
-                    }
-                })('amazonpay'),
-                "onAdditionalDetails": onAdditionalDetails,
-            });
-
-            let amazonTypeElement = document.getElementById("adyen-express-checkout-amazonpay");
-
-            checkoutController['amazonpay'].mount('amazonpay', amazonTypeElement);
         }
 
         function verifyIfComponentsShouldBeMounted() {
@@ -198,8 +164,7 @@ var AdyenWallets = window.AdyenWallets || {};
 
                 if (productData) {
                     data = {
-                        "product": (type === 'amazonpay' && sessionStorage.amazonPayProductData !== undefined)
-                            ? sessionStorage.amazonPayProductData : productData,
+                        'product': productData,
                         'adyenShippingAddress': shippingAddress,
                         'adyenBillingAddress': billingAddress,
                         'adyenEmail': email
@@ -551,7 +516,6 @@ var AdyenWallets = window.AdyenWallets || {};
         }
 
         this.mountElements = mountElements;
-        this.mountAmazon = mountAmazon;
         this.getAjaxUrlParam = getAjaxUrlParam;
     }
 
