@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9bd841cccecb0ac8428fdb0f3f8910e5",
+    "content-hash": "14711b2e4a3391aa30b8fce608aa21aa",
     "packages": [
         {
             "name": "adyen/integration-core",
-            "version": "2.1.19",
+            "version": "dev-fix/MAIN-2564",
             "source": {
                 "type": "git",
                 "url": "git@github.com:Adyen/adyen-php-plugin-core.git",
-                "reference": "a554afe220a9b7f6643da8256bf631cccb08f6f8"
+                "reference": "b3ac8b511bef378b1c17cb35a6d7b687f47dac54"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Adyen/adyen-php-plugin-core/zipball/a554afe220a9b7f6643da8256bf631cccb08f6f8",
-                "reference": "a554afe220a9b7f6643da8256bf631cccb08f6f8",
+                "url": "https://api.github.com/repos/Adyen/adyen-php-plugin-core/zipball/b3ac8b511bef378b1c17cb35a6d7b687f47dac54",
+                "reference": "b3ac8b511bef378b1c17cb35a6d7b687f47dac54",
                 "shasum": ""
             },
             "require": {
@@ -48,7 +48,7 @@
                 "proprietary"
             ],
             "description": "Core Adyen integration library",
-            "time": "2026-07-07T09:08:26+00:00"
+            "time": "2026-07-20T09:47:30+00:00"
         },
         {
             "name": "adyen/php-webhook-module",
@@ -1575,7 +1575,9 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {},
+    "stability-flags": {
+        "adyen/integration-core": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
@@ -1585,6 +1587,6 @@
         "ext-simplexml": "*",
         "ext-openssl": "*"
     },
-    "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "platform-dev": [],
+    "plugin-api-version": "2.2.0"
 }
