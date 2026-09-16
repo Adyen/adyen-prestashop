@@ -1,18 +1,12 @@
 $(document).ready(function () {
-        let url = new URL(location.href),
-            amazonCheckoutSessionId = url.searchParams.get('amazonCheckoutSessionId'),
-            adyenWalletsService = new AdyenWallets.AdyenWalletsService(),
+        let adyenWalletsService = new AdyenWallets.AdyenWalletsService(),
             prestaVersion = document.getElementsByClassName('adyen-presta-version')[0];
 
         if (prestaVersion && prestaVersion.value > '1.7.7') {
             moveExpressCheckoutButtons();
         }
 
-        if (amazonCheckoutSessionId) {
-            adyenWalletsService.mountAmazon(getData);
-        } else {
-            adyenWalletsService.mountElements(getData);
-        }
+        adyenWalletsService.mountElements(getData);
 
         $(document).ajaxComplete(function (event, request, settings) {
             let method = adyenWalletsService.getAjaxUrlParam('controller', settings.url);

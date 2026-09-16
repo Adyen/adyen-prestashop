@@ -51,13 +51,13 @@
 
 (function () {
     'use strict';
-    // Use for local testing only, Amazon pay requires globally accessible URL
+    // Use for local testing only
     const devOnlyConfig = {
         localShopDomain: '',
         globalReplacementDomain: ''
     };
 
-    const wallets = ['applepay', 'amazonpay', 'paywithgoogle', 'googlepay', 'paypal'],
+    const wallets = ['applepay', 'paywithgoogle', 'googlepay', 'paypal'],
         giftCards = [
             'auriga', 'babygiftcard', 'bloemengiftcard', 'cashcomgiftcard', 'eagleeye_voucher', 'entercard',
             'expertgiftcard', 'fashioncheque', 'fijncadeau', 'valuelink', 'fleuropbloemenbon', 'fonqgiftcard',
@@ -167,8 +167,7 @@
         let checkout,
             activeComponent,
             isStateValid = true,
-            sessionStorage = config.sessionStorage || window.sessionStorage,
-            amazonCheckoutSessionId = url.searchParams.get('amazonCheckoutSessionId');
+            sessionStorage = config.sessionStorage || window.sessionStorage;
 
         let googlePaymentDataCallbacks = {};
         if (config.requireAddress) {
@@ -179,14 +178,6 @@
         }
 
         let paymentMethodSpecificConfig = {
-            "amazonpay": {
-                "productType": 'PayOnly',
-                "checkoutMode": 'ProcessOrder',
-                "chargePermissionType": 'OneTime',
-                "onClick": handleOnClick,
-                "returnUrl": url.href,
-                "cancelUrl": url.href
-            },
             "paywithgoogle": {
                 onClick: handleOnClick,
                 isExpress: true,
@@ -247,19 +238,10 @@
         }
 
         if (config.amount) {
-            paymentMethodSpecificConfig['amazonpay']['amount'] = config.amount;
-            paymentMethodSpecificConfig['amazonpay']['currency'] = config.amount.currency;
-
             paymentMethodSpecificConfig['paypal']['amount'] = config.amount;
         }
 
-        if (amazonCheckoutSessionId) {
-            paymentMethodSpecificConfig['amazonpay']['amazonCheckoutSessionId'] = amazonCheckoutSessionId;
-            paymentMethodSpecificConfig['amazonpay']['showOrderButton'] = false;
-        }
-
         /**
-         *
          * @returns {Promise<AdyenCheckout>}
          */
         const getCheckoutInstance = async () => {
@@ -394,11 +376,6 @@
                 let paymentMethodConfig = findSpecificPaymentMethodConfig(paymentType) ||
                     findStoredPaymentMethodConfig(checkoutInstance, storedPaymentMethodId);
 
-                // Configuration on the checkout instance level does not work for amazonpay, copy it on component level
-                if ('amazonpay' === paymentType && checkoutInstance.options.paymentMethodsConfiguration[paymentType]) {
-                    paymentMethodConfig['configuration'] = checkoutInstance.options.paymentMethodsConfiguration[paymentType].configuration;
-                }
-
                 // If there is applepay specific configuration then set country code to configuration
                 if ('applepay' === paymentType &&
                     paymentMethodConfig) {
@@ -413,10 +390,6 @@
                 isStateValid = !!activeComponent.isValid && activeComponent.isValid;
 
                 config.onStateChange();
-
-                if (amazonCheckoutSessionId) {
-                    activeComponent.submit();
-                }
             });
         };
 
