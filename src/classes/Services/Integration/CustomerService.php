@@ -93,7 +93,7 @@ class CustomerService
         return $cart;
     }
 
-    public function saveAddresses($customer, $data)
+    public function saveAddresses($customer, $data): array
     {
         $billingAddress = json_decode($data['adyenBillingAddress']);
         $shippingAddress = json_decode($data['adyenShippingAddress']);

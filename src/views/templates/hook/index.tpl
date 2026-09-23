@@ -1,3 +1,4 @@
+{assign var="jsonScriptFlags" value=15}
 <!DOCTYPE html>
 <!--suppress HtmlUnknownAnchorTarget, HtmlUnknownTarget -->
 <html lang="en">
@@ -7,6 +8,37 @@
     <title>Adyen admin FE</title>
 </head>
 <body>
+{if isset($hasRequiredDependencies) && !$hasRequiredDependencies}
+    {* Resolver for the companion modules declared in module_dependencies.json. *}
+    <script src="https://assets.prestashop3.com/dst/mbo/v1/mbo-cdc-dependencies-resolver.umd.js"></script>
+    <div class="adl-ps-integration">
+        <div id="mbo-cdc-container"></div>
+    </div>
+
+    <script defer>
+        const renderMboCdcDependencyResolver = window?.mboCdcDependencyResolver?.render;
+
+        if (renderMboCdcDependencyResolver) {
+            renderMboCdcDependencyResolver({
+                ...{$requiredDependencies|json_encode:$jsonScriptFlags},
+                onDependenciesResolved: () => {
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                },
+                onDependencyResolved: (dependencyData) => console.log('Dependency installed', dependencyData),
+                onDependencyFailed: (dependencyData) => console.log('Failed to install dependency', dependencyData),
+                onDependenciesFailed: () => console.log('There are some errors'),
+            }, '#mbo-cdc-container');
+        }
+    </script>
+{/if}
+
+{if isset($urlAccountsCdn)}
+    <div class="adl-ps-integration">
+        <prestashop-accounts></prestashop-accounts>
+    </div>
+{/if}
 <!-- This is a main placeholder that should be used in all integrations -->
 <div id="adl-page" class="adl-page">
     <aside class="adl-sidebar"></aside>
@@ -36,8 +68,8 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         AdyenFE.translations = {
-            default: {$translations.default|json_encode},
-            current: {$translations.current|json_encode}
+            default: {$translations.default|json_encode:$jsonScriptFlags},
+            current: {$translations.current|json_encode:$jsonScriptFlags}
         };
 
         AdyenFE.utilities.showLoader();
@@ -94,7 +126,7 @@
             downloadVersionUrl: 'https://github.com/Adyen/adyen-prestashop/releases',
             pageConfiguration: pageConfiguration,
             templates: {
-                'sidebar': {$sidebar|json_encode}
+                'sidebar': {$sidebar|json_encode:$jsonScriptFlags}
             }
         });
 
@@ -102,5 +134,18 @@
         AdyenFE.utilities.hideLoader();
     });
 </script>
+
+{if isset($contextPsAccounts)}
+    <script>
+        window.contextPsAccounts = {$contextPsAccounts|json_encode:$jsonScriptFlags};
+    </script>
+{/if}
+
+{if isset($urlAccountsCdn)}
+    <script src="{$urlAccountsCdn|escape:'htmlall':'UTF-8'}"></script>
+    <script>
+        window?.psaccountsVue?.init();
+    </script>
+{/if}
 </body>
 </html>

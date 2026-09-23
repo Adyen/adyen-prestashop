@@ -37,12 +37,15 @@
     }
   },
   "require": {
-    "php": ">=7.2 <8.5",
+    "php": ">=7.2 <8.6",
     "ext-json": "*",
     "ext-zip": "*",
     "adyen/integration-core": "2.1.19",
     "ext-simplexml": "*",
-    "ext-openssl": "*"
+    "ext-openssl": "*",
+    "prestashop/module-lib-service-container": "^2.0",
+    "prestashop/prestashop-accounts-installer": "^1.0",
+    "prestashop/module-lib-mbo-installer": "^3.0"
   },
   "require-dev": {
     "phpunit/phpunit": "^8.5"

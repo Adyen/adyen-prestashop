@@ -1,5 +1,20 @@
 #!/bin/bash
 
+set -euo pipefail
+
+require_tools() {
+    local missing=0
+    for tool in "$@"; do
+        if ! command -v "$tool" >/dev/null 2>&1; then
+            echo -e "\e[31mERROR:\e[0m required tool '$tool' is not installed." >&2
+            missing=1
+        fi
+    done
+    [ "$missing" -eq 0 ] || exit 1
+}
+
+require_tools composer php zip
+
 # Cleanup any leftovers
 echo -e "\e[32mCleaning up...\e[0m"
 rm -rf ./adyenofficial.zip

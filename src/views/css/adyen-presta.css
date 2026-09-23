@@ -1,3 +1,26 @@
 #content.bootstrap .adl-page h3 {
     margin: 0;
 }
+
+.adl-ps-integration {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 24px 24px 0 24px;
+}
+
+.adl-ps-integration:empty {
+    display: none;
+}
+
+@media (max-width: 767.98px) {
+    .adl-ps-integration {
+        padding: 12px 12px 0 12px;
+    }
+}
+
+#adl-page img,
+#adl-page svg {
+    display: inline-block;
+    vertical-align: baseline;
+}

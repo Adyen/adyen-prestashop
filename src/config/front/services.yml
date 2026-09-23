@@ -1,0 +1,5 @@
+# Required placeholder: the service container resolves config/<context>/services.yml and throws
+# when the file is absent. The services above are back office only.
+services:
+  _defaults:
+    public: true

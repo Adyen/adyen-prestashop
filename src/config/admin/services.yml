@@ -1,0 +1,14 @@
+services:
+  _defaults:
+    public: true
+
+  # Minimum ps_accounts version required by the presenter and services used below.
+  adyenofficial.ps_accounts_installer:
+    class: 'PrestaShop\PsAccountsInstaller\Installer\Installer'
+    arguments:
+      - '7.0.9'
+
+  adyenofficial.ps_accounts_facade:
+    class: 'PrestaShop\PsAccountsInstaller\Installer\Facade\PsAccounts'
+    arguments:
+      - '@adyenofficial.ps_accounts_installer'

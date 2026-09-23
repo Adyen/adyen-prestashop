@@ -13,13 +13,23 @@ require_once rtrim(_PS_MODULE_DIR_, '/') . '/adyenofficial/vendor/autoload.php';
 class AdyenOfficial extends PaymentModule
 {
     /**
+     * @var PrestaShop\ModuleLibServiceContainer\DependencyInjection\ServiceContainer|null
+     */
+    private $serviceContainer;
+
+    /**
+     * @var AdyenPayment\Classes\PrestaShopIntegration\PrestaShopIntegrationService
+     */
+    private $integrationService;
+
+    /**
      * Adyen module constructor.
      */
     public function __construct()
     {
         $this->name = 'adyenofficial';
         $this->tab = 'payments_gateways';
-        $this->version = '7.4.7';
+        $this->version = '7.5.0';
 
         $this->author = $this->l('Adyen');
         $this->need_instance = 0;
@@ -35,11 +45,46 @@ class AdyenOfficial extends PaymentModule
     }
 
     /**
+     * Retrieves a service from the module's service container.
+     *
+     * @param string $serviceName
+     *
+     * @return object|null
+     */
+    public function getService(string $serviceName): ?object
+    {
+        if ($this->serviceContainer === null) {
+            $this->serviceContainer = new PrestaShop\ModuleLibServiceContainer\DependencyInjection\ServiceContainer(
+                $this->name,
+                $this->getLocalPath()
+            );
+        }
+
+        return $this->serviceContainer->getService($serviceName);
+    }
+
+    /**
+     * Returns the service handling the PrestaShop Account and CloudSync integrations.
+     *
+     * @return AdyenPayment\Classes\PrestaShopIntegration\PrestaShopIntegrationService
+     */
+    public function getIntegrationService(): AdyenPayment\Classes\PrestaShopIntegration\PrestaShopIntegrationService
+    {
+        if ($this->integrationService === null) {
+            $this->integrationService = new AdyenPayment\Classes\PrestaShopIntegration\PrestaShopIntegrationService(
+                $this
+            );
+        }
+
+        return $this->integrationService;
+    }
+
+    /**
      * Gets module's context.
      *
      * @return Context|null
      */
-    public function getContext()
+    public function getContext(): ?Context
     {
         return $this->context;
     }
@@ -54,6 +99,11 @@ class AdyenOfficial extends PaymentModule
         try {
             $success = parent::install();
             $success && $this->getInstaller()->install();
+
+            if ($success) {
+                $this->getIntegrationService()->provisionPsAccounts();
+                $this->getIntegrationService()->provisionPsEventBus();
+            }
 
             return $success;
         } catch (Throwable $e) {
@@ -173,11 +223,14 @@ class AdyenOfficial extends PaymentModule
         $this->loadScripts();
 
         $this->context->smarty->assign(
-            [
-                'urls' => $this->getUrls(),
-                'sidebar' => $this->getSidebarContent(),
-                'translations' => $this->getTranslations(),
-            ]
+            array_merge(
+                [
+                    'urls' => $this->getUrls(),
+                    'sidebar' => $this->getSidebarContent(),
+                    'translations' => $this->getTranslations(),
+                ],
+                $this->getIntegrationService()->getConfigurationPageContext()
+            )
         );
 
         return $this->display($this->_path, 'views/templates/hook/index.tpl');
@@ -1126,8 +1179,8 @@ class AdyenOfficial extends PaymentModule
     {
         $this->context->controller->addCSS(
             [
-                $this->getPathUri() . 'views/css/adyen-core.css',
-                $this->getPathUri() . 'views/css/adyen-presta.css',
+                $this->getPathUri() . 'views/css/adyen-core.css?v=' . $this->version,
+                $this->getPathUri() . 'views/css/adyen-presta.css?v=' . $this->version,
             ],
             'all',
             null,
