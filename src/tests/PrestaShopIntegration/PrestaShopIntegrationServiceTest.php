@@ -24,30 +24,19 @@ class PrestaShopIntegrationServiceTest extends TestCase
         $this->assertTrue($service->provisionPsEventBus());
     }
 
-    public function testEventBusIsInstalledAndEnabledWhenAbsentAndNotUpgraded(): void
+    public function testEventBusIsNeverInstalledAutomatically(): void
     {
         $moduleManager = new FakeModuleManager();
         $service = new TestablePrestaShopIntegrationService(new FailingServiceModule());
         $service->moduleManager = $moduleManager;
 
-        $service->provisionPsEventBus();
-
-        $this->assertSame(['install:ps_eventbus', 'enable:ps_eventbus'], $moduleManager->calls);
+        $this->assertTrue($service->provisionPsEventBus());
+        $this->assertSame([], $moduleManager->calls);
+        $this->assertCount(1, $service->logs);
+        $this->assertStringContainsString('not installed automatically', $service->logs[0]);
     }
 
-    public function testAFreshlyInstalledAndEnabledEventBusIsLeftAlone(): void
-    {
-        $moduleManager = new FakeModuleManager();
-        $moduleManager->enableOnInstall = true;
-        $service = new TestablePrestaShopIntegrationService(new FailingServiceModule());
-        $service->moduleManager = $moduleManager;
-
-        $service->provisionPsEventBus();
-
-        $this->assertSame(['install:ps_eventbus'], $moduleManager->calls);
-    }
-
-    public function testEventBusIsEnabledAndUpgradedWhenInstalledButDisabled(): void
+    public function testADisabledEventBusIsLeftDisabled(): void
     {
         $moduleManager = new FakeModuleManager();
         $moduleManager->installed = true;
@@ -56,7 +45,20 @@ class PrestaShopIntegrationServiceTest extends TestCase
 
         $service->provisionPsEventBus();
 
-        $this->assertSame(['enable:ps_eventbus', 'upgrade:ps_eventbus'], $moduleManager->calls);
+        $this->assertSame([], $moduleManager->calls);
+    }
+
+    public function testAnEnabledEventBusIsOnlyUpgraded(): void
+    {
+        $moduleManager = new FakeModuleManager();
+        $moduleManager->installed = true;
+        $moduleManager->enabled = true;
+        $service = new TestablePrestaShopIntegrationService(new FailingServiceModule());
+        $service->moduleManager = $moduleManager;
+
+        $service->provisionPsEventBus();
+
+        $this->assertSame(['upgrade:ps_eventbus'], $moduleManager->calls);
     }
 
     public function testAFailingEventBusUpgradeDoesNotFailProvisioning(): void

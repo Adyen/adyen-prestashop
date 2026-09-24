@@ -25,11 +25,6 @@ class FakeModuleManager
     public $failUpgrade = false;
 
     /**
-     * @var bool
-     */
-    public $enableOnInstall = false;
-
-    /**
      * @var string[]
      */
     public $calls = [];
@@ -48,7 +43,6 @@ class FakeModuleManager
     {
         $this->calls[] = 'install:' . $name;
         $this->installed = true;
-        $this->enabled = $this->enableOnInstall;
 
         return true;
     }

@@ -70,7 +70,11 @@ class PrestaShopIntegrationService
     }
 
     /**
-     * Installs, enables or upgrades the ps_eventbus module required by CloudSync.
+     * Upgrades the ps_eventbus module when the merchant already runs it.
+     *
+     * The module is never installed or enabled automatically. While the shop is not linked to
+     * PrestaShop Account, an enabled ps_eventbus breaks order creation, so the merchant installs
+     * CloudSync from the Adyen configuration page once the account is linked.
      *
      * @return bool
      */
@@ -88,18 +92,16 @@ class PrestaShopIntegrationService
                 return true;
             }
 
-            $justInstalled = false;
-
             if (!$moduleManager->isInstalled(self::PS_EVENTBUS_MODULE)) {
-                $moduleManager->install(self::PS_EVENTBUS_MODULE);
-                $justInstalled = true;
+                $this->log(
+                    'PrestaShop CloudSync (ps_eventbus) is not installed automatically. Link the shop to '
+                    . 'PrestaShop Account first, then install CloudSync from the Adyen configuration page.'
+                );
+
+                return true;
             }
 
             if (!$moduleManager->isEnabled(self::PS_EVENTBUS_MODULE)) {
-                $moduleManager->enable(self::PS_EVENTBUS_MODULE);
-            }
-
-            if ($justInstalled) {
                 return true;
             }
 
