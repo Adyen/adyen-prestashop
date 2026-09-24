@@ -708,6 +708,7 @@ class AdyenOfficial extends PaymentModule
      * @return string
      *
      * @throws Adyen\Core\Infrastructure\ORM\Exceptions\RepositoryClassException
+     * @throws PrestaShopDatabaseException
      */
     public function hookDisplayProductAdditionalInfo(): string
     {
