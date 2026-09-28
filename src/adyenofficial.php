@@ -29,7 +29,7 @@ class AdyenOfficial extends PaymentModule
     {
         $this->name = 'adyenofficial';
         $this->tab = 'payments_gateways';
-        $this->version = '7.5.0';
+        $this->version = '7.5.1';
 
         $this->author = $this->l('Adyen');
         $this->need_instance = 0;
@@ -647,43 +647,37 @@ class AdyenOfficial extends PaymentModule
             }
         }
 
-        if ($this->context->controller->php_self === 'product'
-            || $this->context->controller->php_self === 'cart'
-            || $this->context->controller->php_self === 'order-confirmation'
-            || $this->context->controller->php_self === 'order'
-            || $this->context->controller->page_name === 'module-adyenofficial-payment'
-            || $this->context->controller->page_name === 'module-adyenofficial-clicktopay'
-        ) {
+        if ($this->shouldLoadWebSdk()) {
             $this->getContext()->controller->addCSS($this->getPathUri() . 'views/css/adyen-checkout.css');
             $this->getContext()->controller->addJS($this->getPathUri() . 'views/js/front/adyen-checkout-controller.js');
             $this->getContext()->controller->addJS(
                 $this->getPathUri() . 'views/js/front/adyen-payment-additional-action.js'
             );
-            $this->getContext()->controller->registerJavascript(
-                'adyen-component-js',
-                'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/5.61.0/adyen.js',
-                [
-                    'server' => 'remote',
-                    'position' => 'head',
-                    'attributes' => [
-                        'integrity' => 'sha384-d6l5Qqod+Ks601U/jqsLz7QkW0LL6T5pfEsSHypuTSnDUYVGRLNV1ZdITbEwb1yL',
-                        'crossorigin' => 'anonymous',
-                    ],
-                ]
-            );
-            $this->getContext()->controller->registerStylesheet(
-                'adyen-component-css',
-                'https://checkoutshopper-live.adyen.com/checkoutshopper/sdk/5.61.0/adyen.css',
-                [
-                    'server' => 'remote',
-                    'position' => 'head',
-                    'attributes' => [
-                        'integrity' => 'sha384-d6l5Qqod+Ks601U/jqsLz7QkW0LL6T5pfEsSHypuTSnDUYVGRLNV1ZdITbEwb1yL',
-                        'crossorigin' => 'anonymous',
-                    ],
-                ]
-            );
         }
+    }
+
+    /**
+     * Renders the Adyen Web SDK script and stylesheet tags with Subresource Integrity attributes.
+     *
+     * PrestaShop's asset managers drop the integrity and crossorigin attributes, so the tags are
+     * emitted from a template instead of registerJavascript() / registerStylesheet().
+     *
+     * @return string
+     */
+    public function hookDisplayHeader(): string
+    {
+        if (!$this->active || !$this->shouldLoadWebSdk()) {
+            return '';
+        }
+
+        $this->context->smarty->assign([
+            'adyenWebSdkCssUrl' => AdyenPayment\Classes\Utility\WebSdk::cssUrl(),
+            'adyenWebSdkJsUrl' => AdyenPayment\Classes\Utility\WebSdk::jsUrl(),
+            'adyenWebSdkCssIntegrity' => AdyenPayment\Classes\Utility\WebSdk::CSS_INTEGRITY,
+            'adyenWebSdkJsIntegrity' => AdyenPayment\Classes\Utility\WebSdk::JS_INTEGRITY,
+        ]);
+
+        return $this->display(__FILE__, 'views/templates/hook/web-sdk.tpl');
     }
 
     /**
@@ -1761,6 +1755,26 @@ class AdyenOfficial extends PaymentModule
         ]);
 
         return $this->display(__FILE__, 'views/templates/front/express_checkout.tpl');
+    }
+
+    /**
+     * Checks whether the current storefront page needs the Adyen Web SDK.
+     *
+     * @return bool
+     */
+    private function shouldLoadWebSdk(): bool
+    {
+        $controller = $this->context->controller ?? null;
+        if (!$controller instanceof FrontController) {
+            return false;
+        }
+
+        return in_array($controller->php_self ?? '', ['product', 'cart', 'order-confirmation', 'order'], true)
+            || in_array(
+                $controller->page_name ?? '',
+                ['module-adyenofficial-payment', 'module-adyenofficial-clicktopay'],
+                true
+            );
     }
 
     /**

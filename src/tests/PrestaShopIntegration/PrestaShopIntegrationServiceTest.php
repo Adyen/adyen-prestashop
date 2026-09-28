@@ -105,6 +105,7 @@ class PrestaShopIntegrationServiceTest extends TestCase
     {
         $service = new TestablePrestaShopIntegrationService(new FailingServiceModule());
         $service->dependencyBuilder = new FakeDependencyBuilder(true);
+        $service->canInstallModules = false;
 
         $this->assertSame([], $service->getDependencyContext());
     }
@@ -114,6 +115,7 @@ class PrestaShopIntegrationServiceTest extends TestCase
         $builder = new FakeDependencyBuilder(true);
         $service = new TestablePrestaShopIntegrationService(new FailingServiceModule());
         $service->dependencyBuilder = $builder;
+        $service->canInstallModules = false;
 
         $service->getDependencyContext();
 
@@ -131,9 +133,44 @@ class PrestaShopIntegrationServiceTest extends TestCase
 
         $context = $service->getDependencyContext();
 
-        $this->assertSame(['requiredDependencies', 'hasRequiredDependencies'], array_keys($context));
+        $this->assertSame(
+            ['requiredDependencies', 'hasRequiredDependencies', 'canInstallDependencies'],
+            array_keys($context)
+        );
         $this->assertFalse($context['hasRequiredDependencies']);
+        $this->assertTrue($context['canInstallDependencies']);
         $this->assertSame('adyenofficial', $context['requiredDependencies']['module_name']);
+    }
+
+    public function testDependencyResolverIsNotBuiltForEmployeesWithoutModuleInstallRights(): void
+    {
+        $builder = new FakeDependencyBuilder(
+            false,
+            false,
+            ['module_name' => 'adyenofficial', 'dependencies' => ['ps_accounts' => ['installed' => false]]]
+        );
+        $service = new TestablePrestaShopIntegrationService(new FailingServiceModule());
+        $service->dependencyBuilder = $builder;
+        $service->canInstallModules = false;
+
+        $context = $service->getDependencyContext();
+
+        $this->assertSame(['hasRequiredDependencies' => false, 'canInstallDependencies' => false], $context);
+        $this->assertSame(0, $builder->handleDependenciesCalls);
+        $this->assertSame([], $service->logs);
+    }
+
+    public function testEmployeeWithoutContextCannotInstallModules(): void
+    {
+        $builder = new FakeDependencyBuilder(false);
+        $service = new TestablePrestaShopIntegrationService(new FailingServiceModule());
+        $service->dependencyBuilder = $builder;
+        $service->canInstallModules = null;
+
+        $context = $service->getDependencyContext();
+
+        $this->assertSame(['hasRequiredDependencies' => false, 'canInstallDependencies' => false], $context);
+        $this->assertSame(0, $builder->handleDependenciesCalls);
     }
 
     public function testAnUnavailableResolverNeverBlocksTheConfigurationPage(): void

@@ -13,7 +13,14 @@ require_tools() {
     [ "$missing" -eq 0 ] || exit 1
 }
 
-require_tools composer php zip dos2unix
+require_tools composer php zip dos2unix curl openssl
+
+if [ "${SKIP_SRI_CHECK:-0}" != "1" ]; then
+    echo -e "\e[32mSTEP 0:\e[0m Verifying Adyen Web SDK SRI hashes..."
+    ./dist/scripts/verify_web_sdk_sri.sh
+else
+    echo -e "\e[33mWARNING:\e[0m Adyen Web SDK SRI check skipped (SKIP_SRI_CHECK=1)"
+fi
 
 # Cleanup any leftovers
 echo -e "\e[32mCleaning up...\e[0m"

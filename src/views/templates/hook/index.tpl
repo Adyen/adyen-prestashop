@@ -9,29 +9,37 @@
 </head>
 <body>
 {if isset($hasRequiredDependencies) && !$hasRequiredDependencies}
-    {* Resolver for the companion modules declared in module_dependencies.json. *}
-    <script src="https://assets.prestashop3.com/dst/mbo/v1/mbo-cdc-dependencies-resolver.umd.js"></script>
-    <div class="adl-ps-integration">
-        <div id="mbo-cdc-container"></div>
-    </div>
+    {if isset($canInstallDependencies) && $canInstallDependencies}
+        {* Resolver for the companion modules declared in module_dependencies.json. *}
+        <script src="https://assets.prestashop3.com/dst/mbo/v1/mbo-cdc-dependencies-resolver.umd.js"></script>
+        <div class="adl-ps-integration">
+            <div id="mbo-cdc-container"></div>
+        </div>
 
-    <script defer>
-        const renderMboCdcDependencyResolver = window?.mboCdcDependencyResolver?.render;
+        <script defer>
+            const renderMboCdcDependencyResolver = window?.mboCdcDependencyResolver?.render;
 
-        if (renderMboCdcDependencyResolver) {
-            renderMboCdcDependencyResolver({
-                ...{$requiredDependencies|json_encode:$jsonScriptFlags},
-                onDependenciesResolved: () => {
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 2000);
-                },
-                onDependencyResolved: (dependencyData) => console.log('Dependency installed', dependencyData),
-                onDependencyFailed: (dependencyData) => console.log('Failed to install dependency', dependencyData),
-                onDependenciesFailed: () => console.log('There are some errors'),
-            }, '#mbo-cdc-container');
-        }
-    </script>
+            if (renderMboCdcDependencyResolver) {
+                renderMboCdcDependencyResolver({
+                    ...{$requiredDependencies|json_encode:$jsonScriptFlags},
+                    onDependenciesResolved: () => {
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 2000);
+                    },
+                    onDependencyResolved: (dependencyData) => console.log('Dependency installed', dependencyData),
+                    onDependencyFailed: (dependencyData) => console.log('Failed to install dependency', dependencyData),
+                    onDependenciesFailed: () => console.log('There are some errors'),
+                }, '#mbo-cdc-container');
+            }
+        </script>
+    {else}
+        <div class="adl-ps-integration">
+            <div class="alert alert-info">
+                {l s='The companion modules PrestaShop Account (ps_accounts) and PrestaShop EventBus (ps_eventbus) are missing or disabled and can only be installed by an administrator with permission to install modules.' mod='adyenofficial'}
+            </div>
+        </div>
+    {/if}
 {/if}
 
 {if isset($urlAccountsCdn)}

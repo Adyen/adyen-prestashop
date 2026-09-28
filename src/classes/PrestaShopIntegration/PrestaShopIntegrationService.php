@@ -19,6 +19,7 @@ class PrestaShopIntegrationService
 
     public const ACCOUNTS_INSTALLER_SERVICE = 'adyenofficial.ps_accounts_installer';
 
+    public const MODULES_TAB_CLASS = 'AdminModulesSf';
     public const ACCOUNTS_FACADE_SERVICE = 'adyenofficial.ps_accounts_facade';
 
     public const MODULE_MANAGER_BUILDERS = [
@@ -141,6 +142,10 @@ class PrestaShopIntegrationService
      * configuration page rather than in place of it. Both companion modules are optional
      * enhancements, so their absence must never keep a merchant from configuring payments.
      *
+     * The resolver loads an installer script from the PrestaShop CDN and receives tokenised module
+     * install URLs, so it is only exposed to employees who may install modules. Other employees get
+     * a flag that renders a notice instead, and the resolver payload is never built for them.
+     *
      * @return array
      */
     public function getDependencyContext(): array
@@ -152,9 +157,17 @@ class PrestaShopIntegrationService
                 return [];
             }
 
+            if (!$this->canInstallModules()) {
+                return [
+                    'hasRequiredDependencies' => false,
+                    'canInstallDependencies' => false,
+                ];
+            }
+
             return [
                 'requiredDependencies' => $dependencyBuilder->handleDependencies(),
                 'hasRequiredDependencies' => false,
+                'canInstallDependencies' => true,
             ];
         } catch (\Throwable $e) {
             $this->log(
@@ -164,6 +177,39 @@ class PrestaShopIntegrationService
 
             return [];
         }
+    }
+
+    /**
+     * Checks whether the logged-in employee may install, enable and upgrade modules.
+     *
+     * Reads the profile access directly instead of Employee::can(), which indexes the result of
+     * Profile::getProfileAccess() without checking it and raises a notice when the tab is unknown.
+     *
+     * @return bool
+     */
+    protected function canInstallModules(): bool
+    {
+        $context = $this->module->getContext();
+        $employee = $context ? $context->employee : null;
+
+        if (!$employee || !$employee->id || !$employee->id_profile) {
+            return false;
+        }
+
+        if ($employee->isSuperAdmin()) {
+            return true;
+        }
+
+        $tabId = (int) \Tab::getIdFromClassName(self::MODULES_TAB_CLASS);
+        if ($tabId <= 0) {
+            return false;
+        }
+
+        $access = \Profile::getProfileAccess((int) $employee->id_profile, $tabId);
+
+        return is_array($access)
+            && (int) ($access['add'] ?? 0) === 1
+            && (int) ($access['edit'] ?? 0) === 1;
     }
 
     /**

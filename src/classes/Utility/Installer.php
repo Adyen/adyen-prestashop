@@ -83,6 +83,7 @@ class Installer
         'sendMailAlterTemplateVars',
         'displayOrderConfirmation',
         'actionObjectOrderUpdateAfter',
+        'displayHeader',
     ];
 
     /** @var string[] */

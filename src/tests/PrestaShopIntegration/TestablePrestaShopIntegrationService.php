@@ -27,6 +27,11 @@ class TestablePrestaShopIntegrationService extends PrestaShopIntegrationService
     public $dependencyBuilder;
 
     /**
+     * @var bool|null Null delegates to the real permission check.
+     */
+    public $canInstallModules = true;
+
+    /**
      * {@inheritdoc}
      */
     protected function getModuleManager(): ?object
@@ -44,6 +49,14 @@ class TestablePrestaShopIntegrationService extends PrestaShopIntegrationService
         }
 
         return $this->dependencyBuilder;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function canInstallModules(): bool
+    {
+        return $this->canInstallModules ?? parent::canInstallModules();
     }
 
     /**
