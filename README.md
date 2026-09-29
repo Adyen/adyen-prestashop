@@ -12,6 +12,8 @@ Read our [**contribution guidelines**](CONTRIBUTING.md) to find out how.
 ## Requirements
 This plugin supports PrestaShop versions 1.7.5.0 to 9.1.1. 
 
+The plugin integrates with the PrestaShop Account (`ps_accounts`) and PrestaShop EventBus (`ps_eventbus`) modules. Both are optional. When they are missing, they are installed or upgraded from PrestaShop Addons through the PrestaShop Module Manager. The Adyen configuration page offers to install them only to employees whose profile has the "Add" and "Edit" permissions on Modules > Module Manager. Other employees see a notice and should ask an administrator to install them.
+
 ## Documentation
 Please find the relevant documentation for
 - [How to start with Adyen](https://www.adyen.com/get-started)

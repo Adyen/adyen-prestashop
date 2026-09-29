@@ -1,0 +1,306 @@
+<?php
+
+namespace AdyenPayment\Classes\PrestaShopIntegration;
+
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
+use Prestashop\ModuleLibMboInstaller\DependencyBuilder;
+
+/**
+ * Class PrestaShopIntegrationService
+ */
+class PrestaShopIntegrationService
+{
+    public const PS_ACCOUNTS_MODULE = 'ps_accounts';
+
+    public const PS_EVENTBUS_MODULE = 'ps_eventbus';
+
+    public const ACCOUNTS_INSTALLER_SERVICE = 'adyenofficial.ps_accounts_installer';
+
+    public const MODULES_TAB_CLASS = 'AdminModulesSf';
+    public const ACCOUNTS_FACADE_SERVICE = 'adyenofficial.ps_accounts_facade';
+
+    public const MODULE_MANAGER_BUILDERS = [
+        'PrestaShop\\PrestaShop\\Core\\Addon\\Module\\ModuleManagerBuilder',
+        'PrestaShop\\PrestaShop\\Core\\Module\\ModuleManagerBuilder',
+    ];
+
+    /**
+     * @var \AdyenOfficial
+     */
+    private $module;
+
+    /**
+     * @param \AdyenOfficial $module
+     */
+    public function __construct(\AdyenOfficial $module)
+    {
+        $this->module = $module;
+    }
+
+    /**
+     * Installs, and enables when needed, the ps_accounts module.
+     *
+     * @return bool
+     */
+    public function provisionPsAccounts(): bool
+    {
+        try {
+            $installer = $this->module->getService(self::ACCOUNTS_INSTALLER_SERVICE);
+
+            if (!$installer->install()) {
+                $this->log(
+                    'PrestaShop Account (ps_accounts) could not be auto-installed. Its module files are not '
+                    . 'present on this host, or the current employee lacks the permission to install modules. '
+                    . 'Install "PrestaShop Accounts" manually to enable the account panel.'
+                );
+
+                return true;
+            }
+
+            if (!$installer->isModuleEnabled()) {
+                $this->enableModule(self::PS_ACCOUNTS_MODULE);
+            }
+        } catch (\Throwable $e) {
+            $this->log('PrestaShop Account (ps_accounts) setup skipped. Error: ' . $e->getMessage());
+        }
+
+        return true;
+    }
+
+    /**
+     * Upgrades the ps_eventbus module when the merchant already runs it.
+     *
+     * The module is never installed or enabled automatically. While the shop is not linked to
+     * PrestaShop Account, an enabled ps_eventbus breaks order creation, so the merchant installs
+     * CloudSync from the Adyen configuration page once the account is linked.
+     *
+     * @return bool
+     */
+    public function provisionPsEventBus(): bool
+    {
+        try {
+            $moduleManager = $this->getModuleManager();
+
+            if (!$moduleManager) {
+                $this->log(
+                    'PrestaShop CloudSync (ps_eventbus) setup skipped because no ModuleManagerBuilder is '
+                    . 'available on PrestaShop ' . _PS_VERSION_ . '.'
+                );
+
+                return true;
+            }
+
+            if (!$moduleManager->isInstalled(self::PS_EVENTBUS_MODULE)) {
+                $this->log(
+                    'PrestaShop CloudSync (ps_eventbus) is not installed automatically. Link the shop to '
+                    . 'PrestaShop Account first, then install CloudSync from the Adyen configuration page.'
+                );
+
+                return true;
+            }
+
+            if (!$moduleManager->isEnabled(self::PS_EVENTBUS_MODULE)) {
+                return true;
+            }
+
+            try {
+                $moduleManager->upgrade(self::PS_EVENTBUS_MODULE);
+            } catch (\Throwable $e) {
+                $this->log(
+                    'PrestaShop CloudSync (ps_eventbus) upgrade skipped, the module remains at its installed '
+                    . 'version. Error: ' . $e->getMessage()
+                );
+            }
+        } catch (\Throwable $e) {
+            $this->log('PrestaShop CloudSync (ps_eventbus) setup skipped. Error: ' . $e->getMessage());
+        }
+
+        return true;
+    }
+
+    /**
+     * Returns the Smarty variables required by the configuration page for both integrations.
+     *
+     * @return array
+     */
+    public function getConfigurationPageContext(): array
+    {
+        return array_merge(
+            $this->getDependencyContext(),
+            $this->getPsAccountsContext()
+        );
+    }
+
+    /**
+     * Returns the context for the dependency resolver installing the modules declared in
+     * module_dependencies.json.
+     *
+     * Unlike the integration guidelines, the resolver is rendered alongside the Adyen
+     * configuration page rather than in place of it. Both companion modules are optional
+     * enhancements, so their absence must never keep a merchant from configuring payments.
+     *
+     * The resolver loads an installer script from the PrestaShop CDN and receives tokenised module
+     * install URLs, so it is only exposed to employees who may install modules. Other employees get
+     * a flag that renders a notice instead, and the resolver payload is never built for them.
+     *
+     * @return array
+     */
+    public function getDependencyContext(): array
+    {
+        try {
+            $dependencyBuilder = $this->buildDependencyBuilder();
+
+            if ($dependencyBuilder->areDependenciesMet()) {
+                return [];
+            }
+
+            if (!$this->canInstallModules()) {
+                return [
+                    'hasRequiredDependencies' => false,
+                    'canInstallDependencies' => false,
+                ];
+            }
+
+            return [
+                'requiredDependencies' => $dependencyBuilder->handleDependencies(),
+                'hasRequiredDependencies' => false,
+                'canInstallDependencies' => true,
+            ];
+        } catch (\Throwable $e) {
+            $this->log(
+                'PrestaShop dependency resolver unavailable, the companion module prompt is not shown. '
+                . 'Error: ' . $e->getMessage()
+            );
+
+            return [];
+        }
+    }
+
+    /**
+     * Checks whether the logged-in employee may install, enable and upgrade modules.
+     *
+     * Reads the profile access directly instead of Employee::can(), which indexes the result of
+     * Profile::getProfileAccess() without checking it and raises a notice when the tab is unknown.
+     *
+     * @return bool
+     */
+    protected function canInstallModules(): bool
+    {
+        $context = $this->module->getContext();
+        $employee = $context ? $context->employee : null;
+
+        if (!$employee || !$employee->id || !$employee->id_profile) {
+            return false;
+        }
+
+        if ($employee->isSuperAdmin()) {
+            return true;
+        }
+
+        $tabId = (int) \Tab::getIdFromClassName(self::MODULES_TAB_CLASS);
+        if ($tabId <= 0) {
+            return false;
+        }
+
+        $access = \Profile::getProfileAccess((int) $employee->id_profile, $tabId);
+
+        return is_array($access)
+            && (int) ($access['add'] ?? 0) === 1
+            && (int) ($access['edit'] ?? 0) === 1;
+    }
+
+    /**
+     * Returns the PrestaShop Account association context.
+     *
+     * @return array
+     */
+    public function getPsAccountsContext(): array
+    {
+        try {
+            $facade = $this->module->getService(self::ACCOUNTS_FACADE_SERVICE);
+            $context = $facade->getPsAccountsPresenter()->present($this->module->name);
+
+            try {
+                $cdnUrl = $facade->getPsAccountsService()->getAccountsCdn();
+            } catch (\Throwable $e) {
+                $cdnUrl = '';
+            }
+
+            if (empty($cdnUrl)) {
+                $this->log(
+                    'PrestaShop Account panel hidden because ps_accounts is not installed, not enabled, '
+                    . 'or below the required version.'
+                );
+
+                return [];
+            }
+
+            return [
+                'contextPsAccounts' => $context,
+                'urlAccountsCdn' => $cdnUrl,
+            ];
+        } catch (\Throwable $e) {
+            $this->log('PrestaShop Account context unavailable. Error: ' . $e->getMessage());
+
+            return [];
+        }
+    }
+
+    /**
+     * Enables a companion module, tolerating hosts where enabling is not permitted.
+     *
+     * @param string $moduleName
+     *
+     * @return void
+     */
+    protected function enableModule(string $moduleName): void
+    {
+        try {
+            $moduleManager = $this->getModuleManager();
+
+            if ($moduleManager) {
+                $moduleManager->enable($moduleName);
+            }
+        } catch (\Throwable $e) {
+            $this->log('Could not enable ' . $moduleName . '. Error: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * @return DependencyBuilder
+     */
+    protected function buildDependencyBuilder(): DependencyBuilder
+    {
+        return new DependencyBuilder($this->module);
+    }
+
+    /**
+     * Builds a PrestaShop ModuleManager, resolving the builder across supported PrestaShop
+     * versions.
+     *
+     * @return object|null
+     */
+    protected function getModuleManager(): ?object
+    {
+        foreach (self::MODULE_MANAGER_BUILDERS as $builderClass) {
+            if (class_exists($builderClass)) {
+                return $builderClass::getInstance()->build();
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param string $message
+     *
+     * @return void
+     */
+    protected function log(string $message): void
+    {
+        \PrestaShopLogger::addLog('Adyen: ' . $message, \PrestaShopLogger::LOG_SEVERITY_LEVEL_WARNING);
+    }
+}

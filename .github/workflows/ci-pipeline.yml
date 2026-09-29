@@ -1,32 +1,44 @@
-﻿name: CI Pipeline Prestashop
+﻿# Third-party actions are pinned to commit SHAs (supply chain hardening). To bump one:
+#   git ls-remote https://github.com/<owner>/<action> refs/tags/<tag>
+# then update the SHA and the version comment on every 'uses:' line in .github/.
+name: CI Pipeline Prestashop
 on:
   push:
     branches:
       [ "main", "develop" ]
+permissions:
+  contents: read
 jobs:
   build:
     permissions:
       contents: read
-      pages: write
-      id-token: write
     name: Build environment
     runs-on: ubuntu-latest
     steps:
       - name: Clone Code
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
           php-version: 7.4
       - name: Create Cache Directories
         run: |
           mkdir -p ~/.build
       - name: Mount Build Cache
-        uses: actions/cache@v5
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0
         with:
           key: cache-plugin-${{ github.run_id }}
           path: ~/.build
+      - name: Audit Composer dependencies
+        working-directory: src
+        run: composer audit --locked --no-dev --abandoned=report
+      - name: Audit Composer dev dependencies (informational)
+        working-directory: src
+        continue-on-error: true
+        run: composer audit --locked --abandoned=report
+      - name: Verify Adyen Web SDK SRI hashes
+        run: bash ./dist/scripts/verify_web_sdk_sri.sh
       - name: Build Plugin
         uses: ./.github/actions/build_plugin
 
@@ -54,12 +66,12 @@ jobs:
             device: 'Desktop Firefox'
     steps:
       - name: Clone Code
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           path: main
 
       - name: Mount Build Cache
-        uses: actions/cache@v5
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0
         with:
           key: cache-plugin-${{ github.run_id }}
           path: ~/.build
