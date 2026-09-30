@@ -125,7 +125,7 @@ $(document).ready(function () {
 
             giftcardData.val('[' + stateData.slice(0, -1) + ']');
             addData.val(checkoutController.getPaymentMethodStateData());
-            enablePlaceOrderButton(prestaVersion);
+            enablePlaceOrderButton();
 
             return
         }
@@ -140,11 +140,12 @@ $(document).ready(function () {
         }
     }
 
-    function enablePlaceOrderButton(prestaVersion) {
-        placeOrder.removeAttr('disabled')
-        if (prestaVersion >= '1.7.7.2') {
-            placeOrder.removeClass('disabled')
-        }
+    function enablePlaceOrderButton() {
+        placeOrder.removeAttr('disabled');
+        // Always drop the CSS class as well: Hummingbird renders the button with the "disabled"
+        // class when no payment option is preselected, and PrestaShop < 1.7.7.2 core.js only ever
+        // toggles the attribute, so nothing else would remove the class and the button stays blocked.
+        placeOrder.removeClass('disabled');
     }
 
     function getCheckoutController(checkoutConfigUrl) {
