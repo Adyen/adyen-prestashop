@@ -834,9 +834,9 @@ class AdyenOfficial extends PaymentModule
      */
     public function hookActionAdminControllerSetMedia()
     {
-        $order = new Order((int) Tools::getValue('id_order'));
+        $order = new Order(AdyenPayment\Classes\Utility\AdminRequest::getOrderId());
 
-        $currentController = Tools::getValue('controller');
+        $currentController = AdyenPayment\Classes\Utility\AdminRequest::getControllerName();
 
         if ($currentController === 'AdminOrders') {
             $this->getContext()->controller->addJS(
@@ -987,7 +987,10 @@ class AdyenOfficial extends PaymentModule
      */
     public function hookDisplayBackOfficeHeader(): string
     {
-        if (!$this->isEnabled($this->name) || Tools::getValue('controller') !== 'AdminOrders') {
+        AdyenPayment\Classes\Bootstrap::init();
+
+        if (!$this->isEnabled($this->name)
+            || AdyenPayment\Classes\Utility\AdminRequest::getControllerName() !== 'AdminOrders') {
             return '';
         }
         $generalSettings = Adyen\Core\BusinessLogic\AdminAPI\AdminAPI::get()->generalSettings((string) Context::getContext()->shop->id)->getGeneralSettings();
@@ -1014,13 +1017,17 @@ class AdyenOfficial extends PaymentModule
      */
     public function hookActionValidateOrder(array $params)
     {
+        AdyenPayment\Classes\Bootstrap::init();
+
         if (!isset($this->getContext()->controller)
             || 'admin' !== $this->getContext()->controller->controller_type
             || $params['order']->module !== $this->name) {
             return;
         }
 
+        // When the expiration date is not submitted, the core falls back to the default expiration from general settings.
         $expiresAt = Tools::getValue('adyen-expires-at-date');
+        $expiresAt = !empty($expiresAt) ? new DateTime($expiresAt) : null;
         /** @var Order $order */
         $order = $params['order'];
         $currency = new Currency($order->id_currency);
@@ -1036,7 +1043,7 @@ class AdyenOfficial extends PaymentModule
 
         $paymentLink = Adyen\Core\BusinessLogic\AdminAPI\AdminAPI::get()->paymentLink((string) $order->id_shop)
             ->createPaymentLink(
-                new Adyen\Core\BusinessLogic\AdminAPI\PaymentLink\Request\CreatePaymentLinkRequest($order->getOrdersTotalPaid(), $currency->iso_code, (string) $order->id_cart, new DateTime($expiresAt)));
+                new Adyen\Core\BusinessLogic\AdminAPI\PaymentLink\Request\CreatePaymentLinkRequest($order->getOrdersTotalPaid(), $currency->iso_code, (string) $order->id_cart, $expiresAt));
 
         if ($paymentLink->isSuccessful()) {
             AdyenPayment\Classes\Utility\SessionService::set(
