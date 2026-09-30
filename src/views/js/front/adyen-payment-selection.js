@@ -323,11 +323,42 @@ $(document).ready(function () {
         });
     }
 
-    function renderCartSummary(currency) {
-        let totalDiv = $(".cart-summary-totals")[0];
+    /**
+     * Finds the cart totals block for the active theme.
+     *
+     * Classic (1.7.7+): .cart-summary-totals, .js-cart-summary-totals (8.0+), .cart-total
+     * Hummingbird 9.0: .cart-summary__totals
+     * Hummingbird 9.1+: .cart-summary__total, .js-cart-summary-totals
+     *
+     * @returns {HTMLElement|null}
+     */
+    function findCartTotalsElement() {
+        const selectors = [
+            '.js-cart-summary-totals',
+            '.cart-summary-totals',
+            '.cart-summary__total',
+            '.cart-summary__totals',
+            '.cart-total'
+        ];
 
-        if (typeof totalDiv === 'undefined') {
-            totalDiv = $(".cart-total")[0];
+        for (const selector of selectors) {
+            const element = document.querySelector(selector);
+
+            if (element) {
+                return element;
+            }
+        }
+
+        return null;
+    }
+
+    function renderCartSummary(currency) {
+        let totalDiv = findCartTotalsElement();
+
+        if (!totalDiv || !totalDiv.parentNode) {
+            console.warn('Adyen: cart totals element not found, gift card summary will not be rendered.');
+
+            return;
         }
 
         let cartSummary = totalDiv.parentNode;
