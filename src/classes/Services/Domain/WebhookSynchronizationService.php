@@ -38,7 +38,7 @@ class WebhookSynchronizationService extends CoreWebhookSynchronizationService
         $transactionHistory = $this->transactionHistoryService->getTransactionHistory($webhook->getMerchantReference());
         if (
             $webhook->getEventCode() !== EventCodes::AUTHORISATION
-            && $transactionHistory->collection()->filterAllByEventCode('PAYMENT_REQUESTED')->isEmpty()
+            && !$this->isPaymentInitiatedByShop($transactionHistory)
         ) {
             return false;
         }
