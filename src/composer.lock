@@ -4,11 +4,11 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8fc4feb6834e66d74aa4b1765a6ae326",
+    "content-hash": "2f1efa5ddb812fb30cf4dae66e9663f8",
     "packages": [
         {
             "name": "adyen/integration-core",
-            "version": "dev-fix/MAIN-2544",
+            "version": "dev-dev",
             "source": {
                 "type": "git",
                 "url": "git@github.com:Adyen/adyen-php-plugin-core.git",
